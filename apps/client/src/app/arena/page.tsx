@@ -64,10 +64,10 @@ const Arena: React.FC = () => {
       // 1. Draw Projectiles (Neon Sparks)
       gameState.projectiles.forEach((p) => {
         ctx.beginPath();
-        ctx.arc(p.position.x, p.position.y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = "#FFFFFF";
+        ctx.arc(p.position.x, p.position.y, 4, 0, Math.PI * 2)
+        ctx.fillStyle = "#00FFFF";
+        ctx.shadowBlur = 15;
         ctx.shadowColor = "#FFFFFF";
-        ctx.shadowBlur = 10;
         ctx.fill();
         ctx.closePath();
       });
