@@ -12,14 +12,17 @@ export class GameGateway implements OnGatewayInit {
   constructor(private readonly gameService: GameService) { }
 
   afterInit(server: Server) {
-    console.log("🚀 Gateway is LIVE. Starting Real-time Broadcast...");
+    console.log("🚀 Gateway is LIVE. Broadcasting Robots & Projectiles...");
 
     setInterval(() => {
+      // Fetch the state of robots and projectiles from the Service
       const robots = this.gameService.getGameState();
+      const projectiles = this.gameService.getGameLoop().getProjectiles();
 
-      if (robots.length > 0) {
-        server.emit("gameState", robots);
+      if (robots.length > 0 || projectiles.length > 0) {
+        // we emit a single object containing both arrays to minimize the number of emissions
+        server.emit("gameState", { robots, projectiles });
       }
-    }, 16); // 60 FPS
+    }, 16); // 16ms = 60fps
   }
 }
