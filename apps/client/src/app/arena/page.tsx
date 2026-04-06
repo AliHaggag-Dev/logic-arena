@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
+import { Scene3D } from "./Scene3D";
 
 interface RobotState {
   id: string;
@@ -109,11 +110,19 @@ const Arena: React.FC = () => {
   }, [gameState]);
 
   return (
-    <div className="w-full h-full bg-black overflow-hidden flex items-center justify-center">
+    <div className="relative w-full h-screen bg-black overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Scene3D robots={gameState.robots} />
+      </div>
+
       <canvas
         ref={canvasRef}
-        className="block shadow-[0_0_50px_rgba(0,163,255,0.1)]"
+        className="absolute top-4 right-4 w-64 h-48 border border-blue-500/30 pointer-events-none z-10"
       />
+
+      <div className="absolute bottom-10 left-10 text-blue-400 font-mono z-20">
+        LOGIC ARENA v0.4.0 [3D MODE ENABLED]
+      </div>
     </div>
   );
 };
