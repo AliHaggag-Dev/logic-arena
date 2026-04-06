@@ -7,8 +7,13 @@ export interface Entity {
   id: string;
   position: Vector2;
   velocity: Vector2;
+  color: string;
 }
 
 export interface Robot extends Entity {
-  // specific robot properties can go here later
+  health: number; // Added to track damage in the arena
+}
+
+export interface Projectile extends Entity {
+  ownerId: string; // The ID of the robot that fired this shot
 }
