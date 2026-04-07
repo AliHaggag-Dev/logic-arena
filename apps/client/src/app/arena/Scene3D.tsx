@@ -35,7 +35,27 @@ const LaserModel = ({ position }: { position: [number, number, number] }) => (
     </mesh>
 );
 
-export const Scene3D = ({ robots, projectiles = [] }: { robots: any[], projectiles?: any[] }) => {
+const SpeechBubble = ({ position, message }: { position: [number, number, number], message: string }) => {
+  return (
+    <Html position={[position[0], position[1] + 1, position[2]]} center>
+      <div style={{
+        background: 'rgba(0, 0, 0, 0.7)',
+        padding: '5px 10px',
+        borderRadius: '5px',
+        color: '#00FF00',
+        fontSize: '12px',
+        whiteSpace: 'nowrap',
+        border: '1px solid #00FF00',
+        pointerEvents: 'none',
+        transform: 'translateY(-100%)',
+      }}>
+        {message}
+      </div>
+    </Html>
+  );
+};
+
+export const Scene3D = ({ robots, projectiles = [], firedTracer = null, speechBubble = null }: { robots: any[], projectiles?: any[], firedTracer?: { robotId: string; targetPosition: { x: number; y: number; }; } | null, speechBubble?: { robotId: string; message: string; } | null }) => {
     // Arena units based on 800x600 engine (Scale 1 unit = 40px)
     const arenaWidth = 20; // 800 / 40
     const arenaHeight = 15; // 600 / 40
@@ -96,6 +116,52 @@ export const Scene3D = ({ robots, projectiles = [] }: { robots: any[], projectil
                         health={robot.health}
                     />
                 ))}
+
+                {/* Draw Tracer Line for Fired Projectiles */}
+                {firedTracer && robots.map(robot => {
+                  if (robot.id === firedTracer.robotId) {
+                    const startPos = [
+                      (robot.position.x / 40) - 10,
+                      0.375,
+                      (robot.position.y / 40) - 7.5
+                    ];
+                    const endPos = [
+                      (firedTracer.targetPosition.x / 40) - 10,
+                      0.375,
+                      (firedTracer.targetPosition.y / 40) - 7.5
+                    ];
+                    return (
+                      <line key={`tracer-${robot.id}`}>
+                        <bufferGeometry attach="geometry">
+                          <bufferAttribute
+                            attach="attributes-position"
+                            count={2}
+                            itemSize={3}
+                            args={[
+                              new Float32Array([...startPos, ...endPos]),
+                              3
+                            ]}
+                          />
+                        </bufferGeometry>
+                        <lineBasicMaterial attach="material" color="#FF00FF" linewidth={3} />
+                      </line>
+                    );
+                  }
+                  return null;
+                })}
+
+                {/* Display Speech Bubble */}
+                {speechBubble && robots.map(robot => {
+                  if (robot.id === speechBubble.robotId) {
+                    const pos = [
+                      (robot.position.x / 40) - 10,
+                      0.375,
+                      (robot.position.y / 40) - 7.5
+                    ] as [number, number, number];
+                    return <SpeechBubble key={`bubble-${robot.id}`} position={pos} message={speechBubble.message} />;
+                  }
+                  return null;
+                })}
 
                 {/* Draw Projectiles */}
                 {projectiles.map((p: any) => (

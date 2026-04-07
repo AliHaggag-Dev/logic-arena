@@ -1,0 +1,21 @@
+{
+    "name": "@logic-arena/logic-parser",
+    "version": "0.1.0",
+    "description": "Logic Parser for the Logic Arena game",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "logic-arena",
+        "parser",
+        "typescript"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "devDependencies": {
+        "typescript": "^5.0.0"
+    }
+}

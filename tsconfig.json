@@ -12,13 +12,24 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "strict": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "moduleResolution": "node",
     "paths": {
-      "@logic-arena/engine": ["./packages/engine/src"]
+      "@logic-arena/engine": [
+        "./packages/engine/src"
+      ],
+      "@logic-arena/logic-parser": [
+        "./packages/logic-parser/src"
+      ]
     }
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

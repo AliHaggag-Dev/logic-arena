@@ -23,6 +23,9 @@
     "paths": {
       "@logic-arena/engine": [
         "../../packages/engine/src"
+      ],
+      "@logic-arena/logic-parser": [
+        "../../packages/logic-parser/src"
       ]
     }
   },

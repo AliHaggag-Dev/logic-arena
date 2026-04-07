@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import { Scene3D } from "./Scene3D";
-import CommandConsole from "./CommandConsole";
+import { CommandConsole } from "./CommandConsole";
 
 interface RobotState {
   id: string;
@@ -25,12 +25,17 @@ const Arena: React.FC = () => {
     robots: RobotState[];
     projectiles: ProjectileState[];
   }>({ robots: [], projectiles: [] });
+  const [firedTracer, setFiredTracer] = useState<{ robotId: string; targetPosition: { x: number; y: number; }; } | null>(null);
+  const [speechBubble, setSpeechBubble] = useState<{ robotId: string; message: string; } | null>(null);
 
   useEffect(() => {
     const socket = io("http://localhost:3001");
     socketRef.current = socket;
 
-    socket.on("connect", () => console.log("✅ Socket Connected!"));
+    socket.on("connect", () => {
+      console.log("✅ Socket Connected!");
+      socket.emit("join", { userId: socket.id });
+    });
 
     socket.on("gameState", (data: any) => {
       if (data && data.robots) {
@@ -38,15 +43,29 @@ const Arena: React.FC = () => {
           robots: Array.isArray(data.robots) ? [...data.robots] : [],
           projectiles: Array.isArray(data.projectiles) ? [...data.projectiles] : [],
         });
-      } else if (Array.isArray(data)) {
-        setGameState({ robots: [...data], projectiles: [] });
+      }
+    });
+
+    socket.on("logicExecuted", (data: { robotId: string; action: string }) => {
+      if (data.action === "FIRE") {
+        setGameState(current => {
+          const targetRobot = current.robots.find(r => r.id !== data.robotId);
+          if (targetRobot) {
+            setFiredTracer({ robotId: data.robotId, targetPosition: targetRobot.position });
+            setTimeout(() => setFiredTracer(null), 100);
+          }
+          return current;
+        });
+      } else if (data.action === "MOVE") {
+        setSpeechBubble({ robotId: data.robotId, message: data.action });
+        setTimeout(() => setSpeechBubble(null), 1000);
       }
     });
 
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, []); // Empty dependency array to run once on mount
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -111,6 +130,8 @@ const Arena: React.FC = () => {
         <Scene3D
           robots={gameState.robots}
           projectiles={gameState.projectiles}
+          firedTracer={firedTracer}
+          speechBubble={speechBubble}
         />
       </div>
 
