@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import { Scene3D } from "./Scene3D";
+import CommandConsole from "./CommandConsole";
 
 interface RobotState {
   id: string;
@@ -131,6 +132,8 @@ const Arena: React.FC = () => {
           LOGIC ARENA v0.4.0 [3D MODE ENABLED]
         </div>
       </div>
+
+      <CommandConsole socket={socketRef.current} robotId="bot-1" /> {/* Assuming bot-1 is the player-controlled robot */}
     </div>
   );
 };

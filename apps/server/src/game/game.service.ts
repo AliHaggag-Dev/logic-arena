@@ -5,6 +5,8 @@ import { GameLoop, Robot } from "@logic-arena/engine";
 @Injectable()
 export class GameService {
   private connectedClients: Map<string, Socket> = new Map();
+  private lastFireTime: Map<string, number> = new Map(); // Cooldown mechanism
+  private readonly FIRE_COOLDOWN_MS = 500; // 500ms cooldown
   private gameLoop: GameLoop;
 
   constructor() {
@@ -55,18 +57,38 @@ export class GameService {
     return this.gameLoop.getRobots();
   }
 
-  // Core Fire Logic: Spawns a projectile in the engine towards a target
   fire(robotId: string, targetX: number, targetY: number): void {
     const robots = this.gameLoop.getRobots();
     const robot = robots.find(r => r.id === robotId);
 
     if (robot && robot.health > 0) {
-      // Accessing the engine's spawnProjectile method
       this.gameLoop.spawnProjectile(
         robotId,
         { ...robot.position },
         { x: targetX, y: targetY }
       );
+    }
+  }
+
+  fireProjectile(robotId: string): void {
+    const now = Date.now();
+    const lastFire = this.lastFireTime.get(robotId) || 0;
+
+    if (now - lastFire < this.FIRE_COOLDOWN_MS) {
+      console.log(`Robot ${robotId} is on cooldown. Cannot fire.`);
+      return;
+    }
+
+    const robots = this.gameLoop.getRobots();
+    const robot = robots.find(r => r.id === robotId);
+    const targetRobot = robots.find(r => r.id !== robotId && r.health > 0); // Target another alive robot
+
+    if (robot && robot.health > 0 && targetRobot) {
+      this.fire(robotId, targetRobot.position.x, targetRobot.position.y);
+      this.lastFireTime.set(robotId, now);
+      console.log(`Robot ${robotId} manually fired at ${targetRobot.id}`);
+    } else {
+      console.log(`Robot ${robotId} cannot fire. No valid target or robot is dead.`);
     }
   }
 
