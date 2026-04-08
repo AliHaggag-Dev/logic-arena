@@ -3,6 +3,7 @@ import { Component, ReactNode, useEffect, useMemo, useRef, useState } from "reac
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, PerspectiveCamera, Html } from "@react-three/drei";
 import * as THREE from "three";
+import { useGameSounds } from "./hooks/useGameSounds";
 
 type RobotModelProps = {
   position: [number, number, number];
@@ -31,6 +32,8 @@ type RobotErrorBoundaryState = {
 const HIT_FLASH_DURATION = 0.22;
 const HIT_BURST_LIFETIME = 0.35;
 const HIT_BURST_PARTICLES = 12;
+const COLLISION_RADIUS = 30;
+const COLLISION_COOLDOWN = 0.35;
 
 class RobotErrorBoundary extends Component<RobotErrorBoundaryProps, RobotErrorBoundaryState> {
   state: RobotErrorBoundaryState = { hasError: false };
@@ -372,6 +375,10 @@ export const Scene3D = ({
   const arenaWidth = 20; // 800 / 40
   const arenaHeight = 15; // 600 / 40
 
+  const { playHit, playClang, playLaser } = useGameSounds({ volume: 0.5 });
+  const collisionCooldownRef = useRef<Map<string, number>>(new Map());
+  const lastLaserRef = useRef<string | null>(null);
+
   const [hitBursts, setHitBursts] = useState<HitBurst[]>([]);
   const hitFlashRef = useRef<Map<string, number>>(new Map());
   const prevHealthRef = useRef<Map<string, number>>(new Map());
@@ -396,10 +403,45 @@ export const Scene3D = ({
         setHitBursts(current => [...current, burst]);
         hitFlashRef.current.set(robot.id, now);
         setHitTick(tick => tick + 1);
+        playHit();
       }
       prevHealthRef.current.set(robot.id, robot.health);
     });
-  }, [robots]);
+  }, [robots, playHit]);
+
+  useEffect(() => {
+    const now = performance.now() / 1000;
+    const robotCount = robots.length;
+
+    for (let i = 0; i < robotCount; i += 1) {
+      for (let j = i + 1; j < robotCount; j += 1) {
+        const robotA = robots[i];
+        const robotB = robots[j];
+
+        const dx = robotA.position.x - robotB.position.x;
+        const dy = robotA.position.y - robotB.position.y;
+        const distance = Math.hypot(dx, dy);
+
+        if (distance <= COLLISION_RADIUS) {
+          const pairKey = [robotA.id, robotB.id].sort().join("|");
+          const lastPlayed = collisionCooldownRef.current.get(pairKey) || 0;
+          if (now - lastPlayed > COLLISION_COOLDOWN) {
+            playClang();
+            collisionCooldownRef.current.set(pairKey, now);
+          }
+        }
+      }
+    }
+  }, [robots, playClang]);
+
+  useEffect(() => {
+    if (!firedTracer) return;
+    const key = `${firedTracer.robotId}-${firedTracer.targetPosition.x}-${firedTracer.targetPosition.y}`;
+    if (lastLaserRef.current !== key) {
+      playLaser();
+      lastLaserRef.current = key;
+    }
+  }, [firedTracer, playLaser]);
 
   return (
     <div className="w-full h-screen bg-black">
