@@ -19,7 +19,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const robots = this.gameService.getGameState();
       const projectiles = this.gameService.getGameLoop().getProjectiles();
       this.server.emit("gameState", { robots, projectiles });
-    }, 16);
+    }, 50);
   }
 
   handleConnection(client: Socket) {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useMemo, useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import { Scene3D } from "./Scene3D";
 import { CommandConsole } from "./CommandConsole";
@@ -30,49 +30,105 @@ const Arena: React.FC = () => {
   const [firedTracer, setFiredTracer] = useState<{ robotId: string; targetPosition: { x: number; y: number; }; } | null>(null);
   const [speechBubble, setSpeechBubble] = useState<{ robotId: string; message: string; } | null>(null);
   const [selectedRobotId, setSelectedRobotId] = useState<string>("bot-1");
+  const gameStateRef = useRef<{ robots: RobotState[]; projectiles: ProjectileState[] }>({ robots: [], projectiles: [] });
+  const lastGameStateRef = useRef<{ robots: RobotState[]; projectiles: ProjectileState[] }>({ robots: [], projectiles: [] });
+  const lastGameStateUpdateRef = useRef(0);
+  const tracerTimeoutRef = useRef<number | null>(null);
+  const speechTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const socket = io("http://localhost:3001");
     socketRef.current = socket;
 
-    socket.on("connect", () => {
+    const handleConnect = () => {
       console.log("✅ Socket Connected!");
       socket.emit("join", { userId: socket.id });
-    });
+    };
 
-    socket.on("gameState", (data: any) => {
-      if (data && data.robots) {
-        setGameState({
-          robots: Array.isArray(data.robots)
-            ? data.robots.map((robot: RobotState) => ({
-                ...robot,
-                rotation: typeof robot.rotation === "number" ? robot.rotation : 0,
-                spotted: typeof robot.spotted === "boolean" ? robot.spotted : undefined,
-              }))
-            : [],
-          projectiles: Array.isArray(data.projectiles) ? [...data.projectiles] : [],
+    const handleGameState = (data: any) => {
+      if (!data || !data.robots) return;
+
+      const now = performance.now();
+      if (now - lastGameStateUpdateRef.current < 50) return;
+      lastGameStateUpdateRef.current = now;
+
+      const nextState = {
+        robots: Array.isArray(data.robots)
+          ? data.robots.map((robot: RobotState) => ({
+              ...robot,
+              rotation: typeof robot.rotation === "number" ? robot.rotation : 0,
+              spotted: typeof robot.spotted === "boolean" ? robot.spotted : undefined,
+            }))
+          : [],
+        projectiles: Array.isArray(data.projectiles) ? [...data.projectiles] : [],
+      };
+
+      const current = lastGameStateRef.current;
+      const hasRobotDiff = current.robots.length !== nextState.robots.length
+        || current.robots.some((robot, index) => {
+          const nextRobot = nextState.robots[index];
+          if (!nextRobot) return true;
+          return robot.id !== nextRobot.id
+            || robot.health !== nextRobot.health
+            || robot.rotation !== nextRobot.rotation
+            || robot.spotted !== nextRobot.spotted
+            || robot.position.x !== nextRobot.position.x
+            || robot.position.y !== nextRobot.position.y;
         });
-      }
-    });
 
-    socket.on("logicExecuted", (data: { robotId: string; action: string; message?: string }) => {
+      const hasProjectileDiff = current.projectiles.length !== nextState.projectiles.length
+        || current.projectiles.some((projectile, index) => {
+          const nextProjectile = nextState.projectiles[index];
+          if (!nextProjectile) return true;
+          return projectile.id !== nextProjectile.id
+            || projectile.position.x !== nextProjectile.position.x
+            || projectile.position.y !== nextProjectile.position.y;
+        });
+
+      if (!hasRobotDiff && !hasProjectileDiff) return;
+
+      lastGameStateRef.current = nextState;
+      gameStateRef.current = nextState;
+      setGameState(nextState);
+    };
+
+    const handleLogicExecuted = (data: { robotId: string; action: string; message?: string }) => {
       if (data.action === "FIRE") {
         setGameState(current => {
           const targetRobot = current.robots.find(r => r.id !== data.robotId);
           if (targetRobot) {
             setFiredTracer({ robotId: data.robotId, targetPosition: targetRobot.position });
-            setTimeout(() => setFiredTracer(null), 100);
+            if (tracerTimeoutRef.current !== null) {
+              window.clearTimeout(tracerTimeoutRef.current);
+            }
+            tracerTimeoutRef.current = window.setTimeout(() => setFiredTracer(null), 100);
           }
           return current;
         });
       }
 
       setSpeechBubble({ robotId: data.robotId, message: data.message ?? data.action });
-      setTimeout(() => setSpeechBubble(null), 1000);
-    });
+      if (speechTimeoutRef.current !== null) {
+        window.clearTimeout(speechTimeoutRef.current);
+      }
+      speechTimeoutRef.current = window.setTimeout(() => setSpeechBubble(null), 1000);
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("gameState", handleGameState);
+    socket.on("logicExecuted", handleLogicExecuted);
 
     return () => {
+      socket.off("connect", handleConnect);
+      socket.off("gameState", handleGameState);
+      socket.off("logicExecuted", handleLogicExecuted);
       socket.disconnect();
+      if (tracerTimeoutRef.current !== null) {
+        window.clearTimeout(tracerTimeoutRef.current);
+      }
+      if (speechTimeoutRef.current !== null) {
+        window.clearTimeout(speechTimeoutRef.current);
+      }
     };
   }, []); // Empty dependency array to run once on mount
 
@@ -92,8 +148,10 @@ const Arena: React.FC = () => {
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      const state = gameStateRef.current;
+
       // Draw Projectiles on Mini-map (Scaled down)
-      gameState.projectiles.forEach((p) => {
+      state.projectiles.forEach((p) => {
         ctx.beginPath();
         ctx.arc(p.position.x / 3, p.position.y / 3, 2, 0, Math.PI * 2);
         ctx.fillStyle = "#00FFFF";
@@ -102,7 +160,7 @@ const Arena: React.FC = () => {
       });
 
       // Draw Robots on Mini-map (Scaled down)
-      gameState.robots.forEach((robot) => {
+      state.robots.forEach((robot) => {
         if (robot.position) {
           // 800 / 256 = 3.125 (This is the perfect scale)
           const scale = 3.125;
@@ -145,16 +203,24 @@ const Arena: React.FC = () => {
 
     render();
     return () => cancelAnimationFrame(animationFrameId);
-  }, [gameState]);
+  }, []);
+
+  const availableRobots = useMemo(() => gameState.robots.map(r => r.id), [gameState.robots]);
+  const sceneProps = useMemo(() => ({
+    robots: gameState.robots,
+    projectiles: gameState.projectiles,
+    firedTracer,
+    speechBubble
+  }), [gameState.robots, gameState.projectiles, firedTracer, speechBubble]);
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Scene3D
-          robots={gameState.robots}
-          projectiles={gameState.projectiles}
-          firedTracer={firedTracer}
-          speechBubble={speechBubble}
+          robots={sceneProps.robots}
+          projectiles={sceneProps.projectiles}
+          firedTracer={sceneProps.firedTracer}
+          speechBubble={sceneProps.speechBubble}
         />
       </div>
 
@@ -180,7 +246,7 @@ const Arena: React.FC = () => {
       <CommandConsole
         socket={socketRef.current}
         robotId={selectedRobotId}
-        availableRobots={gameState.robots.map(r => r.id)}
+        availableRobots={availableRobots}
         onRobotChange={setSelectedRobotId}
       />
     </div>

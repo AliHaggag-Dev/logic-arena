@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { memo, useState, useRef, useEffect } from "react";
 import { Socket } from "socket.io-client";
 
 interface CommandConsoleProps {
@@ -47,7 +47,7 @@ const REFERENCE_ITEMS = [
     "bullet_speed"
 ];
 
-export const CommandConsole: React.FC<CommandConsoleProps> = ({ socket, robotId, availableRobots, onRobotChange }) => {
+const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({ socket, robotId, availableRobots, onRobotChange }) => {
     const [commandInput, setCommandInput] = useState<string>("");
     const [output, setOutput] = useState<string[]>([]);
     const outputRef = useRef<HTMLDivElement>(null);
@@ -98,13 +98,19 @@ export const CommandConsole: React.FC<CommandConsoleProps> = ({ socket, robotId,
     };
 
     useEffect(() => {
-        if (socket) {
-            socket.on("logicExecuted", (data: { robotId: string; action: string }) => {
-                if (data.robotId === robotId) {
-                    setOutput((prev) => [...prev, `[${data.robotId}] Logic Triggered: ${data.action}`]);
-                }
-            });
-        }
+        if (!socket) return;
+
+        const handleLogicExecuted = (data: { robotId: string; action: string }) => {
+            if (data.robotId === robotId) {
+                setOutput((prev) => [...prev, `[${data.robotId}] Logic Triggered: ${data.action}`]);
+            }
+        };
+
+        socket.on("logicExecuted", handleLogicExecuted);
+
+        return () => {
+            socket.off("logicExecuted", handleLogicExecuted);
+        };
     }, [socket, robotId]);
 
     useEffect(() => {
@@ -241,5 +247,7 @@ export const CommandConsole: React.FC<CommandConsoleProps> = ({ socket, robotId,
         </div>
     );
 };
+
+export const CommandConsole = memo(CommandConsoleComponent);
 
 export default CommandConsole;

@@ -1,5 +1,5 @@
 "use client";
-import { Component, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Component, ReactNode, memo, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, PerspectiveCamera, Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -65,12 +65,44 @@ const FallbackRobot = ({ position, color }: { position: [number, number, number]
   </mesh>
 );
 
+const HealthBarSprite = ({ health }: { health: number }) => {
+  const { canvas, texture } = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 12;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.needsUpdate = true;
+    return { canvas, texture };
+  }, []);
+
+  useEffect(() => {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#444";
+    ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
+
+    const ratio = Math.max(0, Math.min(1, health / 100));
+    ctx.fillStyle = health > 30 ? "#00FF00" : "#FF0000";
+    ctx.fillRect(1, 1, (canvas.width - 2) * ratio, canvas.height - 2);
+    texture.needsUpdate = true;
+  }, [canvas, texture, health]);
+
+  return (
+    <sprite scale={[0.8, 0.12, 1]}>
+      <spriteMaterial map={texture} transparent depthWrite={false} />
+    </sprite>
+  );
+};
+
 const HitBurstEffect = ({
-  burst,
-  now
+  burst
 }: {
   burst: HitBurst;
-  now: number;
 }) => {
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
@@ -102,7 +134,8 @@ const HitBurstEffect = ({
   }, [burst.position]);
 
   useFrame(() => {
-    const timeAlive = Math.max(0, now - burst.createdAt);
+    const currentTime = performance.now() / 1000;
+    const timeAlive = Math.max(0, currentTime - burst.createdAt);
     const progress = Math.min(1, timeAlive / HIT_BURST_LIFETIME);
 
     const positionAttr = pointsRef.current?.geometry.getAttribute("position") as THREE.BufferAttribute | undefined;
@@ -146,22 +179,23 @@ const HitParticles = ({
   setBursts: React.Dispatch<React.SetStateAction<HitBurst[]>>;
 }) => {
   useFrame(() => {
+    if (bursts.length === 0) return;
     const now = performance.now() / 1000;
+    const hasExpired = bursts.some(burst => now - burst.createdAt >= HIT_BURST_LIFETIME);
+    if (!hasExpired) return;
     setBursts(current => current.filter(burst => now - burst.createdAt < HIT_BURST_LIFETIME));
   });
-
-  const now = performance.now() / 1000;
 
   return (
     <>
       {bursts.map(burst => (
-        <HitBurstEffect key={burst.id} burst={burst} now={now} />
+        <HitBurstEffect key={burst.id} burst={burst} />
       ))}
     </>
   );
 };
 
-const RobotModel = ({ position, color, health, velocity, rotation, hitTimestamp, spotted }: RobotModelProps) => {
+const RobotModel = memo(({ position, color, health, velocity, rotation, hitTimestamp, spotted }: RobotModelProps) => {
   const groupRef = useRef<THREE.Group>(null);
   const basePosition = useRef(new THREE.Vector3(...position));
   const hoverOffset = useRef(Math.random() * Math.PI * 2);
@@ -316,26 +350,12 @@ const RobotModel = ({ position, color, health, velocity, rotation, hitTimestamp,
         </Html>
       )}
 
-      <Html distanceFactor={10} position={[0, 1.0, 0]} center>
-        <div style={{
-          width: "40px",
-          height: "5px",
-          background: "rgba(0, 0, 0, 0.7)",
-          border: "1px solid #444",
-          borderRadius: "2px",
-          overflow: "hidden"
-        }}>
-          <div style={{
-            width: `${health}%`,
-            height: "100%",
-            background: health > 30 ? "#00FF00" : "#FF0000",
-            transition: "width 0.2s ease-out"
-          }} />
-        </div>
-      </Html>
+      <group position={[0, 1.0, 0]}>
+        <HealthBarSprite health={health} />
+      </group>
     </group>
   );
-};
+});
 
 const LaserModel = ({ position }: { position: [number, number, number] }) => (
   <mesh position={position}>
@@ -395,7 +415,7 @@ const SpeechBubble = ({ position, message }: { position: [number, number, number
   );
 };
 
-export const Scene3D = ({
+const Scene3DComponent = ({
   robots,
   projectiles = [],
   firedTracer = null,
@@ -407,8 +427,13 @@ export const Scene3D = ({
   speechBubble?: { robotId: string; message: string; } | null
 }) => {
   // Arena units based on 800x600 engine (Scale 1 unit = 40px)
-  const arenaWidth = 20; // 800 / 40
-  const arenaHeight = 15; // 600 / 40
+  const arena = useMemo(() => ({ width: 20, height: 15 }), []);
+  const boundaryPoints = useMemo(() => new Float32Array([
+    -10, 0, -7.5,
+    10, 0, -7.5,
+    10, 0, 7.5,
+    -10, 0, 7.5
+  ]), []);
 
   const { playHit, playClang, playLaser } = useGameSounds({ volume: 0.5 });
   const collisionCooldownRef = useRef<Map<string, number>>(new Map());
@@ -417,7 +442,6 @@ export const Scene3D = ({
   const [hitBursts, setHitBursts] = useState<HitBurst[]>([]);
   const hitFlashRef = useRef<Map<string, number>>(new Map());
   const prevHealthRef = useRef<Map<string, number>>(new Map());
-  const [, setHitTick] = useState(0);
 
   useEffect(() => {
     const now = performance.now() / 1000;
@@ -437,7 +461,6 @@ export const Scene3D = ({
         };
         setHitBursts(current => [...current, burst]);
         hitFlashRef.current.set(robot.id, now);
-        setHitTick(tick => tick + 1);
         playHit();
       }
       prevHealthRef.current.set(robot.id, robot.health);
@@ -532,7 +555,7 @@ export const Scene3D = ({
 
         {/* Arena Floor - Matches Engine Bounds */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
-          <planeGeometry args={[arenaWidth, arenaHeight]} />
+          <planeGeometry args={[arena.width, arena.height]} />
           <meshBasicMaterial color="#0a0a0a" />
         </mesh>
 
@@ -543,15 +566,7 @@ export const Scene3D = ({
               attach="attributes-position"
               count={4}
               itemSize={3}
-              args={[
-                new Float32Array([
-                  -10, 0, -7.5,
-                  10, 0, -7.5,
-                  10, 0, 7.5,
-                  -10, 0, 7.5
-                ]),
-                3
-              ]}
+              args={[boundaryPoints, 3]}
             />
           </bufferGeometry>
           <lineBasicMaterial attach="material" color="#00FFFF" linewidth={2} />
@@ -631,3 +646,5 @@ export const Scene3D = ({
     </div>
   );
 };
+
+export const Scene3D = memo(Scene3DComponent);
