@@ -97,3 +97,20 @@ Finalized the core user experience by merging high-performance visuals with a re
 
 ### Current Status:
 - The Arena is now **Fully Interactive & Battle-Ready**. Players receive instant visual and auditory confirmation for every logical event. The foundation is rock-solid for the next massive leap: **Advanced AI Tactics (v1.0.0 Pre-Alpha)**.
+
+## [0.8.0] - The Sentient Intelligence Update - 2026-04-09
+
+A massive leap from reactive bots to intelligent autonomous agents with full sensory and tactical capabilities.
+
+### Technical Scars and Resolutions:
+- **Issue: The Parser Bottleneck:** Fixed a major bug where commands on the same line (e.g., `MOVE FIRE`) were ignored. Resolved by implementing mandatory line-break appending (`\n`).
+- **Issue: Type Mismatch (TS2339):** Resolved TypeScript build errors by implementing proper type guards for `ActionStatements` and `SetStatements` on the server.
+- **Issue: Visual De-sync:** Fixed the "Static Vision" bug by binding the 3D Vision Cone and Robot Mesh directly to the `robot.rotation` state.
+- **Issue: UI Overflow:** Re-engineered the Command Library to use a **Drop-up** mechanism with hidden scrollbars for a cleaner "Hacker" aesthetic.
+
+### Key Technical Achievement:
+- **Turing-Complete-ish Control:** The AliScript engine now handles complex, stateful behaviors, making the robots 100% script-driven. No default movement; every twitch is commanded by logic.
+
+### Current Status:
+- The system is now a **Stable Tactical Simulator**. We have FOV, Logic, VFX, and Audio working in perfect harmony.
+- Ready for: **v1.2.0 - Pathfinding & Obstacle Avoidance**.
