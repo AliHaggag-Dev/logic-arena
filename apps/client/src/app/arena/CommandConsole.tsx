@@ -8,11 +8,59 @@ interface CommandConsoleProps {
     onRobotChange: (id: string) => void;
 }
 
+const COMMAND_DOCS: Record<string, string[]> = {
+    Movement: [
+        "MOVE",
+        "STOP",
+        "MOVE_FAST",
+        "BACKUP"
+    ],
+    Attack: [
+        "FIRE",
+        "BURST_FIRE",
+        "IF spotted THEN FIRE",
+        "IF distance < 500 THEN FIRE"
+    ],
+    "Advanced Combat": [
+        "IF health < 20 THEN STOP"
+    ],
+    Tactics: [
+        "IF spotted THEN MOVE"
+    ],
+    "Evasion (الهروب)": [
+        "IF health < 30 THEN MOVE",
+        "IF distance < 200 THEN MOVE"
+    ],
+    Intelligence: [
+        "SET rotation = rotation + 0.1",
+        "IF NOT spotted THEN SET rotation = rotation + 0.1"
+    ]
+};
+
+const REFERENCE_ITEMS = [
+    "health",
+    "distance",
+    "spotted",
+    "rotation",
+    "target_vx",
+    "target_vy",
+    "bullet_speed"
+];
+
 export const CommandConsole: React.FC<CommandConsoleProps> = ({ socket, robotId, availableRobots, onRobotChange }) => {
     const [commandInput, setCommandInput] = useState<string>("");
     const [output, setOutput] = useState<string[]>([]);
     const outputRef = useRef<HTMLDivElement>(null);
     const [scriptInput, setScriptInput] = useState<string>("");
+    const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+    const [isReferenceOpen, setIsReferenceOpen] = useState(false);
+
+    const appendScriptLine = (line: string) => {
+        setScriptInput((prev) => {
+            const sanitizedPrev = prev.trim();
+            return sanitizedPrev ? `${sanitizedPrev}\n${line}` : `${line}\n`;
+        });
+    };
 
     const prebuiltScripts = {
         "Safe Mode": "IF health < 50 THEN MOVE",
@@ -66,7 +114,7 @@ export const CommandConsole: React.FC<CommandConsoleProps> = ({ socket, robotId,
     }, [output]);
 
     return (
-        <div className="absolute bottom-4 left-4 w-96 bg-black/70 border border-green-500/30 p-4 font-mono text-sm text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.2)] z-20 backdrop-blur-sm">
+        <div className="absolute bottom-6 left-6 w-96 max-h-[70vh] bg-black/70 border border-green-500/30 p-4 font-mono text-sm text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.2)] z-20 backdrop-blur-sm">
             <div className="flex gap-2 mb-4 border-b border-green-500/20 pb-2">
                 {availableRobots.map(id => (
                     <button
@@ -82,7 +130,7 @@ export const CommandConsole: React.FC<CommandConsoleProps> = ({ socket, robotId,
                     </button>
                 ))}
             </div>
-            <div className="h-48 overflow-y-auto pr-2 mb-2" ref={outputRef}>
+            <div className="h-40 overflow-y-auto pr-2 mb-2 no-scrollbar" ref={outputRef}>
                 {output.map((line, index) => (
                     <p key={index} className={line.startsWith("Command Sent:") || line.startsWith("Script Deployed:") || line.includes("Logic Triggered:") ? "text-blue-400" : ""}>
                         {line}
@@ -107,13 +155,68 @@ export const CommandConsole: React.FC<CommandConsoleProps> = ({ socket, robotId,
                     value={scriptInput}
                     onChange={(e) => setScriptInput(e.target.value)}
                 ></textarea>
-                <button
-                    type="button"
-                    onClick={() => handleDeployBrain()}
-                    className="mt-2 w-full px-4 py-2 bg-purple-500/10 border border-purple-500/50 text-purple-400 font-mono text-sm hover:bg-purple-500/30 transition-all rounded-md uppercase tracking-wider shadow-[0_0_15px_rgba(192,34,197,0.2)]"
-                >
-                    Deploy Brain
-                </button>
+                <div className="mt-2 flex gap-2 relative">
+                    <button
+                        type="button"
+                        onClick={() => handleDeployBrain()}
+                        className="flex-1 px-4 py-2 bg-purple-500/10 border border-purple-500/50 text-purple-400 font-mono text-sm hover:bg-purple-500/30 transition-all rounded-md uppercase tracking-wider shadow-[0_0_15px_rgba(192,34,197,0.2)]"
+                    >
+                        Deploy Brain
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setIsLibraryOpen((prev) => !prev)}
+                        className="flex-1 px-4 py-2 bg-cyan-500/10 border border-cyan-400/40 text-cyan-300 font-mono text-sm hover:bg-cyan-500/30 transition-all rounded-md uppercase tracking-wider shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                    >
+                        📚 Commands
+                    </button>
+                </div>
+
+                {isLibraryOpen && (
+                    <div className="absolute bottom-full right-0 mb-2 w-full max-h-[300px] overflow-y-auto border border-cyan-500/20 bg-black/80 p-2 text-xs text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.3)] no-scrollbar z-40">
+                        {Object.entries(COMMAND_DOCS).map(([category, commands]) => (
+                            <div key={category} className="mb-3 last:mb-0">
+                                <p className="text-cyan-300 uppercase tracking-widest text-[10px]">{category}</p>
+                                <div className="mt-1 flex flex-col gap-1">
+                                    {commands.map((command) => (
+                                        <button
+                                            key={command}
+                                            type="button"
+                                            title="Click to load into editor"
+                                            onClick={() => appendScriptLine(command)}
+                                            className="text-left rounded border border-cyan-500/20 bg-black/40 px-2 py-1 hover:bg-cyan-500/10 hover:text-cyan-100 transition-all"
+                                        >
+                                            {command}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <div className="mt-3 border border-green-500/20 bg-black/40 text-[10px] text-green-300">
+                    <button
+                        type="button"
+                        onClick={() => setIsReferenceOpen((prev) => !prev)}
+                        className="w-full px-2 py-2 flex items-center justify-between uppercase tracking-widest text-green-400 text-[10px] border-b border-green-500/20 hover:bg-green-500/10 transition-all"
+                    >
+                        <span>Reference</span>
+                        <span>{isReferenceOpen ? "−" : "+"}</span>
+                    </button>
+                    {isReferenceOpen && (
+                        <div className="p-2">
+                            <div className="flex flex-wrap gap-2 text-green-200">
+                                {REFERENCE_ITEMS.map((item) => (
+                                    <span key={item} className="px-2 py-0.5 border border-green-500/30 rounded">
+                                        {item}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 <div className="flex flex-wrap gap-2 mt-2">
                     {Object.entries(prebuiltScripts).map(([name, script]) => (
                         <button
@@ -127,9 +230,16 @@ export const CommandConsole: React.FC<CommandConsoleProps> = ({ socket, robotId,
                     ))}
                 </div>
             </div>
+            <style jsx global>{`
+                .no-scrollbar {
+                    scrollbar-width: none;
+                }
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
         </div>
     );
 };
 
-// Ensure default export is still present if other modules import it as such
 export default CommandConsole;

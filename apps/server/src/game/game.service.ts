@@ -11,7 +11,9 @@ import {
   Identifier,
   StringLiteral,
   IfStatement,
-  AssignmentStatement
+  AssignmentStatement,
+  ActionStatement,
+  Expression
 } from "../../../../packages/logic-parser/src";
 
 @Injectable()
@@ -19,6 +21,8 @@ export class GameService {
   private connectedClients: Map<string, Socket> = new Map();
   private lastFireTime: Map<string, number> = new Map();
   private readonly FIRE_COOLDOWN_MS = 500;
+  private readonly MOVE_SPEED = 150;
+  private readonly MOVE_FAST_MULTIPLIER = 2;
   private robotLogic: Map<string, Program> = new Map();
   private lastExecutedAction: Map<string, string> = new Map(); // Store the last executed action for feedback
   private gameLoop: GameLoop;
@@ -31,7 +35,7 @@ export class GameService {
     this.gameLoop.addRobot({
       id: "bot-1",
       position: { x: 100, y: 100 },
-      velocity: { x: 150, y: 120 },
+      velocity: { x: 0, y: 0 },
       color: "#00FFFF",
       health: 100
     } as Robot);
@@ -39,7 +43,7 @@ export class GameService {
     this.gameLoop.addRobot({
       id: "bot-2",
       position: { x: 600, y: 400 },
-      velocity: { x: -120, y: 150 },
+      velocity: { x: 0, y: 0 },
       color: "#FF00FF",
       health: 100
     } as Robot);
@@ -51,10 +55,10 @@ export class GameService {
       const robots = this.gameLoop.getRobots();
 
       robots.forEach(robot => {
-        const logic = this.robotLogic.get(robot.id);
-        if (logic && robot.health > 0) {
-          this.evaluateLogic(robot.id, logic);
-        }
+      const logic = this.robotLogic.get(robot.id);
+      if (logic && robot.health > 0) {
+        this.evaluateLogic(robot.id, logic);
+      }
       });
     }, 16);
   }
@@ -146,11 +150,28 @@ export class GameService {
     const robotStates = this.logicStates.get(robotId)!;
     const robotMemory = this.robotMemory.get(robotId)!;
 
+    if (typeof (robot as any).rotation !== "number") {
+      (robot as any).rotation = 0;
+    }
+    if (!robotMemory.has("rotation")) {
+      robotMemory.set("rotation", (robot as any).rotation);
+    }
+
     program.body.forEach((statement, index) => {
       if (statement.type === NodeType.AssignmentStatement) {
         const assignment = statement as AssignmentStatement;
-        const value = this.resolveValue(robotId, robot, assignment.value);
+        const value = this.evaluateExpression(robotId, robot, assignment.value);
         robotMemory.set(assignment.name.value, value);
+
+        if (assignment.name.value === "rotation" && typeof value === "number") {
+          (robot as any).rotation = value;
+        }
+        return;
+      }
+
+      if (statement.type === NodeType.ActionStatement) {
+        const actionStatement = statement as ActionStatement;
+        this.executeAction(robotId, actionStatement.consequence);
         return;
       }
 
@@ -158,7 +179,7 @@ export class GameService {
         const ifStatement = statement as IfStatement;
 
         // 1. Evaluate current condition
-        const isConditionMet = this.evaluateComparison(robotId, robot, ifStatement.condition);
+        const isConditionMet = this.evaluateCondition(robotId, robot, ifStatement.condition);
 
         // 2. Get previous state of this specific IF statement
         const wasConditionMetBefore = robotStates.get(index.toString()) || false;
@@ -174,22 +195,49 @@ export class GameService {
     });
   }
 
-  private evaluateComparison(robotId: string, robot: Robot, expression: ComparisonExpression): boolean {
-    const leftValue = this.resolveValue(robotId, robot, expression.left);
-    const rightValue = this.resolveValue(robotId, robot, expression.right);
-
-    // Dynamic Debugging: Logs real-time distance to Server Terminal
-    if (expression.left.type === NodeType.Identifier && expression.left.value === 'distance') {
-      // console.log(`[REAL-TIME DEBUG] Distance for ${robot.id}: ${Math.round(leftValue)}`);
+  private evaluateCondition(robotId: string, robot: Robot, expression: Expression): boolean {
+    const value = this.evaluateExpression(robotId, robot, expression);
+    if (typeof value === "boolean") {
+      return value;
     }
+    return Boolean(value);
+  }
 
-    if (typeof leftValue !== typeof rightValue) return false;
+  private evaluateExpression(robotId: string, robot: Robot, expression: Expression): any {
+    switch (expression.type) {
+      case NodeType.NumberLiteral:
+      case NodeType.StringLiteral:
+      case NodeType.BooleanLiteral:
+        return expression.value;
+      case NodeType.Identifier:
+        return this.resolveValue(robotId, robot, expression);
+      case NodeType.BinaryExpression: {
+        const left = this.evaluateExpression(robotId, robot, expression.left);
+        const right = this.evaluateExpression(robotId, robot, expression.right);
+        if (typeof left !== "number" || typeof right !== "number") {
+          return undefined;
+        }
+        return expression.operator === "+" ? left + right : left - right;
+      }
+      case NodeType.UnaryExpression: {
+        const argument = this.evaluateExpression(robotId, robot, expression.argument);
+        return expression.operator === "NOT" ? !Boolean(argument) : undefined;
+      }
+      case NodeType.ComparisonExpression: {
+        const leftValue = this.evaluateExpression(robotId, robot, expression.left);
+        const rightValue = this.evaluateExpression(robotId, robot, expression.right);
 
-    switch (expression.operator) {
-      case "<": return leftValue < rightValue;
-      case ">": return leftValue > rightValue;
-      case "==": return leftValue === rightValue;
-      default: return false;
+        if (typeof leftValue !== typeof rightValue) return false;
+
+        switch (expression.operator) {
+          case "<": return leftValue < rightValue;
+          case ">": return leftValue > rightValue;
+          case "==": return leftValue === rightValue;
+          default: return false;
+        }
+      }
+      default:
+        return undefined;
     }
   }
 
@@ -217,9 +265,31 @@ export class GameService {
       case "FIRE":
         this.fireProjectile(robotId);
         break;
-      case "MOVE":
-        // Future Vector-based pathfinding integration
+      case "BURST_FIRE":
+        this.fireProjectile(robotId);
         break;
+      case "STOP": {
+        const robot = this.gameLoop.getRobots().find(r => r.id === robotId);
+        if (robot) {
+          robot.velocity.x = 0;
+          robot.velocity.y = 0;
+        }
+        break;
+      }
+      case "MOVE":
+      case "MOVE_FAST":
+      case "BACKUP": {
+        const robot = this.gameLoop.getRobots().find(r => r.id === robotId);
+        if (robot) {
+          const rotation = typeof (robot as any).rotation === "number" ? (robot as any).rotation : 0;
+          const speedMultiplier = actionCommand === "MOVE_FAST" ? this.MOVE_FAST_MULTIPLIER : 1;
+          const directionMultiplier = actionCommand === "BACKUP" ? -1 : 1;
+          const speed = this.MOVE_SPEED * speedMultiplier * directionMultiplier;
+          robot.velocity.x = Math.cos(rotation) * speed;
+          robot.velocity.y = Math.sin(rotation) * speed;
+        }
+        break;
+      }
       default:
         console.warn(`[Logic Error] Unknown command: ${actionCommand}`);
     }
@@ -240,6 +310,35 @@ export class GameService {
 
       return currentDistance < closestDistance ? current : closest;
     });
+  }
+
+  private isTargetSpotted(robot: Robot, target: Robot | null): boolean {
+    if (!target) return false;
+
+    const dx = target.position.x - robot.position.x;
+    const dy = target.position.y - robot.position.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance === 0) return true;
+    if (distance > 1000) return false;
+
+    const rotation = typeof (robot as any).rotation === "number" ? (robot as any).rotation : null;
+    let fx = 0;
+    let fy = 0;
+
+    if (rotation !== null) {
+      fx = Math.cos(rotation);
+      fy = Math.sin(rotation);
+    } else {
+      const vx = robot.velocity.x;
+      const vy = robot.velocity.y;
+      const speed = Math.hypot(vx, vy);
+      if (speed < 0.001) return false;
+      fx = vx / speed;
+      fy = vy / speed;
+    }
+
+    const dot = (fx * dx + fy * dy) / distance;
+    return dot >= 0.5;
   }
 
   private resolveValue(robotId: string, robot: Robot, node: Identifier | NumberLiteral | StringLiteral): any {
@@ -265,12 +364,16 @@ export class GameService {
           return Infinity;
         case "health":
           return robot.health;
+        case "rotation":
+          return typeof (robot as any).rotation === "number" ? (robot as any).rotation : 0;
         case "target_vx":
           return target ? target.velocity.x : 0;
         case "target_vy":
           return target ? target.velocity.y : 0;
         case "bullet_speed":
           return 400;
+        case "spotted":
+          return this.isTargetSpotted(robot, target);
         default:
           return undefined;
       }

@@ -23,10 +23,14 @@ export enum NodeType {
   Identifier = "Identifier",
   NumberLiteral = "NumberLiteral",
   StringLiteral = "StringLiteral",
+  BooleanLiteral = "BooleanLiteral",
   AssignmentStatement = "AssignmentStatement",
+  ActionStatement = "ActionStatement",
+  BinaryExpression = "BinaryExpression",
+  UnaryExpression = "UnaryExpression",
 }
 
-export type Expression = Identifier | NumberLiteral | StringLiteral | ComparisonExpression | ActionExpression;
+export type Expression = Identifier | NumberLiteral | StringLiteral | BooleanLiteral | BinaryExpression | UnaryExpression | ComparisonExpression | ActionExpression;
 
 export interface BaseNode {
   type: NodeType;
@@ -38,7 +42,12 @@ export interface Statement extends BaseNode {
 export interface AssignmentStatement extends Statement {
   type: NodeType.AssignmentStatement;
   name: Identifier;
-  value: Identifier | NumberLiteral | StringLiteral;
+  value: Expression;
+}
+
+export interface ActionStatement extends Statement {
+  type: NodeType.ActionStatement;
+  consequence: ActionExpression;
 }
 
 export interface Program extends Statement {
@@ -48,21 +57,34 @@ export interface Program extends Statement {
 
 export interface IfStatement extends Statement {
   type: NodeType.IfStatement;
-  condition: ComparisonExpression;
+  condition: Expression;
   consequence: ActionExpression;
 }
 
 export interface ComparisonExpression extends BaseNode {
   type: NodeType.ComparisonExpression;
-  left: Identifier | NumberLiteral;
+  left: Expression;
   operator: string;
-  right: Identifier | NumberLiteral;
+  right: Expression;
 }
 
 export interface ActionExpression extends BaseNode {
   type: NodeType.ActionExpression;
   command: string;
   args?: (Identifier | NumberLiteral | StringLiteral)[];
+}
+
+export interface BinaryExpression extends BaseNode {
+  type: NodeType.BinaryExpression;
+  left: Expression;
+  operator: string;
+  right: Expression;
+}
+
+export interface UnaryExpression extends BaseNode {
+  type: NodeType.UnaryExpression;
+  operator: string;
+  argument: Expression;
 }
 
 export interface Identifier extends BaseNode {
@@ -78,4 +100,9 @@ export interface NumberLiteral extends BaseNode {
 export interface StringLiteral extends BaseNode {
   type: NodeType.StringLiteral;
   value: string;
+}
+
+export interface BooleanLiteral extends BaseNode {
+  type: NodeType.BooleanLiteral;
+  value: boolean;
 }

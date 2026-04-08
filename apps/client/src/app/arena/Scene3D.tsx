@@ -10,7 +10,9 @@ type RobotModelProps = {
   color: string;
   health: number;
   velocity: { x: number; y: number };
+  rotation?: number;
   hitTimestamp?: number | null;
+  spotted?: boolean;
 };
 
 type HitBurst = {
@@ -34,6 +36,8 @@ const HIT_BURST_LIFETIME = 0.35;
 const HIT_BURST_PARTICLES = 12;
 const COLLISION_RADIUS = 30;
 const COLLISION_COOLDOWN = 0.35;
+const FOV_DISTANCE = 1000;
+const FOV_DOT_THRESHOLD = Math.cos(Math.PI / 6);
 
 class RobotErrorBoundary extends Component<RobotErrorBoundaryProps, RobotErrorBoundaryState> {
   state: RobotErrorBoundaryState = { hasError: false };
@@ -157,7 +161,7 @@ const HitParticles = ({
   );
 };
 
-const RobotModel = ({ position, color, health, velocity, hitTimestamp }: RobotModelProps) => {
+const RobotModel = ({ position, color, health, velocity, rotation, hitTimestamp, spotted }: RobotModelProps) => {
   const groupRef = useRef<THREE.Group>(null);
   const basePosition = useRef(new THREE.Vector3(...position));
   const hoverOffset = useRef(Math.random() * Math.PI * 2);
@@ -179,15 +183,28 @@ const RobotModel = ({ position, color, health, velocity, hitTimestamp }: RobotMo
     baseColorRef.current.set(color);
   }, [color]);
 
+  const resolveRotation = (value?: number) => {
+    if (typeof value !== "number" || Number.isNaN(value)) {
+      return null;
+    }
+    return Math.abs(value) > Math.PI * 2 ? THREE.MathUtils.degToRad(value) : value;
+  };
+
   useFrame((state, delta) => {
     const group = groupRef.current;
     if (!group) return;
 
-    const speed = Math.hypot(velocity.x, velocity.y);
-    if (speed > 0.001) {
-      const targetRotation = -Math.atan2(velocity.y, velocity.x);
+    const targetRotation = resolveRotation(rotation);
+    if (targetRotation !== null) {
       const lerpFactor = 1 - Math.pow(0.001, delta);
       group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, targetRotation, lerpFactor);
+    } else {
+      const speed = Math.hypot(velocity.x, velocity.y);
+      if (speed > 0.001) {
+        const fallbackRotation = -Math.atan2(velocity.y, velocity.x);
+        const lerpFactor = 1 - Math.pow(0.001, delta);
+        group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, fallbackRotation, lerpFactor);
+      }
     }
 
     const hover = Math.sin(state.clock.elapsedTime * 2 + hoverOffset.current) * 0.05;
@@ -262,6 +279,11 @@ const RobotModel = ({ position, color, health, velocity, hitTimestamp }: RobotMo
         <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={2.5} />
       </mesh>
 
+      <mesh position={[0.4, 0.2, 0]} rotation={[0, 0, -Math.PI / 2]}>
+        <coneGeometry args={[0.6, 1.2, 16, 1, true]} />
+        <meshBasicMaterial color={color} transparent opacity={0.12} depthWrite={false} />
+      </mesh>
+
       <mesh position={[-0.25, 0.05, -0.25]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.06, 0.08, 0.12, 12]} />
         <meshStandardMaterial ref={thrusterMaterialRef(0)} color="#1a1a1a" emissive="#00FFFF" emissiveIntensity={0.3} />
@@ -280,6 +302,19 @@ const RobotModel = ({ position, color, health, velocity, hitTimestamp }: RobotMo
       </mesh>
 
       <pointLight position={[0, 0.4, 0]} intensity={1.8} distance={3} color={color} />
+
+      {spotted && (
+        <Html distanceFactor={10} position={[0, 1.25, 0]} center>
+          <div style={{
+            fontSize: "14px",
+            color: "#FF3B3B",
+            fontWeight: 700,
+            textShadow: "0 0 6px rgba(255, 59, 59, 0.8)"
+          }}>
+            !
+          </div>
+        </Html>
+      )}
 
       <Html distanceFactor={10} position={[0, 1.0, 0]} center>
         <div style={{
@@ -443,6 +478,42 @@ export const Scene3D = ({
     }
   }, [firedTracer, playLaser]);
 
+  const getClosestTarget = (robot: any) => {
+    const targets = robots.filter((other: any) => other.id !== robot.id && other.health > 0);
+    if (targets.length === 0) return null;
+
+    return targets.reduce((closest: any, current: any) => {
+      const closestDx = robot.position.x - closest.position.x;
+      const closestDy = robot.position.y - closest.position.y;
+      const currentDx = robot.position.x - current.position.x;
+      const currentDy = robot.position.y - current.position.y;
+
+      const closestDistance = closestDx * closestDx + closestDy * closestDy;
+      const currentDistance = currentDx * currentDx + currentDy * currentDy;
+
+      return currentDistance < closestDistance ? current : closest;
+    });
+  };
+
+  const isSpotted = (robot: any) => {
+    const target = getClosestTarget(robot);
+    if (!target) return false;
+
+    const dx = target.position.x - robot.position.x;
+    const dy = target.position.y - robot.position.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance === 0) return true;
+    if (distance > FOV_DISTANCE) return false;
+
+    const vx = robot.velocity?.x ?? 0;
+    const vy = robot.velocity?.y ?? 0;
+    const speed = Math.hypot(vx, vy);
+    if (speed < 0.001) return false;
+
+    const dot = (vx * dx + vy * dy) / (speed * distance);
+    return dot >= FOV_DOT_THRESHOLD;
+  };
+
   return (
     <div className="w-full h-screen bg-black">
       <Canvas dpr={[1, 1.5]} gl={{ powerPreference: "high-performance" }}>
@@ -506,7 +577,9 @@ export const Scene3D = ({
                 color={robot.color}
                 health={robot.health}
                 velocity={robot.velocity ?? { x: 0, y: 0 }}
+                rotation={typeof robot.rotation === "number" ? robot.rotation : undefined}
                 hitTimestamp={hitFlashRef.current.get(robot.id)}
+                spotted={isSpotted(robot)}
               />
             </RobotErrorBoundary>
           );

@@ -10,6 +10,8 @@ interface RobotState {
   position: { x: number; y: number };
   color: string;
   health: number;
+  rotation: number;
+  spotted?: boolean;
 }
 
 interface ProjectileState {
@@ -41,13 +43,19 @@ const Arena: React.FC = () => {
     socket.on("gameState", (data: any) => {
       if (data && data.robots) {
         setGameState({
-          robots: Array.isArray(data.robots) ? [...data.robots] : [],
+          robots: Array.isArray(data.robots)
+            ? data.robots.map((robot: RobotState) => ({
+                ...robot,
+                rotation: typeof robot.rotation === "number" ? robot.rotation : 0,
+                spotted: typeof robot.spotted === "boolean" ? robot.spotted : undefined,
+              }))
+            : [],
           projectiles: Array.isArray(data.projectiles) ? [...data.projectiles] : [],
         });
       }
     });
 
-    socket.on("logicExecuted", (data: { robotId: string; action: string }) => {
+    socket.on("logicExecuted", (data: { robotId: string; action: string; message?: string }) => {
       if (data.action === "FIRE") {
         setGameState(current => {
           const targetRobot = current.robots.find(r => r.id !== data.robotId);
@@ -57,10 +65,10 @@ const Arena: React.FC = () => {
           }
           return current;
         });
-      } else if (data.action === "MOVE") {
-        setSpeechBubble({ robotId: data.robotId, message: data.action });
-        setTimeout(() => setSpeechBubble(null), 1000);
       }
+
+      setSpeechBubble({ robotId: data.robotId, message: data.message ?? data.action });
+      setTimeout(() => setSpeechBubble(null), 1000);
     });
 
     return () => {
@@ -110,6 +118,20 @@ const Arena: React.FC = () => {
           ctx.fill();
           ctx.closePath();
 
+          if (typeof robot.rotation === "number") {
+            const lineLength = 10;
+            const lineX = x + Math.cos(robot.rotation) * lineLength;
+            const lineY = y + Math.sin(robot.rotation) * lineLength;
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(lineX, lineY);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.closePath();
+          }
+
           // Health Bar exactly above the circle
           ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
           ctx.fillRect(x - 5, y - 12, 10, 2);
@@ -151,7 +173,7 @@ const Arena: React.FC = () => {
         </button>
 
         <div className="text-blue-400 font-mono text-xs opacity-70">
-          LOGIC ARENA v0.4.0 [3D MODE ENABLED]
+          LOGIC ARENA v1.0.0-alpha [SENTIENT UPDATE]
         </div>
       </div>
 

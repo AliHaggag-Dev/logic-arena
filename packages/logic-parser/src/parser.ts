@@ -1,17 +1,21 @@
 import {
-  Token,
-  TokenType,
-  NodeType,
-  Program,
-  IfStatement,
-  ComparisonExpression,
-  ActionExpression,
+    Token,
+    TokenType,
+    NodeType,
+    Program,
+    IfStatement,
+    ComparisonExpression,
+    ActionExpression,
   Identifier,
   NumberLiteral,
   StringLiteral,
   AssignmentStatement,
+  ActionStatement,
   Expression,
-  Statement
+  Statement,
+  BinaryExpression,
+  UnaryExpression,
+  BooleanLiteral
 } from "./types";
 
 class Lexer {
@@ -100,7 +104,14 @@ class Lexer {
                         case "THEN":
                         case "FIRE":
                         case "MOVE":
+                        case "STOP":
+                        case "MOVE_FAST":
+                        case "BACKUP":
+                        case "BURST_FIRE":
                         case "SET": // Add SET as a keyword
+                        case "NOT":
+                        case "TRUE":
+                        case "FALSE":
                             token = { type: TokenType.KEYWORD, value: value.toUpperCase() };
                             break;
                         default:
@@ -120,6 +131,10 @@ class Lexer {
                 break;
             case ":": // Handle colon for potential future use
                 token = { type: TokenType.COLON, value: ":" };
+                break;
+            case "+":
+            case "-":
+                token = { type: TokenType.OPERATOR, value: this.char };
                 break;
         }
         this.readChar();
@@ -171,6 +186,12 @@ export class Parser {
         if (this.currentToken.type === TokenType.KEYWORD && this.currentToken.value === "SET") {
             return this.parseAssignmentStatement();
         }
+        if (this.currentToken.type === TokenType.KEYWORD) {
+            const actionStatement = this.parseActionStatement();
+            if (actionStatement) {
+                return actionStatement;
+            }
+        }
         return null;
     }
 
@@ -213,28 +234,41 @@ export class Parser {
         };
     }
 
-    private parseComparisonExpression(): ComparisonExpression | null {
-        const left = this.parseExpression();
+    private parseComparisonExpression(): Expression | null {
+        const left = this.parseBinaryExpression();
         if (!left) return null;
 
-        if (this.peekToken.type !== TokenType.OPERATOR) return null;
-        this.nextToken(); // currentToken = operator
-        const operator = this.currentToken.value;
+        if (
+            this.peekToken.type === TokenType.OPERATOR &&
+            (this.peekToken.value === "<" || this.peekToken.value === ">" || this.peekToken.value === "==")
+        ) {
+            this.nextToken(); // currentToken = operator
+            const operator = this.currentToken.value;
 
-        this.nextToken(); // Move to the right-hand side of the expression
-        const right = this.parseExpression();
-        if (!right) return null;
+            this.nextToken(); // Move to the right-hand side of the expression
+            const right = this.parseBinaryExpression();
+            if (!right) return null;
 
-        return {
-            type: NodeType.ComparisonExpression,
-            left: left as (Identifier | NumberLiteral),
-            operator,
-            right: right as (Identifier | NumberLiteral),
-        };
+            return {
+                type: NodeType.ComparisonExpression,
+                left,
+                operator,
+                right,
+            };
+        }
+
+        return left;
     }
 
     private parseActionExpression(): ActionExpression | null {
-        if (this.currentToken.type === TokenType.KEYWORD && (this.currentToken.value === "FIRE" || this.currentToken.value === "MOVE")) {
+        if (this.currentToken.type === TokenType.KEYWORD && (
+            this.currentToken.value === "FIRE" ||
+            this.currentToken.value === "MOVE" ||
+            this.currentToken.value === "STOP" ||
+            this.currentToken.value === "MOVE_FAST" ||
+            this.currentToken.value === "BACKUP" ||
+            this.currentToken.value === "BURST_FIRE"
+        )) {
             const command = this.currentToken.value;
             const args: (Identifier | NumberLiteral | StringLiteral)[] = [];
 
@@ -258,7 +292,67 @@ export class Parser {
         return null;
     }
 
-    private parseExpression(): Identifier | NumberLiteral | StringLiteral | null {
+    private parseActionStatement(): ActionStatement | null {
+        const action = this.parseActionExpression();
+        if (!action) {
+            return null;
+        }
+        return {
+            type: NodeType.ActionStatement,
+            consequence: action,
+        };
+    }
+
+    private parseExpression(): Expression | null {
+        return this.parseComparisonExpression();
+    }
+
+    private parseBinaryExpression(): Expression | null {
+        let left = this.parseUnaryExpression();
+        if (!left) return null;
+
+        while (this.peekToken.type === TokenType.OPERATOR && (this.peekToken.value === "+" || this.peekToken.value === "-")) {
+            this.nextToken(); // currentToken = operator
+            const operator = this.currentToken.value;
+
+            this.nextToken(); // Move to the right-hand side of the expression
+            const right = this.parseUnaryExpression();
+            if (!right) return null;
+
+            left = {
+                type: NodeType.BinaryExpression,
+                left,
+                operator,
+                right,
+            } as BinaryExpression;
+        }
+
+        return left;
+    }
+
+    private parseUnaryExpression(): Expression | null {
+        if (this.currentToken.type === TokenType.KEYWORD && this.currentToken.value === "NOT") {
+            this.nextToken();
+            const argument = this.parseUnaryExpression();
+            if (!argument) return null;
+
+            return {
+                type: NodeType.UnaryExpression,
+                operator: "NOT",
+                argument,
+            } as UnaryExpression;
+        }
+
+        return this.parsePrimary();
+    }
+
+    private parsePrimary(): Expression | null {
+        if (this.currentToken.type === TokenType.KEYWORD && this.currentToken.value === "TRUE") {
+            return { type: NodeType.BooleanLiteral, value: true } as BooleanLiteral;
+        }
+        if (this.currentToken.type === TokenType.KEYWORD && this.currentToken.value === "FALSE") {
+            return { type: NodeType.BooleanLiteral, value: false } as BooleanLiteral;
+        }
         if (this.currentToken.type === TokenType.IDENTIFIER) {
             return { type: NodeType.Identifier, value: this.currentToken.value };
         }
