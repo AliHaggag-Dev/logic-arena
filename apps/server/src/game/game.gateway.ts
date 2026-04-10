@@ -40,7 +40,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handleManualCommand(client: Socket, payload: { command: string, robotId: string }) {
     console.log(`[Gateway] Manual command received from ${client.id}: ${payload.command} for robot ${payload.robotId}`);
     if (payload.command === "FIRE") {
-      this.gameService.fireProjectile(payload.robotId);
+      this.gameService.updateRobotLogic(payload.robotId, "FIRE");
     }
   }
 
