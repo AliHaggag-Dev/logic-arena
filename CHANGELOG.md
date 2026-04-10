@@ -114,3 +114,18 @@ A massive leap from reactive bots to intelligent autonomous agents with full sen
 ### Current Status:
 - The system is now a **Stable Tactical Simulator**. We have FOV, Logic, VFX, and Audio working in perfect harmony.
 - Ready for: **v1.2.0 - Pathfinding & Obstacle Avoidance**.
+
+## [1.0.0-beta] - The Trinity Refactor - 2026-04-10
+
+### Major Structural Overhaul:
+- **Client Atomization:** Dismantled the "God Files" into a hook-driven architecture.
+- **Engine Optimization:** Refactored core physics and collision logic for better maintainability.
+- **Logic-Parser Decoupling:** Separated the AliScript interpreter from the view layer. The parser now functions as a pure logical entity, making it ready for server-side integration.
+
+### Technical Scars and Resolutions:
+- **Issue: Parser-View Dependency:** Fixed a tight coupling where the `logic-parser` was too dependent on client-side state. Now uses a clean, event-driven interface.
+- **Issue: R3F Hook Deadlock:** Resolved the Canvas-context error by re-engineering the component tree.
+- **Issue: TS Type Fragmentation:** Unified types across the workspace.
+
+### Current Status:
+- The "Trinity" (Client, Engine, Parser) is now fully modular. Ready for Server Refactoring.
