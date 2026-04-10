@@ -1,11 +1,8 @@
-import {
-  Robot,
-  Vector2,
-  Projectile,
-  Obstacle,
-  GameState,
-  ObstacleType,
-} from './types';
+import { Robot, GameState, Obstacle, Vector2, Projectile } from './types';
+import { updateProjectiles, spawnProjectile } from './physics/collision-projectiles';
+import { checkRobotRobotCollision } from './physics/collision-robots';
+import { checkObstacleCollision } from './physics/collision-obstacles';
+import { checkWallBounds } from './physics/wall-bounds';
 import { performance } from 'node:perf_hooks';
 
 const requestAnimationFrame = (callback: FrameRequestCallback) =>
@@ -94,35 +91,7 @@ export class GameLoop {
     const now = Date.now();
 
     // 1. Update Projectiles & Check Robot Hits
-    this.projectiles = this.projectiles.filter(p => {
-      p.position.x += p.velocity.x * deltaTime;
-      p.position.y += p.velocity.y * deltaTime;
-
-      let hasHit = false;
-
-      for (const robot of this.robots) {
-        if (robot.id !== p.ownerId && robot.isAlive) {
-          const dx = p.position.x - robot.position.x;
-          const dy = p.position.y - robot.position.y;
-          const distance = Math.hypot(dx, dy);
-
-          if (distance < ROBOT_RADIUS) {
-            robot.health = Math.max(0, robot.health - 10);
-            if (robot.health === 0) robot.isAlive = false;
-            hasHit = true;
-            break;
-          }
-        }
-      }
-
-      const isOutOfBounds =
-        p.position.x < 0 ||
-        p.position.x > this.ARENA.width ||
-        p.position.y < 0 ||
-        p.position.y > this.ARENA.height;
-
-      return !hasHit && !isOutOfBounds;
-    });
+    this.projectiles = updateProjectiles(this.projectiles, this.robots, this.ARENA.width, this.ARENA.height);
 
     // 2. Update Robots
     this.robots.forEach(robot => {
@@ -152,24 +121,12 @@ export class GameLoop {
       robot.position.y += robot.velocity.y * speedMultiplier * deltaTime;
 
       // Boundary Collisions
-      if (robot.position.x < ROBOT_RADIUS) {
-        robot.position.x = ROBOT_RADIUS;
-        robot.velocity.x *= -1;
-      } else if (robot.position.x > this.ARENA.width - ROBOT_RADIUS) {
-        robot.position.x = this.ARENA.width - ROBOT_RADIUS;
-        robot.velocity.x *= -1;
-      }
-
-      if (robot.position.y < ROBOT_RADIUS) {
-        robot.position.y = ROBOT_RADIUS;
-        robot.velocity.y *= -1;
-      } else if (robot.position.y > this.ARENA.height - ROBOT_RADIUS) {
-        robot.position.y = this.ARENA.height - ROBOT_RADIUS;
-        robot.velocity.y *= -1;
-      }
+      checkWallBounds(robot, this.ARENA.width, this.ARENA.height);
 
       // Obstacle Collisions
-      this.checkObstacleCollisions(robot);
+      for (const obstacle of this.obstacles) {
+        checkObstacleCollision(robot, obstacle);
+      }
 
       const speed = Math.hypot(robot.velocity.x, robot.velocity.y);
       if (speed > 0.001) {
@@ -180,89 +137,7 @@ export class GameLoop {
     // 3. Robot vs Robot Collision
     for (let i = 0; i < this.robots.length; i++) {
       for (let j = i + 1; j < this.robots.length; j++) {
-        const r1 = this.robots[i];
-        const r2 = this.robots[j];
-
-        if (!r1.isAlive || !r2.isAlive) continue;
-
-        const dx = r2.position.x - r1.position.x;
-        const dy = r2.position.y - r1.position.y;
-        const distance = Math.hypot(dx, dy);
-
-        if (distance < ROBOT_RADIUS * 2) {
-          // Simple elastic collision
-          const tempVx = r1.velocity.x;
-          const tempVy = r1.velocity.y;
-          r1.velocity.x = r2.velocity.x;
-          r1.velocity.y = r2.velocity.y;
-          r2.velocity.x = tempVx;
-          r2.velocity.y = tempVy;
-
-          // Resolve overlap
-          const overlap = ROBOT_RADIUS * 2 - distance + 1;
-          const angle = Math.atan2(dy, dx);
-          r1.position.x -= (overlap / 2) * Math.cos(angle);
-          r1.position.y -= (overlap / 2) * Math.sin(angle);
-          r2.position.x += (overlap / 2) * Math.cos(angle);
-          r2.position.y += (overlap / 2) * Math.sin(angle);
-        }
-      }
-    }
-  }
-
-  private checkObstacleCollisions(robot: Robot): void {
-    const now = Date.now();
-    for (const obstacle of this.obstacles) {
-      const closestX = Math.max(
-        obstacle.position.x - obstacle.width / 2,
-        Math.min(robot.position.x, obstacle.position.x + obstacle.width / 2)
-      );
-      const closestY = Math.max(
-        obstacle.position.y - obstacle.height / 2,
-        Math.min(robot.position.y, obstacle.position.y + obstacle.height / 2)
-      );
-
-      const dx = robot.position.x - closestX;
-      const dy = robot.position.y - closestY;
-      const distance = Math.hypot(dx, dy);
-
-      if (distance < ROBOT_RADIUS) {
-        // Collision detected, first push robot out
-        const overlap = ROBOT_RADIUS - distance;
-        const angle = Math.atan2(dy, dx);
-        robot.position.x += overlap * Math.cos(angle);
-        robot.position.y += overlap * Math.sin(angle);
-
-        // Apply obstacle-specific effects
-        switch (obstacle.type) {
-          case 'WALL':
-            // Reflect velocity based on which side was hit
-            if (Math.abs(dx) > Math.abs(dy)) {
-              robot.velocity.x *= -1;
-            } else {
-              robot.velocity.y *= -1;
-            }
-            break;
-          case 'TRAP':
-            robot.health = Math.max(0, robot.health - 10);
-            if (robot.health === 0) robot.isAlive = false;
-            robot.trappedUntil = now + 5000; // 5 seconds
-            robot.velocity = { x: 0, y: 0 };
-            break;
-          case 'SLOW':
-            robot.slowedUntil = now + 3000; // 3 seconds
-            robot.speedMultiplier = 0.4;
-            break;
-          case 'BOUNCER':
-            if (Math.abs(dx) > Math.abs(dy)) {
-              robot.velocity.x *= -1.8;
-              robot.velocity.y *= 1.8;
-            } else {
-              robot.velocity.x *= 1.8;
-              robot.velocity.y *= -1.8;
-            }
-            break;
-        }
+        checkRobotRobotCollision(this.robots[i], this.robots[j]);
       }
     }
   }
@@ -270,22 +145,8 @@ export class GameLoop {
   spawnProjectile(ownerId: string, pos: Vector2, targetPos: Vector2): void {
     const robot = this.robots.find(r => r.id === ownerId);
     if (!robot) return;
-
-    const angle = Math.atan2(targetPos.y - pos.y, targetPos.x - pos.x);
-    const speed = 400;
-    const spawnDistance = ROBOT_RADIUS + 5;
-
-    this.projectiles.push({
-      id: Math.random().toString(36).substr(2, 9),
-      ownerId,
-      team: robot.team,
-      position: {
-        x: pos.x + Math.cos(angle) * spawnDistance,
-        y: pos.y + Math.sin(angle) * spawnDistance,
-      },
-      velocity: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
-    });
+    this.projectiles.push(spawnProjectile(ownerId, robot.team, pos, targetPos));
   }
 }
 
-export type { Robot, Projectile, Obstacle, GameState, ObstacleType, Vector2 };
+export type { Robot, Projectile, Obstacle, GameState, Vector2 };
