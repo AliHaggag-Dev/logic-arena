@@ -129,3 +129,13 @@ A massive leap from reactive bots to intelligent autonomous agents with full sen
 
 ### Current Status:
 - The "Trinity" (Client, Engine, Parser) is now fully modular. Ready for Server Refactoring.
+
+## [1.0.1-beta] - The Physics & Combat Patch
+
+### Bug Fixes:
+- **Obstacle Adhesion Fix:** Resolved an issue where robots would permanently stick to red obstacles. Implemented a cooldown-based separation logic.
+- **Ghost Respawn Fix:** Fixed a major combat bug where respawned robots became "invincible" due to stale collision references in the physics engine.
+- **Physics Synchronization:** Improved projectile hit detection in `collision-projectiles.ts` to ensure 100% accuracy against newly spawned agents.
+
+### Current Status:
+- Combat is now stable. Robots can reliably take damage after respawning, and movement is no longer hindered by static obstacle "gluing".
