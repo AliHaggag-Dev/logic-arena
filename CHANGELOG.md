@@ -82,7 +82,7 @@ Elevated the **AliScript Engine** from reactive to stateful, enabling robots to 
 ### Current Status:
 - Robots now possess **Persistent Intelligence**. They can remember, compare, and react to environmental changes over time. The bridge between raw physics and high-level strategy is officially built. Ready for: **The 3D Visual Overhaul & Predictive Aiming Challenges**.
 
-## [0.7.0] - The Sensory Update & Visual Stability - 2026-04-08
+## [0.7.0] - The Sensory Update & Visual Stability
 
 Finalized the core user experience by merging high-performance visuals with a responsive spatial audio system and optimizing the 3D rendering pipeline.
 
@@ -139,3 +139,19 @@ A massive leap from reactive bots to intelligent autonomous agents with full sen
 
 ### Current Status:
 - Combat is now stable. Robots can reliably take damage after respawning, and movement is no longer hindered by static obstacle "gluing".
+
+## [1.1.0-beta] - The Server Modularity & Monorepo Polish - 2026-04-11
+
+### Major Structural Overhaul:
+- **The Backend Decoupling:** Successfully dismantled the 600+ line "God Object" (`game.service.ts`) into a clean, domain-specific architecture (`logic-evaluator`, `action-executor`, `pathfinder`, and `combat-math`).
+
+### Technical Scars and Resolutions:
+- **Issue: The Infinite Stun-Lock (Trap Loop):** Fixed a critical physics bug where robots were permanently stuck in traps. Resolved by removing the forced velocity reset and implementing a 1500ms "immunity window" post-stun so robots can step out of the hitbox.
+- **Issue: Terminal & UI Event Spam:** Resolved massive lag caused by the engine evaluating and broadcasting `MOVE` vs `FIRE` commands 60 times a second. Implemented a 250ms throttle/debounce on socket emissions.
+- **Issue: Monorepo Config Hell:** Overcame strict TypeScript 5+ compilation errors. Replaced legacy `baseUrl` with native path mapping, synced `module` and `moduleResolution` to `Node16`, and explicitly defined `rootDir` to bridge cross-package imports cleanly.
+
+### Key Technical Achievement:
+- **Domain-Driven Server Architecture:** The game server is now highly modular. Network sockets, AST logic evaluation, A* pathfinding, and physics execution are fully isolated, making the backend incredibly scalable and easy to debug.
+
+### Current Status:
+- The backend codebase is now just as clean and atomic as the frontend "Trinity" refactor. The TypeScript compiler is 100% happy, and the physics engine is handling traps and respawns flawlessly.
