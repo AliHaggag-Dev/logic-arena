@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Socket } from "socket.io";
 import { GameLoop, GameState } from "@logic-arena/engine";
-import { Parser } from "../../../../packages/logic-parser/src";
+import { Parser } from "@logic-arena/logic-parser";
 import { Pathfinder } from "./core/pathfinder";
 import { LogicEvaluator } from "./core/logic-evaluator";
 import { ActionExecutor } from "./core/action-executor";
