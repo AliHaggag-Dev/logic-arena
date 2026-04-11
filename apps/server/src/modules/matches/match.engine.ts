@@ -20,11 +20,11 @@ export class MatchEngine {
   private tickInterval: NodeJS.Timeout | null = null;
   private matchId: string;
 
-  constructor(matchId: string, playerScripts: { id: string; script: string }[]) {
+  constructor(matchId: string, initialPlayers: { id: string; script: string }[]) {
     this.matchId = matchId;
     this.sandboxRunner = new SandboxRunner();
     this.state = {
-      players: playerScripts.map(p => ({
+      players: initialPlayers.map(p => ({
         id: p.id,
         script: p.script,
         position: { x: Math.random() * 100, y: Math.random() * 100 }, // Random initial position
@@ -32,6 +32,22 @@ export class MatchEngine {
       })),
       projectiles: [],
     };
+  }
+
+  addPlayer(playerScript: { id: string; script: string }) {
+    const playerExists = this.state.players.some(p => p.id === playerScript.id);
+    if (!playerExists) {
+      this.state.players.push({
+        id: playerScript.id,
+        script: playerScript.script,
+        position: { x: Math.random() * 100, y: Math.random() * 100 },
+        health: 100,
+      });
+    }
+  }
+
+  removePlayer(userId: string) {
+    this.state.players = this.state.players.filter(p => p.id !== userId);
   }
 
   start(tickRate: number = 100) {
@@ -48,7 +64,7 @@ export class MatchEngine {
   private tick() {
     // 1. Get AliScript of each player and run through SandboxRunner
     this.state.players.forEach(player => {
-      if (player.health <= 0) return; // Don't run script if robot is dead
+      if (player.health <= 0) return; // Don"t run script if robot is dead
 
       try {
         const context = { /* provide game API context to script */ };
@@ -60,12 +76,11 @@ export class MatchEngine {
       }
     });
 
-    // 2. Apply actions to game state (e.g., move players, update projectiles)
     // This is where collision detection would happen using packages/engine
-    // For now, let's just simulate some basic movement
+    // For now, let"s just simulate some basic movement
     this.state.players.forEach(player => {
       // Basic movement simulation (replace with actual game logic)
-      // Example: move player forward if action was 'move'
+      // Example: move player forward if action was "move"
       // This will be replaced by actual engine logic.
     });
 
