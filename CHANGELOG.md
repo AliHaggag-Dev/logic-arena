@@ -177,3 +177,54 @@ A massive leap from reactive bots to intelligent autonomous agents with full sen
 ### Current Status:
 
 - The client rendering pipeline is now fully optimized. The CommandConsole is modular and maintainable, robot movement is visually fluid, and the UI hierarchy is conflict-free. Both frontend and backend are now production-grade in architecture.
+
+## [1.3.0-beta] - The Performance Revolution & Character Identity
+
+### Major Performance Overhaul:
+
+- **The React Re-render Death Spiral Elimination:** Replaced the main `gameState` 
+  useState with a `useRef` for zero re-renders. The 3D canvas now reads directly 
+  from `gameStateRef.current` inside `useFrame`, completely decoupling the rendering 
+  pipeline from React's reconciliation cycle.
+
+### Technical Scars and Resolutions:
+
+- **Issue: 3,862ms Scripting Bottleneck:** Profiling revealed JavaScript was 
+  choking the main thread at 60x/second state updates. Fixed by implementing a 
+  dual-state architecture — `gameStateRef` updates instantly with zero re-renders, 
+  while a throttled `uiState` updates the DOM at 10x/sec only.
+
+- **Issue: Per-frame Mesh Traverse:** The hit flash effect was calling 
+  `clonedScene.traverse()` every frame, creating massive CPU overhead. Fixed by 
+  pre-caching the mesh list in `useMemo` and iterating the cached array instead.
+
+- **Issue: Unnecessary Scene Re-cloning:** The `color` prop was incorrectly 
+  included in `useMemo` deps, causing full GLB scene re-cloning on every render. 
+  Removed from deps since robot color is stable at runtime.
+
+- **Issue: Projectile Jitter:** Laser projectiles were snapping between server 
+  positions at 20 FPS. Fixed by adding frame-rate independent lerp interpolation 
+  using `1 - Math.pow(0.001, delta * 20)`.
+
+- **Issue: Camera Aspect Ratio:** The arena appeared square due to camera angle. 
+  Fixed by adjusting `PerspectiveCamera` position from `[0, 18, 18]` to 
+  `[0, 22, 14]` for correct 20x15 arena perspective.
+
+### Key Technical Achievement:
+
+- **Unique Robot Identity System:** Replaced procedural geometry robots with 
+  unique GLB character models. Bot-1 uses a futuristic flying robot (224KB, 
+  animated) and Bot-2 uses a mech warrior (2MB, combat stance). Implemented via 
+  conditional `Bot1Model`/`Bot2Model` components with `useGLTF.preload()` for 
+  zero duplicate loading.
+
+- **Zero Re-render 3D Pipeline:** The rendering architecture now follows R3F best 
+  practices — all rapid game state flows through refs, never through React state, 
+  achieving true 60 FPS with near-zero scripting overhead.
+
+### Current Status:
+
+- The performance bottleneck has been eliminated. Scripting time dropped from 
+  3,862ms to near zero. The arena renders at true 60 FPS with unique robot 
+  characters, smooth projectile interpolation, and a fully decoupled rendering 
+  pipeline that scales cleanly for future features.
