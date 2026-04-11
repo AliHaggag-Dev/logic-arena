@@ -4,7 +4,7 @@ import { useSceneSetup } from "../../hooks/useSceneSetup";
 import { SceneLighting } from "./SceneLighting";
 import { ArenaModels } from "./ArenaModels";
 import { SceneOverlay } from "./SceneOverlay";
-import { Scene3DComponentProps } from "../../types";
+import { Scene3DComponentProps } from "../../types/scene.types";
 import * as THREE from "three";
 import { BoundaryLine } from "./models/BoundaryLine";
 
@@ -37,8 +37,8 @@ export const SceneContent = (props: Scene3DComponentProps) => {
   return (
     <>
       <SceneLighting />
-      <ArenaModels {...props} />
-      <SceneOverlay speechBubble={props.speechBubble ?? null} robots={props.robots} />
+      <ArenaModels gameStateRef={props.gameStateRef} obstacles={props.obstacles} firedTracer={props.firedTracer} speechBubble={props.speechBubble} />
+      <SceneOverlay speechBubble={props.speechBubble ?? null} robots={props.gameStateRef.current.robots} />
 
       {/* Custom Grid: Scaled to match the 20x15 (800x600) Arena */}
       <gridHelper args={[20, 20, "#1a1a4a", "#0d0d2a"]} scale={[1, 1, 0.75]} position={[0, 0, 0]} />

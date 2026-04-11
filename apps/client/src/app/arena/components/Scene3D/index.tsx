@@ -1,7 +1,7 @@
 "use client";
 import { SceneCanvas } from "./SceneCanvas";
 import { SceneContent } from "./SceneContent";
-import { Scene3DComponentProps } from "../../types";
+import { Scene3DComponentProps } from "../../types/scene.types";
 
 /**
  * Main Scene3D component that composes the 3D canvas and its content.

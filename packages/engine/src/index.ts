@@ -21,8 +21,8 @@ const DEFAULT_OBSTACLES: Obstacle[] = [
   { id: 'wall-4', type: 'WALL', position: { x: 550, y: 300 }, width: 25, height: 80, rotation: 0 },
 
   // Traps near center
-  { id: 'trap-1', type: 'TRAP', position: { x: 200, y: 150 }, width: 80, height: 80, rotation: 0.3 },
-  { id: 'trap-2', type: 'TRAP', position: { x: 600, y: 450 }, width: 80, height: 80, rotation: -0.3 },
+  { id: 'trap-1', type: 'TRAP', position: { x: 200, y: 150 }, width: 60, height: 60, rotation: 0.3 },
+  { id: 'trap-2', type: 'TRAP', position: { x: 600, y: 450 }, width: 60, height: 60, rotation: -0.3 },
 
   // Slow zones at corridors
   { id: 'slow-1', type: 'SLOW', position: { x: 150, y: 400 }, width: 60, height: 35, rotation: 0.15 },

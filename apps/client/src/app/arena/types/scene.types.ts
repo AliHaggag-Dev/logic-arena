@@ -65,9 +65,11 @@ export interface SpeechBubbleState {
   message: string;
 }
 
+import { MutableRefObject } from "react";
+import { GameState } from "./game.types";
+
 export interface Scene3DComponentProps {
-  robots: RobotState[];
-  projectiles?: ProjectileState[];
+  gameStateRef: MutableRefObject<GameState>;
   obstacles?: ObstacleState[];
   firedTracer?: FiredTracer | null;
   speechBubble?: SpeechBubbleState | null;

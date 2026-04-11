@@ -6,7 +6,7 @@ import { CommandConsole } from "./components/CommandConsole";
 import { useGameState } from "./hooks/useGameState";
 
 const Arena: React.FC = () => {
-  const { gameState, firedTracer, speechBubble, selectedRobotId, setSelectedRobotId, availableRobots, socket } = useGameState();
+  const { gameStateRef, uiState, firedTracer, speechBubble, selectedRobotId, setSelectedRobotId, availableRobots, socket } = useGameState();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Mini-map rendering logic
@@ -25,7 +25,7 @@ const Arena: React.FC = () => {
     let animationFrameId: number;
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const state = gameState;
+      const state = uiState;
 
       // Draw Projectiles
       state.projectiles.forEach(p => {
@@ -75,16 +75,15 @@ const Arena: React.FC = () => {
 
     render();
     return () => cancelAnimationFrame(animationFrameId);
-  }, [gameState]);
+  }, [uiState]);
 
   return (
     <div className="relative w-full h-screen bg-gray-950 overflow-hidden font-mono selection:bg-cyan-500/30">
       {/* 3D Scene Background */}
       <div className="absolute inset-0 z-0">
         <Scene3D
-          robots={gameState.robots}
-          projectiles={gameState.projectiles}
-          obstacles={gameState.obstacles}
+          gameStateRef={gameStateRef}
+          obstacles={uiState.obstacles}
           firedTracer={firedTracer}
           speechBubble={speechBubble}
         />
