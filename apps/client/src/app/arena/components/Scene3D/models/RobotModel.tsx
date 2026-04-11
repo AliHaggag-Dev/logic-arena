@@ -81,6 +81,7 @@ export const HealthBarSprite = ({ health }: HealthBarSpriteProps) => {
 
 export const RobotModel = memo(({ position, color, health, velocity, rotation, hitTimestamp, spotted }: RobotModelProps) => {
     const groupRef = useRef<THREE.Group>(null);
+    const targetPosition = useRef(new THREE.Vector3(...position));
     const basePosition = useRef(new THREE.Vector3(...position));
     const hoverOffset = useRef(0);
     const thrusterMaterials = useRef<THREE.MeshStandardMaterial[]>([]);
@@ -94,11 +95,9 @@ export const RobotModel = memo(({ position, color, health, velocity, rotation, h
         hoverOffset.current = Math.random() * Math.PI * 2;
     }, []);
 
+    // Update TARGET only — let useFrame lerp toward it
     useEffect(() => {
-        basePosition.current.set(position[0], position[1], position[2]);
-        if (groupRef.current) {
-            groupRef.current.position.set(position[0], position[1], position[2]);
-        }
+        targetPosition.current.set(position[0], position[1], position[2]);
     }, [position]);
 
     useEffect(() => {
@@ -116,31 +115,37 @@ export const RobotModel = memo(({ position, color, health, velocity, rotation, h
         const group = groupRef.current;
         if (!group) return;
 
+        // Smooth position interpolation (frame-rate independent)
+        const lerpFactor = 1 - Math.pow(0.01, delta * 10);
+        basePosition.current.lerp(targetPosition.current, lerpFactor);
+
+        // Rotation lerp
         const targetRotation = resolveRotation(rotation);
         if (targetRotation !== null) {
-            const lerpFactor = 1 - Math.pow(0.001, delta);
-            group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, targetRotation, lerpFactor);
+            const rotLerp = 1 - Math.pow(0.001, delta);
+            group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, targetRotation, rotLerp);
         } else {
             const speed = Math.hypot(velocity.x, velocity.y);
             if (speed > 0.001) {
                 const fallbackRotation = -Math.atan2(velocity.y, velocity.x);
-                const lerpFactor = 1 - Math.pow(0.001, delta);
-                group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, fallbackRotation, lerpFactor);
+                const rotLerp = 1 - Math.pow(0.001, delta);
+                group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, fallbackRotation, rotLerp);
             }
         }
 
+        // Apply interpolated position + hover effect
         const hover = Math.sin(state.clock.elapsedTime * 2 + hoverOffset.current) * 0.05;
-        group.position.y = basePosition.current.y + hover;
         group.position.x = basePosition.current.x;
+        group.position.y = basePosition.current.y + hover;
         group.position.z = basePosition.current.z;
 
+        // Thruster flicker
         const flicker = 1.2 + Math.sin(state.clock.elapsedTime * 12 + hoverOffset.current) * 0.5;
         thrusterMaterials.current.forEach(material => {
-            if (material) {
-                material.emissiveIntensity = flicker;
-            }
+            if (material) material.emissiveIntensity = flicker;
         });
 
+        // Hit flash effect
         const now = performance.now() / 1000;
         const timeSinceHit = hitTimestamp ? now - hitTimestamp : Infinity;
         const flash = timeSinceHit < HIT_FLASH_DURATION ? 1 - timeSinceHit / HIT_FLASH_DURATION : 0;
