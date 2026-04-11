@@ -26,8 +26,33 @@ export class GameService {
   }
 
   private initializeGame() {
-    this.gameLoop.addRobot({ id: 'bot-1', team: 'A', position: { x: 100, y: 100 }, velocity: { x: 0, y: 0 }, rotation: 0, health: 100, lastActionTime: 0, isAlive: true, code: '', memory: {} });
-    this.gameLoop.addRobot({ id: 'bot-2', team: 'B', position: { x: 700, y: 500 }, velocity: { x: 0, y: 0 }, rotation: Math.PI, health: 100, lastActionTime: 0, isAlive: true, code: '', memory: {} });
+    this.gameLoop.addRobot({
+      id: 'bot-1',
+      team: 'A',
+      position: { x: 100, y: 100 },
+      velocity: { x: 0, y: 0 },
+      rotation: 0,
+      health: 100,
+      lastActionTime: 0,
+      isAlive: true,
+      code: '',
+      memory: {},
+      color: '#e5e4e0'
+    });
+
+    this.gameLoop.addRobot({
+      id: 'bot-2',
+      team: 'B',
+      position: { x: 700, y: 500 },
+      velocity: { x: 0, y: 0 },
+      rotation: Math.PI,
+      health: 100,
+      lastActionTime: 0,
+      isAlive: true,
+      code: '',
+      memory: {},
+      color: '#4f4947'
+    });
 
     this.gameLoop.start();
     this.pathfinder.rebuildGrid();

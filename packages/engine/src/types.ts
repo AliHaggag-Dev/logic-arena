@@ -17,6 +17,7 @@ export interface Robot {
   trappedUntil?: number;    // timestamp in ms
   slowedUntil?: number;     // timestamp in ms
   speedMultiplier?: number; // default 1.0
+  color?: string
 }
 
 export interface Projectile {

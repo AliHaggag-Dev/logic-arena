@@ -1,26 +1,17 @@
 "use client";
 import React, { memo, useRef, useEffect, useState, useMemo } from "react";
 import * as THREE from "three";
-import { Html } from "@react-three/drei";
+import { Html, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { RobotState, RobotModelProps, HealthBarSpriteProps, FallbackRobotProps, RobotErrorBoundaryProps, RobotErrorBoundaryState } from "../../../types";
+import { RobotModelProps, HealthBarSpriteProps, FallbackRobotProps, RobotErrorBoundaryProps, RobotErrorBoundaryState } from "../../../types";
 import { HIT_FLASH_DURATION } from "../sceneConstants";
 
 export class RobotErrorBoundary extends React.Component<RobotErrorBoundaryProps, RobotErrorBoundaryState> {
     state: RobotErrorBoundaryState = { hasError: false };
-
-    static getDerivedStateFromError(): RobotErrorBoundaryState {
-        return { hasError: true };
-    }
-
-    componentDidCatch(): void {
-        // Intentionally empty to avoid crashing render tree
-    }
-
+    static getDerivedStateFromError(): RobotErrorBoundaryState { return { hasError: true }; }
+    componentDidCatch(): void { }
     render() {
-        if (this.state.hasError) {
-            return this.props.fallback;
-        }
+        if (this.state.hasError) return this.props.fallback;
         return this.props.children;
     }
 }
@@ -34,10 +25,9 @@ export const FallbackRobot = ({ position, color }: FallbackRobotProps) => (
 
 export const HealthBarSprite = ({ health }: HealthBarSpriteProps) => {
     const canvas = useMemo(() => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 64;
-        canvas.height = 12;
-        return canvas;
+        const c = document.createElement("canvas");
+        c.width = 64; c.height = 12;
+        return c;
     }, []);
 
     const [texture] = useState(() => {
@@ -49,26 +39,19 @@ export const HealthBarSprite = ({ health }: HealthBarSpriteProps) => {
     });
     const textureRef = useRef(texture);
 
-    useEffect(() => {
-        return () => {
-            texture.dispose();
-        };
-    }, [texture]);
+    useEffect(() => () => { texture.dispose(); }, [texture]);
 
     useEffect(() => {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.strokeStyle = "#444";
         ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
-
         const ratio = Math.max(0, Math.min(1, health / 100));
         ctx.fillStyle = health > 30 ? "#00FF00" : "#FF0000";
         ctx.fillRect(1, 1, (canvas.width - 2) * ratio, canvas.height - 2);
-
         textureRef.current.needsUpdate = true;
     }, [canvas, health]);
 
@@ -79,35 +62,45 @@ export const HealthBarSprite = ({ health }: HealthBarSpriteProps) => {
     );
 };
 
-export const RobotModel = memo(({ position, color, health, velocity, rotation, hitTimestamp, spotted }: RobotModelProps) => {
+// Shared hook logic extracted into a render component
+const RobotModelInner = memo(({ scene, position, color, health, velocity, rotation, hitTimestamp, spotted, scale }: RobotModelProps & { scene: THREE.Group; scale: number }) => {
     const groupRef = useRef<THREE.Group>(null);
     const targetPosition = useRef(new THREE.Vector3(...position));
     const basePosition = useRef(new THREE.Vector3(...position));
     const hoverOffset = useRef(0);
-    const thrusterMaterials = useRef<THREE.MeshStandardMaterial[]>([]);
-    const bodyMaterialRef = useRef<THREE.MeshStandardMaterial>(null);
-    const headMaterialRef = useRef<THREE.MeshStandardMaterial>(null);
     const baseColorRef = useRef(new THREE.Color(color));
     const tempColorRef = useRef(new THREE.Color());
     const flashWhite = useRef(new THREE.Color("#ffffff"));
 
-    useEffect(() => {
-        hoverOffset.current = Math.random() * Math.PI * 2;
-    }, []);
+    const clonedScene = useMemo(() => {
+        const clone = scene.clone(true);
+        clone.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+                const mesh = child as THREE.Mesh;
+                if (Array.isArray(mesh.material)) {
+                    mesh.material = mesh.material.map(m => {
+                        const mat = (m as THREE.MeshStandardMaterial).clone();
+                        mat.emissive.set(color);
+                        mat.emissiveIntensity = 0.3;
+                        return mat;
+                    });
+                } else {
+                    const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
+                    mat.emissive.set(color);
+                    mat.emissiveIntensity = 0.3;
+                    mesh.material = mat;
+                }
+            }
+        });
+        return clone;
+    }, [scene, color]);
 
-    // Update TARGET only — let useFrame lerp toward it
-    useEffect(() => {
-        targetPosition.current.set(position[0], position[1], position[2]);
-    }, [position]);
-
-    useEffect(() => {
-        baseColorRef.current.set(color);
-    }, [color]);
+    useEffect(() => { hoverOffset.current = Math.random() * Math.PI * 2; }, []);
+    useEffect(() => { targetPosition.current.set(position[0], position[1], position[2]); }, [position]);
+    useEffect(() => { baseColorRef.current.set(color); }, [color]);
 
     const resolveRotation = (value?: number) => {
-        if (typeof value !== "number" || Number.isNaN(value)) {
-            return null;
-        }
+        if (typeof value !== "number" || Number.isNaN(value)) return null;
         return Math.abs(value) > Math.PI * 2 ? THREE.MathUtils.degToRad(value) : value;
     };
 
@@ -115,11 +108,9 @@ export const RobotModel = memo(({ position, color, health, velocity, rotation, h
         const group = groupRef.current;
         if (!group) return;
 
-        // Smooth position interpolation (frame-rate independent)
         const lerpFactor = 1 - Math.pow(0.01, delta * 10);
         basePosition.current.lerp(targetPosition.current, lerpFactor);
 
-        // Rotation lerp
         const targetRotation = resolveRotation(rotation);
         if (targetRotation !== null) {
             const rotLerp = 1 - Math.pow(0.001, delta);
@@ -133,140 +124,64 @@ export const RobotModel = memo(({ position, color, health, velocity, rotation, h
             }
         }
 
-        // Apply interpolated position + hover effect
         const hover = Math.sin(state.clock.elapsedTime * 2 + hoverOffset.current) * 0.05;
         group.position.x = basePosition.current.x;
         group.position.y = basePosition.current.y + hover;
         group.position.z = basePosition.current.z;
 
-        // Thruster flicker
-        const flicker = 1.2 + Math.sin(state.clock.elapsedTime * 12 + hoverOffset.current) * 0.5;
-        thrusterMaterials.current.forEach(material => {
-            if (material) material.emissiveIntensity = flicker;
-        });
-
-        // Hit flash effect
         const now = performance.now() / 1000;
         const timeSinceHit = hitTimestamp ? now - hitTimestamp : Infinity;
         const flash = timeSinceHit < HIT_FLASH_DURATION ? 1 - timeSinceHit / HIT_FLASH_DURATION : 0;
 
-        if (bodyMaterialRef.current) {
-            tempColorRef.current.copy(baseColorRef.current).lerp(flashWhite.current, flash);
-            bodyMaterialRef.current.color.copy(tempColorRef.current);
-            bodyMaterialRef.current.emissive.copy(baseColorRef.current);
-        }
-        if (headMaterialRef.current) {
-            tempColorRef.current.copy(baseColorRef.current).lerp(flashWhite.current, flash);
-            headMaterialRef.current.color.copy(tempColorRef.current);
-            headMaterialRef.current.emissive.copy(baseColorRef.current);
-        }
+        clonedScene.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+                const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
+                if (mat?.emissive) {
+                    tempColorRef.current.copy(baseColorRef.current).lerp(flashWhite.current, flash);
+                    mat.color.copy(tempColorRef.current);
+                }
+            }
+        });
     });
-
-    const thrusterMaterialRef = (index: number) => (material: THREE.MeshStandardMaterial | null) => {
-        if (material) {
-            thrusterMaterials.current[index] = material;
-        }
-    };
 
     return (
         <group ref={groupRef}>
-            <mesh position={[0, 0.35, 0]}>
-                <boxGeometry args={[0.7, 0.4, 0.9]} />
-                <meshStandardMaterial
-                    ref={bodyMaterialRef}
-                    color={color}
-                    emissive={color}
-                    emissiveIntensity={0.4}
-                    roughness={0.85}
-                    metalness={0.05}
-                />
-            </mesh>
-
-            <mesh position={[0, 0.7, 0]}>
-                <sphereGeometry args={[0.22, 24, 24]} />
-                <meshStandardMaterial
-                    ref={headMaterialRef}
-                    color={color}
-                    emissive={color}
-                    emissiveIntensity={0.4}
-                    roughness={0.85}
-                    metalness={0.05}
-                />
-            </mesh>
-
-            <mesh position={[-0.08, 0.72, 0.2]}>
-                <sphereGeometry args={[0.05, 16, 16]} />
-                <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={2.5} />
-            </mesh>
-            <mesh position={[0.08, 0.72, 0.2]}>
-                <sphereGeometry args={[0.05, 16, 16]} />
-                <meshStandardMaterial color="#FFFFFF" emissive="#FFFFFF" emissiveIntensity={2.5} />
-            </mesh>
-
-            <mesh position={[0.4, 0.2, 0]} rotation={[0, 0, -Math.PI / 2]}>
-                <coneGeometry args={[0.6, 1.2, 16, 1, true]} />
-                <meshBasicMaterial color={color} transparent opacity={0.12} depthWrite={false} />
-            </mesh>
-
-            <mesh position={[-0.25, 0.05, -0.25]} rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[0.06, 0.08, 0.12, 12]} />
-                <meshStandardMaterial
-                    ref={thrusterMaterialRef(0)}
-                    color="#1a1a1a"
-                    emissive="#00FFFF"
-                    emissiveIntensity={0.3}
-                />
-            </mesh>
-            <mesh position={[0.25, 0.05, -0.25]} rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[0.06, 0.08, 0.12, 12]} />
-                <meshStandardMaterial
-                    ref={thrusterMaterialRef(1)}
-                    color="#1a1a1a"
-                    emissive="#00FFFF"
-                    emissiveIntensity={0.3}
-                />
-            </mesh>
-            <mesh position={[-0.25, 0.05, 0.25]} rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[0.06, 0.08, 0.12, 12]} />
-                <meshStandardMaterial
-                    ref={thrusterMaterialRef(2)}
-                    color="#1a1a1a"
-                    emissive="#00FFFF"
-                    emissiveIntensity={0.3}
-                />
-            </mesh>
-            <mesh position={[0.25, 0.05, 0.25]} rotation={[Math.PI / 2, 0, 0]}>
-                <cylinderGeometry args={[0.06, 0.08, 0.12, 12]} />
-                <meshStandardMaterial
-                    ref={thrusterMaterialRef(3)}
-                    color="#1a1a1a"
-                    emissive="#00FFFF"
-                    emissiveIntensity={0.3}
-                />
-            </mesh>
-
+            <primitive object={clonedScene} scale={scale} />
             <pointLight position={[0, 0.4, 0]} intensity={3.0} distance={5} color={color} />
             <pointLight position={[0, -0.2, 0]} intensity={1.0} distance={4} color={color} />
-
             {spotted && (
                 <Html distanceFactor={10} position={[0, 1.25, 0]} center>
-                    <div
-                        style={{
-                            fontSize: "14px",
-                            color: "#FF3B3B",
-                            fontWeight: 700,
-                            textShadow: "0 0 6px rgba(255, 59, 59, 0.8)"
-                        }}
-                    >
-                        !
-                    </div>
+                    <div style={{ fontSize: "14px", color: "#FF3B3B", fontWeight: 700, textShadow: "0 0 6px rgba(255, 59, 59, 0.8)" }}>!</div>
                 </Html>
             )}
-
-            <group position={[0, 1.0, 0]}>
+            <group position={[0, 2.0, 0]}>
                 <HealthBarSprite health={health} />
             </group>
         </group>
     );
 });
+RobotModelInner.displayName = "RobotModelInner";
+
+// Bot-1: Futuristic flying robot (cyan)
+const Bot1Model = memo((props: RobotModelProps) => {
+    const { scene } = useGLTF('/robot.glb');
+    return <RobotModelInner {...props} scene={scene as unknown as THREE.Group} scale={2} />;
+});
+Bot1Model.displayName = "Bot1Model";
+
+// Bot-2: Mech warrior robot (magenta)
+const Bot2Model = memo((props: RobotModelProps) => {
+    const { scene } = useGLTF('/robot2.glb');
+    return <RobotModelInner {...props} scene={scene as unknown as THREE.Group} scale={0.8} />;
+});
+Bot2Model.displayName = "Bot2Model";
+
+// Main export — picks correct model based on color
+export const RobotModel = memo((props: RobotModelProps) => {
+    const isCyan = props.color === '#e5e4e0' || props.color === '#00FFFF' || props.color === 'cyan';
+    return isCyan ? <Bot1Model {...props} /> : <Bot2Model {...props} />;
+});
 RobotModel.displayName = "RobotModel";
+
+useGLTF.preload('/robot.glb');
+useGLTF.preload('/robot2.glb');

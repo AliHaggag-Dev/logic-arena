@@ -20,15 +20,16 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@logic-arena/engine": "workspace:*",
+    "@logic-arena/logic-parser": "workspace:*",
+    "@nestjs-modules/ioredis": "latest",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.0.1",
+    "ioredis": "latest",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "@logic-arena/engine": "workspace:*",
-    "ioredis": "latest",
-    "@nestjs-modules/ioredis": "latest",
-    "@nestjs/platform-socket.io": "^11.0.1",
     "socket.io": "^4.7.5"
   },
   "devDependencies": {
