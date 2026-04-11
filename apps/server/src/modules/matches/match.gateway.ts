@@ -18,7 +18,7 @@ export class MatchGateway {
   private matches: Map<string, MatchEngine> = new Map();
   private connectedClients: Map<string, AuthenticatedWebSocket> = new Map();
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async handleConnection(@ConnectedSocket() client: AuthenticatedWebSocket) {
     const token = (client as any).handshake?.auth?.token as string;
@@ -31,7 +31,7 @@ export class MatchGateway {
       const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
       if (decoded.sub) {
         client.userId = decoded.sub;
-        this.connectedClients.set(client.userId, client);
+        this.connectedClients.set(client.userId as string, client);
       }
       console.log(`Client connected and authenticated: ${client.userId}`);
       (client as any).send(JSON.stringify({ event: "authenticated", userId: client.userId }));
