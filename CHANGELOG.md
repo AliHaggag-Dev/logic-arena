@@ -228,3 +228,32 @@ A massive leap from reactive bots to intelligent autonomous agents with full sen
   3,862ms to near zero. The arena renders at true 60 FPS with unique robot 
   characters, smooth projectile interpolation, and a fully decoupled rendering 
   pipeline that scales cleanly for future features.
+
+## [1.4.0-beta] - The Full-Stack Arena Integration - 2026-04-12
+
+### Major Frontend & Backend Integration:
+The Arena is now a fully connected, real-time battle environment. The 3D scene, tactical radar, and command console are all wired to a live WebSocket server, replacing the previous mock/local state architecture.
+
+### Technical Scars and Resolutions:
+
+- **Issue: The CORS Deadlock:** The NestJS WebSocket server was broadcasting an invalid `'.'` value in the `Access-Control-Allow-Origin` header, blocking all Socket.IO connections from the Next.js client. Resolved by explicitly setting `origin: "http://localhost:3000"` in both `app.enableCors()` and the `@WebSocketGateway()` decorator, then adding `IoAdapter` to enforce the configuration at the transport layer.
+
+- **Issue: HTTP Polling Fallback:** Socket.IO was defaulting to HTTP long-polling, which inherited the broken CORS headers. Fixed by enforcing `transports: ["websocket", "polling"]` with `withCredentials: true` on the client, forcing a direct WebSocket upgrade and bypassing the polling layer entirely.
+
+- **Issue: The Stale Dist Problem:** The `start:prod` script was pointing to `dist/main` while the monorepo build was outputting to `dist/apps/server/src/main`. Fixed by correcting the path in `package.json` to match the actual nested output structure.
+
+**Issue: gameStateRef Null-Safety Cascade:** Multiple components (`SceneContent`, `ArenaModels`) were crashing on first render because `gameStateRef.current.robots` was `undefined` before the first server tick arrived. Resolved by introducing safe defaults (`?? []`) and extracting `robots` and `projectiles` into local variables at the top of each component.
+
+- **Issue: State Shape Mismatch (players → robots):** The server was emitting `players[]` but the 3D scene expected `robots[]`. Fixed by implementing a `normalizeState()` function in `useGameState.ts` that maps both `matchState` and `gameState` socket events into a unified shape before storing in state.
+
+- **Issue: Missing Robot Identity Fields:** The `MatchEngine` was initializing players with no `color`, `velocity`, or `rotation` fields, causing robots to render as invisible/white. Fixed by adding a `ROBOT_COLORS` palette and full identity initialization in both the constructor and `addPlayer()`.
+
+- **Issue: Arena Coordinate Scale:** Robot positions were being generated in a `0-100` range while the 3D scene and tactical radar expected `0-800` / `0-600`. Fixed by scaling `Math.random()` output to `800x600` in `MatchEngine` to match engine bounds.
+
+### Key Technical Achievement:
+- **Unified Real-Time Pipeline:** The full event chain is now live — `MatchEngine (Server)` → `WebSocket (NestJS Gateway)` → `useGameState (Client Hook)` → `gameStateRef (Zero Re-render)` → `3D Scene + TACTICAL_VIEW (R3F)`. Every component reads from a single source of truth with no prop drilling and no unnecessary re-renders.
+
+- **Tactical HUD:** Introduced a `TACTICAL_VIEW` radar panel with real-time robot blips, directional triangles, mini health bars, and ID labels. Projectiles render as neon yellow dots on the radar, fully synchronized with the 3D scene.
+
+### Current Status:
+- The Arena is now a fully operational real-time battlefield. Players can write AliScript, deploy it to their bot, and watch it execute live in both the 3D scene and the tactical radar simultaneously. The architecture is clean, the pipeline is stable, and the system is ready for: **Pathfinding, FOV-based targeting, and multiplayer session management.**
