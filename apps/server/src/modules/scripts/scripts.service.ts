@@ -14,12 +14,21 @@ export class ScriptsService {
         });
     }
 
+    async getScriptById(scriptId: string, userId: string) {
+        const script = await this.prisma.robotScript.findUnique({
+            where: { id: scriptId, userId },
+        });
+        if (!script) {
+            throw new NotFoundException("Script not found or unauthorized.");
+        }
+        return script;
+    }
+
     async getUserScripts(userId: string) {
         return this.prisma.robotScript.findMany({
             where: { userId },
         });
     }
-
     async updateScript(scriptId: string, userId: string, title: string, content: string) {
         if (!content) {
             throw new Error("Script content cannot be empty.");

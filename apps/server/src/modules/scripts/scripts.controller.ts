@@ -13,12 +13,17 @@ export class ScriptsController {
         return this.scriptsService.createScript(userId, body.title, body.content);
     }
 
+    @Get(":id")
+    async findOne(@Param("id") id: string, @Req() req) {
+        const userId = req.user.sub;
+        return this.scriptsService.getScriptById(id, userId);
+    }
+
     @Get()
     async findAll(@Req() req) {
         const userId = req.user.sub;
         return this.scriptsService.getUserScripts(userId);
     }
-
     @Put(':id')
     async update(@Param('id') id: string, @Req() req, @Body() body: { title: string; content: string }) {
         const userId = req.user.sub;

@@ -38,7 +38,10 @@ export const SceneContent = (props: Scene3DComponentProps) => {
     <>
       <SceneLighting />
       <ArenaModels gameStateRef={props.gameStateRef} obstacles={props.obstacles} firedTracer={props.firedTracer} speechBubble={props.speechBubble} />
-      <SceneOverlay speechBubble={props.speechBubble ?? null} robots={props.gameStateRef.current.robots} />
+      <SceneOverlay
+        speechBubble={props.speechBubble ?? null}
+        robots={props.gameStateRef.current?.robots ?? []}
+      />
 
       {/* Custom Grid: Scaled to match the 20x15 (800x600) Arena */}
       <gridHelper args={[20, 20, "#1a1a4a", "#0d0d2a"]} scale={[1, 1, 0.75]} position={[0, 0, 0]} />

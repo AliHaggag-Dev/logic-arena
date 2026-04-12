@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
@@ -67,14 +69,12 @@ const DashboardPage = () => {
                                 </div>
                                 <div className="space-x-2">
                                     <button
-                                        type="button"
                                         onClick={() => console.log("Edit script:", script.id)} // Placeholder for edit functionality
                                         className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
                                     >
                                         Edit Script
                                     </button>
                                     <button
-                                        type="button"
                                         onClick={() => handleGoToArena(script.id)}
                                         className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
                                     >

@@ -22,17 +22,14 @@ export const ArenaModels = ({
   firedTracer?: FiredTracer | null;
   speechBubble?: SpeechBubbleState | null;
 }) => {
-  const { hitBursts, setHitBursts, hitFlashMap, isSpotted } = useSceneAnimation(gameStateRef.current.robots, firedTracer);
+  const robots = gameStateRef.current?.robots ?? [];
+  const projectiles = gameStateRef.current?.projectiles ?? [];
+
+  const { hitBursts, setHitBursts, hitFlashMap, isSpotted } = useSceneAnimation(robots, firedTracer);
 
   useFrame(() => {
     const state = gameStateRef.current;
-    // You might need to update robot positions directly via refs if RobotModel doesn't handle it
-    // For now, assuming RobotModel will receive updated props through React's reconciliation
-    // if the props change (which they won't, since we're passing gameStateRef directly).
-    // A more advanced solution would involve refs for each robot model.
   });
-
-
 
   const boundaryPoints = useMemo(
     () => new Float32Array([-10, 0, -7.5, 10, 0, -7.5, 10, 0, 7.5, -10, 0, 7.5]),
@@ -47,7 +44,8 @@ export const ArenaModels = ({
       {obstacles.map(obs => (
         <ObstacleModel key={obs.id} obstacle={obs} />
       ))}
-      {gameStateRef.current.robots.map(robot => {
+
+      {robots.map(robot => {
         const robotPosition: [number, number, number] = [
           (robot.position.x / 40) - 10,
           0.15,
@@ -71,20 +69,20 @@ export const ArenaModels = ({
         );
       })}
 
-      {firedTracer && gameStateRef.current.robots.map(robot => {
+      {firedTracer && robots.map(robot => {
         if (robot.id !== firedTracer.robotId) return null;
         const startPos: [number, number, number] = [(robot.position.x / 40) - 10, 0.375, (robot.position.y / 40) - 7.5];
         const endPos: [number, number, number] = [(firedTracer.targetPosition.x / 40) - 10, 0.375, (firedTracer.targetPosition.y / 40) - 7.5];
         return <LaserBeam key={`tracer-${robot.id}`} start={startPos} end={endPos} />;
       })}
 
-      {speechBubble && gameStateRef.current.robots.map(robot => {
+      {speechBubble && robots.map(robot => {
         if (robot.id !== speechBubble.robotId) return null;
         const pos: [number, number, number] = [(robot.position.x / 40) - 10, 0.375, (robot.position.y / 40) - 7.5];
         return <SpeechBubble key={`bubble-${robot.id}`} position={pos} message={speechBubble.message} />;
       })}
 
-      {gameStateRef.current.projectiles.map(p => (
+      {projectiles.map(p => (
         <LaserModel key={p.id} position={[(p.position.x / 40) - 10, 0.375, (p.position.y / 40) - 7.5]} />
       ))}
     </>

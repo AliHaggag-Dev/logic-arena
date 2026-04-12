@@ -3,7 +3,11 @@ import { Server, Socket } from "socket.io";
 import { GameService } from "./game.service";
 
 @WebSocketGateway({
-  cors: { origin: "http://localhost:3000" },
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -24,6 +28,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handleConnection(client: Socket) {
     console.log(`[Gateway] Client connected: ${client.id}`);
     this.gameService.joinGame(client, client.id);
+    // Emit initial game state to the newly connected client
+    client.emit("matchState", this.gameService.getGameState());
   }
 
   handleDisconnect(client: Socket) {

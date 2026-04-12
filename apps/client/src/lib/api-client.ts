@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const apiClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000", // Adjust as needed
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001", // Adjust as needed
 });
 
 apiClient.interceptors.request.use(
