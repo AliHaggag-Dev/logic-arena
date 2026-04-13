@@ -22,6 +22,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private matches: Map<string, MatchEngine> = new Map();
   private lastStateJson: Map<string, string> = new Map();
   private lobbyMatches: Map<string, { hostId: string; hostName: string; matchId: string; createdAt: number }> = new Map();
+  private matchStartTime: Map<string, number> = new Map();
 
   constructor(private prisma: PrismaService) { }
 
@@ -80,6 +81,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
         { id: "bot-2", script: "" }
       ]);
       this.matches.set(data.matchId, match);
+      this.matchStartTime.set(data.matchId, Date.now());
       match.start();
     } else {
       if (this.lobbyMatches.has(data.matchId)) {
@@ -124,11 +126,10 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   onModuleInit() {
-    setInterval(() => {
-      this.matches.forEach((match, matchId) => {
+    setInterval(async () => {
+      for (const [matchId, match] of this.matches.entries()) {
         const state = match.getState();
 
-        const alivePlayers = state.robots.filter((r: any) => r.health > 0 && r.id !== "bot-2");
         const allRobots = state.robots.filter((r: any) => r.health > 0);
 
         if (state.robots.length > 0 && allRobots.length <= 1) {
@@ -137,10 +138,36 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
             winner: winner ? { id: winner.id, color: winner.color } : null,
             draw: allRobots.length === 0
           });
+
+          // Save Match Result
+          const playerIds = state.robots.map((r: any) => r.id).filter((id: string) => id !== "bot-2");
+          const startTime = this.matchStartTime.get(matchId) || Date.now();
+
+          if (playerIds.length > 0) {
+            await this.prisma.match.create({
+              data: {
+                type: "Friendly",
+                winnerId: winner && winner.id !== "bot-2" ? winner.id : null,
+                duration: Math.floor((Date.now() - startTime) / 1000),
+                participants: {
+                  connect: playerIds.map((id: string) => ({ id }))
+                }
+              }
+            });
+
+            if (winner && winner.id !== "bot-2") {
+              await this.prisma.user.update({
+                where: { id: winner.id },
+                data: { rank: { increment: 10 } }
+              });
+            }
+          }
+
           match.stop();
           this.matches.delete(matchId);
           this.lastStateJson.delete(matchId);
-          return;
+          this.matchStartTime.delete(matchId);
+          continue;
         }
 
         const json = JSON.stringify(state);
@@ -148,7 +175,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
           this.lastStateJson.set(matchId, json);
           this.broadcastMatchState(matchId, state);
         }
-      });
+      }
     }, 50);
   }
 

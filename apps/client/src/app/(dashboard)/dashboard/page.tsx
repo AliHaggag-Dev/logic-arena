@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { apiClient } from "../../../lib/api-client";
 
 interface RobotScript {
@@ -89,6 +90,12 @@ const DashboardPage = () => {
                             Uplink Established | Operator Dashboard
                         </h2>
                     </div>
+                    <Link
+                        href="/leaderboard"
+                        className="px-4 py-2 bg-cyan-600/10 border border-cyan-500/40 text-cyan-400 text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-cyan-600/30 hover:border-cyan-400 hover:text-white transition-all rounded shadow-[0_0_10px_rgba(34,211,238,0)] hover:shadow-[0_0_15px_rgba(34,211,238,0.3)] whitespace-nowrap"
+                    >
+                        LEADERBOARD
+                    </Link>
                 </div>
 
                 {/* Status Terminal */}
