@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiClient } from "../../lib/api-client";
 import { useGameState } from "./hooks/useGameState";
@@ -23,6 +23,19 @@ const ArenaPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const { socket, gameStateRef, uiState, selectedRobotId, setSelectedRobotId, availableRobots } = useGameState(scriptId);
+  const [projectileTick, setProjectileTick] = useState(0);
+  const projectileAnimRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const animate = () => {
+      setProjectileTick(t => t + 1);
+      projectileAnimRef.current = requestAnimationFrame(animate);
+    };
+    projectileAnimRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (projectileAnimRef.current) cancelAnimationFrame(projectileAnimRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!localStorage.getItem("token")) {
@@ -142,7 +155,7 @@ const ArenaPage = () => {
                 </div>
               );
             })}
-            {(uiState?.projectiles || []).map((p: any) => (
+            {(gameStateRef.current?.projectiles || []).map((p: any) => (
               <div key={p.id} className="absolute"
                 style={{ left: `${(p.position.x / 800) * 100}%`, top: `${(p.position.y / 600) * 100}%`, transform: "translate(-50%, -50%)" }}>
                 <div className="w-1 h-1 rounded-full bg-yellow-400 shadow-[0_0_6px_#facc15]" />
