@@ -5,7 +5,7 @@ import { Pathfinder } from "../../game/core/pathfinder";
 import { LogicEvaluator } from "../../game/core/logic-evaluator";
 import { Parser } from "../../../../../packages/logic-parser/src";
 
-const ROBOT_COLORS = ["#00ffff", "#ff00ff", "#ffff00", "#00ff00", "#ff6600", "#ff0066"];
+const ROBOT_COLORS = ["#00ffff", "#ff00ff"]; // Cyan for 1st, Magenta for 2nd
 
 export class MatchEngine {
   private gameLoop: GameLoop;

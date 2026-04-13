@@ -80,7 +80,10 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     let match = this.matches.get(data.matchId);
 
     if (!match) {
-      match = new MatchEngine(data.matchId, [{ id: client.userId, script: script.content }]);
+      match = new MatchEngine(data.matchId, [
+        { id: client.userId, script: script.content },
+        { id: "bot-2", script: "FIRE\nMOVE_FAST" } // Add default bot-2
+      ]);
       this.matches.set(data.matchId, match);
       match.start();
       client.matchId = data.matchId;

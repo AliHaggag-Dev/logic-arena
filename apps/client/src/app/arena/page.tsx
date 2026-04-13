@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { apiClient } from "../../lib/api-client";
 import { useSocket } from "../../lib/useGameState";
 import { Scene3D } from "./components/Scene3D";
@@ -15,6 +15,7 @@ interface RobotScript {
 }
 
 const ArenaPage = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const scriptId = searchParams.get("scriptId");
 
@@ -43,6 +44,10 @@ const ArenaPage = () => {
   }, [gameState, selectedRobotId]);
 
   useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      router.push("/login");
+      return;
+    }
     if (!scriptId) {
       setError("No script ID provided.");
       setLoading(false);

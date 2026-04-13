@@ -18,7 +18,9 @@ const LoginPage = () => {
 
     try {
       const response = await apiClient.post("/auth/login", { username, password });
-      localStorage.setItem("jwtToken", response.data.accessToken);
+      const token = response.data.accessToken;
+      localStorage.setItem("jwtToken", token);
+      localStorage.setItem("token", token); // Sync both keys for now as they are used differently in the app
 
       setStatus({ message: "[SYS] ACCESS GRANTED. REROUTING...", type: "success" });
 
