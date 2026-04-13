@@ -51,20 +51,26 @@
 *   **Time Limit:** If a `MATCH_TIME_LIMIT` is reached, the robot with the highest health/score (tie-breaking rules apply) is declared the winner.
 *   **Disconnection/Forfeit:** If all robots from a user disconnect or a user forfeits, their robots are removed from the match.
 
-## Scripting API (Conceptual)
+## Implemented Commands (AliScript)
+The current version of Logic Arena uses **AliScript** for robot control. The following commands are fully implemented:
 
-Robot scripts will have access to a limited API to interact with the game engine. Examples include:
+### Movement
+*   `MOVE`: Basic forward movement.
+*   `MOVE_FAST`: Double-speed forward movement.
+*   `BACKUP`: Backward movement.
+*   `STOP`: Immediate halt.
+*   `PATHFIND`: Automated navigation toward the nearest target using A*.
 
-*   `robot.move(direction: Vector2)`
-*   `robot.rotate(angle: Float)`
-*   `robot.fire(target: Vector2)`
-*   `robot.scan(): List<ScanResult>`
-*   `robot.getHealth(): Integer`
-*   `robot.getEnergy(): Integer`
-*   `robot.getPosition(): Vector2`
-*   `robot.onHit(callback: Function)`
-*   `robot.onScanResult(callback: Function)`
+### Combat
+*   `FIRE`: Primary weapon discharge (500ms cooldown).
+*   `BURST_FIRE`: High-intensity firing mode.
 
-Each function call will consume energy and/or incur cooldowns as defined by the game rules.
+### Logic & Conditions
+*   `IF [condition] THEN [command]`: Conditional execution.
+*   `spotted`: Boolean - Enemy in sensor range.
+*   `health < [number]`: Health threshold check.
+*   `distance < [number]` / `distance > [number]`: Range checks.
+
+For detailed documentation, refer to `docs/aliscript-language.md`.
 
 
