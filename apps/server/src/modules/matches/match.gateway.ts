@@ -48,7 +48,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (client.userId) {
       this.matches.forEach((match, matchId) => {
         match.removePlayer(client.userId!);
-        if (match.getState().players.length === 0) {
+        if (match.getState().robots.length === 0) {
           match.stop();
           this.matches.delete(matchId);
         }
@@ -87,7 +87,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.join(data.matchId);
       this.broadcastMatchState(data.matchId, match.getState());
     } else {
-      const playerExists = match.getState().players.some((p: any) => p.id === client.userId);
+      const playerExists = match.getState().robots.some((p: any) => p.id === client.userId);
       if (!playerExists) {
         match.addPlayer({ id: client.userId, script: script.content });
         client.matchId = data.matchId;
@@ -98,6 +98,39 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private broadcastMatchState(matchId: string, state: any) {
-    this.server.to(matchId).emit("matchState", state);
+    this.server.to(matchId).emit("gameState", state);
+  }
+
+  onModuleInit() {
+    setInterval(() => {
+      this.matches.forEach((match, matchId) => {
+        this.broadcastMatchState(matchId, match.getState());
+      });
+    }, 50);
+  }
+
+  @SubscribeMessage("resetGame")
+  handleResetGame(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data: { matchId: string }) {
+    if (client.matchId && this.matches.has(client.matchId)) {
+      const match = this.matches.get(client.matchId);
+      match?.reset();
+      this.broadcastMatchState(client.matchId, match?.getState());
+    }
+  }
+
+  @SubscribeMessage("updateLogic")
+  handleUpdateLogic(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data: { robotId: string, scriptContent: string }) {
+    if (client.matchId && this.matches.has(client.matchId)) {
+      const match = this.matches.get(client.matchId);
+      match?.updateRobotScript(data.robotId, data.scriptContent);
+    }
+  }
+
+  @SubscribeMessage("manualCommand")
+  handleManualCommand(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data: { command: string }) {
+    if (client.matchId && this.matches.has(client.matchId)) {
+      const match = this.matches.get(client.matchId);
+      match?.receiveManualCommand(client.userId!, data.command);
+    }
   }
 }

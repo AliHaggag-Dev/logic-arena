@@ -6,11 +6,10 @@ import { AuthModule } from './modules/auth/auth.module'; // Import AuthModule
 import { ScriptsModule } from './modules/scripts/scripts.module'; // Import ScriptsModule
 import { UsersModule } from './modules/users/users.module'; // Import UsersModule
 import { MatchGateway } from './modules/matches/match.gateway'; // Import MatchGateway
-import { GameModule } from './game/game.module';
 
 @Module({
-  imports: [AuthModule, ScriptsModule, UsersModule, GameModule], // Add new modules here
+  imports: [AuthModule, ScriptsModule, UsersModule], // Remove GameModule
   controllers: [AppController],
-  providers: [AppService, PrismaService, MatchGateway], // Add MatchGateway to providers
+  providers: [AppService, PrismaService, MatchGateway], // Keep MatchGateway
 })
 export class AppModule { }

@@ -2,8 +2,14 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { io, Socket } from "socket.io-client";
 import { GameState, RobotState, ProjectileState, ObstacleState, FiredTracer, SpeechBubbleState } from "../types";
 
-export const useGameState = () => {
-  const socket: Socket = useMemo(() => io("http://localhost:3001", { autoConnect: false }), []);
+export const useGameState = (scriptId: string | null) => {
+  const socket: Socket = useMemo(() => {
+    const token = localStorage.getItem("token");
+    return io("http://localhost:3001", {
+      autoConnect: false,
+      auth: { token }
+    });
+  }, []);
 
   const gameStateRef = useRef<GameState>({ robots: [], projectiles: [], obstacles: [] });
   const [uiState, setUiState] = useState<GameState>({ robots: [], projectiles: [], obstacles: [] });
@@ -18,7 +24,17 @@ export const useGameState = () => {
   useEffect(() => {
     const handleConnect = () => {
       console.log("✅ Socket Connected!");
-      socket.emit("join", { userId: socket.id });
+      if (scriptId) {
+        socket.emit("joinMatch", { matchId: "default-match", scriptId });
+      }
+    };
+
+    const handleAuthenticated = (data: any) => {
+      console.log("✅ Authenticated:", data);
+    };
+
+    const handleError = (error: any) => {
+      console.error("❌ Socket Error:", error);
     };
 
     const handleGameState = (data: unknown) => {
@@ -90,12 +106,16 @@ export const useGameState = () => {
     };
 
     socket.on("connect", handleConnect);
+    socket.on("authenticated", handleAuthenticated);
+    socket.on("error", handleError);
     socket.on("gameState", handleGameState);
     socket.on("logicExecuted", handleLogicExecuted);
     socket.connect();
 
     return () => {
       socket.off("connect", handleConnect);
+      socket.off("authenticated", handleAuthenticated);
+      socket.off("error", handleError);
       socket.off("gameState", handleGameState);
       socket.off("logicExecuted", handleLogicExecuted);
       socket.disconnect();
