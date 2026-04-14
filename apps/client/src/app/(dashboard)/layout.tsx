@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard", label: "COMMAND_CENTER", icon: "⬡" },
   { href: "/leaderboard", label: "NEURAL_RANKINGS", icon: "◈" },
   { href: "/lobby", label: "BATTLE_LOBBY", icon: "▶" },
+  { href: "/profile", label: "OPERATOR_PROFILE", icon: "◉" },
 ];
 
 export default function DashboardLayout({
@@ -101,7 +102,7 @@ export default function DashboardLayout({
               textTransform: "uppercase",
             }}
           >
-            // SYS_v2.4.1
+            // SYS_v1.6.0
           </div>
           <h1
             style={{
