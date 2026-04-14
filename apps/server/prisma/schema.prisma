@@ -18,6 +18,8 @@ model User {
   RobotScript  RobotScript[]
   Match        Match[]     @relation("Participants")
   wonMatches   Match[]     @relation("Winner")
+  createdTournaments Tournament[] @relation("CreatedTournaments")
+  tournaments        Tournament[] @relation("TournamentParticipants")
 }
 
 model RobotScript {
@@ -39,4 +41,31 @@ model Match {
   duration    Int // duration in seconds
   replayData  Json?
   createdAt   DateTime  @default(now())
+}
+
+model Tournament {
+  id          String    @id @default(uuid())
+  name        String
+  status      String    @default("WAITING")
+  // WAITING | IN_PROGRESS | COMPLETED
+  creatorId   String
+  creator     User      @relation(name: "CreatedTournaments", fields: [creatorId], references: [id])
+  participants User[]   @relation("TournamentParticipants")
+  matches     TournamentMatch[]
+  winnerId    String?
+  createdAt   DateTime  @default(now())
+}
+
+model TournamentMatch {
+  id           String     @id @default(uuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  round        Int        // 1=Quarter, 2=Semi, 3=Final
+  matchIndex   Int        // position in bracket
+  player1Id    String?
+  player2Id    String?
+  winnerId     String?
+  status       String     @default("PENDING")
+  // PENDING | IN_PROGRESS | COMPLETED
+  createdAt    DateTime   @default(now())
 }

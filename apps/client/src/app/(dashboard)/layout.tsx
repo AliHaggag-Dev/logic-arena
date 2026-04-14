@@ -12,6 +12,7 @@ const navItems = [
   { href: "/lobby", label: "BATTLE_LOBBY", icon: "▶" },
   { href: "/profile", label: "OPERATOR_PROFILE", icon: "◉" },
   { href: "/docs", label: "ALISCRIPT_DOCS", icon: "◈" },
+  { href: "/tournaments", label: "TOURNAMENT_HUB", icon: "⚔" },
 ];
 
 export default function DashboardLayout({
