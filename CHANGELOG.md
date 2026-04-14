@@ -321,3 +321,21 @@ Transformed Logic Arena from a single-player sandbox into a fully competitive mu
 
 ### Current Status:
 - Logic Arena is now a fully operational competitive platform. Players can register, write AliScript, deploy to the lobby, battle in real-time, and climb the global leaderboard. Ready for: **Fog of War, Match Replay System, and Tournament Mode.**
+
+## [1.7.0-beta] - The Tournament & Replay Evolution - 2026-04-15
+
+### Major Feature Release:
+Introduced the Tournament Bracket System, 2D Canvas Match Replay System, an interactive AliScript Documentation page, a dedicated Operator Profile, and unified Cyberpunk Dashboard Navigation.
+
+### Technical Scars and Resolutions:
+- **Issue: Replay Rendering Leaks:** Fixed stale React closures and duplicate intervals during playback rendering to ensure the Canvas Replay Viewer maintains smooth interpolation and does not overload the client's memory.
+- **Issue: Irregular Bracket Computations:** Fixed crash attempting to create a full tournament bracket for 2 players. Re-architected backend `start` logic to dynamically handle safe participant distribution for 2, 4, and 8-player formats without indexing errors.
+
+### Key Technical Achievements:
+- **Tournament Bracket System:** Engineered a comprehensive tournament system supporting CRUD, join mechanisms, automated 2/4/8-player visual bracket generation, automatic winner advancement, and a real-time SVG "Bracket Viewer.
+- **Canvas Match Replay System:** Implemented a high-fidelity playback engine. Backends now serialize arena snapshots (robots & projectiles) every 10 ticks and save them to a new optional `replayData` field in Prisma. Features timeline scrubbing and playback speed controls.
+- **Interactive AliScript v1.0 Documentation:** Developed an interactive, hacker-themed documentation page featuring a live parse console, 15 actionable commands, 6 tactically filtered categories, and quick reference cards.
+- **Operator Profile & Navigation:** Shipped an Operator Profile page detailing gameplay stats and match history, combined with a unified cyberpunk Layout containing a sticky sidebar, 'DISCONNECT' command, active route highlighting, and smooth scanline overlays.
+
+### Current Status:
+- The platform is now a comprehensive competitive tactical suite, fully capable of autonomous replay recordings and structured e-sport tournament brackets. Fully modularized dashboard and documentation architecture further grounds the Logic Arena experience.
