@@ -23,6 +23,9 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private lastStateJson: Map<string, string> = new Map();
   private lobbyMatches: Map<string, { hostId: string; hostName: string; matchId: string; createdAt: number }> = new Map();
   private matchStartTime: Map<string, number> = new Map();
+  private replaySnapshots: Map<string, any[]> = new Map();
+  private tickCount: Map<string, number> = new Map();
+  private savingMatches: Set<string> = new Set();
 
   constructor(private prisma: PrismaService) { }
 
@@ -130,9 +133,38 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
       for (const [matchId, match] of this.matches.entries()) {
         const state = match.getState();
 
+        // --- Replay snapshot recording ---
+        const tick = (this.tickCount.get(matchId) || 0) + 1;
+        this.tickCount.set(matchId, tick);
+        if (tick % 10 === 0) {
+          const snapshots = this.replaySnapshots.get(matchId) || [];
+          snapshots.push({ 
+            t: tick, 
+            robots: state.robots.map((r: any) => ({
+              id: r.id,
+              position: { x: r.position.x, y: r.position.y },
+              health: r.health,
+              color: r.color,
+              rotation: r.rotation,
+              isAlive: r.isAlive
+            })),
+            projectiles: state.projectiles.map((p: any) => ({
+              id: p.id,
+              position: { x: p.position.x, y: p.position.y },
+              velocity: p.velocity,
+              ownerId: p.ownerId
+            }))
+          });
+          this.replaySnapshots.set(matchId, snapshots);
+        }
+
         const allRobots = state.robots.filter((r: any) => r.health > 0);
 
         if (state.robots.length > 0 && allRobots.length <= 1) {
+          // Guard against duplicate saves while async DB write is in-flight
+          if (this.savingMatches.has(matchId)) continue;
+          this.savingMatches.add(matchId);
+
           const winner = state.robots.find((r: any) => r.health > 0) || null;
           this.server.to(matchId).emit("matchOver", {
             winner: winner ? { id: winner.id, color: winner.color } : null,
@@ -144,11 +176,13 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
           const startTime = this.matchStartTime.get(matchId) || Date.now();
 
           if (playerIds.length > 0) {
+            const snapshots = this.replaySnapshots.get(matchId) || [];
             await this.prisma.match.create({
               data: {
                 type: "Friendly",
                 winnerId: winner && winner.id !== "bot-2" ? winner.id : null,
                 duration: Math.floor((Date.now() - startTime) / 1000),
+                replayData: snapshots,
                 participants: {
                   connect: playerIds.map((id: string) => ({ id }))
                 }
@@ -167,6 +201,9 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
           this.matches.delete(matchId);
           this.lastStateJson.delete(matchId);
           this.matchStartTime.delete(matchId);
+          this.replaySnapshots.delete(matchId);
+          this.tickCount.delete(matchId);
+          this.savingMatches.delete(matchId);
           continue;
         }
 

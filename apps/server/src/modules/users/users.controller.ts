@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Req, UseGuards } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { AuthGuard } from '../../common/auth.guard';
 
@@ -80,5 +80,22 @@ export class UsersController {
             winRate,
             matchHistory,
         };
+    }
+
+    @UseGuards(AuthGuard)
+    @Get('matches/:matchId/replay')
+    async getReplay(@Param('matchId') matchId: string, @Req() _req: any) {
+        const match = await this.prisma.match.findUnique({
+            where: { id: matchId },
+            select: {
+                id: true,
+                replayData: true,
+                winnerId: true,
+                duration: true,
+                createdAt: true,
+            },
+        });
+        if (!match) throw new NotFoundException('Match not found');
+        return match;
     }
 }

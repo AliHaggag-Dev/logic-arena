@@ -37,5 +37,6 @@ model Match {
   winner      User?     @relation(name: "Winner", fields: [winnerId], references: [id])
   participants User[]    @relation("Participants")
   duration    Int // duration in seconds
+  replayData  Json?
   createdAt   DateTime  @default(now())
 }

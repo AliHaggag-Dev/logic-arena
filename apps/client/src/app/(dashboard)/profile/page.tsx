@@ -100,7 +100,7 @@ function StatCard({
 function SkeletonRow() {
   return (
     <tr>
-      {[0, 1, 2, 3, 4].map((i) => (
+      {[0, 1, 2, 3, 4, 5].map((i) => (
         <td key={i} style={{ padding: "12px 16px" }}>
           <div
             style={{
@@ -370,7 +370,7 @@ export default function ProfilePage() {
                           backgroundColor: "rgba(34,211,238,0.04)",
                         }}
                       >
-                        {["Date", "Opponent", "Type", "Result", "Duration"].map((h) => (
+                        {["Date", "Opponent", "Type", "Result", "Duration", "Replay"].map((h) => (
                           <th
                             key={h}
                             style={{
@@ -455,13 +455,48 @@ export default function ProfilePage() {
                               <td style={{ padding: "12px 16px", color: "rgba(34,211,238,0.45)" }}>
                                 {fmtDuration(m.duration)}
                               </td>
+                              <td style={{ padding: "12px 16px" }}>
+                                <button
+                                  id={`replay-btn-${m.id}`}
+                                  onClick={() => router.push(`/replay/${m.id}`)}
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "5px",
+                                    padding: "4px 10px",
+                                    borderRadius: "4px",
+                                    fontSize: "8px",
+                                    fontWeight: 700,
+                                    letterSpacing: "0.14em",
+                                    cursor: "pointer",
+                                    border: "1px solid rgba(34,211,238,0.3)",
+                                    background: "rgba(34,211,238,0.06)",
+                                    color: "#22d3ee",
+                                    fontFamily: "inherit",
+                                    transition: "all 0.2s",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(34,211,238,0.16)";
+                                    (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(34,211,238,0.7)";
+                                    (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 8px rgba(34,211,238,0.25)";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(34,211,238,0.06)";
+                                    (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(34,211,238,0.3)";
+                                    (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+                                  }}
+                                >
+                                  ▶ REPLAY
+                                </button>
+                              </td>
                             </tr>
                           );
                         })
                       ) : (
                         <tr>
                           <td
-                            colSpan={5}
+                            colSpan={6}
                             style={{
                               padding: "48px 16px",
                               textAlign: "center",
