@@ -26,6 +26,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private replaySnapshots: Map<string, any[]> = new Map();
   private tickCount: Map<string, number> = new Map();
   private savingMatches: Set<string> = new Set();
+  private matchModes: Map<string, string> = new Map();
 
   constructor(private prisma: PrismaService) { }
 
@@ -56,7 +57,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage("joinMatch")
-  async handleJoinMatch(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data: { matchId: string; scriptId: string }) {
+  async handleJoinMatch(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data: { matchId: string; scriptId: string; mode?: 'COMBAT' | 'RACING' | 'TRAINING_SOLO' }) {
     if (!client.userId) {
       client.emit("error", { message: "Unauthorized: User not authenticated." });
       return;
@@ -77,13 +78,32 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     let match = this.matches.get(data.matchId);
+    let currentMode = this.matchModes.get(data.matchId);
+    const mode = data.mode || 'COMBAT';
+
+    if (match && currentMode && currentMode !== mode) {
+       match.stop();
+       this.matches.delete(data.matchId);
+       this.lastStateMap.delete(data.matchId);
+       this.matchStartTime.delete(data.matchId);
+       this.matchModes.delete(data.matchId);
+       this.replaySnapshots.delete(data.matchId);
+       this.tickCount.delete(data.matchId);
+       this.savingMatches.delete(data.matchId);
+       match = undefined;
+    }
 
     if (!match) {
-      match = new MatchEngine(data.matchId, [
-        { id: client.userId, script: script.content },
-        { id: "bot-2", script: "" }
-      ]);
+      const initialPlayers = (mode === 'RACING' || mode === 'TRAINING_SOLO')
+        ? [{ id: client.userId, script: script.content }]
+        : [{ id: client.userId, script: script.content }, { id: "bot-2", script: "" }];
+
+      match = new MatchEngine(data.matchId, initialPlayers, {
+        mode,
+        disableProjectiles: mode === 'RACING' || mode === 'TRAINING_SOLO'
+      });
       this.matches.set(data.matchId, match);
+      this.matchModes.set(data.matchId, mode);
       this.matchStartTime.set(data.matchId, Date.now());
       match.start();
     } else {
@@ -101,6 +121,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.matchId = data.matchId;
     client.join(data.matchId);
+    client.emit("matchJoinedInfo", { mode });
     this.broadcastMatchState(data.matchId, match.getState());
   }
 
@@ -159,16 +180,31 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
 
         const allRobots = state.robots.filter((r: any) => r.health > 0);
+        const mode = this.matchModes.get(matchId) || 'COMBAT';
+        let matchIsOver = false;
+        let winner: any = null;
 
-        if (state.robots.length > 0 && allRobots.length <= 1) {
+        if (mode === 'RACING') {
+          const TARGET_X = 700;
+          const TARGET_Y = 300;
+          winner = state.robots.find((r: any) => Math.hypot(r.position.x - TARGET_X, r.position.y - TARGET_Y) < 50);
+          if (winner) matchIsOver = true;
+        } else if (mode === 'TRAINING_SOLO') {
+          // Training mode never ends automatically
+          matchIsOver = false;
+        } else if (state.robots.length > 0 && allRobots.length <= 1) {
+          matchIsOver = true;
+          winner = allRobots.length === 1 ? allRobots[0] : null;
+        }
+
+        if (matchIsOver) {
           // Guard against duplicate saves while async DB write is in-flight
           if (this.savingMatches.has(matchId)) continue;
           this.savingMatches.add(matchId);
 
-          const winner = state.robots.find((r: any) => r.health > 0) || null;
           this.server.to(matchId).emit("matchOver", {
             winner: winner ? { id: winner.id, color: winner.color } : null,
-            draw: allRobots.length === 0
+            draw: !winner && mode !== 'RACING'
           });
 
           // Save Match Result
@@ -201,6 +237,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
           this.matches.delete(matchId);
           this.lastStateMap.delete(matchId);
           this.matchStartTime.delete(matchId);
+          this.matchModes.delete(matchId);
           this.replaySnapshots.delete(matchId);
           this.tickCount.delete(matchId);
           this.savingMatches.delete(matchId);

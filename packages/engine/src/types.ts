@@ -60,3 +60,10 @@ export interface GameState {
   projectiles: Projectile[];
   obstacles: Obstacle[];
 }
+
+export type GameMode = 'COMBAT' | 'RACING' | 'TRAINING_SOLO';
+
+export interface GameConfig {
+  mode: GameMode;
+  disableProjectiles?: boolean;
+}

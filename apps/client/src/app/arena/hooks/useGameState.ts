@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import { useSearchParams } from "next/navigation";
 import { GameState, RobotState, ProjectileState, ObstacleState, FiredTracer, SpeechBubbleState } from "../types";
 
-export const useGameState = (scriptId: string | null) => {
+export const useGameState = (scriptId: string | null, mode: string | null) => {
     const searchParams = useSearchParams();
     const matchIdFromUrl = searchParams.get("matchId");
   const socket: Socket = useMemo(() => {
@@ -20,18 +20,28 @@ export const useGameState = (scriptId: string | null) => {
   const [speechBubble, setSpeechBubble] = useState<SpeechBubbleState | null>(null);
   const [selectedRobotId, setSelectedRobotId] = useState<string>("");
   const [matchResult, setMatchResult] = useState<{ winner: { id: string; color: string } | null; draw: boolean } | null>(null);
+  const [serverConfirmedMode, setServerConfirmedMode] = useState<string>(mode || "COMBAT");
 
   const lastUiUpdateRef = useRef(0);
   const tracerTimeoutRef = useRef<number | null>(null);
   const speechTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // Clear state dynamically when effect re-runs (e.g. mode changes)
+    gameStateRef.current = { robots: [], projectiles: [], obstacles: [] };
+    setUiState({ robots: [], projectiles: [], obstacles: [] });
+    setMatchResult(null);
+
     const handleConnect = () => {
-      console.log("✅ Socket Connected!");
+      console.log("✅ Socket Connected or Mode Re-initialized!");
       if (scriptId) {
         const matchId = matchIdFromUrl || "default-match";
-        socket.emit("joinMatch", { matchId, scriptId });
+        socket.emit("joinMatch", { matchId, scriptId, mode: mode || "COMBAT" });
       }
+    };
+
+    const handleMatchJoinedInfo = (data: { mode: string }) => {
+      setServerConfirmedMode(data.mode);
     };
 
     const handleAuthenticated = (data: any) => {
@@ -133,7 +143,13 @@ export const useGameState = (scriptId: string | null) => {
     socket.on("gameState", handleGameState);
     socket.on("logicExecuted", handleLogicExecuted);
     socket.on("matchOver", handleMatchOver);
-    socket.connect();
+    socket.on("matchJoinedInfo", handleMatchJoinedInfo);
+
+    if (socket.connected) {
+      handleConnect();
+    } else {
+      socket.connect();
+    }
 
     return () => {
       socket.off("connect", handleConnect);
@@ -142,13 +158,14 @@ export const useGameState = (scriptId: string | null) => {
       socket.off("gameState", handleGameState);
       socket.off("logicExecuted", handleLogicExecuted);
       socket.off("matchOver", handleMatchOver);
+      socket.off("matchJoinedInfo", handleMatchJoinedInfo);
       socket.disconnect();
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
       if (speechTimeoutRef.current !== null) window.clearTimeout(speechTimeoutRef.current);
     };
-  }, [socket]);
+  }, [socket, scriptId, matchIdFromUrl, mode]);
 
   const availableRobots = useMemo(() => uiState.robots.map(r => r.id), [uiState.robots]);
 
-  return { gameStateRef, uiState, firedTracer, speechBubble, selectedRobotId, setSelectedRobotId, availableRobots, socket, matchResult };
+  return { gameStateRef, uiState, firedTracer, speechBubble, selectedRobotId, setSelectedRobotId, availableRobots, socket, matchResult, serverConfirmedMode };
 };

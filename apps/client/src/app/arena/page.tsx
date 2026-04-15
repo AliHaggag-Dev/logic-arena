@@ -18,12 +18,15 @@ const ArenaPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const scriptId = searchParams.get("scriptId");
+  const urlMode = searchParams.get("mode") || "COMBAT";
 
   const [script, setScript] = useState<RobotScript | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { socket, gameStateRef, uiState, selectedRobotId, setSelectedRobotId, availableRobots, matchResult } = useGameState(scriptId);
+  const { socket, gameStateRef, uiState, selectedRobotId, setSelectedRobotId, availableRobots, matchResult, serverConfirmedMode } = useGameState(scriptId, urlMode);
+  
+  const displayMode = serverConfirmedMode;
   const [projectileTick, setProjectileTick] = useState(0);
   const projectileAnimRef = useRef<number | null>(null);
 
@@ -85,8 +88,18 @@ const ArenaPage = () => {
           LOGIC ARENA
         </h1>
         <div className="flex items-center gap-2 mt-1">
-          <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_8px_#06b6d4]"></span>
-          <p className="text-[10px] text-cyan-700 tracking-[0.2em] font-bold">v1.1.0-beta [SENTIENT UPDATE]</p>
+          <span className={`w-2 h-2 rounded-full animate-pulse ${
+            displayMode === 'RACING' ? 'bg-yellow-500 shadow-[0_0_8px_#eab308]' : 
+            displayMode === 'TRAINING_SOLO' ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 
+            'bg-red-500 shadow-[0_0_8px_#ef4444]'
+          }`}></span>
+          <p className={`text-[10px] tracking-[0.2em] font-bold ${
+            displayMode === 'RACING' ? 'text-yellow-700' : 
+            displayMode === 'TRAINING_SOLO' ? 'text-green-700' : 
+            'text-red-700'
+          }`}>
+            v1.1.0-beta {displayMode === 'RACING' ? '[RACING OVAL]' : displayMode === 'TRAINING_SOLO' ? '[TRAINING SOLO]' : '[COMBAT ARENA]'}
+          </p>
         </div>
       </div>
 
@@ -164,7 +177,7 @@ const ArenaPage = () => {
                 </div>
               );
             })}
-            {(gameStateRef.current?.projectiles || []).map((p: any) => (
+            {displayMode === 'COMBAT' && (gameStateRef.current?.projectiles || []).map((p: any) => (
               <div key={p.id} className="absolute"
                 style={{ left: `${(p.position.x / 800) * 100}%`, top: `${(p.position.y / 600) * 100}%`, transform: "translate(-50%, -50%)" }}>
                 <div className="w-1 h-1 rounded-full bg-yellow-400 shadow-[0_0_6px_#facc15]" />

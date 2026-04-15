@@ -22,7 +22,7 @@ interface ScriptEditorProps {
 }
 
 export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScriptInput, handleDeployBrain, toggleLibrary, clearPrebuilt }) => {
-    const workerRef = useRef<Worker>();
+    const workerRef = useRef<Worker | null>(null);
     const [syntaxValid, setSyntaxValid] = useState<boolean | null>(null);
 
     useEffect(() => {

@@ -13,11 +13,46 @@ interface RobotScript {
     createdAt: string;
 }
 
+const CustomSelect = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const options = ["COMBAT", "RACING", "TRAINING_SOLO"];
+
+    return (
+        <div className="relative font-mono text-[10px] sm:text-xs tracking-widest z-50">
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between gap-4 bg-black/80 backdrop-blur-xl border border-[#00f3ff] rounded px-3 py-1.5 text-[#00f3ff] shadow-[0_0_8px_rgba(0,243,255,0.4)] hover:shadow-[0_0_15px_rgba(0,243,255,0.8)] hover:bg-cyan-500/20 transition-all uppercase w-40"
+            >
+                <span className="truncate">{value}</span>
+                <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''} text-[8px]`}>▼</span>
+            </button>
+
+            {isOpen && (
+                <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
+                    <div className="absolute top-full right-0 mt-2 w-40 z-50 bg-black/90 backdrop-blur-xl border border-[#00f3ff] shadow-[0_0_10px_rgba(0,243,255,0.5)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-1">
+                        {options.map((opt) => (
+                            <button
+                                key={opt}
+                                onClick={() => { onChange(opt); setIsOpen(false); }}
+                                className={`px-3 py-2 text-left uppercase transition-all duration-75 hover:bg-cyan-400/30 hover:text-white hover:tracking-[0.1em] ${value === opt ? 'bg-cyan-950 text-[#00f3ff]' : 'text-cyan-300'}`}
+                            >
+                                {opt}
+                            </button>
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
 const DashboardPage = () => {
     const [scripts, setScripts] = useState<RobotScript[]>([]);
     const [newScriptTitle, setNewScriptTitle] = useState("");
     const [status, setStatus] = useState<{ message: string; type: "error" | "success" | null }>({ message: "", type: null });
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedMode, setSelectedMode] = useState<"COMBAT" | "RACING" | "TRAINING_SOLO">("COMBAT");
     const router = useRouter();
 
     useEffect(() => {
@@ -61,7 +96,7 @@ const DashboardPage = () => {
     };
 
     const handleGoToArena = (scriptId: string) => {
-        router.push(`/arena?scriptId=${scriptId}`);
+        router.push(`/arena?scriptId=${scriptId}&mode=${selectedMode}`);
     };
 
     const handleGoToLobby = (scriptId: string) => {
@@ -115,7 +150,13 @@ const DashboardPage = () => {
                     <div className="order-2 lg:order-1 lg:col-span-2 flex flex-col gap-4">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-cyan-500 uppercase tracking-widest text-[10px] sm:text-xs font-bold">Neural Scripts Repository</h3>
-                            <span className="text-cyan-800 text-[10px]">TOTAL: {scripts.length}</span>
+                            <div className="flex items-center gap-4">
+                                <CustomSelect 
+                                    value={selectedMode} 
+                                    onChange={(val) => setSelectedMode(val as any)}
+                                />
+                                <span className="text-cyan-800 text-[10px]">TOTAL: {scripts.length}</span>
+                            </div>
                         </div>
 
                         {scripts.length === 0 ? (

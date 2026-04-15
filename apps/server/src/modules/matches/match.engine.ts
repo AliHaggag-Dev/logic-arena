@@ -1,4 +1,4 @@
-import { GameLoop, Robot } from "@logic-arena/engine";
+import { GameLoop, Robot, GameConfig, GameMode } from "@logic-arena/engine";
 import { SandboxRunner } from "../../common/sandbox.runner";
 import { createRobot, parseAndSetLogic } from "./robot-factory";
 import { createGameDependencies, GameDependencies } from "./game-dependencies";
@@ -10,10 +10,12 @@ export class MatchEngine {
   private initialPlayers: { id: string; script: string }[] = [];
   private tickInterval: NodeJS.Timeout | null = null;
   private matchId: string;
+  private config?: GameConfig;
 
-  constructor(matchId: string, initialPlayers: { id: string; script: string }[]) {
+  constructor(matchId: string, initialPlayers: { id: string; script: string }[], config?: GameConfig) {
     this.matchId = matchId;
-    this.gameLoop = new GameLoop();
+    this.config = config;
+    this.gameLoop = new GameLoop(this.config);
     this.sandboxRunner = new SandboxRunner();
     this.deps = createGameDependencies(this.gameLoop);
     this.initialPlayers = initialPlayers;
@@ -25,7 +27,7 @@ export class MatchEngine {
 
   reset() {
     this.stop();
-    this.gameLoop = new GameLoop();
+    this.gameLoop = new GameLoop(this.config);
     this.deps = createGameDependencies(this.gameLoop);
     this.initialPlayers.forEach((p, i) => {
       this.gameLoop.addRobot(createRobot(p.id, p.script, i));
