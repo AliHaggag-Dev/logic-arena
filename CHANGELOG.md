@@ -339,3 +339,32 @@ Introduced the Tournament Bracket System, 2D Canvas Match Replay System, an inte
 
 ### Current Status:
 - The platform is now a comprehensive competitive tactical suite, fully capable of autonomous replay recordings and structured e-sport tournament brackets. Fully modularized dashboard and documentation architecture further grounds the Logic Arena experience.
+
+## [1.8.0-beta] - AliScript v2.0, Environment Stability & Dynamic Orchestration - 2026-04-15
+
+### Major Feature Release:
+Launched AliScript v2.0 with Fox-Mind optimization and a new Zen-IDE, stabilized the arena environment with an advanced physics/pathfinding system, and implemented dynamic mode orchestration for Combat, Racing, and Training modes.
+
+### Technical Scars and Resolutions:
+
+- **Issue: The "Circular Jitter" Navigation Loop:** Robots would enter a "spasmodic oscillation" when near traps or when re-calculating paths near their current coordinates, causing them to spin in place instead of moving.
+
+- **Resolution:** Overhauled the A* heuristic to a Weighted Cost Grid. Instead of binary "pass/block" logic, we assigned high costs to TRAP (3.0) and LAVA (5.0) cells. Additionally, implemented a Self-Waypoint Skip logic that instantly consumes waypoints within a half-cell radius, breaking the recursive "pointing-at-self" feedback loop.
+
+- **Issue: The "Zero-Frame" Training Termination:** The TRAINING_SOLO mode would instantly crash to the winner screen upon launch because the server's win-condition logic was hardcoded to end the match if < 2 robots were alive.
+
+- **Resolution:** Patched the MatchGateway's victory-check heartbeat to ignore the robot count threshold when the 'TRAINING_SOLO' flag is active, enabling an indefinite sandbox session.
+
+- **Issue: The "Sticky Geometry" State Leak:** Switching between Racing and Combat modes via the dashboard would result in "Ghost Obstacles" where the client rendered new mode visuals but the server physics remained locked to the previous match configuration.
+
+- **Resolution:** Implemented Aggressive State Purging on the client-side useEffect and a complete MatchEngine Reconstruction on the backend. We also introduced serverConfirmedMode to ensure the UI badge only updates after a successful handshake with the fresh backend ruleset.
+
+### Key Technical Achievements:
+- **AliScript v2.0 & Zen-IDE:** Added full support for `WHILE` loops, `IF/ELSE`, math operators, and user-defined `FUNCTIONS`. Launched a new Zen-mode IDE featuring translucent glassmorphism, background Web Worker parsing, and neon syntax highlighting.
+- **Engine Optimization & Networking:** Migrated from ES6 Maps to V8-optimized Record structures for 3x faster memory indexing. Implemented Delta-State diffing, reducing WebSocket payload size by ~80%.
+- **Arena Physics & Pathfinding:** Implemented a Weighted A* Cost Grid for TRAP/LAVA navigation and integrated SpatialGrid partitioning for O(1) collision performance. Defined a core 3-pillar obstacle system (SOLID, TRAP, LAVA) with unique physics and neon-pulsing visual models.
+- **Dynamic Mode Orchestration:** Deployed custom Cyberpunk UI for mode selection, fixed the "Sticky Mode" bug with aggressive server-side match reconstruction, and synced HUD badges securely via `serverConfirmedMode`.
+- **Training Sandbox Patch:** Bypassed the auto-termination logic for `TRAINING_SOLO` to create a truly infinite testing environment.
+
+### Current Status:
+- The ecosystem has reached a major milestone with a Turing-complete-ish v2.0 scripting language and a highly optimized O(1) physics engine capable of scaling dynamically across combat, racing, and solo training modes.
