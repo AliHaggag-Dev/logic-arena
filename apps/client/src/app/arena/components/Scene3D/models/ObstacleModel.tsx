@@ -4,6 +4,20 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { ObstacleModelProps } from "../../../types";
 
+/**
+ * ObstacleModel — 3D visual for each obstacle pillar.
+ *
+ * SOLID  : Tall blue box — impassable wall.
+ *          Dark blue body + strong #4444FF emissive. Static (no animation).
+ *
+ * TRAP   : Flat pulsing disc — slowdown zone (Pulse Blue).
+ *          Deep purple + #6600FF emissive, slow counter-clockwise rotation
+ *          and sinusoidal pulse to signal "danger but passable".
+ *
+ * LAVA   : Low pulsing hexagonal platform — damage zone (Neon Red).
+ *          Dark red + #FF2200 emissive. Fast aggressive pulse (0.4→1.5)
+ *          signals active burning damage.
+ */
 export const ObstacleModel = memo(function ObstacleModel({ obstacle }: ObstacleModelProps) {
     const groupRef = useRef<THREE.Group>(null);
     const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
@@ -19,20 +33,22 @@ export const ObstacleModel = memo(function ObstacleModel({ obstacle }: ObstacleM
 
     const geometry = useMemo(() => {
         switch (obstacle.type) {
-            case "WALL":
-                return new THREE.BoxGeometry(w, 0.6, h);
+            case "SOLID":
+                // Tall imposing box — clearly impassable
+                return new THREE.BoxGeometry(w, 0.7, h);
+
             case "TRAP": {
-                const radius = Math.max(0.15, w / 2);
-                return new THREE.CylinderGeometry(radius, radius * 1.2, 0.2, 6);
-            }
-            case "SLOW": {
+                // Flat spinning disc — slowdown zone
                 const radius = Math.max(0.15, w / 2);
                 return new THREE.CircleGeometry(radius, 32);
             }
-            case "BOUNCER": {
-                const size = Math.max(0.12, w / 2);
-                return new THREE.OctahedronGeometry(size);
+
+            case "LAVA": {
+                // Low hexagonal platform — damage zone
+                const radius = Math.max(0.15, w / 2);
+                return new THREE.CylinderGeometry(radius, radius * 1.15, 0.18, 6);
             }
+
             default:
                 return new THREE.BoxGeometry(0.1, 0.1, 0.1);
         }
@@ -40,41 +56,38 @@ export const ObstacleModel = memo(function ObstacleModel({ obstacle }: ObstacleM
 
     const material = useMemo(() => {
         switch (obstacle.type) {
-            case "WALL":
+            case "SOLID":
                 return new THREE.MeshStandardMaterial({
-                    color: "#1a1a3e",
+                    color: "#0d0d2e",
                     emissive: "#4444FF",
-                    emissiveIntensity: 0.5,
-                    metalness: 0.9,
-                    roughness: 0.1
+                    emissiveIntensity: 0.55,
+                    metalness: 0.95,
+                    roughness: 0.08,
                 });
+
             case "TRAP":
+                // Pulse Blue — deep purple base, electric blue-violet emissive
                 return new THREE.MeshStandardMaterial({
-                    color: "#3e0000",
-                    emissive: "#FF2200",
+                    color: "#12003e",
+                    emissive: "#6600FF",
                     emissiveIntensity: 0.8,
-                    metalness: 0.9,
-                    roughness: 0.25
-                });
-            case "SLOW":
-                return new THREE.MeshStandardMaterial({
-                    color: "#1a003e",
-                    emissive: "#AA00FF",
-                    emissiveIntensity: 0.7,
                     metalness: 0.6,
-                    roughness: 0.35,
+                    roughness: 0.3,
                     transparent: true,
-                    opacity: 0.85,
-                    side: THREE.DoubleSide
+                    opacity: 0.88,
+                    side: THREE.DoubleSide,
                 });
-            case "BOUNCER":
+
+            case "LAVA":
+                // Neon Red — aggressive damage signal
                 return new THREE.MeshStandardMaterial({
-                    color: "#003e3e",
-                    emissive: "#00FFFF",
-                    emissiveIntensity: 1.2,
-                    metalness: 0.7,
-                    roughness: 0.2
+                    color: "#3e0500",
+                    emissive: "#FF2200",
+                    emissiveIntensity: 0.9,
+                    metalness: 0.85,
+                    roughness: 0.2,
                 });
+
             default:
                 return new THREE.MeshStandardMaterial({ color: "#333333" });
         }
@@ -92,58 +105,54 @@ export const ObstacleModel = memo(function ObstacleModel({ obstacle }: ObstacleM
     useFrame((state, delta) => {
         const t = state.clock.elapsedTime;
         const mat = materialRef.current;
+        const group = groupRef.current;
         if (!mat) return;
 
-        if (obstacle.type === "TRAP") {
-            // 0.5 -> 1.2
-            mat.emissiveIntensity = 0.85 + 0.35 * Math.sin(t * 3);
-        }
+        switch (obstacle.type) {
+            case "SOLID":
+                // Static — no animation. Walls don't pulse.
+                break;
 
-        if (obstacle.type === "BOUNCER") {
-            // 0.6 -> 2.0
-            mat.emissiveIntensity = 1.3 + 0.7 * Math.sin(t * 5);
-        }
+            case "TRAP":
+                // Pulse Blue: slow sinusoidal intensity pulse (0.4 → 1.2)
+                mat.emissiveIntensity = 0.8 + 0.4 * Math.sin(t * 1.8);
+                // Slow counter-clockwise rotation — visually distinct from LAVA
+                if (group) group.rotation.y -= 0.35 * delta;
+                break;
 
-        if (obstacle.type === "SLOW") {
-            const group = groupRef.current;
-            if (group) {
-                group.rotation.y += 0.5 * delta;
-            }
+            case "LAVA":
+                // Neon Red: fast aggressive pulse (0.4 → 1.5)
+                mat.emissiveIntensity = 0.95 + 0.55 * Math.sin(t * 4.5);
+                break;
         }
     });
 
-    if (obstacle.type === "WALL") {
+    // --- Render per obstacle type ---
+
+    if (obstacle.type === "SOLID") {
         return (
-            <group ref={groupRef} position={[x, 0.3, z]} rotation={[0, rotationY, 0]}>
-                <mesh geometry={geometry} material={material} />
-                <pointLight position={[0, 0.8, 0]} color="#4444FF" intensity={1.5} distance={3} />
+            <group ref={groupRef} position={[x, 0.35, z]} rotation={[0, rotationY, 0]}>
+                <mesh geometry={geometry} material={material} castShadow receiveShadow />
+                <pointLight position={[0, 0.9, 0]} color="#4444FF" intensity={1.8} distance={3.5} />
             </group>
         );
     }
 
     if (obstacle.type === "TRAP") {
         return (
-            <group ref={groupRef} position={[x, 0, z]} rotation={[0, rotationY, 0]}>
-                <mesh position={[0, 0.1, 0]} geometry={geometry} material={material} />
-                <pointLight position={[0, 0.55, 0]} color="#FF0000" intensity={2.0} distance={4} />
-            </group>
-        );
-    }
-
-    if (obstacle.type === "SLOW") {
-        return (
-            <group ref={groupRef} position={[x, 0.05, z]} rotation={[0, rotationY, 0]}>
+            // Flat disc lies on the floor — robot walks over it
+            <group ref={groupRef} position={[x, 0.02, z]} rotation={[0, rotationY, 0]}>
                 <mesh rotation={[-Math.PI / 2, 0, 0]} geometry={geometry} material={material} />
-                <pointLight position={[0, 0.6, 0]} color="#AA00FF" intensity={1.8} distance={4} />
+                <pointLight position={[0, 0.5, 0]} color="#6600FF" intensity={2.2} distance={4.5} />
             </group>
         );
     }
 
-    if (obstacle.type === "BOUNCER") {
+    if (obstacle.type === "LAVA") {
         return (
             <group ref={groupRef} position={[x, 0, z]} rotation={[0, rotationY, 0]}>
-                <mesh position={[0, 0.25, 0]} geometry={geometry} material={material} />
-                <pointLight position={[0, 0.65, 0]} color="#00FFFF" intensity={2.5} distance={5} />
+                <mesh position={[0, 0.09, 0]} geometry={geometry} material={material} />
+                <pointLight position={[0, 0.6, 0]} color="#FF2200" intensity={2.8} distance={5} />
             </group>
         );
     }

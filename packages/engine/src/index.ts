@@ -3,6 +3,7 @@ import { updateProjectiles, spawnProjectile } from './physics/collision-projecti
 import { checkRobotRobotCollision } from './physics/collision-robots';
 import { checkObstacleCollision } from './physics/collision-obstacles';
 import { checkWallBounds } from './physics/wall-bounds';
+import { SpatialGrid } from './physics/spatial-grid';
 import { performance } from 'node:perf_hooks';
 
 const requestAnimationFrame = (callback: FrameRequestCallback) =>
@@ -13,25 +14,29 @@ const ARENA_WIDTH = 800;
 const ARENA_HEIGHT = 600;
 const ROBOT_RADIUS = 15;
 
+/**
+ * Default obstacle layout — The 3 Pillars:
+ *  SOLID : Impassable walls (center cross formation)
+ *  TRAP  : Slowdown zones — 60% velocity reduction while inside
+ *  LAVA  : Damage zones — 5 HP/sec while inside
+ */
 const DEFAULT_OBSTACLES: Obstacle[] = [
-  // Center cross walls
-  { id: 'wall-1', type: 'WALL', position: { x: 400, y: 200 }, width: 80, height: 25, rotation: 0 },
-  { id: 'wall-2', type: 'WALL', position: { x: 400, y: 400 }, width: 80, height: 25, rotation: 0 },
-  { id: 'wall-3', type: 'WALL', position: { x: 250, y: 300 }, width: 25, height: 80, rotation: 0 },
-  { id: 'wall-4', type: 'WALL', position: { x: 550, y: 300 }, width: 25, height: 80, rotation: 0 },
+  // Center cross — SOLID walls
+  { id: 'solid-1', type: 'SOLID', position: { x: 400, y: 200 }, width: 80, height: 25, rotation: 0 },
+  { id: 'solid-2', type: 'SOLID', position: { x: 400, y: 400 }, width: 80, height: 25, rotation: 0 },
+  { id: 'solid-3', type: 'SOLID', position: { x: 250, y: 300 }, width: 25, height: 80, rotation: 0 },
+  { id: 'solid-4', type: 'SOLID', position: { x: 550, y: 300 }, width: 25, height: 80, rotation: 0 },
 
-  // Traps near center
-  { id: 'trap-1', type: 'TRAP', position: { x: 200, y: 150 }, width: 60, height: 60, rotation: 0.3 },
-  { id: 'trap-2', type: 'TRAP', position: { x: 600, y: 450 }, width: 60, height: 60, rotation: -0.3 },
+  // LAVA zones — continuous 5 HP/sec damage
+  { id: 'lava-1', type: 'LAVA', position: { x: 200, y: 150 }, width: 60, height: 60, rotation: 0.3 },
+  { id: 'lava-2', type: 'LAVA', position: { x: 600, y: 450 }, width: 60, height: 60, rotation: -0.3 },
 
-  // Slow zones at corridors
-  { id: 'slow-1', type: 'SLOW', position: { x: 150, y: 400 }, width: 60, height: 35, rotation: 0.15 },
-  { id: 'slow-2', type: 'SLOW', position: { x: 650, y: 200 }, width: 60, height: 35, rotation: -0.15 },
-
-  // Bouncers in corners
-  { id: 'bounce-1', type: 'BOUNCER', position: { x: 120, y: 120 }, width: 35, height: 35, rotation: 0.785 },
-  { id: 'bounce-2', type: 'BOUNCER', position: { x: 680, y: 480 }, width: 35, height: 35, rotation: 0.785 },
+  // TRAP zones — 60% velocity reduction while inside
+  { id: 'trap-1', type: 'TRAP', position: { x: 150, y: 400 }, width: 60, height: 35, rotation: 0.15 },
+  { id: 'trap-2', type: 'TRAP', position: { x: 650, y: 200 }, width: 60, height: 35, rotation: -0.15 },
 ];
+
+const LAVA_DPS = 5; // HP per second deducted while inside a LAVA zone
 
 export class GameLoop {
   private lastFrameTime: number = 0;
@@ -41,6 +46,17 @@ export class GameLoop {
   private projectiles: Projectile[] = [];
   private obstacles: Obstacle[] = [];
   private readonly ARENA = { width: ARENA_WIDTH, height: ARENA_HEIGHT };
+
+  /**
+   * Spatial grid for O(1) robot neighbor lookup.
+   * Cell size 100 gives an 8×6 grid for the 800×600 arena.
+   * The grid is scalable — pass a larger cellSize for bigger arenas.
+   */
+  private readonly spatialGrid = new SpatialGrid<Robot>(
+    ARENA_WIDTH,
+    ARENA_HEIGHT,
+    100,
+  );
 
   constructor() {
     this.obstacles = DEFAULT_OBSTACLES;
@@ -88,10 +104,14 @@ export class GameLoop {
   };
 
   public update(deltaTime: number): void {
-    const now = Date.now();
-
-    // 1. Update Projectiles & Check Robot Hits
-    this.projectiles = updateProjectiles(this.projectiles, this.robots, this.ARENA.width, this.ARENA.height);
+    // 1. Update Projectiles — pass obstacles for SOLID wall destruction
+    this.projectiles = updateProjectiles(
+      this.projectiles,
+      this.robots,
+      this.ARENA.width,
+      this.ARENA.height,
+      this.obstacles,
+    );
 
     // 2. Update Robots
     this.robots.forEach(robot => {
@@ -100,43 +120,58 @@ export class GameLoop {
         return;
       }
 
-      // Handle status effects
-      if (robot.trappedUntil && now < robot.trappedUntil) {
-        robot.velocity = { x: 0, y: 0 };
-      }
-      // FIX: Completely delete the `else if` block that sets robot.trappedUntil = undefined
-      // We need to keep the timestamp so we can calculate immunity!
+      // --- Reset per-tick transient flags ---
+      // TRAP/LAVA collision handlers set these each tick inside obstacle loops.
+      // Resetting here ensures they're only "on" while the robot is actively inside a zone.
+      robot.insideLava = false;
+      robot.speedMultiplier = 1.0;
 
-      let speedMultiplier = 1.0;
-      if (robot.slowedUntil && now < robot.slowedUntil) {
-        speedMultiplier = robot.speedMultiplier ?? 0.4;
-      } else if (robot.slowedUntil) {
-        robot.slowedUntil = undefined;
-        robot.speedMultiplier = undefined;
-      }
-
-      // Update position
-      robot.position.x += robot.velocity.x * speedMultiplier * deltaTime;
-      robot.position.y += robot.velocity.y * speedMultiplier * deltaTime;
-
-      // Boundary Collisions
+      // Boundary + Obstacle Collisions
+      // (These may set insideLava/speedMultiplier back to active values)
       checkWallBounds(robot, this.ARENA.width, this.ARENA.height);
-
-      // Obstacle Collisions
       for (const obstacle of this.obstacles) {
         checkObstacleCollision(robot, obstacle);
       }
 
-      const speed = Math.hypot(robot.velocity.x, robot.velocity.y);
-      if (speed > 0.001) {
+      // LAVA damage — 5 HP per second, accumulated via deltaTime
+      if (robot.insideLava) {
+        robot.health = Math.max(0, robot.health - LAVA_DPS * deltaTime);
+        if (robot.health === 0) robot.isAlive = false;
+      }
+
+      // Apply velocity with TRAP slow multiplier
+      const speed = robot.speedMultiplier ?? 1.0;
+      robot.position.x += robot.velocity.x * speed * deltaTime;
+      robot.position.y += robot.velocity.y * speed * deltaTime;
+
+      // Update facing rotation from velocity direction
+      const vMag = Math.hypot(robot.velocity.x, robot.velocity.y);
+      if (vMag > 0.001) {
         robot.rotation = Math.atan2(robot.velocity.y, robot.velocity.x);
       }
     });
 
-    // 3. Robot vs Robot Collision
-    for (let i = 0; i < this.robots.length; i++) {
-      for (let j = i + 1; j < this.robots.length; j++) {
-        checkRobotRobotCollision(this.robots[i], this.robots[j]);
+    // 3. Robot-vs-Robot Collision — Spatial Grid accelerated
+    // Rebuild the grid each tick with alive robots only
+    this.spatialGrid.clear();
+    for (const robot of this.robots) {
+      if (robot.isAlive) this.spatialGrid.insert(robot);
+    }
+
+    // For each robot, only check against nearby robots from the spatial grid
+    const checked = new Set<string>();
+    for (const robot of this.robots) {
+      if (!robot.isAlive) continue;
+      const neighbors = this.spatialGrid.query(robot.position.x, robot.position.y);
+      for (const neighbor of neighbors) {
+        if (neighbor.id === robot.id) continue;
+        // Build a canonical pair key to avoid checking the same pair twice
+        const pairKey = robot.id < neighbor.id
+          ? `${robot.id}|${neighbor.id}`
+          : `${neighbor.id}|${robot.id}`;
+        if (checked.has(pairKey)) continue;
+        checked.add(pairKey);
+        checkRobotRobotCollision(robot, neighbor);
       }
     }
   }
@@ -153,3 +188,4 @@ export class GameLoop {
 }
 
 export type { Robot, Projectile, Obstacle, GameState, Vector2 };
+

@@ -14,10 +14,19 @@ export interface Robot {
   isAlive: boolean;
   code: string;
   memory: Record<string, any>;
-  trappedUntil?: number;    // timestamp in ms
-  slowedUntil?: number;     // timestamp in ms
-  speedMultiplier?: number; // default 1.0
-  color?: string
+  /**
+   * Per-tick flag: set to true by collision-obstacles when the robot
+   * center is inside a LAVA zone. Consumed by the game loop for
+   * continuous HP deduction (5 HP/sec). Reset at the start of each tick.
+   */
+  insideLava?: boolean;
+  /**
+   * Per-tick speed modifier set by the collision system.
+   * 1.0 = full speed, 0.4 = 60% velocity reduction (TRAP zone).
+   * Reset to 1.0 at the start of each robot's update.
+   */
+  speedMultiplier?: number;
+  color?: string;
 }
 
 export interface Projectile {
@@ -28,7 +37,13 @@ export interface Projectile {
   team: 'A' | 'B';
 }
 
-export type ObstacleType = 'WALL' | 'TRAP' | 'SLOW' | 'BOUNCER';
+/**
+ * The 3 Obstacle Pillars:
+ *  SOLID — Impassable wall. Infinite friction. Destroys projectiles.
+ *  TRAP  — Slowdown zone. Reduces robot velocity by 60% while inside.
+ *  LAVA  — Damage zone. Deducts 5 HP/sec while robot is inside.
+ */
+export type ObstacleType = 'SOLID' | 'TRAP' | 'LAVA';
 
 export interface Obstacle {
   id: string;

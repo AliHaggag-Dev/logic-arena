@@ -18,7 +18,7 @@ export interface ProjectileState {
   position: Vec2;
 }
 
-export type ObstacleType = "WALL" | "TRAP" | "SLOW" | "BOUNCER";
+export type ObstacleType = "SOLID" | "TRAP" | "LAVA";
 
 export interface ObstacleState {
   id: string;

@@ -43,8 +43,23 @@
 *   **Destruction:** A robot is destroyed when its health reaches 0. Destroyed robots are removed from the arena.
 
 ## Arena
-*   **Boundaries:** Robots are confined to a rectangular or custom-shaped arena. Attempting to move beyond boundaries will result in collision.
-*   **Obstacles:** The arena may contain static obstacles (e.g., walls, blocks) that robots must navigate around.
+*   **Boundaries:** Robots are confined to an 800×600 arena. Arena walls reflect robots and destroy projectiles.
+*   **Obstacles:** The arena contains static obstacle zones, each with distinct behavior defined by its type.
+
+## Obstacle Types — The 3 Pillars
+
+The arena uses exactly 3 obstacle types. Each type has a distinct visual, behavior, and projectile interaction:
+
+| Type | Visual | Behaviour | Projectiles |
+|------|--------|-----------|-------------|
+| **SOLID** (Wall) | Tall dark-blue glowing box | **Impassable.** Robots cannot enter. Velocity is reflected on contact (wall-slide physics). | **Destroyed on impact.** |
+| **TRAP** (Slowdown Zone) | Flat spinning Pulse-Blue disc (floor-level) | **Walkable.** Reduces robot velocity by **60%** while the robot's center is inside the zone. Effect is instant-on / instant-off — no lingering timer. | **Pass through.** |
+| **LAVA** (Damage Zone) | Low pulsing Neon-Red hexagonal platform | **Walkable.** Deducts **5 HP per second** (continuous, `deltaTime`-accurate) while the robot's center is inside the zone. | **Pass through.** |
+
+### Obstacle Rules
+*   TRAP and LAVA zones are **not stackable** — a robot inside both receives the most severe effect per category.
+*   SOLID walls have a **1-cell padding** in the A\* pathfinder grid to account for robot radius, ensuring robots never clip through corners.
+*   The pathfinder routes robots **around** LAVA (cost ×5) and **preferably around** TRAP zones (cost ×3) when alternative paths exist. Robots will enter these zones if no clear path exists.
 
 ## Match End Conditions
 *   **Last Robot Standing:** The match ends when only one robot remains. That robot (and its user) is declared the winner.

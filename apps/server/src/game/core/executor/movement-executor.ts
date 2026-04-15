@@ -23,14 +23,10 @@ export class MovementExecutor {
             return;
         }
 
-        if (robot.trappedUntil && Date.now() < robot.trappedUntil) {
-            robot.velocity.x = 0;
-            robot.velocity.y = 0;
-            return;
-        }
-
-        const slowMult = (robot.slowedUntil && Date.now() < robot.slowedUntil)
-            ? (robot.speedMultiplier ?? 0.4) : 1;
+        // The engine sets speedMultiplier = 0.4 per-tick when the robot is inside a TRAP zone,
+        // and resets it to 1.0 at the start of each tick when the robot is outside.
+        // The executor simply reads it — no timestamp checks needed.
+        const slowMult = robot.speedMultiplier ?? 1.0;
         const speedMultiplier = actionCommand === "MOVE_FAST" ? this.MOVE_FAST_MULTIPLIER : 1;
         const directionMultiplier = actionCommand === "BACKUP" ? -1 : 1;
         const speed = this.MOVE_SPEED * speedMultiplier * directionMultiplier * slowMult;
