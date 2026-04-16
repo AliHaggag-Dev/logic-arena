@@ -41,6 +41,22 @@ export interface Robot {
   /** Color hex string used for rendering (e.g. '#00ffff'). */
   color?: string;
 
+  /** Timestamp tracking the exact tick elapsed when a robot slams into a SOLID structure. */
+  hitWallTimestamp?: number;
+
+  /** Number of physics ticks remaining where normal steering is disabled due to a wall impact. */
+  collisionCooldown?: number;
+
+  /** Flag raised by the AliScript Evaluator when a user explicitly uses `SET rotation = X`. */
+  isManualRotation?: boolean;
+
+  /**
+   * If set to true by AliScript (`SET lockVision = TRUE`),
+   * the fovDirection will automatically match robot.rotation every physics tick,
+   * effectively locking the scanner to where the robot is physically facing.
+   */
+  lockVision?: boolean;
+
   // --- Zone flags (per-tick transient, reset at start of each tick) ---
   /**
    * Set to true by collision-obstacles when the robot is inside a LAVA zone.

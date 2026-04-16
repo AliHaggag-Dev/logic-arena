@@ -12,7 +12,7 @@ const requestAnimationFrame = (callback: FrameRequestCallback) =>
   (setTimeout(() => callback(performance.now()), 1000 / 60) as unknown) as number;
 const cancelAnimationFrame = (id: number) => clearTimeout(id);
 
-const ARENA_WIDTH  = 800;
+const ARENA_WIDTH = 800;
 const ARENA_HEIGHT = 600;
 const ROBOT_RADIUS = 15;
 
@@ -40,14 +40,14 @@ const DEFAULT_OBSTACLES: Obstacle[] = [
 ];
 
 const RACING_OBSTACLES: Obstacle[] = [
-  { id: 'race-wall-1',  type: 'SOLID', position: { x: 400, y:  50 }, width: 700, height: 20, rotation: 0 },
-  { id: 'race-wall-2',  type: 'SOLID', position: { x: 400, y: 550 }, width: 700, height: 20, rotation: 0 },
-  { id: 'race-wall-3',  type: 'SOLID', position: { x:  50, y: 300 }, width:  20, height: 500, rotation: 0 },
-  { id: 'race-wall-4',  type: 'SOLID', position: { x: 750, y: 300 }, width:  20, height: 500, rotation: 0 },
-  { id: 'race-inner-1', type: 'SOLID', position: { x: 400, y: 200 }, width: 400, height:  20, rotation: 0 },
-  { id: 'race-inner-2', type: 'SOLID', position: { x: 400, y: 400 }, width: 400, height:  20, rotation: 0 },
-  { id: 'race-inner-3', type: 'SOLID', position: { x: 200, y: 300 }, width:  20, height: 200, rotation: 0 },
-  { id: 'race-inner-4', type: 'SOLID', position: { x: 600, y: 300 }, width:  20, height: 200, rotation: 0 },
+  { id: 'race-wall-1', type: 'SOLID', position: { x: 400, y: 50 }, width: 700, height: 20, rotation: 0 },
+  { id: 'race-wall-2', type: 'SOLID', position: { x: 400, y: 550 }, width: 700, height: 20, rotation: 0 },
+  { id: 'race-wall-3', type: 'SOLID', position: { x: 50, y: 300 }, width: 20, height: 500, rotation: 0 },
+  { id: 'race-wall-4', type: 'SOLID', position: { x: 750, y: 300 }, width: 20, height: 500, rotation: 0 },
+  { id: 'race-inner-1', type: 'SOLID', position: { x: 400, y: 200 }, width: 400, height: 20, rotation: 0 },
+  { id: 'race-inner-2', type: 'SOLID', position: { x: 400, y: 400 }, width: 400, height: 20, rotation: 0 },
+  { id: 'race-inner-3', type: 'SOLID', position: { x: 200, y: 300 }, width: 20, height: 200, rotation: 0 },
+  { id: 'race-inner-4', type: 'SOLID', position: { x: 600, y: 300 }, width: 20, height: 200, rotation: 0 },
 ];
 
 const LAVA_DPS = 5; // HP per second deducted while inside a LAVA zone
@@ -98,7 +98,7 @@ export class GameLoop {
   addRobot(robot: Robot): void {
     // Ensure energy/FOV fields are initialised with safe defaults
     this.energyManager.initRobot(robot);
-    if (!robot.fov)          robot.fov          = { ...DEFAULT_FOV };
+    if (!robot.fov) robot.fov = { ...DEFAULT_FOV };
     if (robot.fovDirection === undefined) robot.fovDirection = robot.rotation;
     if (!robot.visibleEntities) {
       robot.visibleEntities = { robots: [], projectiles: [], obstacles: [] };
@@ -116,9 +116,9 @@ export class GameLoop {
 
   getGameState(): GameState {
     return {
-      robots:      this.robots,
+      robots: this.robots,
       projectiles: this.projectiles,
-      obstacles:   this.obstacles,
+      obstacles: this.obstacles,
     };
   }
 
@@ -168,14 +168,17 @@ export class GameLoop {
       this.energyManager.regen(robot);
 
       // --- Reset per-tick transient flags ---
-      robot.insideLava     = false;
+      robot.insideLava = false;
       robot.speedMultiplier = 1.0;
 
       // Boundary + Obstacle Collisions
+      // Snapshot hitWallTimestamp before so we can detect if collision fired this tick
+      const prevHitWall = robot.hitWallTimestamp ?? 0;
       checkWallBounds(robot, this.ARENA.width, this.ARENA.height);
       for (const obstacle of this.obstacles) {
         checkObstacleCollision(robot, obstacle);
       }
+      const hitWallThisTick = (robot.hitWallTimestamp ?? 0) > prevHitWall;
 
       // LAVA damage — 5 HP/sec accumulated via deltaTime
       if (robot.insideLava) {
@@ -183,14 +186,38 @@ export class GameLoop {
         if (robot.health === 0) robot.isAlive = false;
       }
 
+      const currentSpeed = Math.hypot(robot.velocity.x, robot.velocity.y);
+      const isCoolingDown = (robot.collisionCooldown ?? 0) > 0;
+
+      if (!isCoolingDown) {
+        if (robot.isManualRotation && currentSpeed > 0.1) {
+          robot.velocity.x = Math.cos(robot.rotation) * currentSpeed;
+          robot.velocity.y = Math.sin(robot.rotation) * currentSpeed;
+        }
+      }
+
+      if ((robot.collisionCooldown ?? 0) > 0) {
+        robot.collisionCooldown = robot.collisionCooldown! - 1;
+      }
+
+      // Clear the manual rotation flag so the next tick the physics can drive it naturally
+      robot.isManualRotation = false;
+
+      // --- lockVision: sync fovDirection to rotation every tick unless manually overridden ---  
+      if ((robot as any).lockVision) {
+        robot.fovDirection = robot.rotation;
+      }
+
       // Apply velocity with TRAP slow multiplier
       const speed = robot.speedMultiplier ?? 1.0;
       robot.position.x += robot.velocity.x * speed * deltaTime;
       robot.position.y += robot.velocity.y * speed * deltaTime;
 
-      // Update facing rotation from velocity direction
+      // Update facing rotation from velocity direction.
+      // 1. If actively in a bounce trajectory (isCoolingDown), FORCE the body to face the escape trajectory.
+      // 2. Otherwise, skip if script manually set rotation or if wall bounce already set it this tick.
       const vMag = Math.hypot(robot.velocity.x, robot.velocity.y);
-      if (vMag > 0.001) {
+      if ((isCoolingDown && vMag > 0.001) || (!robot.isManualRotation && !hitWallThisTick && vMag > 0.001)) {
         robot.rotation = Math.atan2(robot.velocity.y, robot.velocity.x);
       }
     });

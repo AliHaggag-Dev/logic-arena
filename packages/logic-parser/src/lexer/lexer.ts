@@ -36,8 +36,16 @@ export class Lexer {
 
     private readNumber(): string {
         let start = this.position - 1;
-        while (this.char !== null && /[0-9]/.test(this.char)) {
-            this.readChar();
+        let hasDot = false;
+        while (this.char !== null) {
+            if (/[0-9]/.test(this.char)) {
+                this.readChar();
+            } else if (this.char === '.' && !hasDot) {
+                hasDot = true;
+                this.readChar();
+            } else {
+                break;
+            }
         }
         return this.input.slice(start, this.position - 1);
     }

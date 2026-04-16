@@ -9,13 +9,13 @@ import { ExpressionEvaluator } from './expression-evaluator';
 import { MemoryManager } from './memory-manager';
 
 export class LogicEvaluator {
-  private robotLogic   = new Map<string, Program>();
-  private memories     = new MemoryManager();
+  private robotLogic = new Map<string, Program>();
+  private memories = new MemoryManager();
   private expressionEvaluator = new ExpressionEvaluator();
-  private functions    = new Map<string, Map<string, FunctionDeclaration>>();
+  private functions = new Map<string, Map<string, FunctionDeclaration>>();
   private readonly MAX_WHILE_ITERS = 10;
 
-  constructor(private gameLoop: GameLoop, private actionExecutor: ActionExecutor) {}
+  constructor(private gameLoop: GameLoop, private actionExecutor: ActionExecutor) { }
 
   // ---------------------------------------------------------------------------
   // Script management
@@ -53,7 +53,7 @@ export class LogicEvaluator {
 
   evaluate(robotId: string): void {
     const program = this.robotLogic.get(robotId);
-    const robot   = this.gameLoop.getRobots().find(r => r.id === robotId);
+    const robot = this.gameLoop.getRobots().find(r => r.id === robotId);
     if (!program || !robot || robot.health <= 0) return;
 
     const memory = this.memories.getMemory(robotId);
@@ -65,8 +65,13 @@ export class LogicEvaluator {
       return;
     }
 
-    // Keep rotation in memory so scripts can read/write it
-    if (!('rotation' in memory)) memory['rotation'] = robot.rotation;
+    // Sync physical rotational state into script memory each tick
+    // so `set rotation = ...` knows the actual current facing.
+    // All aliases (rotation / angle / rot) are synchronized simultaneously.
+    memory['rotation'] = robot.rotation;
+    memory['angle'] = robot.rotation;
+    memory['rot'] = robot.rotation;
+    memory['fovDirection'] = robot.fovDirection;
 
     // --- FOV-aware last_spotted memory ---
     // Only update last_spotted_x/y when the enemy is WITHIN the robot's FOV.
@@ -75,11 +80,11 @@ export class LogicEvaluator {
     const visibleRobots = robot.visibleEntities?.robots ?? [];
     if (visibleRobots.length > 0) {
       // Use nearest visible enemy
-      let nearest    = visibleRobots[0];
+      let nearest = visibleRobots[0];
       let nearestDst = Infinity;
       for (const r of visibleRobots) {
-        const dx  = r.position.x - robot.position.x;
-        const dy  = r.position.y - robot.position.y;
+        const dx = r.position.x - robot.position.x;
+        const dy = r.position.y - robot.position.y;
         const dst = dx * dx + dy * dy;
         if (dst < nearestDst) { nearestDst = dst; nearest = r; }
       }
@@ -113,9 +118,25 @@ export class LogicEvaluator {
             robot, assign.value, memory, () => this.gameLoop.getRobots(),
           );
           memory[assign.name.value] = val;
-          // Allow scripts to directly set robot rotation
-          if (assign.name.value === 'rotation' && typeof val === 'number') {
+
+          const ROTATION_ALIASES = ['rotation', 'angle', 'rot'];
+          if (ROTATION_ALIASES.includes(assign.name.value) && typeof val === 'number') {
+
+            if ((robot.collisionCooldown ?? 0) > 0) {
+              memory['rotation'] = robot.rotation;
+              memory['angle'] = robot.rotation;
+              memory['rot'] = robot.rotation;
+              break;
+            }
+
             robot.rotation = val;
+            robot.fovDirection = val;
+            robot.isManualRotation = true;
+
+          } else if (assign.name.value === 'fovDirection' && typeof val === 'number') {
+            robot.fovDirection = val;
+          } else if (assign.name.value === 'lockVision') {
+            (robot as any).lockVision = Boolean(val);
           }
           break;
         }

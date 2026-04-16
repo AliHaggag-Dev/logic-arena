@@ -43,7 +43,11 @@ export interface IdentifierDoc {
 export const IDENTIFIER_TABLE: IdentifierDoc[] = [
   // Legacy
   { name: 'health',            type: 'number',  category: 'Self',       description: 'Current HP (0–100).' },
-  { name: 'rotation',          type: 'number',  category: 'Self',       description: 'Current facing angle in radians. Writable via SET.' },
+  { name: 'rotation',          type: 'number',  category: 'Movement',   description: 'Body facing angle in radians. Writable via SET. Acts as the Steering Wheel — also updates velocity direction.' },
+  { name: 'angle',             type: 'number',  category: 'Movement',   description: 'Alias for rotation. Accepted by all SET commands.' },
+  { name: 'rot',               type: 'number',  category: 'Movement',   description: 'Short alias for rotation. Accepted by all SET commands.' },
+  { name: 'fovDirection',      type: 'number',  category: 'Vision',     description: 'Scanner eye angle in radians. Independent from body rotation. SET fovDirection = X to aim the scanner separately from where the robot is moving.' },
+  { name: 'lockVision',        type: 'flag',    category: 'Vision',     description: 'SET lockVision = TRUE to sync fovDirection to rotation every tick. Turns the scanner into a fixed headlamp locked to the body.' },
   { name: 'distance',          type: 'number',  category: 'Combat',     description: 'Distance to nearest VISIBLE enemy. Infinity if none in FOV.' },
   { name: 'spotted',           type: 'boolean', category: 'Combat',     description: 'True if any enemy is within FOV cone. Alias for CAN_SEE_ENEMY.' },
   { name: 'bullet_speed',      type: 'number',  category: 'Combat',     description: 'Projectile velocity constant (400 arena units/sec).' },
@@ -198,6 +202,7 @@ END`,
 export const QUICK_REF = [
   { title: 'CONTROL FLOW', icon: '⬡', color: '#f59e0b', commands: ['IF...ELSE', 'WHILE...DO', 'FUNCTION', 'CALL', 'END'] },
   { title: 'SENSORS / FOV', icon: '◈', color: '#22d3ee', commands: ['SCAN', 'WAIT', 'CAN_SEE_ENEMY', 'NEAREST_VISIBLE_X/Y', 'FOV_ANGLE'] },
+  { title: 'MOVEMENT & VISION', icon: '⦾', color: '#4ade80', commands: ['rotation / angle / rot', 'fovDirection (Eye)', 'lockVision (Link)', 'SET rotation = 1.57', 'PATHFIND'] },
   { title: 'ENERGY',        icon: '⚡', color: '#a855f7', commands: ['MY_ENERGY', 'ENERGY_PCT', 'IN_STASIS'] },
   { title: 'INTELLIGENCE',  icon: '◉', color: '#6366f1', commands: ['SET var = val', 'Math (+,-,*,/,%)', 'Logic (NOT,TRUE,FALSE)', 'rotation'] },
 ];
@@ -225,7 +230,8 @@ END`;
 
 export const CATEGORY_COLORS: Record<string, string> = {
   'Control Flow':    '#f59e0b',
-  Movement:          '#22d3ee',
+  Movement:          '#4ade80',
+  Vision:            '#22d3ee',
   Sensors:           '#06b6d4',
   Attack:            '#f97316',
   Tactics:           '#facc15',
@@ -235,6 +241,9 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Energy:            '#818cf8',
   FOV:               '#22d3ee',
   Scan:              '#67e8f9',
+  Self:              '#94a3b8',
+  Combat:            '#f87171',
+  flag:              '#4ade80',
 };
 
 export const TACTICS_DATA = [

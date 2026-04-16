@@ -80,6 +80,7 @@ const RobotModelInner = memo((
   const {
     position, color, health, velocity, rotation, hitTimestamp, spotted,
     energy = 1000, maxEnergy = 1000, inStasis = false,
+    fovDirection,
     scene, scale,
   } = props;
 
@@ -137,11 +138,18 @@ const RobotModelInner = memo((
     basePosition.current.lerp(targetPosition.current, lerpFactor);
 
     // Rotation lerp
-    const targetRot = resolveRotation(rotation);
+    let targetRot: number | null = null;
+    if (typeof fovDirection === 'number' && !Number.isNaN(fovDirection)) {
+      targetRot = -fovDirection;
+    } else {
+      targetRot = resolveRotation(rotation);
+    }
+
     if (targetRot !== null) {
-      group.rotation.y = THREE.MathUtils.lerp(
-        group.rotation.y, targetRot, 1 - Math.pow(0.001, delta),
-      );
+      // Shortest path angle lerp
+      let diff = targetRot - group.rotation.y;
+      diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+      group.rotation.y += diff * (1 - Math.pow(0.001, delta));
     } else {
       const spd = Math.hypot(velocity.x, velocity.y);
       if (spd > 0.001) {
@@ -222,7 +230,7 @@ const Bot2Model = memo((props: RobotModelProps) => {
 Bot2Model.displayName = 'Bot2Model';
 
 export const RobotModel = memo((props: RobotModelProps) => {
-  const isCyan = props.color === '#e5e4e0';
+  const isCyan = props.color === '#00ffff';
   return isCyan ? <Bot1Model {...props} /> : <Bot2Model {...props} />;
 });
 RobotModel.displayName = 'RobotModel';

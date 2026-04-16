@@ -34,16 +34,27 @@ export function checkObstacleCollision(robot: Robot, obstacle: Obstacle): void {
       const nx = dx / distance;
       const ny = dy / distance;
 
-      // Push robot out along the collision normal
-      robot.position.x += overlap * nx;
-      robot.position.y += overlap * ny;
+      // Push robot OUT along the collision normal + an extra REPEL_FORCE to
+      // prevent it from re-entering the wall geometry next tick (sticky wall fix)
+      const REPEL_FORCE = 5.0;
+      robot.position.x += (overlap + REPEL_FORCE) * nx;
+      robot.position.y += (overlap + REPEL_FORCE) * ny;
 
-      // Reflect the dominant velocity component (wall slide)
-      if (Math.abs(dx) > Math.abs(dy)) {
-        robot.velocity.x *= -1;
-      } else {
-        robot.velocity.y *= -1;
+      // Calculate perfect incident reflection (Deflection Bounce)
+      // v' = v - 2(v·n)n  with 0.85 damping to bleed off excess kinetic energy
+      const dot = robot.velocity.x * nx + robot.velocity.y * ny;
+      const BOUNCE_DAMPING = 0.85;
+      robot.velocity.x = (robot.velocity.x - 2 * dot * nx) * BOUNCE_DAMPING;
+      robot.velocity.y = (robot.velocity.y - 2 * dot * ny) * BOUNCE_DAMPING;
+
+      // Soft override: force chassis rotation to match new reflected velocity
+      if (Math.hypot(robot.velocity.x, robot.velocity.y) > 0.001) {
+        robot.rotation = Math.atan2(robot.velocity.y, robot.velocity.x);
       }
+      
+      // Inject shockwave telemetry logic and give immunity to steering overrides
+      robot.hitWallTimestamp = Date.now();
+      robot.collisionCooldown = 20;
     }
     return;
   }

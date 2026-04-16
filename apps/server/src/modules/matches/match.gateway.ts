@@ -16,8 +16,8 @@ type AuthenticatedSocket = Socket & {
 const TRACKED_ROBOT_PROPS = [
   'position', 'velocity', 'health', 'rotation', 'isAlive', 'color',
   'maxHealth', 'slowedUntil', 'speedMultiplier', 'trappedUntil', 'shields',
-  // Energy / FOV additions
-  'energy', 'maxEnergy', 'inStasis', 'fovDirection',
+  // Energy / FOV / Physics additions
+  'energy', 'maxEnergy', 'inStasis', 'fovDirection', 'hitWallTimestamp',
 ] as const;
 
 @WebSocketGateway({
@@ -311,21 +311,38 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (prevState) {
           const robotsDiff = state.robots.map((r: any) => {
             const prevR = prevState.robots.find((pr: any) => pr.id === r.id);
+            // New robot — send full snapshot
             if (!prevR) return r;
 
-            let rd: any  = { id: r.id };
-            let changed  = false;
+            let rd: any = { id: r.id };
+            let changed = false;
 
             for (const prop of TRACKED_ROBOT_PROPS) {
-              if (JSON.stringify(r[prop]) !== JSON.stringify((prevR as any)[prop])) {
+              // Deep-compare using JSON (safe, works for nested {x,y} objects)
+              const curVal  = JSON.stringify(r[prop]);
+              const prevVal = JSON.stringify((prevR as any)[prop]);
+              if (curVal !== prevVal) {
                 rd[prop] = r[prop];
                 changed  = true;
               }
             }
 
-            // visibleRobotIds — derived from visibleEntities for client radar
+            // ALWAYS include position and rotation for alive, moving robots.
+            // This guarantees the client is never left with stale coordinates
+            // even if the snapshot reference diffing missed an update.
+            if (r.isAlive) {
+              const vMag = Math.hypot(r.velocity?.x ?? 0, r.velocity?.y ?? 0);
+              if (vMag > 0.01) {
+                rd.position = r.position;
+                rd.velocity = r.velocity;
+                rd.rotation = r.rotation;
+                changed = true;
+              }
+            }
+
+            // visibleRobotIds — compare against the safe snapshot's pre-stripped id list
             const curIds  = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id).sort().join(',');
-            const prevIds = ((prevR as any).visibleEntities?.robots ?? []).map((vr: any) => vr.id).sort().join(',');
+            const prevIds = ((prevR as any).visibleRobotIds ?? []).slice().sort().join(',');
             if (curIds !== prevIds) {
               rd.visibleRobotIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id);
               changed = true;
@@ -345,7 +362,29 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
           (delta.diff && (delta.diff.robots.length > 0 || delta.diff.projectiles.length > 0));
 
         if (hasChanges) {
-          this.lastStateMap.set(matchId, JSON.parse(JSON.stringify(state)));
+          // Safe snapshot — strip visibleEntities to avoid circular reference crash.
+          // CRITICAL: shallow-clone all object-type props (position, velocity) so the
+          // snapshot is immutable — if we store a live reference the diff will always
+          // see them as equal on the next tick because the object mutates in-place.
+          const safeSnapshot = {
+            robots: state.robots.map((r: any) => {
+              const snap: any = { id: r.id };
+              for (const prop of TRACKED_ROBOT_PROPS) {
+                const val = r[prop];
+                // Shallow-clone plain objects (position, velocity) to freeze the value
+                snap[prop] = val !== null && typeof val === 'object' && !Array.isArray(val)
+                  ? { ...val }
+                  : val;
+              }
+              snap.visibleRobotIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id);
+              return snap;
+            }),
+            projectiles: state.projectiles.map((p: any) => ({
+              id: p.id, position: { ...p.position }, velocity: { ...p.velocity },
+            })),
+            obstacles: undefined,
+          };
+          this.lastStateMap.set(matchId, safeSnapshot);
           this.broadcastMatchState(matchId, delta);
         }
       }

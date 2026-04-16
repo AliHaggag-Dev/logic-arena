@@ -79,6 +79,18 @@ export class ExpressionParser {
             } as UnaryExpression;
         }
 
+        if (this.parser.currentToken.type === TokenType.OPERATOR && this.parser.currentToken.value === "-") {
+            this.parser.nextToken();
+            const argument = this.parseUnaryExpression();
+            if (!argument) return null;
+
+            return {
+                type: NodeType.UnaryExpression,
+                operator: "-",
+                argument,
+            } as UnaryExpression;
+        }
+
         return this.parsePrimary();
     }
 

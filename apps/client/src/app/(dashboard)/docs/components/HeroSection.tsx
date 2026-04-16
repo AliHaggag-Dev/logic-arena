@@ -3,10 +3,6 @@ import React from "react";
 export function HeroSection() {
   return (
     <div className="border-b border-[#22d3ee]/10 pb-9 mb-[52px] text-center">
-      <p className="text-[9px] tracking-[0.4em] text-[#22d3ee]/30 mb-3 uppercase">
-        // LANGUAGE_REFERENCE_v1.0
-      </p>
-      
       <h1 className="text-[clamp(32px,6vw,56px)] font-black tracking-[0.22em] text-[#22d3ee] drop-shadow-[0_0_12px_rgba(34,211,238,0.9)] mb-4 leading-none">
         <p className="text-[9px] tracking-[0.4em] text-[#22d3ee]/30 mb-3 uppercase drop-shadow-none">
           // LANGUAGE_REFERENCE_v2.0_SENTIENT_UPDATE

@@ -45,7 +45,9 @@ export class ExpressionEvaluator {
 
       case NodeType.UnaryExpression: {
         const arg = this.evaluateExpression(robot, expression.argument, memory, getRobots);
-        return expression.operator === 'NOT' ? !Boolean(arg) : undefined;
+        if (expression.operator === 'NOT') return !Boolean(arg);
+        if (expression.operator === '-') return -(arg as number);
+        return undefined;
       }
 
       case NodeType.ComparisonExpression: {

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:all": "concurrently \"pnpm --filter @logic-arena/engine watch\" \"pnpm --filter @logic-arena/logic-parser watch\" \"pnpm --filter server watch:all\""
   },
   "keywords": [],
   "author": "",
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.2",
+    "concurrently": "^9.2.1",
     "ts-node": "^10.9.2"
   }
 }

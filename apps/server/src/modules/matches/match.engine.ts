@@ -79,8 +79,19 @@ export class MatchEngine {
   addPlayer(playerScript: { id: string; script: string }): void {
     const exists = this.gameLoop.getRobots().some(p => p.id === playerScript.id);
     if (!exists) {
-      const index = this.gameLoop.getRobots().length;
-      this.gameLoop.addRobot(createRobot(playerScript.id, playerScript.script, index));
+      let initIdx = this.initialPlayers.findIndex(p => p.id === playerScript.id);
+      
+      if (initIdx === -1) {
+        initIdx = this.initialPlayers.findIndex(p => p.id === 'bot-2');
+        if (initIdx !== -1) {
+          this.initialPlayers[initIdx] = playerScript;
+        } else {
+          initIdx = this.initialPlayers.length;
+          this.initialPlayers.push(playerScript);
+        }
+      }
+
+      this.gameLoop.addRobot(createRobot(playerScript.id, playerScript.script, initIdx));
       parseAndSetLogic(playerScript.id, playerScript.script, this.deps.logicEvaluator);
     }
   }

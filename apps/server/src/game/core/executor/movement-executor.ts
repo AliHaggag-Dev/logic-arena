@@ -12,6 +12,14 @@ export class MovementExecutor {
         const robot = this.gameLoop.getRobots().find(r => r.id === robotId);
         if (!robot) return;
 
+        // --- Physics Priority ---
+        // If the robot is currently bouncing off a wall (cooling down),
+        // we strictly ignore all manual movement commands. This prevents scripts
+        // from overpowering the physical collision geometry.
+        if ((robot.collisionCooldown ?? 0) > 0) {
+            return;
+        }
+
         if (actionCommand === "PATHFIND") {
             this.pathfinder.executePathfind(robot, memory);
             return;
