@@ -1,11 +1,11 @@
-import { GameLoop } from "@logic-arena/engine";
-import { Socket } from "socket.io";
-import { ActionExpression, ScanStatement } from "../../../../../../packages/logic-parser/src";
-import { Pathfinder } from "../pathfinder";
-import { CooldownManager } from "./cooldown-manager";
-import { MovementExecutor } from "./movement-executor";
-import { CombatExecutor } from "./combat-executor";
-import { ScanExecutor } from "./scan-executor";
+import { GameLoop, EnergyManager } from '@logic-arena/engine';
+import { Socket } from 'socket.io';
+import { ActionExpression, ScanStatement } from '../../../../../../packages/logic-parser/src';
+import { Pathfinder } from '../pathfinder';
+import { CooldownManager } from './cooldown-manager';
+import { MovementExecutor } from './movement-executor';
+import { CombatExecutor } from './combat-executor';
+import { ScanExecutor } from './scan-executor';
 
 export class ActionExecutor {
   private cooldowns = new CooldownManager();
@@ -16,11 +16,12 @@ export class ActionExecutor {
   constructor(
     private gameLoop: GameLoop,
     private connectedClients: Map<string, Socket>,
-    private pathfinder: Pathfinder
+    private pathfinder: Pathfinder,
+    private energyManager: EnergyManager,
   ) {
-      this.movementExecutor = new MovementExecutor(gameLoop, pathfinder);
-      this.combatExecutor = new CombatExecutor(gameLoop, this.cooldowns);
-      this.scanExecutor = new ScanExecutor(gameLoop);
+    this.movementExecutor = new MovementExecutor(gameLoop, pathfinder);
+    this.combatExecutor   = new CombatExecutor(gameLoop, this.cooldowns, energyManager);
+    this.scanExecutor     = new ScanExecutor(gameLoop);
   }
 
   isBareActionOffCooldown(robotId: string, actionCommand: string): boolean {
@@ -31,34 +32,69 @@ export class ActionExecutor {
     this.cooldowns.markExecuted(robotId, actionCommand);
   }
 
-  executeAction(robotId: string, action: ActionExpression | ScanStatement, memory: Record<string, any>): void {
-    const actionCommand = action.type === "ScanStatement" ? "SCAN" : (action as ActionExpression).command.toUpperCase();
+  executeAction(
+    robotId: string,
+    action: ActionExpression | ScanStatement,
+    memory: Record<string, unknown>,
+  ): void {
+    const actionCommand =
+      action.type === 'ScanStatement'
+        ? 'SCAN'
+        : (action as ActionExpression).command.toUpperCase();
 
-    if (this.cooldowns.shouldEmitAction(robotId, actionCommand)) {
-      this.connectedClients.forEach(client => {
-        client.emit("logicExecuted", { robotId, action: actionCommand, message: `Logic Triggered: ${actionCommand}` });
-      });
-      this.cooldowns.markEmitted(robotId, actionCommand);
-      console.log(`[Logic Execution] ${robotId} status changed to: ${actionCommand}`);
+    // --- Energy gate ---
+    // deduct() returns false if the robot is in STASIS and the command is blocked.
+    // It still deducts cost for allowed commands (SCAN costs energy even in stasis).
+    const robot = this.gameLoop.getRobots().find(r => r.id === robotId);
+    if (!robot) return;
+
+    const allowed = this.energyManager.deduct(robot, actionCommand);
+    if (!allowed) {
+      // Robot is in stasis and this command is blocked — emit STASIS hint once
+      if (this.cooldowns.shouldEmitAction(robotId, 'STASIS')) {
+        this.connectedClients.forEach(client =>
+          client.emit('logicExecuted', {
+            robotId,
+            action: 'STASIS',
+            message: `[STASIS] ${robotId} is recharging...`,
+          }),
+        );
+        this.cooldowns.markEmitted(robotId, 'STASIS');
+      }
+      return;
     }
 
+    // --- Emit logicExecuted to clients (rate-limited by cooldown) ---
+    if (this.cooldowns.shouldEmitAction(robotId, actionCommand)) {
+      this.connectedClients.forEach(client =>
+        client.emit('logicExecuted', {
+          robotId,
+          action: actionCommand,
+          message: `Logic Triggered: ${actionCommand}`,
+        }),
+      );
+      this.cooldowns.markEmitted(robotId, actionCommand);
+      console.log(`[ActionExecutor] ${robotId} → ${actionCommand}`);
+    }
+
+    // --- Dispatch ---
     switch (actionCommand) {
-      case "FIRE":
-      case "BURST_FIRE":
+      case 'FIRE':
+      case 'BURST_FIRE':
         this.combatExecutor.execute(robotId, actionCommand);
         break;
-      case "PATHFIND":
-      case "STOP":
-      case "MOVE":
-      case "MOVE_FAST":
-      case "BACKUP":
+      case 'PATHFIND':
+      case 'STOP':
+      case 'MOVE':
+      case 'MOVE_FAST':
+      case 'BACKUP':
         this.movementExecutor.execute(robotId, actionCommand, memory);
         break;
-      case "SCAN":
+      case 'SCAN':
         this.scanExecutor.execute(robotId, memory);
         break;
       default:
-        console.warn(`[Logic Error] Unknown command: ${actionCommand}`);
+        console.warn(`[ActionExecutor] Unknown command: ${actionCommand}`);
     }
   }
 
