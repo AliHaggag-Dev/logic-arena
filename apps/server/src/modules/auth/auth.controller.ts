@@ -9,7 +9,18 @@ import {
 import { Throttle } from '@nestjs/throttler';
 
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
-import { LoginDto, LoginSchema, RegisterDto, RegisterSchema } from './auth.dto';
+import {
+  LoginDto,
+  LoginSchema,
+  RegisterDto,
+  RegisterSchema,
+  VerifyEmailDto,
+  VerifyEmailSchema,
+  ForgotPasswordDto,
+  ForgotPasswordSchema,
+  ResetPasswordDto,
+  ResetPasswordSchema,
+} from './auth.dto';
 import { AuthService } from './auth.service';
 
 /**
@@ -33,5 +44,26 @@ export class AuthController {
   @UsePipes(new ZodValidationPipe(LoginSchema))
   async login(@Body() body: LoginDto) {
     return this.authService.login(body.username, body.password);
+  }
+
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ZodValidationPipe(VerifyEmailSchema))
+  async verifyEmail(@Body() body: VerifyEmailDto) {
+    return this.authService.verifyEmail(body.email, body.code);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ZodValidationPipe(ForgotPasswordSchema))
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.authService.forgotPassword(body.email);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ZodValidationPipe(ResetPasswordSchema))
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body.email, body.code, body.newPassword);
   }
 }

@@ -176,13 +176,20 @@ export default function LoginPage() {
                 {isLoading ? "VERIFYING ENCRYPTION..." : "INITIATE LOGIN"}
               </button>
 
-              <div className="text-center">
+              <div className="text-center flex flex-col gap-3">
                 <button
                   type="button"
                   onClick={() => router.push("/register")}
                   className="text-[#22d3ee]/40 hover:text-[#22d3ee] text-[9px] uppercase tracking-[0.2em] transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
                 >
                   No clearance? Request Access
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/forgot-password")}
+                  className="text-[#ef4444]/40 hover:text-[#ef4444] text-[9px] uppercase tracking-[0.2em] transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]"
+                >
+                  Lost Security Key? Initiate Reset
                 </button>
               </div>
             </div>

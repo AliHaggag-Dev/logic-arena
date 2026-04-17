@@ -54,7 +54,7 @@ export default function RegisterPage() {
     try {
       await apiClient.post("/auth/register", { email, username, password });
       setStatus({ message: "[SYS] REGISTRATION SUCCESSFUL. REROUTING...", errors: [], type: "success" });
-      setTimeout(() => router.push("/login"), 1500);
+      setTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(email)}`), 1500);
 
     } catch (error: any) {
       const errs = parseApiError(error);
@@ -242,13 +242,20 @@ export default function RegisterPage() {
                 {isLoading ? "PROCESSING..." : "REGISTER PROTOCOL"}
               </button>
 
-              <div className="text-center">
+              <div className="text-center flex flex-col gap-3">
                 <button
                   type="button"
                   onClick={() => router.push("/login")}
                   className="text-[#22d3ee]/40 hover:text-[#22d3ee] text-[9px] uppercase tracking-[0.2em] transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
                 >
                   Already registered? Establish Link
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push("/verify-email")}
+                  className="text-[#a855f7]/40 hover:text-[#a855f7] text-[9px] uppercase tracking-[0.2em] transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"
+                >
+                  Pending Verification? Enter Code
                 </button>
               </div>
             </div>

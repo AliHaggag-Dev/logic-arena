@@ -43,10 +43,28 @@ export const LoginSchema = z.object({
   password: z.string({ error: 'Password is required' }).min(1, 'Password is required'),
 });
 
+export const VerifyEmailSchema = z.object({
+  email: emailSchema,
+  code: z.string().length(6, 'Verification code must be exactly 6 characters'),
+});
+
+export const ForgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+export const ResetPasswordSchema = z.object({
+  email: emailSchema,
+  code: z.string().length(6, 'Reset code must be exactly 6 characters'),
+  newPassword: passwordSchema,
+});
+
 // ---------------------------------------------------------------------------
 // Inferred types
 // ---------------------------------------------------------------------------
 
 export type RegisterDto = z.infer<typeof RegisterSchema>;
 export type LoginDto = z.infer<typeof LoginSchema>;
+export type VerifyEmailDto = z.infer<typeof VerifyEmailSchema>;
+export type ForgotPasswordDto = z.infer<typeof ForgotPasswordSchema>;
+export type ResetPasswordDto = z.infer<typeof ResetPasswordSchema>;
 

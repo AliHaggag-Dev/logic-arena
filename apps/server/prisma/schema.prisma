@@ -13,6 +13,11 @@ model User {
   email               String             @unique
   username            String             @unique
   passwordHash        String
+  isVerified          Boolean            @default(false)
+  verifyCode          String?
+  verifyExpiry        DateTime?
+  resetCode           String?
+  resetExpiry         DateTime?
   rank                Int                @default(0)
   selectedRobotId     String             @default("unit-01")
   selectedColor       String             @default("#22d3ee")
