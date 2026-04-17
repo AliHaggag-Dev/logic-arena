@@ -10,9 +10,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
     this.client = new Redis({
       host:                    process.env.REDIS_HOST ?? '127.0.0.1',
-      port:                    Number(process.env.REDIS_PORT ?? 6380),
+      port:                    Number(process.env.REDIS_PORT) || 6379,
       password:                process.env.REDIS_PASSWORD,
-      tls:                     process.env.REDIS_TLS === 'true' ? {} : undefined,
+      family:                  4, // Force IPv4 to prevent Node DNS timeouts
+      tls:                     {}, // explicitly pass tls as requested
       // ── Resilience ────────────────────────────────────────────────────────
       lazyConnect:             true,        // don't block app startup
       enableReadyCheck:        true,
@@ -25,16 +26,20 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       reconnectOnError: (err) => err.message.includes('READONLY'),
     });
 
-    this.client.on('connect',      () => this.logger.log('✅ Redis connected'));
+    this.client.on('connect',      () => {
+      console.log('Redis Connected Successfully');
+      this.logger.log('✅ Redis connected');
+    });
     this.client.on('ready',        () => { this.isReady = true;  this.logger.log('✅ Redis ready'); });
     this.client.on('reconnecting', () => { this.isReady = false; this.logger.warn('🔄 Redis reconnecting…'); });
     this.client.on('error',        (err) => { this.isReady = false; this.logger.error(`❌ Redis: ${err.message}`); });
     this.client.on('end',          () => { this.isReady = false; this.logger.warn('🔌 Redis disconnected'); });
 
     // Non-blocking connect — app boots regardless of Redis state
-    this.client.connect().catch((err) =>
-      this.logger.error(`Redis initial connect failed (degraded mode): ${err.message}`),
-    );
+    this.client.connect().catch((err: any) => {
+      console.error(`\n❌ [REDIS NETWORK/AUTH ERROR] Exact message: ${err.message}\n`, err);
+      this.logger.error(`Redis initial connect failed (degraded mode): ${err.message}`);
+    });
   }
 
   onModuleDestroy() {
