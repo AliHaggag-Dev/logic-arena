@@ -4,17 +4,34 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
 
+// ---------------------------------------------------------------------------
+// Extracts clean, human-readable messages from both our ZodValidationPipe
+// ({ messages: string[] }) and NestJS built-in exceptions ({ message: string }).
+// ---------------------------------------------------------------------------
+function parseApiError(error: any): string[] {
+  const data = error?.response?.data;
+  if (!data) return [error?.message ?? "An unexpected error occurred"];
+  if (Array.isArray(data.messages) && data.messages.length > 0) return data.messages;
+  if (Array.isArray(data.message)) return data.message as string[];
+  if (typeof data.message === "string") return [data.message];
+  return [error?.message ?? "An unexpected error occurred"];
+}
+
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState<{ message: string; type: "error" | "success" | null }>({ message: "", type: null });
+  const [status, setStatus] = useState<{
+    message: string;
+    errors:  string[];
+    type: "error" | "success" | null;
+  }>({ message: "", errors: [], type: null });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setStatus({ message: "AUTHENTICATING CREDENTIALS...", type: null });
+    setStatus({ message: "AUTHENTICATING CREDENTIALS...", errors: [], type: null });
 
     try {
       const response = await apiClient.post("/auth/login", { username, password });
@@ -22,7 +39,7 @@ export default function LoginPage() {
       
       // Decode JWT to get userId
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const payload = JSON.parse(atob(token.split(".")[1]));
         localStorage.setItem("userId", payload.sub);
         localStorage.setItem("username", payload.username || username);
       } catch (e) {
@@ -32,18 +49,13 @@ export default function LoginPage() {
       localStorage.setItem("jwtToken", token);
       localStorage.setItem("token", token);
 
-      setStatus({ message: "[SYS] ACCESS GRANTED. REROUTING...", type: "success" });
-
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1000);
+      setStatus({ message: "[SYS] ACCESS GRANTED. REROUTING...", errors: [], type: "success" });
+      setTimeout(() => router.push("/dashboard"), 1000);
 
     } catch (error: any) {
-      console.error("Login failed:", error.response?.data?.message || error.message);
-      setStatus({
-        message: `[ERR] ACCESS DENIED: ${error.response?.data?.message || error.message}`,
-        type: "error"
-      });
+      const errs = parseApiError(error);
+      console.error("Login failed:", errs);
+      setStatus({ message: "", errors: errs, type: "error" });
       setIsLoading(false);
     }
   };
@@ -130,16 +142,27 @@ export default function LoginPage() {
             </div>
 
             {/* In-UI Status Terminal */}
-            <div className="h-12 flex items-center justify-center">
+            <div className="min-h-[44px] flex items-start justify-center">
+              {/* Loading / success single-line message */}
               {status.message && (
                 <div className={`w-full p-3 rounded-md border text-[10px] tracking-[0.1em] text-center font-bold break-words transition-all ${
-                  status.type === 'error' 
-                    ? 'bg-[#ef4444]/10 border-[#ef4444]/40 text-[#ef4444] shadow-[0_0_10px_rgba(239,68,68,0.2)]' :
-                  status.type === 'success' 
-                    ? 'bg-[#22c55e]/10 border-[#22c55e]/40 text-[#22c55e] shadow-[0_0_10px_rgba(34,197,94,0.2)]' :
-                  'bg-[#22d3ee]/10 border-[#22d3ee]/40 text-[#22d3ee] animate-pulse'
+                  status.type === "success"
+                    ? "bg-[#22c55e]/10 border-[#22c55e]/40 text-[#22c55e] shadow-[0_0_10px_rgba(34,197,94,0.2)]"
+                    : "bg-[#22d3ee]/10 border-[#22d3ee]/40 text-[#22d3ee] animate-pulse"
                 }`}>
                   {status.message}
+                </div>
+              )}
+
+              {/* Validation / auth error list */}
+              {status.errors.length > 0 && (
+                <div className="w-full p-3 rounded-md border bg-[#ef4444]/10 border-[#ef4444]/40 shadow-[0_0_10px_rgba(239,68,68,0.15)] space-y-1">
+                  {status.errors.map((err, i) => (
+                    <div key={i} className="flex items-start gap-1.5 text-[9px] tracking-[0.08em] font-bold text-[#ef4444] break-words">
+                      <span className="shrink-0 mt-px opacity-70">›</span>
+                      <span>{err}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

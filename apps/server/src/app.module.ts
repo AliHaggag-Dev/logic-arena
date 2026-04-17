@@ -12,10 +12,18 @@ import { TournamentsModule } from './modules/tournaments/tournaments.module';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // 60 seconds window
-      limit: 60,    // max 60 request per minute
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        name: 'global',
+        ttl: 60_000,  // 60-second window
+        limit: 60,    // max 60 requests per minute (all routes)
+      },
+      {
+        name: 'auth',
+        ttl: 900_000, // 15-minute window
+        limit: 5,     // max 5 requests per 15 min (auth routes only)
+      },
+    ]),
     AuthModule,
     ScriptsModule,
     UsersModule,
