@@ -36,13 +36,17 @@ model RobotScript {
 
 model Match {
   id                 String             @id @default(uuid())
-  type               String // Ranked or Friendly
+  type               String
+  status             String             @default("pending")
+  // pending | in_progress | completed
   winnerId           String?
   winner             User?              @relation(name: "Winner", fields: [winnerId], references: [id])
   participants       User[]             @relation("Participants")
   participantDetails MatchParticipant[]
-  duration           Int // duration in seconds
+  duration           Int
   replayData         Json?
+  startedAt          DateTime?
+  endedAt            DateTime?
   createdAt          DateTime           @default(now())
 }
 

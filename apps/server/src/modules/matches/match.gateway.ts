@@ -119,6 +119,22 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.matchModes.set(data.matchId, mode);
       this.matchStartTime.set(data.matchId, Date.now());
       match.start();
+
+      // update match status to in_progress and set startedAt
+      await this.prisma.match.upsert({
+        where: { id: data.matchId },
+        create: {
+          id: data.matchId,
+          type: 'Friendly',
+          status: 'in_progress',
+          startedAt: new Date(),
+          duration: 0,
+        },
+        update: {
+          status: 'in_progress',
+          startedAt: new Date(),
+        },
+      });
     } else {
       if (this.lobbyMatches.has(data.matchId)) {
         match.removePlayer('bot-2');
@@ -146,6 +162,17 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!client.userId) return;
     const user = await this.prisma.user.findUnique({ where: { id: client.userId } });
     const matchId = crypto.randomUUID();
+
+    // save match in db with status pending
+    await this.prisma.match.create({
+      data: {
+        id: matchId,
+        type: 'Friendly',
+        status: 'pending',
+        duration: 0,
+      },
+    });
+
     this.lobbyMatches.set(matchId, {
       hostId: client.userId,
       hostName: user?.username || 'Unknown Hacker',
@@ -299,11 +326,25 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
               if (dbScript) playerScriptMap.set(p.id, dbScript.id);
             }
 
-            const createdMatch = await this.prisma.match.create({
-              data: {
+            const createdMatch = await this.prisma.match.upsert({
+              where: { id: matchId },
+              create: {
+                id: matchId,
                 type: 'Friendly',
+                status: 'completed',
                 winnerId: winner && winner.id !== 'bot-2' ? winner.id : null,
                 duration: Math.floor((Date.now() - startTime) / 1000),
+                startedAt: new Date(startTime),
+                endedAt: new Date(),
+                replayData: snapshots,
+                participants: { connect: playerIds.map((id: string) => ({ id })) },
+              },
+              update: {
+                status: 'completed',
+                winnerId: winner && winner.id !== 'bot-2' ? winner.id : null,
+                duration: Math.floor((Date.now() - startTime) / 1000),
+                startedAt: new Date(startTime),
+                endedAt: new Date(),
                 replayData: snapshots,
                 participants: { connect: playerIds.map((id: string) => ({ id })) },
               },
