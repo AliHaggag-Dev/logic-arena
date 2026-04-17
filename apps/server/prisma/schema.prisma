@@ -9,59 +9,77 @@ datasource db {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  email        String    @unique
-  username     String    @unique
-  passwordHash String
-  rank         Int       @default(0)
-  createdAt    DateTime  @default(now())
-  RobotScript  RobotScript[]
-  Match        Match[]     @relation("Participants")
-  wonMatches   Match[]     @relation("Winner")
-  createdTournaments Tournament[] @relation("CreatedTournaments")
-  tournaments        Tournament[] @relation("TournamentParticipants")
+  id                  String             @id @default(uuid())
+  email               String             @unique
+  username            String             @unique
+  passwordHash        String
+  rank                Int                @default(0)
+  createdAt           DateTime           @default(now())
+  RobotScript         RobotScript[]
+  Match               Match[]            @relation("Participants")
+  wonMatches          Match[]            @relation("Winner")
+  createdTournaments  Tournament[]       @relation("CreatedTournaments")
+  tournaments         Tournament[]       @relation("TournamentParticipants")
+  matchParticipations MatchParticipant[]
 }
 
 model RobotScript {
-  id        String    @id @default(uuid())
-  title     String
-  content   String
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
-  version   Int       @default(1)
-  createdAt DateTime  @default(now())
+  id                  String             @id @default(uuid())
+  title               String
+  content             String
+  userId              String
+  user                User               @relation(fields: [userId], references: [id])
+  version             Int                @default(1)
+  createdAt           DateTime           @default(now())
+  matchParticipations MatchParticipant[]
 }
 
 model Match {
-  id          String    @id @default(uuid())
-  type        String // Ranked or Friendly
-  winnerId    String?
-  winner      User?     @relation(name: "Winner", fields: [winnerId], references: [id])
-  participants User[]    @relation("Participants")
-  duration    Int // duration in seconds
-  replayData  Json?
-  createdAt   DateTime  @default(now())
+  id                 String             @id @default(uuid())
+  type               String // Ranked or Friendly
+  winnerId           String?
+  winner             User?              @relation(name: "Winner", fields: [winnerId], references: [id])
+  participants       User[]             @relation("Participants")
+  participantDetails MatchParticipant[]
+  duration           Int // duration in seconds
+  replayData         Json?
+  createdAt          DateTime           @default(now())
+}
+
+model MatchParticipant {
+  id            String      @id @default(uuid())
+  matchId       String
+  match         Match       @relation(fields: [matchId], references: [id])
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  robotScriptId String
+  robotScript   RobotScript @relation(fields: [robotScriptId], references: [id])
+  score         Int         @default(0)
+  placement     Int? // 1st, 2nd, etc.
+  createdAt     DateTime    @default(now())
+
+  @@unique([matchId, userId])
 }
 
 model Tournament {
-  id          String    @id @default(uuid())
-  name        String
-  status      String    @default("WAITING")
+  id           String            @id @default(uuid())
+  name         String
+  status       String            @default("WAITING")
   // WAITING | IN_PROGRESS | COMPLETED
-  creatorId   String
-  creator     User      @relation(name: "CreatedTournaments", fields: [creatorId], references: [id])
-  participants User[]   @relation("TournamentParticipants")
-  matches     TournamentMatch[]
-  winnerId    String?
-  createdAt   DateTime  @default(now())
+  creatorId    String
+  creator      User              @relation(name: "CreatedTournaments", fields: [creatorId], references: [id])
+  participants User[]            @relation("TournamentParticipants")
+  matches      TournamentMatch[]
+  winnerId     String?
+  createdAt    DateTime          @default(now())
 }
 
 model TournamentMatch {
   id           String     @id @default(uuid())
   tournamentId String
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
-  round        Int        // 1=Quarter, 2=Semi, 3=Final
-  matchIndex   Int        // position in bracket
+  round        Int // 1=Quarter, 2=Semi, 3=Final
+  matchIndex   Int // position in bracket
   player1Id    String?
   player2Id    String?
   winnerId     String?

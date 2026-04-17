@@ -8,7 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import { PrismaService } from '../../common/prisma.service';
 
 type AuthenticatedSocket = Socket & {
-  userId?:  string;
+  userId?: string;
   matchId?: string;
 };
 
@@ -27,16 +27,16 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
-  private matches        = new Map<string, MatchEngine>();
-  private lastStateMap   = new Map<string, any>();
-  private lobbyMatches   = new Map<string, { hostId: string; hostName: string; matchId: string; createdAt: number }>();
+  private matches = new Map<string, MatchEngine>();
+  private lastStateMap = new Map<string, any>();
+  private lobbyMatches = new Map<string, { hostId: string; hostName: string; matchId: string; createdAt: number }>();
   private matchStartTime = new Map<string, number>();
   private replaySnapshots = new Map<string, any[]>();
-  private tickCount      = new Map<string, number>();
-  private savingMatches  = new Set<string>();
-  private matchModes     = new Map<string, string>();
+  private tickCount = new Map<string, number>();
+  private savingMatches = new Set<string>();
+  private matchModes = new Map<string, string>();
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // ---------------------------------------------------------------------------
   // Connection / Auth
@@ -94,9 +94,9 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    let match       = this.matches.get(data.matchId);
+    let match = this.matches.get(data.matchId);
     const currentMode = this.matchModes.get(data.matchId);
-    const mode      = data.mode || 'COMBAT';
+    const mode = data.mode || 'COMBAT';
 
     // If mode changed, tear down the old match instance
     if (match && currentMode && currentMode !== mode) {
@@ -144,11 +144,11 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { scriptId: string },
   ) {
     if (!client.userId) return;
-    const user    = await this.prisma.user.findUnique({ where: { id: client.userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: client.userId } });
     const matchId = crypto.randomUUID();
     this.lobbyMatches.set(matchId, {
-      hostId:    client.userId,
-      hostName:  user?.username || 'Unknown Hacker',
+      hostId: client.userId,
+      hostName: user?.username || 'Unknown Hacker',
       matchId,
       createdAt: Date.now(),
     });
@@ -183,7 +183,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
       match?.updateRobotScript(data.robotId, data.scriptContent);
       client.emit('logicExecuted', {
         robotId: data.robotId,
-        action:  'SCRIPT_DEPLOYED',
+        action: 'SCRIPT_DEPLOYED',
         message: 'Neural payload active.',
       });
     }
@@ -199,7 +199,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
       match?.receiveManualCommand(client.userId!, data.command);
       client.emit('logicExecuted', {
         robotId: client.userId,
-        action:  data.command,
+        action: data.command,
         message: 'Manual command executed.',
       });
     }
@@ -220,22 +220,22 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (tick % 10 === 0) {
           const snapshots = this.replaySnapshots.get(matchId) || [];
           snapshots.push({
-            t:           tick,
-            robots:      state.robots.map((r: any) => ({
-              id:       r.id,
+            t: tick,
+            robots: state.robots.map((r: any) => ({
+              id: r.id,
               position: { x: r.position.x, y: r.position.y },
-              health:   r.health,
-              energy:   r.energy,
+              health: r.health,
+              energy: r.energy,
               inStasis: r.inStasis,
-              color:    r.color,
+              color: r.color,
               rotation: r.rotation,
-              isAlive:  r.isAlive,
+              isAlive: r.isAlive,
             })),
             projectiles: state.projectiles.map((p: any) => ({
-              id:       p.id,
+              id: p.id,
               position: { x: p.position.x, y: p.position.y },
               velocity: p.velocity,
-              ownerId:  p.ownerId,
+              ownerId: p.ownerId,
             })),
           });
           this.replaySnapshots.set(matchId, snapshots);
@@ -243,9 +243,9 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         // --- Win condition ---
         const aliveRobots = state.robots.filter((r: any) => r.health > 0);
-        const mode        = this.matchModes.get(matchId) || 'COMBAT';
-        let matchIsOver   = false;
-        let winner: any   = null;
+        const mode = this.matchModes.get(matchId) || 'COMBAT';
+        let matchIsOver = false;
+        let winner: any = null;
 
         if (mode === 'RACING') {
           const TARGET_X = 700, TARGET_Y = 300;
@@ -268,8 +268,8 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
           const efficiencyScores = match.getEfficiencyScores();
 
           this.server.to(matchId).emit('matchOver', {
-            winner:           winner ? { id: winner.id, color: winner.color } : null,
-            draw:             !winner && mode !== 'RACING',
+            winner: winner ? { id: winner.id, color: winner.color } : null,
+            draw: !winner && mode !== 'RACING',
             efficiencyScores, // { [robotId]: score }
           });
 
@@ -281,9 +281,27 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
           if (playerIds.length > 0) {
             const snapshots = this.replaySnapshots.get(matchId) || [];
-            await this.prisma.match.create({
+
+            // determine the placement for each player
+            const aliveAtEnd = state.robots
+              .filter((r: any) => r.id !== 'bot-2')
+              .sort((a: any, b: any) => b.health - a.health);
+
+            // get script id for each player from the match
+            const playerScriptMap = new Map<string, string>();
+            for (const p of match['initialPlayers'] as { id: string; script: string }[]) {
+              if (p.id === 'bot-2') continue;
+              // get script id from the DB
+              const dbScript = await this.prisma.robotScript.findFirst({
+                where: { userId: p.id },
+                orderBy: { createdAt: 'desc' },
+              });
+              if (dbScript) playerScriptMap.set(p.id, dbScript.id);
+            }
+
+            const createdMatch = await this.prisma.match.create({
               data: {
-                type:     'Friendly',
+                type: 'Friendly',
                 winnerId: winner && winner.id !== 'bot-2' ? winner.id : null,
                 duration: Math.floor((Date.now() - startTime) / 1000),
                 replayData: snapshots,
@@ -291,10 +309,27 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
               },
             });
 
+            // create match participant for each player
+            for (let i = 0; i < aliveAtEnd.length; i++) {
+              const robot = aliveAtEnd[i];
+              const scriptId = playerScriptMap.get(robot.id);
+              if (!scriptId) continue;
+
+              await this.prisma.matchParticipant.create({
+                data: {
+                  matchId: createdMatch.id,
+                  userId: robot.id,
+                  robotScriptId: scriptId,
+                  score: efficiencyScores[robot.id] ?? 0,
+                  placement: i + 1,
+                },
+              });
+            }
+
             if (winner && winner.id !== 'bot-2') {
               await this.prisma.user.update({
                 where: { id: winner.id },
-                data:  { rank: { increment: 10 } },
+                data: { rank: { increment: 10 } },
               });
             }
           }
@@ -306,7 +341,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         // --- Delta-state diff ---
         const prevState = this.lastStateMap.get(matchId);
-        let delta: any  = { type: 'full', state };
+        let delta: any = { type: 'full', state };
 
         if (prevState) {
           const robotsDiff = state.robots.map((r: any) => {
@@ -319,11 +354,11 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             for (const prop of TRACKED_ROBOT_PROPS) {
               // Deep-compare using JSON (safe, works for nested {x,y} objects)
-              const curVal  = JSON.stringify(r[prop]);
+              const curVal = JSON.stringify(r[prop]);
               const prevVal = JSON.stringify((prevR as any)[prop]);
               if (curVal !== prevVal) {
                 rd[prop] = r[prop];
-                changed  = true;
+                changed = true;
               }
             }
 
@@ -341,7 +376,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
             }
 
             // visibleRobotIds — compare against the safe snapshot's pre-stripped id list
-            const curIds  = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id).sort().join(',');
+            const curIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id).sort().join(',');
             const prevIds = ((prevR as any).visibleRobotIds ?? []).slice().sort().join(',');
             if (curIds !== prevIds) {
               rd.visibleRobotIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id);
