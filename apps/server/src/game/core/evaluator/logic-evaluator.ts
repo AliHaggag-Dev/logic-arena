@@ -14,6 +14,7 @@ export class LogicEvaluator {
   private expressionEvaluator = new ExpressionEvaluator();
   private functions = new Map<string, Map<string, FunctionDeclaration>>();
   private readonly MAX_WHILE_ITERS = 10;
+  private readonly MAX_TICK_DURATION_MS = 5;
 
   constructor(private gameLoop: GameLoop, private actionExecutor: ActionExecutor) { }
 
@@ -94,7 +95,8 @@ export class LogicEvaluator {
     // If nothing visible, last_spotted_x/y remain from the previous tick
     // (players must implement their own "forget after N ticks" logic)
 
-    this.executeBlock(robotId, robot, program.body, memory);
+    const tickStart = Date.now();
+    this.executeBlock(robotId, robot, program.body, memory, tickStart);
   }
 
   // ---------------------------------------------------------------------------
@@ -106,10 +108,14 @@ export class LogicEvaluator {
     robot: Robot,
     statements: Statement[],
     memory: Record<string, unknown>,
+    tickStart: number,
   ): void {
     for (const stmt of statements) {
       if (robot.health <= 0) return;
-
+      if (Date.now() - tickStart > this.MAX_TICK_DURATION_MS) {
+        console.warn(`[SANDBOX] Robot ${robotId} exceeded tick CPU limit`);
+        return;
+      }
       switch (stmt.type) {
         // SET always executes — even in STASIS (preserves stateful scripts)
         case NodeType.AssignmentStatement: {
@@ -148,9 +154,9 @@ export class LogicEvaluator {
             robot, ifStmt.condition, memory, () => this.gameLoop.getRobots(),
           );
           if (cond) {
-            this.executeBlock(robotId, robot, ifStmt.consequence, memory);
+            this.executeBlock(robotId, robot, ifStmt.consequence, memory, tickStart);
           } else if (ifStmt.alternate) {
-            this.executeBlock(robotId, robot, ifStmt.alternate, memory);
+            this.executeBlock(robotId, robot, ifStmt.alternate, memory, tickStart);
           }
           break;
         }
@@ -164,7 +170,7 @@ export class LogicEvaluator {
               robot, whileStmt.condition, memory, () => this.gameLoop.getRobots(),
             );
             if (!cond) break;
-            this.executeBlock(robotId, robot, whileStmt.body, memory);
+            this.executeBlock(robotId, robot, whileStmt.body, memory, tickStart);
             iters++;
           }
           break;
@@ -179,7 +185,7 @@ export class LogicEvaluator {
         case NodeType.CallStatement: {
           const funcName = (stmt as CallStatement).functionName.value;
           const func = this.functions.get(robotId)?.get(funcName);
-          if (func) this.executeBlock(robotId, robot, func.body, memory);
+          if (func) this.executeBlock(robotId, robot, func.body, memory, tickStart);
           break;
         }
 
