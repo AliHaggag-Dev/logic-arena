@@ -11,6 +11,7 @@ const navItems = [
   { href: "/leaderboard", label: "NEURAL_RANKINGS", icon: "◈" },
   { href: "/lobby", label: "BATTLE_LOBBY", icon: "▶" },
   { href: "/profile", label: "OPERATOR_PROFILE", icon: "◉" },
+  { href: "/garage", label: "ROBOT_GARAGE", icon: "⚙" },
   { href: "/docs", label: "ALISCRIPT_DOCS", icon: "◈" },
   { href: "/tournaments", label: "TOURNAMENT_HUB", icon: "⚔" },
 ];

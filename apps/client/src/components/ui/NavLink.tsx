@@ -11,7 +11,9 @@ interface NavLinkProps {
 
 export default function NavLink({ href, label, icon }: NavLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  // Exact match for /dashboard to avoid matching all routes; prefix match for nested routes
+  const isActive =
+    href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 
   return (
     <Link

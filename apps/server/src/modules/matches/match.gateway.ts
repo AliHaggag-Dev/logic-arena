@@ -94,6 +94,11 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
+    const user = await this.prisma.user.findUnique({
+      where: { id: client.userId },
+      select: { selectedColor: true },
+    });
+
     let match = this.matches.get(data.matchId);
     const currentMode = this.matchModes.get(data.matchId);
     const mode = data.mode || 'COMBAT';
@@ -106,10 +111,16 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     if (!match) {
+      const playerToken = {
+        id: client.userId,
+        script: script.content,
+        color: user?.selectedColor ?? '#22d3ee'
+      };
+
       const initialPlayers =
         mode === 'RACING' || mode === 'TRAINING_SOLO'
-          ? [{ id: client.userId, script: script.content }]
-          : [{ id: client.userId, script: script.content }, { id: 'bot-2', script: '' }];
+          ? [playerToken]
+          : [playerToken, { id: 'bot-2', script: '', color: '#ff00ff' }];
 
       match = new MatchEngine(data.matchId, initialPlayers, {
         mode,
@@ -138,12 +149,12 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } else {
       if (this.lobbyMatches.has(data.matchId)) {
         match.removePlayer('bot-2');
-        match.addPlayer({ id: client.userId!, script: script.content });
+        match.addPlayer({ id: client.userId!, script: script.content, color: user?.selectedColor ?? '#22d3ee' });
         this.lobbyMatches.delete(data.matchId);
         this.server.emit('lobbyUpdated', Array.from(this.lobbyMatches.values()));
       } else {
         match.removePlayer(client.userId!);
-        match.addPlayer({ id: client.userId!, script: script.content });
+        match.addPlayer({ id: client.userId!, script: script.content, color: user?.selectedColor ?? '#22d3ee' });
         match.updateInitialPlayer(client.userId!, script.content);
       }
     }

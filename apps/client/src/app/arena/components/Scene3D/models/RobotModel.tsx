@@ -74,16 +74,11 @@ export const HealthBarSprite = ({ health }: HealthBarSpriteProps) => {
 
 /* ── Inner robot model ─────────────────────────────────────────────────── */
 
-const RobotModelInner = memo((
-  props: RobotModelProps & { scene: THREE.Group; scale: number }
-) => {
-  const {
-    position, color, health, velocity, rotation, hitTimestamp, spotted,
-    energy = 1000, maxEnergy = 1000, inStasis = false,
-    fovDirection,
-    scene, scale,
-  } = props;
-
+const RobotModelInner = memo(({ 
+  scene, color, position, health, velocity, rotation, hitTimestamp, spotted, 
+  energy = 1000, maxEnergy = 1000, inStasis = false, fovDirection, 
+  scale = 2 
+}: RobotModelProps & { scene: THREE.Group; scale?: number }) => {
   const groupRef        = useRef<THREE.Group>(null);
   const targetPosition  = useRef(new THREE.Vector3(...position));
   const basePosition    = useRef(new THREE.Vector3(...position));
@@ -194,7 +189,7 @@ const RobotModelInner = memo((
 
   return (
     <group ref={groupRef}>
-      <primitive object={clonedScene} scale={scale} />
+      <primitive object={clonedScene} scale={scale} position={[0, 0, 0]} />
       <pointLight position={[0, 0.4, 0]}  intensity={inStasis ? 1.0 : 3.0} distance={5} color={inStasis ? '#4488ff' : color} />
       <pointLight position={[0, -0.2, 0]} intensity={1.0} distance={4} color={color} />
 
@@ -217,21 +212,27 @@ RobotModelInner.displayName = 'RobotModelInner';
 
 /* ── GLTF wrappers ─────────────────────────────────────────────────────── */
 
-const Bot1Model = memo((props: RobotModelProps) => {
-  const { scene } = useGLTF('/robot.glb');
-  return <RobotModelInner {...props} scene={scene as unknown as THREE.Group} scale={2} />;
-});
-Bot1Model.displayName = 'Bot1Model';
+const ROBOT_FILES: Record<string, string> = {
+  'unit-01': '/robot.glb',
+  'unit-02': '/robot2.glb',
+};
 
-const Bot2Model = memo((props: RobotModelProps) => {
-  const { scene } = useGLTF('/robot2.glb');
-  return <RobotModelInner {...props} scene={scene as unknown as THREE.Group} scale={0.8} />;
+const ROBOT_SCALES: Record<string, number> = {
+  '/robot.glb':  2,
+  '/robot2.glb': 0.8,
+};
+
+const BotModel = memo((props: RobotModelProps & { file: string }) => {
+  const { scene } = useGLTF(props.file);
+  const scale = ROBOT_SCALES[props.file] ?? 2;
+  return <RobotModelInner {...props} scene={scene as unknown as THREE.Group} scale={scale} />;
 });
-Bot2Model.displayName = 'Bot2Model';
+BotModel.displayName = 'BotModel';
 
 export const RobotModel = memo((props: RobotModelProps) => {
-  const isCyan = props.color === '#00ffff';
-  return isCyan ? <Bot1Model {...props} /> : <Bot2Model {...props} />;
+  // Prefer explicit modelFile prop; fall back to legacy color-based selection for backwards compat
+  const file = props.modelFile ?? ROBOT_FILES['unit-01'];
+  return <BotModel {...props} file={file} />;
 });
 RobotModel.displayName = 'RobotModel';
 

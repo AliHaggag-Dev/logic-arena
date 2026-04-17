@@ -1,10 +1,14 @@
-import { Controller, Get, NotFoundException, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Body, NotFoundException, Param, Req, UseGuards, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { AuthGuard } from '../../common/auth.guard';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private usersService: UsersService,
+    ) { }
 
     @Get('leaderboard')
     async getLeaderboard() {
@@ -33,6 +37,8 @@ export class UsersController {
                 username: true,
                 rank: true,
                 createdAt: true,
+                selectedRobotId: true,
+                selectedColor: true,
                 Match: {
                     orderBy: { createdAt: 'desc' },
                     select: {
@@ -74,12 +80,28 @@ export class UsersController {
             username: user.username,
             rank: user.rank,
             memberSince: user.createdAt,
+            selectedRobotId: user.selectedRobotId,
+            selectedColor: user.selectedColor,
             totalMatches,
             wins,
             losses,
             winRate,
             matchHistory,
         };
+    }
+
+    @UseGuards(AuthGuard)
+    @Patch('profile')
+    async updateProfile(
+        @Req() req: any,
+        @Body() body: { robotId: string; color: string },
+    ) {
+        try {
+            await this.usersService.updateLoadout(req.user.sub, body.robotId, body.color);
+            return { success: true };
+        } catch (err: any) {
+            throw new BadRequestException(err.message);
+        }
     }
 
     @UseGuards(AuthGuard)

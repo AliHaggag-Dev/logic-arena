@@ -26,12 +26,16 @@ export const ArenaModels = ({
   firedTracer  = null,
   speechBubble = null,
   fogEnabled   = true,
+  localRobotFile,
+  localRobotColor,
 }: {
-  gameStateRef:  MutableRefObject<GameState>;
-  obstacles?:    ObstacleState[];
-  firedTracer?:  FiredTracer | null;
-  speechBubble?: SpeechBubbleState | null;
-  fogEnabled?:   boolean;
+  gameStateRef:    MutableRefObject<GameState>;
+  obstacles?:      ObstacleState[];
+  firedTracer?:    FiredTracer | null;
+  speechBubble?:   SpeechBubbleState | null;
+  fogEnabled?:     boolean;
+  localRobotFile?:  string;
+  localRobotColor?: string;
 }) => {
   const [renderTick, setRenderTick] = useState(0);
   const lastUpdateRef = useRef(0);
@@ -86,7 +90,7 @@ export const ArenaModels = ({
         const inFog = fogEnabled && !visibleIdSet.has(robot.id);
 
         return (
-          <group key={robot.id} style={{ opacity: inFog ? 0.2 : 1 }}>
+          <group key={robot.id}>
             {/* FOV cone — rendered when fog is on */}
             {fogEnabled && robot.fov && (
               <FovCone
@@ -105,7 +109,7 @@ export const ArenaModels = ({
             <RobotErrorBoundary
               fallback={<FallbackRobot position={robotPosition} color={robot.color} />}
             >
-              <group opacity={inFog ? 0.2 : 1}>
+              <group>
                 <RobotModel
                   position={robotPosition}
                   color={robot.color}
@@ -119,6 +123,11 @@ export const ArenaModels = ({
                   inStasis={robot.inStasis ?? false}
                   fov={robot.fov}
                   fovDirection={robot.fovDirection}
+                  modelFile={
+                    localRobotFile && localRobotColor && robot.color === localRobotColor
+                      ? localRobotFile
+                      : undefined
+                  }
                 />
               </group>
             </RobotErrorBoundary>

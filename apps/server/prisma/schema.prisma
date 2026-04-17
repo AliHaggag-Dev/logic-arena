@@ -14,6 +14,8 @@ model User {
   username            String             @unique
   passwordHash        String
   rank                Int                @default(0)
+  selectedRobotId     String             @default("unit-01")
+  selectedColor       String             @default("#22d3ee")
   createdAt           DateTime           @default(now())
   RobotScript         RobotScript[]
   Match               Match[]            @relation("Participants")

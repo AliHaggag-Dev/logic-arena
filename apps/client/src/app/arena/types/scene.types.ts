@@ -66,6 +66,8 @@ export interface RobotModelProps {
   // FOV additions
   fov?:          { angle: number; range: number };
   fovDirection?: number;
+  /** Optional GLB file path — e.g. "/robot.glb" or "/robot2.glb" */
+  modelFile?:    string;
 }
 
 // ---------------------------------------------------------------------------
@@ -101,11 +103,15 @@ export interface SpeechBubbleState {
 }
 
 export interface Scene3DComponentProps {
-  gameStateRef:  MutableRefObject<GameState>;
-  obstacles?:    ObstacleState[];
-  firedTracer?:  FiredTracer | null;
-  speechBubble?: SpeechBubbleState | null;
-  fogEnabled?:   boolean;
+  gameStateRef:    MutableRefObject<GameState>;
+  obstacles?:      ObstacleState[];
+  firedTracer?:    FiredTracer | null;
+  speechBubble?:   SpeechBubbleState | null;
+  fogEnabled?:     boolean;
+  /** GLB file path for the local player's robot ("/robot.glb" | "/robot2.glb") */
+  localRobotFile?: string;
+  /** Hex color saved in the local player's loadout — used to identify their robot in the scene */
+  localRobotColor?: string;
 }
 
 export interface HealthBarSpriteProps {

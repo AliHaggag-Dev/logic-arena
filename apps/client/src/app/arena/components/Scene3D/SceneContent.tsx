@@ -37,7 +37,15 @@ export const SceneContent = (props: Scene3DComponentProps) => {
   return (
     <>
       <SceneLighting />
-      <ArenaModels gameStateRef={props.gameStateRef} obstacles={props.obstacles} firedTracer={props.firedTracer} speechBubble={props.speechBubble} />
+      <ArenaModels
+        gameStateRef={props.gameStateRef}
+        obstacles={props.obstacles}
+        firedTracer={props.firedTracer}
+        speechBubble={props.speechBubble}
+        fogEnabled={props.fogEnabled}
+        localRobotFile={props.localRobotFile}
+        localRobotColor={props.localRobotColor}
+      />
       <SceneOverlay
         speechBubble={props.speechBubble ?? null}
         robots={props.gameStateRef.current?.robots ?? []}

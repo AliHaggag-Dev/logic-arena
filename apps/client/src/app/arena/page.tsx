@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { apiClient } from '../../lib/api-client';
 import { useGameState } from './hooks/useGameState';
@@ -14,7 +14,12 @@ interface RobotScript {
   content: string;
 }
 
-const ArenaPage = () => {
+const ROBOT_FILES: Record<string, string> = {
+  'unit-01': '/robot.glb',
+  'unit-02': '/robot2.glb',
+};
+
+const ArenaPageContent = () => {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const scriptId     = searchParams.get('scriptId');
@@ -24,6 +29,8 @@ const ArenaPage = () => {
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
+  const [localRobotFile,  setLocalRobotFile]  = useState('/robot.glb');
+  const [localRobotColor, setLocalRobotColor] = useState('#22d3ee');
 
   const {
     socket, gameStateRef, uiState,
@@ -43,6 +50,15 @@ const ArenaPage = () => {
     };
     projectileAnimRef.current = requestAnimationFrame(animate);
     return () => { if (projectileAnimRef.current) cancelAnimationFrame(projectileAnimRef.current); };
+  }, []);
+
+  // Fetch user's saved loadout once so the arena renders the correct robot + color
+  useEffect(() => {
+    apiClient.get('/users/profile').then((res) => {
+      const file = ROBOT_FILES[res.data.selectedRobotId] ?? '/robot.glb';
+      setLocalRobotFile(file);
+      if (res.data.selectedColor) setLocalRobotColor(res.data.selectedColor);
+    }).catch(() => {/* non-fatal — defaults remain */});
   }, []);
 
   useEffect(() => {
@@ -88,6 +104,8 @@ const ArenaPage = () => {
           firedTracer={firedTracer ?? null}
           speechBubble={speechBubble ?? null}
           fogEnabled={fogEnabled}
+          localRobotFile={localRobotFile}
+          localRobotColor={localRobotColor}
         />
       </div>
 
@@ -309,4 +327,10 @@ const ArenaPage = () => {
   );
 };
 
-export default ArenaPage;
+export default function ArenaPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">UPLINKING TO NEURAL NETWORK...</div>}>
+      <ArenaPageContent />
+    </Suspense>
+  );
+}

@@ -14,13 +14,13 @@ const SPAWN_POSITIONS = [
   { x: 150, y: 450 },
 ];
 
-export function createRobot(id: string, script: string, index: number): Robot {
+export function createRobot(id: string, script: string, index: number, colorOverride?: string): Robot {
   const spawn = SPAWN_POSITIONS[index % SPAWN_POSITIONS.length];
   return {
     id,
     position:          { ...spawn },
     health:            100,
-    color:             ROBOT_COLORS[index % ROBOT_COLORS.length],
+    color:             colorOverride || ROBOT_COLORS[index % ROBOT_COLORS.length],
     velocity:          { x: 0, y: 0 },
     rotation:          0,
     isAlive:           true,
