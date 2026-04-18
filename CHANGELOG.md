@@ -395,3 +395,147 @@ Implemented a full-scale **Cyberpunk Identity System** featuring Email OTP verif
 
 ### Current Status:
 - The platform is now **Security-Hardened** and **UX-Optimized**. The bridge between server physics and client rendering is fully synchronized, and the development environment is 100% automated via `watch:all`.
+
+## [2.0.0] - Global Deployment & Infrastructure Hardening - 2026-04-18
+
+### Major Release: Production Launch on logicarena.dev
+
+The platform has been fully containerized, deployed to a live cloud 
+infrastructure, and is now accessible worldwide at https://logicarena.dev. 
+This release marks the transition from a local development environment 
+to a production-grade, cloud-native system.
+
+---
+
+### New Features
+
+* **Campaign Mode (10-Level Single Player):** Launched a full 
+  single-player campaign with 10 progressively harder enemy bots 
+  powered by pre-written AliScript logic. Features a zigzag level map, 
+  difficulty badges, rank rewards, and victory/defeat modals.
+
+* **Global Online Status & Instant Challenge System:** Players are now 
+  tracked in real-time via Redis presence keys. Any online player can 
+  be challenged directly from the leaderboard — the challenge modal 
+  appears globally across all dashboard pages via an elevated socket 
+  in the layout.
+
+* **MatchParticipant Tracking:** Introduced a dedicated join table 
+  to track per-player score, placement, and the exact script version 
+  deployed in each match.
+
+* **Match Status Lifecycle:** Matches now transition through 
+  `pending → in_progress → completed` with `startedAt` and `endedAt` 
+  timestamps recorded at each phase.
+
+---
+
+### Technical Scars and Resolutions
+
+* **Issue — "The Silent Postman" (SMTP on Cloud Infrastructure):**
+  After deploying to DigitalOcean, the email verification system went 
+  completely silent. No errors, no delivery, no timeout — just void. 
+  The `EmailService` reported `✅ SMTP transporter ready` on startup, 
+  then vanished into the abyss 2 minutes later with `ETIMEDOUT`.
+  
+  **Resolution:** DigitalOcean aggressively blocks outbound port 25 
+  and 587 on new Droplets as an anti-spam measure. This is not 
+  documented prominently and cost significant debugging time. The 
+  healthcheck `start_period` was extended to 180s to prevent the 
+  container from being marked unhealthy during the SMTP verification 
+  window. A formal unblock request to DigitalOcean support is pending 
+  for production email delivery.
+
+* **Issue — "The Redis Identity Crisis" (IPv6 Resolution Failure):**
+  The Upstash Redis connection collapsed in the Docker environment 
+  despite working perfectly in local development. The client was 
+  silently resolving the Upstash hostname to an IPv6 address that 
+  the container's network stack couldn't reach, producing a 
+  `getaddrinfo ENOTFOUND` error that masqueraded as an auth failure.
+  
+  **Resolution:** Forced IPv4 resolution by injecting `family: 4` 
+  into the ioredis connection config. Switched to explicit TLS 
+  handshake on port 6379 with `tls: {}` to bypass the faulty 
+  IPv6 path. Added `[REDIS NETWORK/AUTH ERROR]` prefix logging 
+  to expose the real failure surface on future incidents.
+
+* **Issue — "The Prisma Ghost Engine" (Missing Query Engine in Alpine):**
+  The NestJS container launched successfully, mapped all routes, 
+  connected to Redis — then detonated with 
+  `PrismaClientInitializationError: Unable to require libquery_engine-linux-musl.so.node`. 
+  The Prisma client was generated on the build machine (Windows) 
+  for the wrong binary target, producing an engine binary that 
+  Alpine Linux refused to execute.
+  
+  **Resolution:** Added `linux-musl` and `linux-musl-openssl-3.0.x` 
+  to `binaryTargets` in `schema.prisma`. Installed `openssl` via 
+  `apk add --no-cache openssl` in the runner stage. Copied the 
+  generated `.prisma` client directory from the builder stage 
+  directly into the runner to bypass the ignored postinstall scripts.
+
+* **Issue — "The 2.57GB Context Bomb" (Docker Build Catastrophe):**
+  The first `docker compose up --build` attempt transferred 2.57GB 
+  to the Docker daemon and hung the machine for 10 minutes before 
+  crashing. The `.dockerignore` was not excluding `node_modules`, 
+  causing the entire workspace dependency tree to be sent as build 
+  context.
+  
+  **Resolution:** Rewrote `.dockerignore` with `**/node_modules` 
+  glob patterns. Switched to `--shamefully-hoist` flag in pnpm 
+  to flatten binaries like `tsc` into root `node_modules/.bin`, 
+  resolving the workspace hoisting issue that was causing 
+  `Cannot find module typescript/bin/tsc` during engine builds. 
+  Build context dropped from 2.57GB to under 15MB.
+
+* **Issue — "The WebSocket CORS Wall" (Production Socket Rejection):**
+  After deployment, every page that used the global socket hook 
+  crashed with `n.find is not a function`. The root cause was the 
+  `@WebSocketGateway` decorator hardcoding `origin: 'http://localhost:3000'`, 
+  causing the server to reject all WebSocket upgrade requests from 
+  `logicarena.dev` before the connection was established. The 
+  `.find()` call on an undefined socket array was merely the 
+  symptom, not the disease.
+  
+  **Resolution:** Extended the CORS `origin` array in the gateway 
+  decorator to include `https://logicarena.dev` and 
+  `https://www.logicarena.dev`. Updated the Nginx `location /socket.io/` 
+  block with explicit `proxy_read_timeout 86400` and correct 
+  `Connection "upgrade"` headers to sustain long-lived WebSocket 
+  tunnels through the reverse proxy.
+
+* **Issue — "The Nginx Route Hijacker" (Frontend Swallowing API Calls):**
+  After fixing the WebSocket, API calls to `/campaign/levels`, 
+  `/tournaments`, and `/auth/login` were returning HTML instead of JSON. 
+  Nginx was routing every request to the Next.js frontend on port 3000, 
+  including backend API paths, because the location blocks were 
+  incomplete.
+  
+  **Resolution:** Added explicit `location ~ ^/(auth|users|scripts|matches|health|campaign)` 
+  regex block to route backend traffic to port 3001, while preserving 
+  the catch-all `/` block for the frontend. The `/socket.io/` path 
+  required a separate dedicated location block with trailing slash 
+  to avoid prefix-matching conflicts.
+
+---
+
+### Infrastructure
+
+* Containerized full pnpm monorepo with multi-stage Docker builds 
+  for both NestJS server and Next.js client
+* Deployed to DigitalOcean Droplet (Frankfurt, 2GB RAM, $12/mo)
+* Configured Nginx as reverse proxy with SSL termination
+* Issued production TLS certificate via Let's Encrypt (Certbot) 
+  with auto-renewal
+* Registered and configured `logicarena.dev` domain with A records 
+  pointing to Droplet IP
+* Published Docker images to Docker Hub 
+  (`alihaggag7/logic-arena-server` and `alihaggag7/logic-arena-client`)
+
+---
+
+### Current Status
+
+- The platform is now **live in production** at https://logicarena.dev. 
+All core game systems are operational. The infrastructure is 
+containerized, SSL-secured, and deployable via a single 
+`docker compose pull && docker compose up -d` command.
