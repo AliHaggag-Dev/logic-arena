@@ -22,7 +22,14 @@ const TRACKED_ROBOT_PROPS = [
 ] as const;
 
 @WebSocketGateway({
-  cors: { origin: 'http://localhost:3000', credentials: true },
+  cors: {
+    origin: [
+      'http://localhost:3000',
+      'https://logicarena.dev',
+      'https://www.logicarena.dev',
+    ],
+    credentials: true,
+  },
 })
 export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

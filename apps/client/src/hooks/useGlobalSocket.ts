@@ -4,15 +4,15 @@ import { io, Socket } from 'socket.io-client';
 
 type Handlers = {
   onChallengeReceived: (data: { challengerId: string; challengerName: string }) => void;
-  onChallengeSent:     () => void;
-  onChallengeFailed:   (reason: string) => void;
+  onChallengeSent: () => void;
+  onChallengeFailed: (reason: string) => void;
   onChallengeAccepted: (matchId: string) => void;
 };
 
 export function useGlobalSocket(handlers: Handlers) {
-  const socketRef  = useRef<Socket | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const handlersRef = useRef<Handlers>(handlers);
-  const router     = useRouter();
+  const router = useRouter();
 
   // Keep handlers ref current without triggering reconnects
   useEffect(() => { handlersRef.current = handlers; });
@@ -23,9 +23,11 @@ export function useGlobalSocket(handlers: Handlers) {
       localStorage.getItem('token');
     if (!token) return;
 
-    const socket = io(
-      process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001',
-      { auth: { token }, transports: ['websocket'] },
+    const wsUrl = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001')
+      .replace('https://', 'wss://')
+      .replace('http://', 'ws://');
+
+    const socket = io(wsUrl, { auth: { token }, transports: ['websocket', 'polling'] },
     );
 
     socketRef.current = socket;
@@ -52,7 +54,7 @@ export function useGlobalSocket(handlers: Handlers) {
       socket.disconnect();
       socketRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sendChallenge = useCallback((targetUserId: string) => {
