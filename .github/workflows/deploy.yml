@@ -1,0 +1,47 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push Server
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/server/Dockerfile
+          push: true
+          tags: alihaggag7/logic-arena-server:latest
+
+      - name: Build & Push Client
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/client/Dockerfile
+          push: true
+          tags: alihaggag7/logic-arena-client:latest
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://logicarena.dev/api
+            NEXT_PUBLIC_WS_URL=https://logicarena.dev
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            cd ~/logic-arena
+            docker compose pull
+            docker compose up -d
