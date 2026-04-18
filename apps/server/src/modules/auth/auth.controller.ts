@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import {
@@ -36,7 +36,7 @@ import { AuthService } from './auth.service';
 @Throttle({ auth: { limit: 5, ttl: 900_000 } })
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -75,10 +75,12 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  googleAuth() {}
+  @SkipThrottle()
+  googleAuth() { }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
+  @SkipThrottle()
   googleCallback(@Req() req: any, @Res() res: Response) {
     const { access_token, userId, username } = req.user;
     const isDev = process.env.NODE_ENV === 'development';
@@ -90,10 +92,12 @@ export class AuthController {
 
   @Get('github')
   @UseGuards(AuthGuard('github'))
-  githubAuth() {}
+  @SkipThrottle()
+  githubAuth() { }
 
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
+  @SkipThrottle()
   githubCallback(@Req() req: any, @Res() res: Response) {
     const { access_token, userId, username } = req.user;
     const isDev = process.env.NODE_ENV === 'development';
@@ -102,4 +106,4 @@ export class AuthController {
       `${clientUrl}/auth/callback?token=${access_token}&userId=${userId}&username=${username}`
     );
   }
-}
+}
