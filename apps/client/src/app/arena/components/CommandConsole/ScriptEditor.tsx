@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 const highlightCode = (code: string) => {
     const keywords = ["IF", "THEN", "ELSE", "END", "WHILE", "DO", "FUNCTION", "CALL", "FIRE", "BURST_FIRE", "MOVE", "MOVE_FAST", "STOP", "BACKUP", "PATHFIND", "SET", "NOT", "TRUE", "FALSE", "WAIT", "SCAN"];
     const regex = new RegExp(`\\b(${keywords.join("|")})\\b`, "gi");
-    
+
     const lines = code.split('\n');
     return lines.map((line, i) => {
         const highlighted = line.replace(regex, (match) => `<span class="text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]">${match}</span>`);
@@ -15,44 +15,44 @@ const highlightCode = (code: string) => {
 // ── Intellisense autocomplete config ─────────────────────────────────────
 const AUTOCOMPLETE_SUGGESTIONS = [
     // Commands
-    { label: 'MOVE',            detail: 'command',    hint: 'Move forward at standard speed' },
-    { label: 'MOVE_FAST',       detail: 'command',    hint: 'Move forward at 2× speed' },
-    { label: 'STOP',            detail: 'command',    hint: 'Halt all movement' },
-    { label: 'BACKUP',          detail: 'command',    hint: 'Move in reverse' },
-    { label: 'PATHFIND',        detail: 'command',    hint: 'A* pathfind toward target' },
-    { label: 'FIRE',            detail: 'command',    hint: 'Single shot at nearest enemy' },
-    { label: 'BURST_FIRE',      detail: 'command',    hint: 'Multi-shot burst at enemy' },
-    { label: 'SCAN',            detail: 'command',    hint: 'Rotate FOV cone +15°' },
-    { label: 'WAIT',            detail: 'command',    hint: 'Pause execution for N ticks' },
+    { label: 'MOVE', detail: 'command', hint: 'Move forward at standard speed' },
+    { label: 'MOVE_FAST', detail: 'command', hint: 'Move forward at 2× speed' },
+    { label: 'STOP', detail: 'command', hint: 'Halt all movement' },
+    { label: 'BACKUP', detail: 'command', hint: 'Move in reverse' },
+    { label: 'PATHFIND', detail: 'command', hint: 'A* pathfind toward target' },
+    { label: 'FIRE', detail: 'command', hint: 'Single shot at nearest enemy' },
+    { label: 'BURST_FIRE', detail: 'command', hint: 'Multi-shot burst at enemy' },
+    { label: 'SCAN', detail: 'command', hint: 'Rotate FOV cone +15°' },
+    { label: 'WAIT', detail: 'command', hint: 'Pause execution for N ticks' },
     // Control Flow
-    { label: 'IF',              detail: 'control',    hint: 'Conditional branch' },
-    { label: 'WHILE',           detail: 'control',    hint: 'Loop while condition is true' },
-    { label: 'FUNCTION',        detail: 'control',    hint: 'Define a reusable function' },
-    { label: 'CALL',            detail: 'control',    hint: 'Call a function by name' },
-    { label: 'SET',             detail: 'control',    hint: 'Assign a variable' },
+    { label: 'IF', detail: 'control', hint: 'Conditional branch' },
+    { label: 'WHILE', detail: 'control', hint: 'Loop while condition is true' },
+    { label: 'FUNCTION', detail: 'control', hint: 'Define a reusable function' },
+    { label: 'CALL', detail: 'control', hint: 'Call a function by name' },
+    { label: 'SET', detail: 'control', hint: 'Assign a variable' },
     // Identifiers (readable)
-    { label: 'rotation',        detail: 'identifier', hint: 'Body facing angle (radians). Writable.' },
-    { label: 'angle',           detail: 'identifier', hint: 'Alias for rotation' },
-    { label: 'rot',             detail: 'identifier', hint: 'Alias for rotation' },
-    { label: 'fovDirection',    detail: 'identifier', hint: 'Scanner facing angle (radians). Independent from body.' },
-    { label: 'lockVision',      detail: 'flag',       hint: 'SET to TRUE to lock scanner to body rotation' },
-    { label: 'energy',          detail: 'identifier', hint: 'Alias – use MY_ENERGY' },
-    { label: 'distance',        detail: 'identifier', hint: 'Distance to nearest VISIBLE enemy' },
-    { label: 'health',          detail: 'identifier', hint: 'Current robot HP (0–100)' },
-    { label: 'MY_ENERGY',       detail: 'identifier', hint: 'Current energy (0–1000)' },
-    { label: 'ENERGY_PCT',      detail: 'identifier', hint: 'Energy as percentage (0–100)' },
-    { label: 'IN_STASIS',       detail: 'identifier', hint: 'True when energy ≤ 0' },
-    { label: 'CAN_SEE_ENEMY',   detail: 'identifier', hint: 'True if enemy is in FOV cone' },
-    { label: 'spotted',         detail: 'identifier', hint: 'Alias for CAN_SEE_ENEMY' },
+    { label: 'rotation', detail: 'identifier', hint: 'Body facing angle (radians). Writable.' },
+    { label: 'angle', detail: 'identifier', hint: 'Alias for rotation' },
+    { label: 'rot', detail: 'identifier', hint: 'Alias for rotation' },
+    { label: 'fovDirection', detail: 'identifier', hint: 'Scanner facing angle (radians). Independent from body.' },
+    { label: 'lockVision', detail: 'flag', hint: 'SET to TRUE to lock scanner to body rotation' },
+    { label: 'energy', detail: 'identifier', hint: 'Alias – use MY_ENERGY' },
+    { label: 'distance', detail: 'identifier', hint: 'Distance to nearest VISIBLE enemy' },
+    { label: 'health', detail: 'identifier', hint: 'Current robot HP (0–100)' },
+    { label: 'MY_ENERGY', detail: 'identifier', hint: 'Current energy (0–1000)' },
+    { label: 'ENERGY_PCT', detail: 'identifier', hint: 'Energy as percentage (0–100)' },
+    { label: 'IN_STASIS', detail: 'identifier', hint: 'True when energy ≤ 0' },
+    { label: 'CAN_SEE_ENEMY', detail: 'identifier', hint: 'True if enemy is in FOV cone' },
+    { label: 'spotted', detail: 'identifier', hint: 'Alias for CAN_SEE_ENEMY' },
     { label: 'NEAREST_VISIBLE_X', detail: 'identifier', hint: 'X of nearest visible enemy' },
     { label: 'NEAREST_VISIBLE_Y', detail: 'identifier', hint: 'Y of nearest visible enemy' },
 ];
 
 const DETAIL_COLORS: Record<string, string> = {
-    command:    '#22d3ee',
-    control:    '#f59e0b',
+    command: '#22d3ee',
+    control: '#f59e0b',
     identifier: '#a855f7',
-    flag:       '#4ade80',
+    flag: '#4ade80',
 };
 
 interface ScriptEditorProps {
@@ -161,7 +161,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
         <div className="relative flex flex-col gap-3 flex-grow overflow-hidden">
             <div className="relative flex-grow flex flex-col border border-cyan-900/40 bg-black/50 rounded-lg overflow-hidden group">
                 {/* Visual Overlay */}
-                <div 
+                <div
                     className="absolute inset-0 p-3 pt-4 pointer-events-none font-mono text-[13px] leading-[20px] text-cyan-300 overflow-hidden"
                     dangerouslySetInnerHTML={{ __html: highlightCode(scriptInput) }}
                 />
@@ -187,7 +187,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                         style={{ top: caretXY.top, left: caretXY.left }}
                     >
                         <div className="px-3 py-1.5 border-b border-cyan-900/40 flex items-center gap-2">
-                            <span className="text-cyan-600/60 text-[9px] tracking-widest uppercase">ALISCRIPT INTELLISENSE</span>
+                            <span className="text-cyan-600/60 text-[10px] tracking-widest uppercase">ALISCRIPT INTELLISENSE</span>
                         </div>
                         {suggestions.map((s, i) => (
                             <button
@@ -197,7 +197,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                                 className={`w-full flex items-center gap-3 px-3 py-1.5 text-left transition-colors ${i === activeIdx ? 'bg-cyan-950/80 text-white' : 'text-cyan-300 hover:bg-cyan-950/40'}`}
                             >
                                 <span
-                                    className="shrink-0 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded"
+                                    className="shrink-0 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded"
                                     style={{ color: DETAIL_COLORS[s.detail] ?? '#888', border: `1px solid ${DETAIL_COLORS[s.detail] ?? '#888'}44` }}
                                 >
                                     {s.detail}
@@ -206,7 +206,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                                 <span className="ml-auto text-[10px] text-cyan-600/60 truncate">{s.hint}</span>
                             </button>
                         ))}
-                        <div className="px-3 py-1 border-t border-cyan-900/30 text-[9px] text-cyan-700/50 flex gap-3">
+                        <div className="px-3 py-1 border-t border-cyan-900/30 text-[10px] text-cyan-700/50 flex gap-3">
                             <span>↑↓ Navigate</span><span>Tab / Enter Accept</span><span>Esc Dismiss</span>
                         </div>
                     </div>
@@ -227,7 +227,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                     className="flex-1 py-3 bg-cyan-900/20 border border-cyan-700/50 text-cyan-400 font-black text-[10px] hover:bg-cyan-800/40 hover:border-cyan-400 transition-all rounded uppercase tracking-widest shadow-[0_0_10px_rgba(34,211,238,0.1)] group relative overflow-hidden"
                 >
                     <span className="relative z-10">Neural Handbook</span>
-                     <div className="absolute inset-0 bg-cyan-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute inset-0 bg-cyan-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </button>
             </div>
         </div>

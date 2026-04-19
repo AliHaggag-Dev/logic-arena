@@ -18,7 +18,7 @@ export function CreateTournamentForm({ onClose, onCreate, creating }: Props) {
 
   return (
     <div className="mb-8 p-6 rounded-xl bg-card/60 border border-accent/20 backdrop-blur-xl animate-[fadeIn_0.25s_ease] flex gap-3 items-center">
-      <div className="text-[8px] tracking-[0.22em] text-accent/30 uppercase whitespace-nowrap">
+      <div className="text-[10px] tracking-[0.22em] text-accent/30 uppercase whitespace-nowrap">
         NAME:
       </div>
       <input

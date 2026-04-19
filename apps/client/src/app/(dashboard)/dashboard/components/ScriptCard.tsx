@@ -22,7 +22,7 @@ export const ScriptCard = ({ script, onEditBrain, onDeployToLobby, onDeployToAre
                 <h3 className="text-base sm:text-lg font-bold text-accent tracking-wider group-hover:text-accent transition-colors break-words">
                     {script.title}
                 </h3>
-                <div className="flex flex-wrap gap-2 sm:gap-4 text-[9px] sm:text-[10px] text-text-secondary tracking-widest font-bold">
+                <div className="flex flex-wrap gap-2 sm:gap-4 text-[10px] sm:text-[10px] text-text-secondary tracking-widest font-bold">
                     <span>V.{script.version}</span>
                     <span className="hidden sm:inline">|</span>
                     <span>INIT: {new Date(script.createdAt).toLocaleDateString()}</span>

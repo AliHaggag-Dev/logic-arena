@@ -83,7 +83,7 @@ export default function TournamentsPage() {
           {/* HERO */}
           <div className="border-b border-accent/10 pb-9 mb-10 flex justify-between items-end flex-wrap gap-5">
             <div>
-              <p className="text-[9px] tracking-[0.4em] text-accent/30 mb-2.5 uppercase">
+              <p className="text-[10px] tracking-[0.4em] text-accent/30 mb-2.5 uppercase">
                 // BRACKET_SYSTEM_v1.0
               </p>
               <h1 className="m-0 text-[clamp(28px,5vw,48px)] font-black tracking-[0.22em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.9)] leading-none">
@@ -100,11 +100,10 @@ export default function TournamentsPage() {
                 onMouseEnter={() => setHoveredBtn("create")}
                 onMouseLeave={() => setHoveredBtn(null)}
                 onClick={() => setShowCreate(true)}
-                className={`px-7 py-3 rounded-lg text-[10px] font-black tracking-[0.28em] font-mono cursor-pointer transition-all duration-200 border ${
-                  hoveredBtn === "create"
+                className={`px-7 py-3 rounded-lg text-[10px] font-black tracking-[0.28em] font-mono cursor-pointer transition-all duration-200 border ${hoveredBtn === "create"
                     ? "bg-accent/20 border-accent/70 text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.6)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.15)]"
                     : "bg-accent/10 border-accent/30 text-accent/70"
-                }`}
+                  }`}
               >
                 [+] DEPLOY TOURNAMENT
               </button>
@@ -129,7 +128,7 @@ export default function TournamentsPage() {
             ].map(({ label, value }) => (
               <div
                 key={label}
-                className="px-4 py-1.5 border border-accent/15 rounded bg-accent/5 text-[9px] tracking-[0.18em] text-accent/45 flex gap-2 items-center"
+                className="px-4 py-1.5 border border-accent/15 rounded bg-accent/5 text-[10px] tracking-[0.18em] text-accent/45 flex gap-2 items-center"
               >
                 <span className="text-accent/25">{label}:</span>
                 <span className="text-accent font-bold">{value}</span>

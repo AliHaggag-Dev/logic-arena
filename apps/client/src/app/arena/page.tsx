@@ -9,8 +9,8 @@ import { CommandConsole } from './components/CommandConsole';
 import WinnerScreen from './components/WinnerScreen';
 
 interface RobotScript {
-  id:      string;
-  title:   string;
+  id: string;
+  title: string;
   content: string;
 }
 
@@ -20,16 +20,16 @@ const ROBOT_FILES: Record<string, string> = {
 };
 
 const ArenaPageContent = () => {
-  const router       = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const scriptId     = searchParams.get('scriptId');
-  const urlMode      = searchParams.get('mode') || 'COMBAT';
+  const scriptId = searchParams.get('scriptId');
+  const urlMode = searchParams.get('mode') || 'COMBAT';
 
   const [script, setScript] = useState<RobotScript | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
-  const [localRobotFile,  setLocalRobotFile]  = useState('/robot.glb');
+  const [localRobotFile, setLocalRobotFile] = useState('/robot.glb');
   const [localRobotColor, setLocalRobotColor] = useState('#22d3ee');
 
   const {
@@ -58,7 +58,7 @@ const ArenaPageContent = () => {
       const file = ROBOT_FILES[res.data.selectedRobotId] ?? '/robot.glb';
       setLocalRobotFile(file);
       if (res.data.selectedColor) setLocalRobotColor(res.data.selectedColor);
-    }).catch(() => {/* non-fatal — defaults remain */});
+    }).catch(() => {/* non-fatal — defaults remain */ });
   }, []);
 
   useEffect(() => {
@@ -78,12 +78,12 @@ const ArenaPageContent = () => {
   }, [scriptId]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">UPLINKING TO NEURAL NETWORK...</div>;
-  if (error)   return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">CRITICAL_SYSTEM_ERROR: {error}</div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">CRITICAL_SYSTEM_ERROR: {error}</div>;
 
-  const robots       = uiState?.robots || [];
-  const isConnected  = !!socket?.connected;
+  const robots = uiState?.robots || [];
+  const isConnected = !!socket?.connected;
   const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
-  const matchId      = searchParams.get('matchId') || 'default-match';
+  const matchId = searchParams.get('matchId') || 'default-match';
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden font-mono select-none">
@@ -125,10 +125,9 @@ const ArenaPageContent = () => {
       </button>
 
       {/* ── Left Cinematic Wrapper ───────────────────────────────── */}
-      <div 
-        className={`absolute inset-0 z-30 pointer-events-none transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          isLeftPanelOpen ? 'translate-x-0' : '-translate-x-[120%]'
-        }`}
+      <div
+        className={`absolute inset-0 z-30 pointer-events-none transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isLeftPanelOpen ? 'translate-x-0' : '-translate-x-[120%]'
+          }`}
       >
         {/* ── Title bar ────────────────────────────────────────────── */}
         <div className="absolute top-6 left-8 pointer-events-none">
@@ -136,15 +135,13 @@ const ArenaPageContent = () => {
             LOGIC ARENA
           </h1>
           <div className="flex items-center gap-2 mt-1">
-            <span className={`w-2 h-2 rounded-full animate-pulse ${
-              displayMode === 'RACING'        ? 'bg-yellow-500 shadow-[0_0_8px_#eab308]' :
+            <span className={`w-2 h-2 rounded-full animate-pulse ${displayMode === 'RACING' ? 'bg-yellow-500 shadow-[0_0_8px_#eab308]' :
               displayMode === 'TRAINING_SOLO' ? 'bg-green-500  shadow-[0_0_8px_#22c55e]' :
-                                                'bg-red-500    shadow-[0_0_8px_#ef4444]'
-            }`} />
-            <p className={`text-[10px] tracking-[0.2em] font-bold ${
-              displayMode === 'RACING'        ? 'text-yellow-700' :
-              displayMode === 'TRAINING_SOLO' ? 'text-green-700'  : 'text-red-700'
-            }`}>
+                'bg-red-500    shadow-[0_0_8px_#ef4444]'
+              }`} />
+            <p className={`text-[10px] tracking-[0.2em] font-bold ${displayMode === 'RACING' ? 'text-yellow-700' :
+              displayMode === 'TRAINING_SOLO' ? 'text-green-700' : 'text-red-700'
+              }`}>
               v2.0.0 {displayMode === 'RACING' ? '[RACING OVAL]' : displayMode === 'TRAINING_SOLO' ? '[TRAINING SOLO]' : '[COMBAT ARENA]'}
             </p>
           </div>
@@ -159,7 +156,7 @@ const ArenaPageContent = () => {
 
         {/* ── HUD control strip (top-left buttons) ─────────────────── */}
         <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-3 bg-black/80 backdrop-blur-xl border-l-4 border-cyan-500 p-4 rounded-r shadow-[10px_10px_30px_rgba(0,0,0,0.9)]">
-          
+
           <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-cyan-500/50 to-transparent" />
           <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-cyan-500/50 to-transparent" />
 
@@ -178,11 +175,10 @@ const ArenaPageContent = () => {
             type="button"
             id="fog-toggle-btn"
             onClick={() => setFogEnabled(prev => !prev)}
-            className={`group relative border text-[10px] font-black px-6 py-2.5 transition-all tracking-[0.2em] overflow-hidden ${
-              fogEnabled
-                ? 'border-cyan-500 bg-cyan-900/40 text-cyan-300 hover:bg-cyan-500/40 hover:text-white shadow-[0_0_15px_rgba(34,211,238,0.2)] hover:shadow-[0_0_20px_rgba(34,211,238,0.6)]'
-                : 'border-white/20 bg-white/5 text-white/50 hover:bg-white/10 hover:border-white/40'
-            }`}
+            className={`group relative border text-[10px] font-black px-6 py-2.5 transition-all tracking-[0.2em] overflow-hidden ${fogEnabled
+              ? 'border-cyan-500 bg-cyan-900/40 text-cyan-300 hover:bg-cyan-500/40 hover:text-white shadow-[0_0_15px_rgba(34,211,238,0.2)] hover:shadow-[0_0_20px_rgba(34,211,238,0.6)]'
+              : 'border-white/20 bg-white/5 text-white/50 hover:bg-white/10 hover:border-white/40'
+              }`}
           >
             <span className="relative z-10">
               [ FOG_SYSTEM: {fogEnabled ? 'ONLINE' : 'OFFLINE'} ]
@@ -238,10 +234,10 @@ const ArenaPageContent = () => {
                   key={robot.id}
                   className="absolute transition-all duration-300 ease-linear"
                   style={{
-                    left:      `${posX}%`,
-                    top:       `${posY}%`,
+                    left: `${posX}%`,
+                    top: `${posY}%`,
                     transform: 'translate(-50%, -50%)',
-                    opacity:   isVisible ? 1 : 0.25,
+                    opacity: isVisible ? 1 : 0.25,
                   }}
                 >
                   <div className="relative flex items-center justify-center">
@@ -262,16 +258,15 @@ const ArenaPageContent = () => {
                     {/* Energy arc (cyan bar below health) */}
                     <div className="absolute -top-2.5 w-6 h-[3px] bg-gray-900/80 border border-cyan-900/40">
                       <div
-                        className={`h-full transition-all ${
-                          robot.inStasis ? 'bg-blue-400' :
+                        className={`h-full transition-all ${robot.inStasis ? 'bg-blue-400' :
                           energyPct <= 20 ? 'bg-amber-400 animate-pulse' : 'bg-cyan-400'
-                        }`}
+                          }`}
                         style={{ width: `${energyPct}%` }}
                       />
                     </div>
                     {/* ID label */}
                     <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-1 border border-cyan-500/20">
-                      <span className="text-[7px] text-cyan-400 font-mono font-bold whitespace-nowrap tracking-tighter uppercase">
+                      <span className="text-[8px] text-cyan-400 font-mono font-bold whitespace-nowrap tracking-tighter uppercase">
                         {robot.id.slice(0, 4)}
                       </span>
                     </div>
@@ -297,14 +292,14 @@ const ArenaPageContent = () => {
       {/* ── Status bar ───────────────────────────────────────────── */}
       <div className="absolute bottom-8 right-8 z-20 flex items-center gap-6">
         <div className="flex flex-col items-end">
-          <span className="text-[9px] text-cyan-800 font-bold uppercase tracking-widest">Connection_Status</span>
+          <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">Connection_Status</span>
           <span className={`text-[11px] font-black tracking-widest ${isConnected ? 'text-cyan-400' : 'text-yellow-500 animate-pulse'}`}>
             {isConnected ? 'UPLINK_STABLE' : 'REESTABLISHING_LINK...'}
           </span>
         </div>
         <div className="h-8 w-[1px] bg-cyan-900/50" />
         <div className="flex flex-col items-end">
-          <span className="text-[9px] text-cyan-800 font-bold uppercase tracking-widest">FOV_SYSTEM</span>
+          <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">FOV_SYSTEM</span>
           <span className={`text-[11px] font-black tracking-widest ${fogEnabled ? 'text-cyan-400' : 'text-white/30'}`}>
             {fogEnabled ? 'ACTIVE' : 'DISABLED'}
           </span>

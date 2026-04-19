@@ -55,7 +55,7 @@ export default function RobotDetailPage() {
       if (res.data.selectedRobotId === robotId) {
         setColor(res.data.selectedColor ?? "DEFAULT");
       }
-    }).catch(() => {/* silently ignore if not logged in */});
+    }).catch(() => {/* silently ignore if not logged in */ });
   }, [robotId]);
 
   const showToast = useCallback((type: "success" | "error", message: string) => {
@@ -126,7 +126,7 @@ export default function RobotDetailPage() {
           {/* ── Top bar ── */}
           <div className="flex items-center justify-between border-b border-accent/10 pb-5 mb-8">
             <div>
-              <p className="text-[8px] tracking-[0.28em] text-accent/35 mb-1 uppercase">
+              <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-1 uppercase">
                 // UNIT_VIEWER
               </p>
               <h1 className="m-0 text-[clamp(20px,3.5vw,32px)] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight">
@@ -156,7 +156,7 @@ export default function RobotDetailPage() {
             >
               {/* Robot info */}
               <div className="border-b border-accent/10 pb-5">
-                <p className="text-[8px] tracking-[0.28em] text-accent/35 mb-3 uppercase">
+                <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-3 uppercase">
                   // UNIT_DATA
                 </p>
                 <div className="space-y-2">
@@ -181,7 +181,7 @@ export default function RobotDetailPage() {
               </div>
 
               {/* Orbit controls hint */}
-              <p className="text-[8px] tracking-[0.18em] text-accent/25 leading-relaxed">
+              <p className="text-[9px] tracking-[0.18em] text-accent/25 leading-relaxed">
                 DRAG TO ORBIT · SCROLL TO ZOOM · RIGHT-DRAG TO PAN
               </p>
 

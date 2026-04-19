@@ -11,7 +11,7 @@ export const CustomSelect = ({ value, onChange }: { value: string, onChange: (va
                 className="flex items-center justify-between gap-4 bg-bg-secondary/80 backdrop-blur-xl border border-accent rounded px-3 py-1.5 text-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.4)] hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)] hover:bg-accent/20 transition-all uppercase w-40"
             >
                 <span className="truncate">{value}</span>
-                <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''} text-[8px]`}>▼</span>
+                <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''} text-[9px]`}>▼</span>
             </button>
 
             {isOpen && (

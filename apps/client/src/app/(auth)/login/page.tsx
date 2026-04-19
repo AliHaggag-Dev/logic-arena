@@ -94,7 +94,7 @@ export default function LoginPage() {
           <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent/60 rounded-tl-xl" />
           <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent/60 rounded-br-xl" />
           
-          <div className="absolute top-3 right-4 text-[8px] text-accent/30 tracking-[0.2em] pointer-events-none">AUTH_NODE_V1</div>
+          <div className="absolute top-3 right-4 text-[9px] text-accent/30 tracking-[0.2em] pointer-events-none">AUTH_NODE_V1</div>
 
           <div className="mb-10 text-center flex flex-col items-center">
             <div className="w-10 h-10 mb-4 border border-accent/30 rounded-full flex items-center justify-center bg-accent/5 shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]">
@@ -135,13 +135,13 @@ export default function LoginPage() {
 
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-accent/10" />
-            <span className="text-[9px] tracking-[0.2em] text-accent/30">OR</span>
+            <span className="text-[10px] tracking-[0.2em] text-accent/30">OR</span>
             <div className="flex-1 h-px bg-accent/10" />
           </div>
 
           <form onSubmit={handleLogin} className="flex flex-col gap-6">
             <div className="flex flex-col gap-2 relative">
-              <label className="text-[9px] text-accent/60 uppercase tracking-[0.2em] font-bold ml-1" htmlFor="username">
+              <label className="text-[10px] text-accent/60 uppercase tracking-[0.2em] font-bold ml-1" htmlFor="username">
                 Operator Name
               </label>
               <input
@@ -157,7 +157,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex flex-col gap-2 relative">
-              <label className="text-[9px] text-accent/60 uppercase tracking-[0.2em] font-bold ml-1" htmlFor="password">
+              <label className="text-[10px] text-accent/60 uppercase tracking-[0.2em] font-bold ml-1" htmlFor="password">
                 Security Key
               </label>
               <input
@@ -189,7 +189,7 @@ export default function LoginPage() {
               {status.errors.length > 0 && (
                 <div className="w-full p-3 rounded-md border bg-red-500/10 border-red-500/40 shadow-[0_0_10px_rgba(var(--color-red-500),0.15)] space-y-1">
                   {status.errors.map((err, i) => (
-                    <div key={i} className="flex items-start gap-1.5 text-[9px] tracking-[0.08em] font-bold text-red-500 break-words">
+                    <div key={i} className="flex items-start gap-1.5 text-[10px] tracking-[0.08em] font-bold text-red-500 break-words">
                       <span className="shrink-0 mt-px opacity-70">›</span>
                       <span>{err}</span>
                     </div>
@@ -211,14 +211,14 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/register")}
-                  className="text-accent/40 hover:text-accent text-[9px] uppercase tracking-[0.2em] transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
+                  className="text-accent/40 hover:text-accent text-[10px] uppercase tracking-[0.2em] transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
                 >
                   No clearance? Request Access
                 </button>
                 <button
                   type="button"
                   onClick={() => router.push("/forgot-password")}
-                  className="text-red-500/40 hover:text-red-500 text-[9px] uppercase tracking-[0.2em] transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.6)]"
+                  className="text-red-500/40 hover:text-red-500 text-[10px] uppercase tracking-[0.2em] transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.6)]"
                 >
                   Lost Security Key? Initiate Reset
                 </button>

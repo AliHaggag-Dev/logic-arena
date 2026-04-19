@@ -31,7 +31,7 @@ function FilterChip({
         color: active ? color : hovered ? `${color}bb` : "rgba(var(--accent-rgb),0.35)",
         textShadow: active ? `0 0 8px ${color}66` : "none",
       }}
-      className="text-[8px] font-bold tracking-[0.2em] cursor-pointer transition-all duration-150 font-mono"
+      className="text-[9px] font-bold tracking-[0.2em] cursor-pointer transition-all duration-150 font-mono"
     >
       {label}
     </button>
@@ -79,7 +79,7 @@ export function CommandReferenceSection() {
                 {["Command", "Category", "Parameters", "Description", "Example"].map((h) => (
                   <th
                     key={h}
-                    className="px-[18px] py-[14px] text-left text-[8px] font-bold tracking-[0.25em] text-accent/35 uppercase whitespace-nowrap"
+                    className="px-[18px] py-[14px] text-left text-[9px] font-bold tracking-[0.25em] text-accent/35 uppercase whitespace-nowrap"
                   >
                     {h}
                   </th>
@@ -107,7 +107,7 @@ export function CommandReferenceSection() {
                     {/* Category */}
                     <td className="px-[18px] py-[14px]">
                       <span
-                        className="inline-block px-2.5 py-1 rounded text-[8px] font-bold tracking-[0.15em] whitespace-nowrap"
+                        className="inline-block px-2.5 py-1 rounded text-[9px] font-bold tracking-[0.15em] whitespace-nowrap"
                         style={{
                           backgroundColor: `${catColor}12`,
                           border: `1px solid ${catColor}30`,
@@ -142,7 +142,7 @@ export function CommandReferenceSection() {
         </div>
       </div>
 
-      <div className="mt-3 text-[8px] text-accent/20 tracking-[0.18em] text-right">
+      <div className="mt-3 text-[9px] text-accent/20 tracking-[0.18em] text-right">
         {filteredCommands.length} / {COMMAND_TABLE.length} COMMANDS DISPLAYED
       </div>
     </section>

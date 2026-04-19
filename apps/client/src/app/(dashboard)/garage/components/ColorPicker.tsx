@@ -22,7 +22,7 @@ interface ColorPickerProps {
 export function ColorPicker({ selected, onChange }: ColorPickerProps) {
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[8px] tracking-[0.28em] text-accent/35 uppercase">
+      <p className="text-[9px] tracking-[0.28em] text-accent/35 uppercase">
         // SELECT_TINT
       </p>
 
@@ -49,7 +49,7 @@ export function ColorPicker({ selected, onChange }: ColorPickerProps) {
               />
               {/* Label */}
               <span
-                className="text-[8px] tracking-[0.18em] transition-colors duration-200"
+                className="text-[9px] tracking-[0.18em] transition-colors duration-200"
                 style={{ color: isActive ? (hex === "DEFAULT" ? "#94a3b8" : hex) : "rgba(var(--accent-rgb),0.3)" }}
               >
                 {label}

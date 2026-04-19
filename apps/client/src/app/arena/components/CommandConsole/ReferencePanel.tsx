@@ -10,7 +10,7 @@ export const ReferencePanel: React.FC = () => {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full px-3 py-1.5 flex items-center justify-between uppercase tracking-[0.2em] text-cyan-600 text-[9px] hover:bg-cyan-950/50 transition-colors"
+                className="w-full px-3 py-1.5 flex items-center justify-between uppercase tracking-[0.2em] text-cyan-600 text-[10px] hover:bg-cyan-950/50 transition-colors"
             >
                 <span>Variables Ref</span>
                 <span className="text-cyan-400">{isOpen ? "▼" : "▶"}</span>

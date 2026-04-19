@@ -52,7 +52,7 @@ interface Props {
 export function TournamentCard({ tournament: t, index, userId, joining, onJoin }: Props) {
   const router = useRouter();
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
-  
+
   const s = STATUS_STYLES[t.status] || STATUS_STYLES.WAITING;
   const isJoined = t.participants.some((p) => p.id === userId);
   const canJoin = t.status === "WAITING" && !isJoined && t.participants.length < 8;
@@ -68,13 +68,13 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin }
           <div className="text-[14px] font-black tracking-[0.12em] text-accent mb-1.5 transition-all group-hover:drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]">
             {t.name}
           </div>
-          <div className="text-[8px] text-accent/25 tracking-[0.15em]">
+          <div className="text-[9px] text-accent/25 tracking-[0.15em]">
             BY {t.creator.username.toUpperCase()}
           </div>
         </div>
         {/* Status badge */}
         <span
-          className="px-2.5 py-1 rounded text-[8px] font-extrabold tracking-[0.18em] whitespace-nowrap"
+          className="px-2.5 py-1 rounded text-[9px] font-extrabold tracking-[0.18em] whitespace-nowrap"
           style={{
             backgroundColor: s.bg,
             border: `1px solid ${s.border}`,
@@ -89,8 +89,8 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin }
       {/* Players bar */}
       <div>
         <div className="flex justify-between mb-1.5">
-          <span className="text-[8px] text-accent/30 tracking-[0.15em]">COMBATANTS</span>
-          <span className="text-[9px] text-accent/50 font-bold">{t.participants.length}/8</span>
+          <span className="text-[9px] text-accent/30 tracking-[0.15em]">COMBATANTS</span>
+          <span className="text-[10px] text-accent/50 font-bold">{t.participants.length}/8</span>
         </div>
         <div className="h-[3px] rounded bg-accent/5 overflow-hidden">
           <div
@@ -106,7 +106,7 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin }
           <span
             key={p.id}
             title={p.username}
-            className="px-2 py-[2px] rounded-sm bg-accent/5 border border-accent/15 text-[8px] text-accent/50 tracking-[0.1em] font-semibold"
+            className="px-2 py-[2px] rounded-sm bg-accent/5 border border-accent/15 text-[9px] text-accent/50 tracking-[0.1em] font-semibold"
           >
             {p.username}
           </span>
@@ -121,13 +121,11 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin }
             disabled={joining === t.id}
             onMouseEnter={() => setHoveredBtn("join")}
             onMouseLeave={() => setHoveredBtn(null)}
-            className={`flex-1 px-3.5 py-2 rounded-md text-[9px] font-extrabold tracking-[0.18em] font-mono transition-all duration-200 ${
-              joining === t.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'
-            } ${
-              hoveredBtn === "join" 
-              ? "bg-yellow-500/15 border-yellow-500/60 text-yellow-500" 
-              : "bg-yellow-500/5 border-yellow-500/25 text-yellow-500/60"
-            }`}
+            className={`flex-1 px-3.5 py-2 rounded-md text-[10px] font-extrabold tracking-[0.18em] font-mono transition-all duration-200 ${joining === t.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'
+              } ${hoveredBtn === "join"
+                ? "bg-yellow-500/15 border-yellow-500/60 text-yellow-500"
+                : "bg-yellow-500/5 border-yellow-500/25 text-yellow-500/60"
+              }`}
             style={{ borderWidth: "1px" }}
           >
             {joining === t.id ? "JOINING..." : "⚡ JOIN"}
@@ -137,11 +135,10 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin }
           onClick={() => router.push(`/tournaments/${t.id}`)}
           onMouseEnter={() => setHoveredBtn("view")}
           onMouseLeave={() => setHoveredBtn(null)}
-          className={`flex-1 px-3.5 py-2 rounded-md text-[9px] font-extrabold tracking-[0.18em] font-mono cursor-pointer transition-all duration-200 ${
-            hoveredBtn === "view"
+          className={`flex-1 px-3.5 py-2 rounded-md text-[10px] font-extrabold tracking-[0.18em] font-mono cursor-pointer transition-all duration-200 ${hoveredBtn === "view"
             ? "bg-accent/15 border-accent/60 text-accent"
             : "bg-accent/5 border-accent/20 text-accent/60"
-          }`}
+            }`}
           style={{ borderWidth: "1px" }}
         >
           ◉ VIEW BRACKET

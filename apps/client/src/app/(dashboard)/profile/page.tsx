@@ -59,7 +59,7 @@ export default function ProfilePage() {
         <div className="max-w-[900px] mx-auto px-6 pt-12 pb-[80px] relative z-10 animate-[fadeIn_0.35s_ease]">
           {/* ── Header ── */}
           <div className="border-b border-accent/10 pb-6 mb-9">
-            <p className="text-[8px] tracking-[0.28em] text-accent/35 mb-2 uppercase">
+            <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-2 uppercase">
               // OPERATOR_FILE
             </p>
             <h1 className="m-0 text-[clamp(24px,4vw,36px)] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.7)] leading-tight">
@@ -112,7 +112,7 @@ export default function ProfilePage() {
                     Match History
                   </h2>
                   {profile && (
-                    <span className="text-[9px] text-accent/25 tracking-[0.15em]">
+                    <span className="text-[10px] text-accent/25 tracking-[0.15em]">
                       TOTAL: {profile.totalMatches}
                     </span>
                   )}

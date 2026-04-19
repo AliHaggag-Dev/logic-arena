@@ -10,11 +10,11 @@ import { CommandReferenceSection } from './components/CommandReferenceSection';
 import { AlgorithmChallenges } from './components/AlgorithmChallenges';
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Self:      'var(--accent)',
-  Combat:    'var(--color-orange-500)',
-  Energy:    '#818cf8',
-  FOV:       'var(--accent)',
-  Scan:      'var(--accent)',
+  Self: 'var(--accent)',
+  Combat: 'var(--color-orange-500)',
+  Energy: '#818cf8',
+  FOV: 'var(--accent)',
+  Scan: 'var(--accent)',
 };
 
 /** Inline identifier reference table */
@@ -27,7 +27,7 @@ const IdentifierReferenceSection = () => {
         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-accent/30" />
         <h2 className="text-xl font-black tracking-[0.15em] text-text-primary uppercase text-center">
           Built-in Identifiers
-          <span className="ml-2 text-[9px] tracking-[0.4em] text-accent/80 align-middle">v2.0</span>
+          <span className="ml-2 text-[10px] tracking-[0.4em] text-accent/80 align-middle">v2.0</span>
         </h2>
         <div className="h-px flex-1 bg-gradient-to-l from-transparent to-accent/30" />
       </div>
@@ -36,9 +36,9 @@ const IdentifierReferenceSection = () => {
         {categories.map(cat => (
           <div key={cat}>
             <div
-              className="text-[9px] tracking-[0.5em] font-black uppercase mb-3 pb-2 border-b border-accent/20 text-accent"
+              className="text-[10px] tracking-[0.5em] font-black uppercase mb-3 pb-2 border-b border-accent/20 text-accent"
               style={{
-                color:       String(CATEGORY_COLORS[cat] || 'var(--accent)'),
+                color: String(CATEGORY_COLORS[cat] || 'var(--accent)'),
                 borderColor: `rgba(var(--accent-rgb), 0.2)`,
               }}
             >
@@ -125,7 +125,7 @@ export default function DocsPage() {
           className="fixed inset-0 pointer-events-none z-0"
           style={{
             backgroundImage: 'linear-gradient(rgba(var(--accent-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.06) 1px, transparent 1px)',
-            backgroundSize:  '40px 40px',
+            backgroundSize: '40px 40px',
           }}
         />
 

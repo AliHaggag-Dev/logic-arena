@@ -6,19 +6,19 @@ import { Socket } from 'socket.io-client';
 
 interface WinnerScreenProps {
   matchResult: {
-    winner:           { id: string; color: string } | null;
-    draw:             boolean;
+    winner: { id: string; color: string } | null;
+    draw: boolean;
     efficiencyScores: Record<string, number>;
   };
   currentUserId: string | null;
-  socket:        Socket;
-  matchId:       string;
+  socket: Socket;
+  matchId: string;
 }
 
 const WinnerScreen: React.FC<WinnerScreenProps> = ({
   matchResult, currentUserId, socket, matchId,
 }) => {
-  const router   = useRouter();
+  const router = useRouter();
   const { winner, draw, efficiencyScores } = matchResult;
   const [username, setUsername] = useState<string>('OPERATOR');
 
@@ -28,7 +28,7 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
   }, []);
 
   const isWinner = winner?.id === currentUserId;
-  const title    = draw ? 'DRAW' : isWinner ? 'VICTORY' : 'DEFEATED';
+  const title = draw ? 'DRAW' : isWinner ? 'VICTORY' : 'DEFEATED';
 
   const titleColor = draw
     ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]'
@@ -46,9 +46,9 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
   const myScore = currentUserId ? (efficiencyScores?.[currentUserId] ?? null) : null;
   const scoreColor =
     myScore === null ? 'text-white/40' :
-    myScore >= 50    ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]' :
-    myScore >= 20    ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]' :
-                       'text-red-400  drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]';
+      myScore >= 50 ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]' :
+        myScore >= 20 ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]' :
+          'text-red-400  drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]';
 
   const handleRematch = () => {
     socket.emit('resetGame', { matchId });
@@ -101,7 +101,7 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
 
         {/* ── Efficiency Score card ─────────────────────────────── */}
         <div className="mb-8 w-full max-w-sm border border-cyan-900/40 bg-cyan-950/10 backdrop-blur-sm p-4 rounded-sm">
-          <div className="text-[9px] tracking-[0.4em] text-cyan-700 uppercase font-black mb-2 text-center">
+          <div className="text-[10px] tracking-[0.4em] text-cyan-700 uppercase font-black mb-2 text-center">
             ⚡ EFFICIENCY_SCORE
           </div>
           {myScore !== null ? (
@@ -109,20 +109,19 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
               <div className={`text-5xl font-black text-center tracking-tight ${scoreColor}`}>
                 {myScore.toFixed(1)}
               </div>
-              <div className="text-[8px] text-white/20 tracking-widest text-center mt-1 uppercase">
+              <div className="text-[9px] text-white/20 tracking-widest text-center mt-1 uppercase">
                 damage_dealt / energy_consumed × 100
               </div>
               {/* Score bar */}
               <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/10">
                 <div
-                  className={`h-full rounded-full transition-all duration-1000 ${
-                    myScore >= 50 ? 'bg-cyan-400 shadow-[0_0_6px_var(--accent)]' :
+                  className={`h-full rounded-full transition-all duration-1000 ${myScore >= 50 ? 'bg-cyan-400 shadow-[0_0_6px_var(--accent)]' :
                     myScore >= 20 ? 'bg-amber-400' : 'bg-red-500'
-                  }`}
+                    }`}
                   style={{ width: `${Math.min(myScore, 100)}%` }}
                 />
               </div>
-              <div className="mt-2 text-[8px] text-white/20 text-center tracking-widest">
+              <div className="mt-2 text-[9px] text-white/20 text-center tracking-widest">
                 {myScore >= 50 ? 'OPTIMAL ALGORITHM' : myScore >= 20 ? 'MODERATE EFFICIENCY' : 'INEFFICIENT SCRIPT — REFACTOR RECOMMENDED'}
               </div>
             </>

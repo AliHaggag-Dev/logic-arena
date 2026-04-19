@@ -16,8 +16,8 @@ export default function GaragePage() {
   useEffect(() => {
     apiClient.get("/users/profile").then((res) => {
       if (res.data.selectedRobotId) setActiveRobotId(res.data.selectedRobotId);
-      if (res.data.selectedColor)   setActiveColor(res.data.selectedColor);
-    }).catch(() => {});
+      if (res.data.selectedColor) setActiveColor(res.data.selectedColor);
+    }).catch(() => { });
   }, []);
 
   return (
@@ -50,7 +50,7 @@ export default function GaragePage() {
         >
           {/* ── Header ── */}
           <div className="border-b border-accent/10 pb-6 mb-10">
-            <p className="text-[8px] tracking-[0.28em] text-accent/35 mb-2 uppercase">
+            <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-2 uppercase">
               // HANGAR_DECK
             </p>
             <h1 className="m-0 text-[clamp(24px,4vw,38px)] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight">
@@ -70,7 +70,7 @@ export default function GaragePage() {
                   {/* ACTIVE badge */}
                   {isActive && (
                     <div
-                      className="absolute -top-3 left-4 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full text-[8px] font-bold tracking-[0.25em] border"
+                      className="absolute -top-3 left-4 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold tracking-[0.25em] border"
                       style={{
                         background: "rgba(var(--accent-rgb),0.10)",
                         borderColor: "rgba(var(--accent-rgb),0.45)",
@@ -99,7 +99,7 @@ export default function GaragePage() {
 
           {/* ── Footer hint ── */}
           <p
-            className="text-center text-[9px] tracking-[0.22em] text-accent/20 mt-10"
+            className="text-center text-[10px] tracking-[0.22em] text-accent/20 mt-10"
             style={{ animation: "pulseGlow 3s ease-in-out infinite" }}
           >
             ◈ CLICK A UNIT TO OPEN FULL VIEWER ◈

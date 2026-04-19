@@ -15,24 +15,24 @@ interface LevelDetail {
 }
 
 const DIFF_CONFIG = {
-  EASY:   { color: "var(--color-emerald-500)", label: "EASY"   },
+  EASY: { color: "var(--color-emerald-500)", label: "EASY" },
   MEDIUM: { color: "#eab308", label: "MEDIUM" },
-  HARD:   { color: "var(--color-orange-500)", label: "HARD"   },
-  ELITE:  { color: "var(--color-red-500)", label: "ELITE"  },
+  HARD: { color: "var(--color-orange-500)", label: "HARD" },
+  ELITE: { color: "var(--color-red-500)", label: "ELITE" },
 } as const;
 
 type ModalState = "idle" | "loading" | "victory" | "defeat";
 
 export default function CampaignLevelPage() {
   const router = useRouter();
-  const { id }  = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>();
   const levelId = parseInt(id, 10);
 
-  const [level, setLevel]       = useState<LevelDetail | null>(null);
+  const [level, setLevel] = useState<LevelDetail | null>(null);
   const [fetching, setFetching] = useState(true);
-  const [script, setScript]     = useState("");
-  const [modal, setModal]       = useState<ModalState>("idle");
-  const [reward, setReward]     = useState<number>(0);
+  const [script, setScript] = useState("");
+  const [modal, setModal] = useState<ModalState>("idle");
+  const [reward, setReward] = useState<number>(0);
 
   useEffect(() => {
     apiClient
@@ -110,11 +110,11 @@ export default function CampaignLevelPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push("/campaign")}
-                className="text-[9px] tracking-[0.2em] text-accent/40 hover:text-accent border border-accent/15 hover:border-accent/40 rounded px-3 py-1.5 transition-all duration-200 cursor-pointer bg-transparent"
+                className="text-[10px] tracking-[0.2em] text-accent/40 hover:text-accent border border-accent/15 hover:border-accent/40 rounded px-3 py-1.5 transition-all duration-200 cursor-pointer bg-transparent"
               >
                 ← BACK
               </button>
-              <span className="text-[9px] text-accent/20 tracking-[0.2em]">
+              <span className="text-[10px] text-accent/20 tracking-[0.2em]">
                 LEVEL {String(level.id).padStart(2, "0")}
               </span>
               <h1 className="m-0 text-[18px] font-black tracking-[0.2em] text-accent drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.7)]">
@@ -122,7 +122,7 @@ export default function CampaignLevelPage() {
               </h1>
             </div>
             <span
-              className="text-[9px] font-bold tracking-[0.25em] border rounded px-3 py-1"
+              className="text-[10px] font-bold tracking-[0.25em] border rounded px-3 py-1"
               style={{ color: dc.color, borderColor: `${dc.color}40` }}
             >
               {dc.label}
@@ -135,7 +135,7 @@ export default function CampaignLevelPage() {
             <div className="flex flex-col gap-5">
               {/* Mission brief */}
               <div className="border border-accent/15 rounded-xl p-6 bg-accent/[0.02]">
-                <p className="text-[8px] tracking-[0.3em] text-accent/30 mb-3 uppercase">
+                <p className="text-[9px] tracking-[0.3em] text-accent/30 mb-3 uppercase">
                   // MISSION_BRIEF
                 </p>
                 <p className="text-[11px] text-accent/70 tracking-[0.08em] leading-relaxed">
@@ -145,7 +145,7 @@ export default function CampaignLevelPage() {
 
               {/* Enemy Intel */}
               <div className="border border-red-500/20 rounded-xl p-6 bg-red-500/[0.03]">
-                <p className="text-[8px] tracking-[0.3em] text-red-500/50 mb-4 uppercase">
+                <p className="text-[9px] tracking-[0.3em] text-red-500/50 mb-4 uppercase">
                   // ENEMY_INTEL
                 </p>
                 <div className="flex flex-col gap-3">
@@ -168,8 +168,8 @@ export default function CampaignLevelPage() {
 
               {/* Tips */}
               <div className="border border-accent/10 rounded-xl p-5 bg-transparent">
-                <p className="text-[8px] tracking-[0.3em] text-accent/25 mb-3 uppercase">// TACTICS</p>
-                <ul className="text-[9px] text-accent/35 tracking-[0.06em] leading-relaxed space-y-1.5 list-none p-0 m-0">
+                <p className="text-[9px] tracking-[0.3em] text-accent/25 mb-3 uppercase">// TACTICS</p>
+                <ul className="text-[10px] text-accent/35 tracking-[0.06em] leading-relaxed space-y-1.5 list-none p-0 m-0">
                   <li>→ Use SCAN to detect proximity</li>
                   <li>→ TIME your FIRE commands carefully</li>
                   <li>→ WHILE loops amplify your firepower</li>
@@ -181,10 +181,10 @@ export default function CampaignLevelPage() {
             {/* ── RIGHT PANEL ── */}
             <div className="flex flex-col gap-4">
               <div className="flex justify-between items-center">
-                <p className="text-[8px] tracking-[0.3em] text-accent/35 uppercase m-0">
+                <p className="text-[9px] tracking-[0.3em] text-accent/35 uppercase m-0">
                   // YOUR_ALISCRIPT
                 </p>
-                <span className="text-[8px] text-accent/20 tracking-[0.12em]">
+                <span className="text-[9px] text-accent/20 tracking-[0.12em]">
                   {script.split("\n").filter(Boolean).length} LINES
                 </span>
               </div>
@@ -202,13 +202,12 @@ export default function CampaignLevelPage() {
               <button
                 onClick={handleFight}
                 disabled={!script.trim() || modal === "loading"}
-                className={`w-full py-4 rounded-xl text-[11px] font-black tracking-[0.3em] font-mono cursor-pointer transition-all duration-200 border ${
-                  modal === "loading"
-                    ? "bg-accent/5 border-accent/20 text-accent/40 cursor-not-allowed"
-                    : !script.trim()
+                className={`w-full py-4 rounded-xl text-[11px] font-black tracking-[0.3em] font-mono cursor-pointer transition-all duration-200 border ${modal === "loading"
+                  ? "bg-accent/5 border-accent/20 text-accent/40 cursor-not-allowed"
+                  : !script.trim()
                     ? "bg-accent/5 border-accent/15 text-accent/25 cursor-not-allowed"
                     : "bg-accent/10 border-accent/40 text-accent hover:bg-accent/20 hover:border-accent/70 hover:drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.5)]"
-                }`}
+                  }`}
               >
                 {modal === "loading" ? "⟳ INITIALIZING COMBAT..." : "▶ DEPLOY & FIGHT"}
               </button>
@@ -220,11 +219,10 @@ export default function CampaignLevelPage() {
         {(modal === "victory" || modal === "defeat") && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
             <div
-              className={`rounded-2xl border p-10 text-center max-w-[420px] w-full mx-4 font-mono ${
-                modal === "victory"
-                  ? "bg-bg-primary border-accent/40 shadow-[0_0_60px_rgba(var(--accent-rgb),0.25)]"
-                  : "bg-bg-primary border-red-500/30 shadow-[0_0_60px_rgba(var(--color-red-500),0.2)]"
-              }`}
+              className={`rounded-2xl border p-10 text-center max-w-[420px] w-full mx-4 font-mono ${modal === "victory"
+                ? "bg-bg-primary border-accent/40 shadow-[0_0_60px_rgba(var(--accent-rgb),0.25)]"
+                : "bg-bg-primary border-red-500/30 shadow-[0_0_60px_rgba(var(--color-red-500),0.2)]"
+                }`}
               style={{ animation: "modalIn 0.3s ease" }}
             >
               {modal === "victory" ? (
@@ -237,7 +235,7 @@ export default function CampaignLevelPage() {
                     Enemy unit neutralized.
                   </p>
                   <div className="inline-block border border-accent/20 rounded-lg px-6 py-3 bg-accent/5 mb-7">
-                    <span className="text-accent/40 text-[9px] tracking-[0.2em] block mb-1">RANK EARNED</span>
+                    <span className="text-accent/40 text-[10px] tracking-[0.2em] block mb-1">RANK EARNED</span>
                     <span className="text-accent font-black text-[22px] drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.7)]">+{reward}</span>
                   </div>
                   <button

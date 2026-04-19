@@ -24,7 +24,7 @@ export function BattleTacticsSection({ onLoadScript }: { onLoadScript: (code: st
             </div>
             <button
               onClick={() => onLoadScript(tactic.code)}
-              className="mt-4 w-full p-2 bg-transparent text-[9px] font-bold cursor-pointer rounded transition-all hover:bg-white/5"
+              className="mt-4 w-full p-2 bg-transparent text-[10px] font-bold cursor-pointer rounded transition-all hover:bg-white/5"
               style={{
                 border: `1px solid ${tactic.color}44`,
                 color: tactic.color,

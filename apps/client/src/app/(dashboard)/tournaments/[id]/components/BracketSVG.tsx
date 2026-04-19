@@ -22,7 +22,7 @@ export function BracketSVG({ tournament, userId }: Props) {
   const totalRounds =
     tournament.participants.length === 8 || tournament.matches.some((m) => m.round === 3) ? 3 : 2;
   const roundLabels = ROUND_LABELS[totalRounds] || ROUND_LABELS[2];
-  
+
   const rounds: TMatch[][] = [];
   for (let r = 1; r <= totalRounds; r++) {
     rounds.push(
@@ -77,7 +77,7 @@ export function BracketSVG({ tournament, userId }: Props) {
       <div className="text-center p-[80px_24px] text-accent/20 text-[11px] tracking-[0.2em]">
         WAITING FOR TOURNAMENT TO START...
         <br />
-        <span className="text-[9px] text-accent/10">
+        <span className="text-[10px] text-accent/10">
           {tournament.participants.length >= 4
             ? "CREATOR CAN START THE TOURNAMENT"
             : `NEED ${4 - tournament.participants.length} MORE COMBATANTS`}
@@ -93,7 +93,7 @@ export function BracketSVG({ tournament, userId }: Props) {
           <div
             key={ri}
             style={{ width: `${MATCH_W}px` }}
-            className="text-center text-[8px] font-extrabold tracking-[0.3em] text-accent/30 uppercase"
+            className="text-center text-[9px] font-extrabold tracking-[0.3em] text-accent/30 uppercase"
           >
             {roundLabels[ri + 1] || `ROUND ${ri + 1}`}
           </div>
@@ -125,10 +125,10 @@ export function BracketSVG({ tournament, userId }: Props) {
           const borderColor = isComplete
             ? "rgba(var(--color-emerald-500),0.35)"
             : isMyMatch
-            ? "rgba(var(--color-yellow-500),0.35)"
-            : isHovered
-            ? "rgba(var(--accent-rgb),0.35)"
-            : "rgba(var(--accent-rgb),0.12)";
+              ? "rgba(var(--color-yellow-500),0.35)"
+              : isHovered
+                ? "rgba(var(--accent-rgb),0.35)"
+                : "rgba(var(--accent-rgb),0.12)";
 
           return (
             <g
@@ -156,8 +156,8 @@ export function BracketSVG({ tournament, userId }: Props) {
                   isComplete
                     ? "rgba(var(--color-emerald-500),0.4)"
                     : isMyMatch
-                    ? "rgba(var(--color-yellow-500),0.3)"
-                    : "rgba(var(--accent-rgb),0.15)"
+                      ? "rgba(var(--color-yellow-500),0.3)"
+                      : "rgba(var(--accent-rgb),0.15)"
                 }
                 strokeWidth="2"
               />

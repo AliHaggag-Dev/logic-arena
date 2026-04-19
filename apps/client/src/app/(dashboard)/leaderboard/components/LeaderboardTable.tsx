@@ -2,9 +2,9 @@ import React from 'react';
 import { LeaderboardSkeleton } from './LeaderboardSkeleton';
 
 export interface LeaderboardUser {
-  id:       string;
+  id: string;
   username: string;
-  rank:     number;
+  rank: number;
   isOnline: boolean;
   _count: {
     wonMatches: number;
@@ -26,19 +26,19 @@ const getRankColor = (index: number) => {
  */
 const deriveEfficiency = (user: LeaderboardUser): number => {
   const wins = user._count.wonMatches;
-  const pts  = Math.max(user.rank, 1);
+  const pts = Math.max(user.rank, 1);
   return Math.round((wins / pts) * 1000 * 10) / 10;
 };
 
 const EfficiencyBadge = ({ score }: { score: number }) => {
   const color =
-    score >= 50  ? 'var(--accent)' :
-    score >= 20  ? '#fb923c' :
-                   '#f87171';
+    score >= 50 ? 'var(--accent)' :
+      score >= 20 ? '#fb923c' :
+        '#f87171';
   const label =
-    score >= 50  ? 'OPTIMAL' :
-    score >= 20  ? 'MODERATE' :
-                   'LOW';
+    score >= 50 ? 'OPTIMAL' :
+      score >= 20 ? 'MODERATE' :
+        'LOW';
 
   return (
     <div className="flex items-center gap-2 justify-end">
@@ -49,7 +49,7 @@ const EfficiencyBadge = ({ score }: { score: number }) => {
         {score.toFixed(1)}
       </span>
       <span
-        className="text-[8px] font-bold tracking-[0.15em] px-1.5 py-0.5 border rounded-sm"
+        className="text-[9px] font-bold tracking-[0.15em] px-1.5 py-0.5 border rounded-sm"
         style={{ color, borderColor: `${color}44`, background: `${color}0d` }}
       >
         {label}
@@ -64,10 +64,10 @@ export const LeaderboardTable = ({
   currentUserId,
   onChallenge,
 }: {
-  users:         LeaderboardUser[];
-  isLoading:     boolean;
+  users: LeaderboardUser[];
+  isLoading: boolean;
   currentUserId: string;
-  onChallenge:   (userId: string, username: string) => void;
+  onChallenge: (userId: string, username: string) => void;
 }) => (
   <div className="bg-card/60 backdrop-blur-xl border border-accent/10 rounded-xl overflow-hidden" style={{ boxShadow: 'var(--card-shadow)' }}>
     <div className="overflow-x-auto">
@@ -105,11 +105,10 @@ export const LeaderboardTable = ({
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${
-                      user.isOnline
-                        ? 'bg-emerald-500 shadow-[0_0_6px_var(--color-emerald-500)]'
-                        : 'bg-accent/15'
-                    }`} />
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${user.isOnline
+                      ? 'bg-emerald-500 shadow-[0_0_6px_var(--color-emerald-500)]'
+                      : 'bg-accent/15'
+                      }`} />
                     <span className="text-text-primary font-bold tracking-wider group-hover:text-text-primary transition-colors">
                       {user.username}
                     </span>
@@ -138,7 +137,7 @@ export const LeaderboardTable = ({
                       {user.isOnline && user.id !== currentUserId && (
                         <button
                           onClick={() => onChallenge(user.id, user.username)}
-                          className="text-[9px] tracking-[0.15em] px-3 py-1 rounded border border-accent/30 bg-accent/5 hover:bg-accent/15 text-accent/70 hover:text-accent transition-all whitespace-nowrap"
+                          className="text-[10px] tracking-[0.15em] px-3 py-1 rounded border border-accent/30 bg-accent/5 hover:bg-accent/15 text-accent/70 hover:text-accent transition-all whitespace-nowrap"
                         >
                           ⚔ CHALLENGE
                         </button>

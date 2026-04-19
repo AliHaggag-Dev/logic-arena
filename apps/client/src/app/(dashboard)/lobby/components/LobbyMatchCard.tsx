@@ -26,7 +26,7 @@ export function LobbyMatchCard({ match, index, onJoin }: Props) {
         <h3 className="text-[14px] font-black tracking-[0.14em] text-accent transition-all group-hover:drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]">
           HOST: {match.hostName}
         </h3>
-        <p className="text-[9px] text-accent/40 tracking-[0.18em] uppercase mt-2">
+        <p className="text-[10px] text-accent/40 tracking-[0.18em] uppercase mt-2">
           ID: {match.matchId} <span className="opacity-50 mx-2">|</span> DETECTED: {new Date(match.createdAt).toLocaleTimeString()}
         </p>
       </div>

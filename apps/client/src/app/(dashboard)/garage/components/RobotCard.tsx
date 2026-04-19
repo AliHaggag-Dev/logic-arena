@@ -93,7 +93,7 @@ interface RobotCardProps {
 export function RobotCard({ robotId, name, file, scale, color }: RobotCardProps) {
   const router = useRouter();
   const { theme } = useTheme();
-  
+
   // Resolve theme accent color for lighting
   const [resolvedAccent, setResolvedAccent] = useState("var(--accent)");
   const [isLoaded, setIsLoaded] = useState(false);
@@ -150,7 +150,7 @@ export function RobotCard({ robotId, name, file, scale, color }: RobotCardProps)
       {/* Card footer */}
       <div className="px-5 py-4 border-t border-accent/10 flex items-center justify-between bg-bg-primary">
         <div>
-          <p className="text-[8px] tracking-[0.28em] text-accent/35 mb-0.5 uppercase">
+          <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-0.5 uppercase">
             // UNIT_FILE
           </p>
           <h2 className="text-[18px] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)] m-0">

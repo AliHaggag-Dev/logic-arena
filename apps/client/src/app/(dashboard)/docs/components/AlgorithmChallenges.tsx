@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { ALGORITHM_CHALLENGES, AlgorithmChallenge } from '../constants/docsData';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  BEGINNER:     '#22d3ee',
+  BEGINNER: '#22d3ee',
   INTERMEDIATE: '#a855f7',
-  ADVANCED:     '#f97316',
+  ADVANCED: '#f97316',
 };
 
 interface AlgorithmChallengesProps {
@@ -19,10 +19,10 @@ const ChallengeCard = ({
   isExpanded,
   onToggle,
 }: {
-  challenge:    AlgorithmChallenge;
+  challenge: AlgorithmChallenge;
   onLoadScript: (code: string) => void;
-  isExpanded:   boolean;
-  onToggle:     () => void;
+  isExpanded: boolean;
+  onToggle: () => void;
 }) => {
   const diffColor = DIFFICULTY_COLORS[challenge.difficulty] ?? 'var(--accent)';
 
@@ -30,8 +30,8 @@ const ChallengeCard = ({
     <div
       className="border bg-card/60 backdrop-blur-sm transition-all duration-300 rounded-sm overflow-hidden"
       style={{
-        borderColor:    isExpanded ? `${challenge.color}66` : 'rgba(var(--accent-rgb),0.12)',
-        boxShadow:      isExpanded ? `0 0 20px ${challenge.color}22` : 'none',
+        borderColor: isExpanded ? `${challenge.color}66` : 'rgba(var(--accent-rgb),0.12)',
+        boxShadow: isExpanded ? `0 0 20px ${challenge.color}22` : 'none',
       }}
     >
       {/* Header */}
@@ -53,7 +53,7 @@ const ChallengeCard = ({
                 {challenge.title}
               </h3>
               <span
-                className="text-[8px] font-bold tracking-[0.2em] px-1.5 py-0.5 border"
+                className="text-[9px] font-bold tracking-[0.2em] px-1.5 py-0.5 border"
                 style={{ color: diffColor, borderColor: `${diffColor}44`, background: `${diffColor}0d` }}
               >
                 {challenge.difficulty}
@@ -65,7 +65,7 @@ const ChallengeCard = ({
         <span
           className="text-xs font-bold tracking-widest transition-transform duration-300"
           style={{
-            color:     'rgba(var(--accent-rgb),0.5)',
+            color: 'rgba(var(--accent-rgb),0.5)',
             transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
           }}
         >
@@ -89,8 +89,8 @@ const ChallengeCard = ({
             <pre
               className="text-[11px] leading-relaxed p-4 rounded-sm overflow-x-auto font-mono bg-card/60 backdrop-blur-md"
               style={{
-                color:      'var(--accent)',
-                border:     '1px solid rgba(var(--accent-rgb),0.1)',
+                color: 'var(--accent)',
+                border: '1px solid rgba(var(--accent-rgb),0.1)',
               }}
             >
               {challenge.code
@@ -115,9 +115,9 @@ const ChallengeCard = ({
             onClick={() => onLoadScript(challenge.code)}
             className="mt-4 w-full py-2.5 text-[10px] font-black tracking-[0.3em] uppercase transition-all border"
             style={{
-              color:       challenge.color,
+              color: challenge.color,
               borderColor: `${challenge.color}44`,
-              background:  `${challenge.color}0d`,
+              background: `${challenge.color}0d`,
             }}
             onMouseEnter={e => {
               (e.currentTarget as HTMLButtonElement).style.background = `${challenge.color}22`;
@@ -145,7 +145,7 @@ export const AlgorithmChallenges = ({ onLoadScript }: AlgorithmChallengesProps) 
       <div className="flex items-center gap-4 mb-6">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-accent/30" />
         <div className="text-center">
-          <div className="text-[9px] tracking-[0.5em] text-accent/60 uppercase font-black mb-1">
+          <div className="text-[10px] tracking-[0.5em] text-accent/60 uppercase font-black mb-1">
             AliScript v2.0
           </div>
           <h2 className="text-xl font-black tracking-[0.15em] text-text-primary/90 uppercase">

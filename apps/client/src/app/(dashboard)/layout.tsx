@@ -10,21 +10,21 @@ import { SocketContext } from "../../context/SocketContext";
 const SIDEBAR_WIDTH = 220;
 
 const navItems = [
-  { href: "/dashboard",   label: "COMMAND_CENTER",   icon: "⬡" },
-  { href: "/leaderboard", label: "NEURAL_RANKINGS",  icon: "◈" },
-  { href: "/lobby",       label: "BATTLE_LOBBY",     icon: "▶" },
-  { href: "/campaign",    label: "CAMPAIGN_MODE",    icon: "⚡" },
-  { href: "/profile",     label: "OPERATOR_PROFILE", icon: "◉" },
-  { href: "/garage",      label: "ROBOT_GARAGE",     icon: "⚙" },
-  { href: "/docs",        label: "ALISCRIPT_DOCS",   icon: "◈" },
-  { href: "/tournaments", label: "TOURNAMENT_HUB",   icon: "⚔" },
+  { href: "/dashboard", label: "COMMAND_CENTER", icon: "⬡" },
+  { href: "/leaderboard", label: "NEURAL_RANKINGS", icon: "◈" },
+  { href: "/lobby", label: "BATTLE_LOBBY", icon: "▶" },
+  { href: "/campaign", label: "CAMPAIGN_MODE", icon: "⚡" },
+  { href: "/profile", label: "OPERATOR_PROFILE", icon: "◉" },
+  { href: "/garage", label: "ROBOT_GARAGE", icon: "⚙" },
+  { href: "/docs", label: "ALISCRIPT_DOCS", icon: "◈" },
+  { href: "/tournaments", label: "TOURNAMENT_HUB", icon: "⚔" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [username, setUsername]           = useState<string | null>(null);
-  const [incomingChallenge, setIncoming]  = useState<{ challengerId: string; challengerName: string } | null>(null);
-  const [toast, setToast]                 = useState<{ message: string; type: "info" | "error" } | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [incomingChallenge, setIncoming] = useState<{ challengerId: string; challengerName: string } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "info" | "error" } | null>(null);
 
   useEffect(() => {
     setUsername(localStorage.getItem("username"));
@@ -37,9 +37,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const { sendChallenge, acceptChallenge } = useGlobalSocket({
     onChallengeReceived: (data) => setIncoming(data),
-    onChallengeSent:     ()     => showToast("⚔ CHALLENGE SENT — AWAITING RESPONSE"),
-    onChallengeFailed:   ()     => showToast("TARGET IS OFFLINE", "error"),
-    onChallengeAccepted: ()     => showToast("CHALLENGE ACCEPTED — DEPLOYING TO ARENA"),
+    onChallengeSent: () => showToast("⚔ CHALLENGE SENT — AWAITING RESPONSE"),
+    onChallengeFailed: () => showToast("TARGET IS OFFLINE", "error"),
+    onChallengeAccepted: () => showToast("CHALLENGE ACCEPTED — DEPLOYING TO ARENA"),
   });
 
   const handleLogout = () => {
@@ -83,7 +83,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* ── LOGO ── */}
           <div className="p-[24px_18px_20px] border-b border-accent/[0.08] relative z-10">
-            <div className="text-[8px] tracking-[0.25em] text-accent/40 font-bold mb-1.5 uppercase">
+            <div className="text-[9px] tracking-[0.25em] text-accent/40 font-bold mb-1.5 uppercase">
               // SYS_v1.8.0
             </div>
             <h1 className="m-0 text-[17px] font-black tracking-[0.2em] text-accent leading-[1.2] [text-shadow:0_0_8px_rgba(var(--accent-rgb),0.8),0_0_25px_rgba(var(--accent-rgb),0.4),0_0_50px_rgba(var(--accent-rgb),0.15)]">
@@ -94,7 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* ── NAV LINKS ── */}
           <nav className="flex-1 p-[16px_10px] flex flex-col gap-1 relative z-10">
-            <div className="text-[8px] tracking-[0.22em] text-accent/25 font-bold px-1 pb-2 uppercase">
+            <div className="text-[9px] tracking-[0.22em] text-accent/25 font-bold px-1 pb-2 uppercase">
               navigation
             </div>
             {navItems.map((item) => (
@@ -112,7 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 ◉
               </span>
               <div className="overflow-hidden">
-                <div className="text-[8px] text-accent/35 tracking-[0.18em] mb-[2px]">OPERATOR</div>
+                <div className="text-[9px] text-accent/35 tracking-[0.18em] mb-[2px]">OPERATOR</div>
                 <div className="text-[10px] text-accent/80 font-bold tracking-[0.1em] overflow-hidden text-ellipsis whitespace-nowrap">
                   {username ?? "UNKNOWN"}
                 </div>
@@ -121,13 +121,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-red-500/5 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/60 rounded-md text-red-500/50 hover:text-red-300 text-[9px] font-bold tracking-[0.2em] font-mono cursor-pointer transition-all duration-200 group"
+              className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-red-500/5 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/60 rounded-md text-red-500/50 hover:text-red-300 text-[10px] font-bold tracking-[0.2em] font-mono cursor-pointer transition-all duration-200 group"
             >
               <span className="text-[11px] transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">⏻</span>
               <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">DISCONNECT</span>
             </button>
 
-            <div className="mt-3 text-[7px] text-accent/15 tracking-[0.15em] text-center uppercase">
+            <div className="mt-3 text-[8px] text-accent/15 tracking-[0.15em] text-center uppercase">
               LOGIC-ARENA © 2026
             </div>
           </div>
@@ -149,11 +149,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 toast.type === "info"
                   ? "rgba(var(--accent-rgb),0.08)"
                   : "rgba(var(--color-red-500),0.10)",
-              border: `1px solid ${
-                toast.type === "info"
-                  ? "rgba(var(--accent-rgb),0.35)"
-                  : "rgba(var(--color-red-500),0.35)"
-              }`,
+              border: `1px solid ${toast.type === "info"
+                ? "rgba(var(--accent-rgb),0.35)"
+                : "rgba(var(--color-red-500),0.35)"
+                }`,
               color: toast.type === "info" ? "var(--accent)" : "#fca5a5",
             }}
           >
@@ -171,7 +170,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 animation: "modalIn 0.2s ease",
               }}
             >
-              <p className="text-[8px] tracking-[0.28em] text-accent/35 mb-2">
+              <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-2">
                 // INCOMING_TRANSMISSION
               </p>
               <h2 className="text-accent font-black tracking-[0.18em] text-xl mb-2">

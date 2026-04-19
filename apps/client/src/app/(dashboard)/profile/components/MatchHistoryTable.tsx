@@ -33,7 +33,7 @@ function ReplayButton({ id }: ReplayButtonProps) {
   return (
     <button
       onClick={() => router.push(`/replay/${id}`)}
-      className="inline-flex items-center gap-[5px] p-[4px_10px] rounded text-[8px] font-bold tracking-[0.14em] cursor-pointer font-mono whitespace-nowrap transition-all duration-200"
+      className="inline-flex items-center gap-[5px] p-[4px_10px] rounded text-[9px] font-bold tracking-[0.14em] cursor-pointer font-mono whitespace-nowrap transition-all duration-200"
       style={{
         border: `1px solid ${hovered ? "rgba(var(--accent-rgb),0.7)" : "rgba(var(--accent-rgb),0.3)"}`,
         background: hovered ? "rgba(var(--accent-rgb),0.16)" : "rgba(var(--accent-rgb),0.06)",
@@ -72,7 +72,7 @@ function MatchRow({ m, isLast }: TableRowProps) {
       <td className="p-[12px_16px] text-accent/40">{m.type}</td>
       <td className="p-[12px_16px]">
         <span
-          className="inline-block p-[3px_10px] rounded text-[9px] font-bold tracking-[0.16em]"
+          className="inline-block p-[3px_10px] rounded text-[10px] font-bold tracking-[0.16em]"
           style={{
             backgroundColor: isWin ? "rgba(var(--color-emerald-500),0.12)" : "rgba(var(--color-red-500),0.12)",
             border: isWin ? "1px solid rgba(var(--color-emerald-500),0.35)" : "1px solid rgba(var(--color-red-500),0.35)",
@@ -105,7 +105,7 @@ export function MatchHistoryTable({ loading, history }: Props) {
             {["Date", "Opponent", "Type", "Result", "Duration", "Replay"].map((h) => (
               <th
                 key={h}
-                className="p-[12px_16px] text-left text-[8px] font-bold tracking-[0.22em] text-accent/35 uppercase"
+                className="p-[12px_16px] text-left text-[9px] font-bold tracking-[0.22em] text-accent/35 uppercase"
               >
                 {h}
               </th>

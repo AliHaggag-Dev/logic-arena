@@ -28,20 +28,20 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({ socket, robotI
 
     return (
         <div className={`transition-all duration-500 ease-out flex flex-col bg-black/70 backdrop-blur-xl border border-cyan-900/60 rounded-xl p-5 z-50 ${isZenMode ? "fixed top-24 bottom-8 left-8 w-[800px] border-cyan-500/50 shadow-[0_0_80px_rgba(34,211,238,0.2)]" : "h-full min-w-[420px] w-auto"}`} style={{ boxShadow: 'var(--card-shadow)' }}>
-            
+
             {/* SENTIENT UPDATE Header */}
             <div className="flex justify-between items-center mb-4 border-b border-cyan-900/50 pb-2 shrink-0">
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_var(--accent)]"></span>
                     <span className="text-cyan-400 text-[10px] font-black tracking-[0.2em] uppercase">Sentient Update // ALISCRIPT V2.0</span>
                 </div>
-                <button 
-                  type="button"
-                  onClick={() => setIsZenMode(!isZenMode)}
-                  className="group relative px-4 py-1.5 bg-black/50 border border-purple-500/50 text-purple-300 text-[10px] font-bold rounded uppercase tracking-widest hover:bg-purple-500/20 hover:border-purple-400 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.15)] overflow-hidden"
+                <button
+                    type="button"
+                    onClick={() => setIsZenMode(!isZenMode)}
+                    className="group relative px-4 py-1.5 bg-black/50 border border-purple-500/50 text-purple-300 text-[10px] font-bold rounded uppercase tracking-widest hover:bg-purple-500/20 hover:border-purple-400 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.15)] overflow-hidden"
                 >
-                  <span className="relative z-10">{isZenMode ? "Exit Zen Core" : "Enter Zen Mode"}</span>
-                  <div className="absolute top-0 left-[-100%] w-[50%] h-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+                    <span className="relative z-10">{isZenMode ? "Exit Zen Core" : "Enter Zen Mode"}</span>
+                    <div className="absolute top-0 left-[-100%] w-[50%] h-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
                 </button>
             </div>
 
@@ -67,9 +67,9 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({ socket, robotI
                             >
                                 <div className="flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_5px_var(--accent)]" />
-                                    <span className="text-[9px] font-black tracking-widest text-cyan-600 uppercase">Telemetry Log</span>
+                                    <span className="text-[10px] font-black tracking-widest text-cyan-600 uppercase">Telemetry Log</span>
                                     {output.length > 0 && (
-                                        <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-cyan-900/50 text-cyan-400 border border-cyan-700/40">
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-900/50 text-cyan-400 border border-cyan-700/40">
                                             {output.length}
                                         </span>
                                     )}
@@ -93,23 +93,23 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({ socket, robotI
                             </div>
                         </div>
                     )}
-                    
-                    <ScriptEditor 
-                        scriptInput={scriptInput} 
-                        setScriptInput={setScriptInput} 
-                        handleDeployBrain={() => handleDeployBrain(scriptInput)} 
-                        toggleLibrary={() => setIsLibraryOpen(!isLibraryOpen)} 
+
+                    <ScriptEditor
+                        scriptInput={scriptInput}
+                        setScriptInput={setScriptInput}
+                        handleDeployBrain={() => handleDeployBrain(scriptInput)}
+                        toggleLibrary={() => setIsLibraryOpen(!isLibraryOpen)}
                         clearPrebuilt={() => setActivePrebuilt(null)}
                     />
                 </div>
-                
+
                 {/* Right Side: Neural Handbook */}
-                <NeuralHandbook 
-                    isOpen={isLibraryOpen} 
+                <NeuralHandbook
+                    isOpen={isLibraryOpen}
                     onSelect={(cmd) => {
                         appendScriptLine(cmd);
-                        setIsLibraryOpen(false); 
-                    }} 
+                        setIsLibraryOpen(false);
+                    }}
                 />
             </div>
 

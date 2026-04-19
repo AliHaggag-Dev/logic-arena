@@ -27,11 +27,10 @@ export function NoScriptModal({ onClose }: Props) {
             onClick={onClose}
             onMouseEnter={() => setHoveredBtn("close")}
             onMouseLeave={() => setHoveredBtn(null)}
-            className={`flex-1 py-3 rounded-md text-[9px] font-bold tracking-[0.2em] font-mono transition-all duration-200 border ${
-              hoveredBtn === "close"
+            className={`flex-1 py-3 rounded-md text-[10px] font-bold tracking-[0.2em] font-mono transition-all duration-200 border ${hoveredBtn === "close"
                 ? "bg-text-primary/10 text-text-primary border-text-primary/30"
                 : "bg-text-primary/5 text-text-secondary border-text-primary/10"
-            }`}
+              }`}
           >
             DISMISS
           </button>
@@ -40,11 +39,10 @@ export function NoScriptModal({ onClose }: Props) {
             onClick={() => router.push("/dashboard")}
             onMouseEnter={() => setHoveredBtn("dash")}
             onMouseLeave={() => setHoveredBtn(null)}
-            className={`flex-[1.5] py-3 rounded-md text-[9px] font-black tracking-[0.2em] font-mono transition-all duration-200 border ${
-              hoveredBtn === "dash"
+            className={`flex-[1.5] py-3 rounded-md text-[10px] font-black tracking-[0.2em] font-mono transition-all duration-200 border ${hoveredBtn === "dash"
                 ? "bg-accent/20 text-accent border-accent/70 shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)]"
                 : "bg-accent/10 text-accent/70 border-accent/30"
-            }`}
+              }`}
           >
             [←] DASHBOARD
           </button>

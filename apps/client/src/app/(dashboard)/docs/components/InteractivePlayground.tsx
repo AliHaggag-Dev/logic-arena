@@ -18,10 +18,10 @@ export function InteractivePlayground({ script, setScript, parsed, onParse }: In
         {/* Left: editor */}
         <div>
           <div className="flex justify-between items-center mb-2.5">
-            <span className="text-[8px] tracking-[0.22em] text-accent/30 uppercase">
+            <span className="text-[10px] tracking-[0.22em] text-accent/30 uppercase">
               // script_editor
             </span>
-            <span className="text-[8px] tracking-[0.15em] text-accent/20">
+            <span className="text-[10px] tracking-[0.15em] text-accent/20">
               {script.split("\n").filter(Boolean).length} LINES
             </span>
           </div>
@@ -37,11 +37,10 @@ export function InteractivePlayground({ script, setScript, parsed, onParse }: In
             onMouseEnter={() => setParseBtnHovered(true)}
             onMouseLeave={() => setParseBtnHovered(false)}
             onClick={onParse}
-            className={`mt-3 w-full py-3 px-6 rounded-lg text-[10px] font-black tracking-[0.28em] font-mono transition-all duration-200 ${
-              parseBtnHovered 
-                ? "bg-accent/20 text-accent border-accent/70 drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.6)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.15),inset_0_0_20px_rgba(var(--accent-rgb),0.05)] animate-[pulse-glow_1.5s_infinite]" 
-                : "bg-accent/10 border border-accent/30 text-accent/70"
-            }`}
+            className={`mt-3 w-full py-3 px-6 rounded-lg text-[10px] font-black tracking-[0.28em] font-mono transition-all duration-200 ${parseBtnHovered
+              ? "bg-accent/20 text-accent border-accent/70 drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.6)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.15),inset_0_0_20px_rgba(var(--accent-rgb),0.05)] animate-[pulse-glow_1.5s_infinite]"
+              : "bg-accent/10 border border-accent/30 text-accent/70"
+              }`}
           >
             ▶ PARSE SCRIPT
           </button>
@@ -50,7 +49,7 @@ export function InteractivePlayground({ script, setScript, parsed, onParse }: In
         {/* Right: output */}
         <div>
           <div className="mb-2.5">
-            <span className="text-[8px] tracking-[0.22em] text-accent/30 uppercase">
+            <span className="text-[10px] tracking-[0.22em] text-accent/30 uppercase">
               // parsed_commands
             </span>
           </div>
@@ -66,7 +65,7 @@ export function InteractivePlayground({ script, setScript, parsed, onParse }: In
                   className="flex items-center gap-2.5 animate-[fadeIn_0.2s_ease_both]"
                   style={{ animationDelay: `${idx * 0.04}s` }}
                 >
-                  <span className="text-[8px] text-accent/20 min-w-[24px] text-right font-bold">
+                  <span className="text-[9px] text-accent/20 min-w-[24px] text-right font-bold">
                     {String(idx + 1).padStart(2, "0")}
                   </span>
                   <span className="inline-block px-3.5 py-1.5 rounded-md bg-accent/10 border border-accent/30 text-accent text-[11px] font-bold tracking-[0.08em] font-mono drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.4)] shadow-[0_0_12px_rgba(var(--accent-rgb),0.08),inset_0_0_12px_rgba(var(--accent-rgb),0.04)]">
@@ -78,7 +77,7 @@ export function InteractivePlayground({ script, setScript, parsed, onParse }: In
           </div>
 
           {parsed.length > 0 && (
-            <div className="mt-2.5 text-[9px] text-accent/25 tracking-[0.15em] text-right">
+            <div className="mt-2.5 text-[10px] text-accent/25 tracking-[0.15em] text-right">
               {parsed.length} COMMAND{parsed.length !== 1 ? "S" : ""} PARSED
             </div>
           )}

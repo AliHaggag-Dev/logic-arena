@@ -18,7 +18,7 @@ export const ProtocolForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onS
 
             <form onSubmit={onSubmit} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
-                    <label className="text-[8px] sm:text-[9px] text-text-secondary uppercase tracking-[0.2em] font-bold ml-1">
+                    <label className="text-[9px] sm:text-[10px] text-text-secondary uppercase tracking-[0.2em] font-bold ml-1">
                         Protocol Designation
                     </label>
                     <input
