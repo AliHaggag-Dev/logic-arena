@@ -23,7 +23,9 @@ COPY packages/ ./packages/
 COPY --from=deps /app/node_modules ./node_modules
 
 COPY apps/server/ ./apps/server/
-COPY tsconfig.json ./
+
+COPY apps/server/tsconfig.json ./apps/server/
+COPY apps/server/tsconfig.build.json ./apps/server/
 
 RUN cd apps/server && /app/node_modules/.bin/prisma generate
 RUN pnpm --filter server run build
