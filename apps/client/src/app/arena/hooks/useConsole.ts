@@ -24,7 +24,7 @@ export const useConsole = (socket: Socket | null, robotId: string, scriptId?: st
         setActivePrebuilt(null);
     }, []);
 
-    const handleCommandSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleCommandSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const command = commandInput.trim().toUpperCase();
         if (!command) return;
