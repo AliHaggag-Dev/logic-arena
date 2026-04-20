@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { RobotViewer } from "../components/RobotViewer";
 import { ColorPicker } from "../components/ColorPicker";
 import { apiClient } from "../../../../lib/api-client";
+import { useMediaQuery } from "../../../../hooks/useMediaQuery";
 
 /* ─── Robot manifest ────────────────────────────────────────────── */
 const ROBOTS: Record<string, { name: string; file: string; scale?: number }> = {
@@ -15,13 +16,15 @@ const ROBOTS: Record<string, { name: string; file: string; scale?: number }> = {
 /* ─── Toast ─────────────────────────────────────────────────────── */
 type ToastState = { type: "success" | "error"; message: string } | null;
 
-function Toast({ toast }: { toast: ToastState }) {
+function Toast({ toast, isMobile }: { toast: ToastState, isMobile: boolean }) {
   if (!toast) return null;
   const isSuccess = toast.type === "success";
   return (
     <div
-      className="fixed bottom-8 left-1/2 z-50 font-mono text-[11px] tracking-[0.15em] px-5 py-3 rounded-lg border pointer-events-none"
+      className="fixed z-50 font-mono text-[11px] tracking-[0.15em] px-5 py-3 rounded-lg border pointer-events-none whitespace-nowrap"
       style={{
+        bottom: isMobile ? "110px" : "32px",
+        left: "50%",
         transform: "translateX(-50%)",
         animation: "fadeIn 0.25s ease",
         background: isSuccess ? "rgba(var(--accent-rgb),0.08)" : "rgba(var(--color-red-500),0.10)",
@@ -43,6 +46,7 @@ export default function RobotDetailPage() {
   const params = useParams();
   const router = useRouter();
   const robotId = Array.isArray(params.robotId) ? params.robotId[0] : params.robotId ?? "";
+  const isMobile = useMediaQuery("(max-width: 1024px)");
 
   const robot = ROBOTS[robotId];
   const [color, setColor] = useState("DEFAULT");
@@ -81,14 +85,14 @@ export default function RobotDetailPage() {
     return (
       <div className="min-h-screen bg-bg-primary font-mono text-accent/90 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500/80 text-[13px] tracking-[0.2em] mb-4">
+          <p className="text-red-500/80 text-[13px] tracking-[0.2em] mb-4 uppercase font-bold">
             [ERR] UNIT_NOT_FOUND: {robotId}
           </p>
           <button
             onClick={() => router.push("/garage")}
-            className="text-[10px] tracking-[0.2em] text-accent/50 hover:text-accent transition-colors"
+            className="text-[10px] tracking-[0.2em] text-accent/50 hover:text-accent transition-colors uppercase font-bold"
           >
-            ← BACK TO GARAGE
+            ← BACK TO HANGAR
           </button>
         </div>
       </div>
@@ -106,119 +110,128 @@ export default function RobotDetailPage() {
           0%, 100% { box-shadow: 0 0 12px rgba(var(--accent-rgb),0.2); }
           50%       { box-shadow: 0 0 28px rgba(var(--accent-rgb),0.45); }
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--accent-rgb), 0.2); border-radius: 2px; }
       `}</style>
 
-      <div className="min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden">
+      <div className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile ? "pb-32" : "pb-20"}`}>
         {/* Grid background */}
         <div
           className="fixed inset-0 pointer-events-none z-0"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(8,145,178,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(8,145,178,0.07) 1px, transparent 1px)",
+              "linear-gradient(rgba(var(--accent-rgb),0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.07) 1px, transparent 1px)",
             backgroundSize: "40px 40px",
           }}
         />
 
         <div
-          className="max-w-[960px] mx-auto px-6 pt-10 pb-20 relative z-10"
+          className={`max-w-[1100px] mx-auto ${isMobile ? "px-4 pt-6" : "px-6 pt-10"} relative z-10`}
           style={{ animation: "fadeIn 0.35s ease" }}
         >
           {/* ── Top bar ── */}
-          <div className="flex items-center justify-between border-b border-accent/10 pb-5 mb-8">
+          <div className={`flex items-center justify-between border-b border-accent/10 ${isMobile ? "pb-4 mb-6" : "pb-5 mb-8"}`}>
             <div>
-              <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-1 uppercase">
-                // UNIT_VIEWER
+              <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-1 uppercase font-bold">
+                // UNIT_CONFIGURATION
               </p>
-              <h1 className="m-0 text-[clamp(20px,3.5vw,32px)] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight">
+              <h1 className={`m-0 ${isMobile ? "text-xl" : "text-[clamp(20px,3.5vw,32px)]"} font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight uppercase`}>
                 {robot.name}
               </h1>
             </div>
 
             <button
               onClick={() => router.push("/garage")}
-              className="text-[10px] tracking-[0.2em] text-accent/40 hover:text-accent/80 transition-colors duration-200 border border-accent/10 hover:border-accent/30 px-4 py-2 rounded-lg bg-accent/5 hover:bg-accent/10"
+              className={`${isMobile ? "text-[8px] px-3 py-1.5" : "text-[10px] px-4 py-2"} tracking-[0.2em] text-accent/40 hover:text-accent/80 transition-colors duration-200 border border-accent/10 hover:border-accent/30 rounded-lg bg-accent/5 hover:bg-accent/10 uppercase font-bold font-mono`}
             >
               ← BACK
             </button>
           </div>
 
           {/* ── Main layout: Viewer + Controls ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
+          <div className={`grid grid-cols-1 ${isMobile ? "gap-6" : "lg:grid-cols-[1fr_360px] gap-8"}`}>
             {/* 3-D viewer */}
-            <div className="h-[480px] lg:h-[540px]">
-              <RobotViewer file={robot.file} color={color} scale={robot.scale} />
+            <div className={`${isMobile ? "h-[380px]" : "h-[540px]"} relative`}>
+              <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-gradient-to-t from-accent/10 to-transparent rounded-xl" />
+              <RobotViewer file={robot.file} color={color} scale={robot.scale} isMobile={isMobile} />
             </div>
 
             {/* Controls panel */}
             <div
-              className="flex flex-col gap-6 border border-accent/10 rounded-xl p-6 bg-bg-primary/80 h-fit"
-              style={{ animation: "glowPulse 4s ease-in-out infinite" }}
+              className={`flex flex-col ${isMobile ? "gap-5" : "gap-6"} border border-accent/10 rounded-xl ${isMobile ? "p-5" : "p-6"} bg-card/40 backdrop-blur-md h-fit`}
+              style={{ boxShadow: !isMobile ? "var(--card-shadow)" : "none" }}
             >
               {/* Robot info */}
               <div className="border-b border-accent/10 pb-5">
-                <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-3 uppercase">
-                  // UNIT_DATA
+                <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-4 uppercase font-bold">
+                  // UNIT_SPECIFICATIONS
                 </p>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[10px] tracking-[0.12em]">
-                    <span className="text-accent/40">DESIGNATION</span>
-                    <span className="text-accent/80">{robot.name}</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-[10px] tracking-[0.12em] font-mono">
+                    <span className="text-accent/40 uppercase font-bold">Designation</span>
+                    <span className="text-accent/90 font-black">{robot.name}</span>
                   </div>
-                  <div className="flex justify-between text-[10px] tracking-[0.12em]">
-                    <span className="text-accent/40">UNIT_ID</span>
-                    <span className="text-accent/80">{robotId.toUpperCase()}</span>
+                  <div className="flex justify-between text-[10px] tracking-[0.12em] font-mono">
+                    <span className="text-accent/40 uppercase font-bold">Model_ID</span>
+                    <span className="text-accent/90 font-black">{robotId.toUpperCase()}</span>
                   </div>
-                  <div className="flex justify-between text-[10px] tracking-[0.12em]">
-                    <span className="text-accent/40">TINT_HEX</span>
-                    <span style={{ color }}>{color.toUpperCase()}</span>
+                  <div className="flex justify-between text-[10px] tracking-[0.12em] font-mono">
+                    <span className="text-accent/40 uppercase font-bold">Hue_Signature</span>
+                    <span className="font-black drop-shadow-[0_0_8px_currentColor]" style={{ color: color !== "DEFAULT" ? color : "var(--accent)" }}>
+                      {color.toUpperCase()}
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Color picker */}
-              <div className="border-b border-accent/10 pb-5">
-                <ColorPicker selected={color} onChange={setColor} />
+              <div className={isMobile ? "" : "border-b border-accent/10 pb-5"}>
+                <ColorPicker selected={color} onChange={setColor} isMobile={isMobile} />
               </div>
 
-              {/* Orbit controls hint */}
-              <p className="text-[9px] tracking-[0.18em] text-accent/25 leading-relaxed">
-                DRAG TO ORBIT · SCROLL TO ZOOM · RIGHT-DRAG TO PAN
-              </p>
+              {/* Orbit controls hint (Desktop Only) */}
+              {!isMobile && (
+                <>
+                  <p className="text-[9px] tracking-[0.18em] text-accent/25 leading-relaxed font-bold uppercase italic">
+                    Orbit: ClickDRAG · Zoom: Scroll · Pan: RightDRAG
+                  </p>
 
-              {/* Save button */}
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full py-3 rounded-lg border tracking-[0.22em] text-[12px] font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  background: saving ? "rgba(var(--accent-rgb),0.05)" : "rgba(var(--accent-rgb),0.10)",
-                  borderColor: saving ? "rgba(var(--accent-rgb),0.15)" : "rgba(var(--accent-rgb),0.35)",
-                  color: "var(--accent)",
-                  boxShadow: saving ? "none" : "0 0 16px rgba(var(--accent-rgb),0.1)",
-                }}
-                onMouseEnter={(e) => {
-                  if (!saving) {
-                    (e.currentTarget as HTMLButtonElement).style.background =
-                      "rgba(var(--accent-rgb),0.18)";
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow =
-                      "0 0 24px rgba(var(--accent-rgb),0.25)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background =
-                    "rgba(var(--accent-rgb),0.10)";
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow =
-                    "0 0 16px rgba(var(--accent-rgb),0.1)";
-                }}
-              >
-                {saving ? "SAVING..." : "SAVE LOADOUT"}
-              </button>
+                  {/* Save button */}
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="w-full py-4 rounded-xl border tracking-[0.22em] text-[12px] font-black transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden active:scale-[0.98]"
+                    style={{
+                      background: "rgba(var(--accent-rgb),0.10)",
+                      borderColor: "rgba(var(--accent-rgb),0.3)",
+                      color: "var(--accent)",
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {saving ? "SYNCHRONIZING..." : "INITIATE_UPLOAD"}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
 
+        {/* ── Mobile Sticky Footer ── */}
+        {isMobile && (
+          <div className="fixed bottom-0 left-0 right-0 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-bg-primary/80 backdrop-blur-xl border-t border-accent/10 z-[100] animate-in slide-in-from-bottom-full duration-300">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full py-4 rounded-xl border tracking-[0.3em] text-[11px] font-black transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-accent/20 border-accent/40 text-accent shadow-[0_0_20px_rgba(var(--accent-rgb),0.15)] active:scale-[0.96]"
+            >
+              {saving ? "UPLOADING..." : "SAVE_LOADOUT"}
+            </button>
+          </div>
+        )}
+
         {/* Toast */}
-        <Toast toast={toast} />
+        <Toast toast={toast} isMobile={isMobile} />
       </div>
     </>
   );

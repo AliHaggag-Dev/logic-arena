@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { RobotCard } from "./components/RobotCard";
 import { apiClient } from "../../../lib/api-client";
+import { useMediaQuery } from "../../../hooks/useMediaQuery";
 
 const ROBOTS = [
   { robotId: "unit-01", name: "UNIT-01", file: "/robot.glb", scale: 2.5 },
@@ -12,6 +13,7 @@ const ROBOTS = [
 export default function GaragePage() {
   const [activeRobotId, setActiveRobotId] = useState<string | null>(null);
   const [activeColor, setActiveColor] = useState("DEFAULT");
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
     apiClient.get("/users/profile").then((res) => {
@@ -33,7 +35,7 @@ export default function GaragePage() {
         }
       `}</style>
 
-      <div className="min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden">
+      <div className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile ? "pb-[env(safe-area-inset-bottom)]" : ""}`}>
         {/* Cyan grid background */}
         <div
           className="fixed inset-0 pointer-events-none z-0"
@@ -45,24 +47,24 @@ export default function GaragePage() {
         />
 
         <div
-          className="max-w-[960px] mx-auto px-6 pt-12 pb-20 relative z-10"
+          className={`max-w-[960px] mx-auto ${isMobile ? "px-4 pt-6" : "px-6 pt-12"} pb-20 relative z-10`}
           style={{ animation: "fadeIn 0.35s ease" }}
         >
           {/* ── Header ── */}
-          <div className="border-b border-accent/10 pb-6 mb-10">
-            <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-2 uppercase">
-              // HANGAR_DECK
+          <div className={`border-b border-accent/10 ${isMobile ? "pb-4 mb-6" : "pb-6 mb-10"}`}>
+            <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-2 uppercase font-bold">
+              // HANGAR_DECK_v2.0
             </p>
-            <h1 className="m-0 text-[clamp(24px,4vw,38px)] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight">
+            <h1 className={`m-0 ${isMobile ? "text-2xl" : "text-[clamp(24px,4vw,38px)]"} font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight`}>
               ROBOT_GARAGE
             </h1>
-            <p className="mt-2 text-[10px] text-accent/35 tracking-[0.15em]">
-              SELECT A UNIT TO INSPECT AND CONFIGURE LOADOUT
+            <p className={`mt-2 ${isMobile ? "text-[9px]" : "text-[10px]"} text-accent/30 tracking-[0.15em] uppercase font-bold`}>
+              Inertia dampeners active. Select unit for inspection.
             </p>
           </div>
 
           {/* ── Robot Grid ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className={`grid grid-cols-1 ${isMobile ? "gap-4" : "sm:grid-cols-2 gap-6"}`}>
             {ROBOTS.map(({ robotId, name, file, scale }) => {
               const isActive = robotId === activeRobotId;
               return (
@@ -70,19 +72,21 @@ export default function GaragePage() {
                   {/* ACTIVE badge */}
                   {isActive && (
                     <div
-                      className="absolute -top-3 left-4 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold tracking-[0.25em] border"
+                      className={`absolute ${isMobile ? "-top-2 left-3" : "-top-3 left-4"} z-20 flex items-center gap-1.5 ${isMobile ? "px-2 py-0.5 text-[8px]" : "px-3 py-1 text-[9px]"} font-bold tracking-[0.25em] border rounded-lg backdrop-blur-md shadow-[0_0_15px_rgba(var(--accent-rgb),0.2)]`}
                       style={{
-                        background: "rgba(var(--accent-rgb),0.10)",
-                        borderColor: "rgba(var(--accent-rgb),0.45)",
-                        color: activeColor,
-                        boxShadow: `0 0 12px ${activeColor}55`,
+                        background: "rgba(var(--accent-rgb),0.12)",
+                        borderColor: "rgba(var(--accent-rgb),0.4)",
+                        color: activeColor !== "DEFAULT" ? activeColor : "var(--accent)",
                       }}
                     >
                       <span
                         className="w-1.5 h-1.5 rounded-full animate-pulse"
-                        style={{ background: activeColor, boxShadow: `0 0 6px ${activeColor}` }}
+                        style={{ 
+                          background: activeColor !== "DEFAULT" ? activeColor : "var(--accent)", 
+                          boxShadow: `0 0 6px ${activeColor !== "DEFAULT" ? activeColor : "var(--accent)"}` 
+                        }}
                       />
-                      ACTIVE_LOADOUT
+                      ACTIVE_UNIT
                     </div>
                   )}
                   <RobotCard
@@ -91,6 +95,7 @@ export default function GaragePage() {
                     file={file}
                     scale={scale}
                     color={isActive ? activeColor : "DEFAULT"}
+                    isMobile={isMobile}
                   />
                 </div>
               );
@@ -99,10 +104,10 @@ export default function GaragePage() {
 
           {/* ── Footer hint ── */}
           <p
-            className="text-center text-[10px] tracking-[0.22em] text-accent/20 mt-10"
+            className={`text-center ${isMobile ? "text-[9px]" : "text-[10px]"} tracking-[0.22em] text-accent/20 ${isMobile ? "mt-8" : "mt-10"} uppercase font-bold`}
             style={{ animation: "pulseGlow 3s ease-in-out infinite" }}
           >
-            ◈ CLICK A UNIT TO OPEN FULL VIEWER ◈
+            ◈ TAP_UNIT_TO_CONFIGURE ◈
           </p>
         </div>
       </div>

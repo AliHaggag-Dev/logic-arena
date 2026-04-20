@@ -127,8 +127,8 @@ export function ReplayCanvas({ snapshot }: Props) {
   }, [snapshot]);
 
   return (
-    <div className="relative rounded-[10px] overflow-hidden border border-accent/20 shadow-[0_0_40px_rgba(var(--accent-rgb),0.06),0_0_0_1px_rgba(var(--accent-rgb),0.05)]">
-      <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} />
+    <div className="relative w-full max-w-[420px] rounded-[10px] overflow-hidden border border-accent/20 shadow-[0_0_40px_rgba(var(--accent-rgb),0.06),0_0_0_1px_rgba(var(--accent-rgb),0.05)]">
+      <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} className="w-full h-auto block" />
       {/* Corner accents */}
       {[
         { top: 0, left: 0, borderTop: true, borderLeft: true },

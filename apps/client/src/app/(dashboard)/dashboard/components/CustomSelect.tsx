@@ -1,8 +1,44 @@
 import React, { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
-export const CustomSelect = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
+export const CustomSelect = ({ value, onChange, isMobile }: { value: string, onChange: (val: string) => void, isMobile?: boolean }) => {
     const [isOpen, setIsOpen] = useState(false);
     const options = ["COMBAT", "RACING", "TRAINING_SOLO"];
+
+    if (isMobile) {
+        return (
+            <div className="relative w-full z-40">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 flex items-center justify-between text-accent font-bold tracking-widest text-[10px] active:bg-accent/5 transition-colors"
+                >
+                    <span className="truncate">MOD: {value}</span>
+                    <ChevronDown size={14} className={`text-accent/50 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isOpen && (
+                    <>
+                        <div className="fixed inset-0 z-[60]" onClick={() => setIsOpen(false)}></div>
+                        <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-[70] animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="bg-card border border-accent/30 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
+                                <div className="flex flex-col">
+                                    {options.map((opt) => (
+                                        <button
+                                            key={opt}
+                                            onClick={() => { onChange(opt); setIsOpen(false); }}
+                                            className={`w-full px-5 py-4 text-left text-[10px] font-bold tracking-widest transition-colors active:bg-accent/10 border-b border-border/50 last:border-0 ${value === opt ? 'bg-accent/10 text-accent' : 'text-text-secondary'}`}
+                                        >
+                                            {opt.replace('_', ' ')}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div className="relative font-mono text-[10px] sm:text-xs tracking-widest z-50">

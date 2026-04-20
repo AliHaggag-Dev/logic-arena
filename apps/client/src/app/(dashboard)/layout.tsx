@@ -6,6 +6,11 @@ import NavLink from "../../components/ui/NavLink";
 import { ThemeSwitcher } from "../../components/ui/ThemeSwitcher";
 import { useGlobalSocket } from "../../hooks/useGlobalSocket";
 import { SocketContext } from "../../context/SocketContext";
+import dynamic from "next/dynamic";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+
+const MobileNav = dynamic(() => import("../../components/MobileNav").then((mod) => mod.MobileNav), { ssr: false });
+const MobileHeader = dynamic(() => import("../../components/MobileHeader").then((mod) => mod.MobileHeader), { ssr: false });
 
 const SIDEBAR_WIDTH = 220;
 
@@ -25,6 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [username, setUsername] = useState<string | null>(null);
   const [incomingChallenge, setIncoming] = useState<{ challengerId: string; challengerName: string } | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "info" | "error" } | null>(null);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
     setUsername(localStorage.getItem("username"));
@@ -64,7 +70,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       `}</style>
 
       <div className="flex min-h-screen bg-bg-primary font-mono selection:bg-accent/30 overflow-hidden">
+        {isMobile && <MobileHeader />}
+
         {/* ── SIDEBAR ── */}
+        {!isMobile && (
         <aside
           className="flex flex-col bg-bg-primary/95 border-r border-accent/[0.12] shadow-[4px_0_30px_rgba(var(--accent-rgb),0.04)] sticky top-0 h-screen overflow-y-auto z-50 shrink-0 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent"
           style={{ width: SIDEBAR_WIDTH }}
@@ -132,17 +141,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
         </aside>
+        )}
 
         {/* ── MAIN CONTENT ── */}
-        <main className="flex-1 overflow-auto bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent">
+        <main className={`flex-1 overflow-x-hidden overflow-y-auto bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent ${isMobile ? "pt-12 pb-[calc(80px+env(safe-area-inset-bottom))] max-w-[100vw]" : ""}`}>
           {children}
         </main>
+
+        {isMobile && <MobileNav />}
 
         {/* ── TOAST ── */}
         {toast && (
           <div
-            className="fixed bottom-6 left-1/2 z-[100] font-mono text-[11px] tracking-[0.15em] px-5 py-3 rounded-lg border pointer-events-none"
+            className="fixed left-1/2 z-[100] font-mono text-[11px] tracking-[0.15em] px-5 py-3 rounded-lg border pointer-events-none whitespace-nowrap"
             style={{
+              bottom: isMobile ? "96px" : "24px",
               transform: "translateX(-50%)",
               animation: "fadeInUp 0.25s ease",
               background:
@@ -154,6 +167,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 : "rgba(var(--color-red-500),0.35)"
                 }`,
               color: toast.type === "info" ? "var(--accent)" : "#fca5a5",
+              boxShadow: toast.type === "info"
+                ? "0 0 20px rgba(var(--accent-rgb),0.1)"
+                : "0 0 20px rgba(var(--color-red-500),0.1)",
             }}
           >
             {toast.message}

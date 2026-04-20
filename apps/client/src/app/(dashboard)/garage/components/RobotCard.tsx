@@ -88,9 +88,10 @@ interface RobotCardProps {
   file: string;
   scale?: number;
   color?: string;
+  isMobile?: boolean;
 }
 
-export function RobotCard({ robotId, name, file, scale, color }: RobotCardProps) {
+export function RobotCard({ robotId, name, file, scale, color, isMobile }: RobotCardProps) {
   const router = useRouter();
   const { theme } = useTheme();
 
@@ -107,7 +108,7 @@ export function RobotCard({ robotId, name, file, scale, color }: RobotCardProps)
   return (
     <button
       onClick={() => router.push(`/garage/${robotId}`)}
-      className="group relative flex flex-col rounded-xl overflow-hidden border border-accent/10 bg-card/80 hover:border-accent/40 transition-all duration-300 hover:shadow-[0_0_32px_rgba(var(--accent-rgb),0.12)] cursor-pointer text-left w-full"
+      className={`group relative flex flex-col rounded-xl overflow-hidden border border-accent/10 bg-card/60 backdrop-blur-sm transition-all duration-300 hover:border-accent/40 cursor-pointer text-left w-full active:scale-[0.98] ${isMobile ? "shadow-[inset_3px_0_0_0_var(--accent)]" : "hover:shadow-[0_8px_32px_rgba(var(--accent-rgb),0.15)]"}`}
       style={{ animation: "fadeIn 0.35s ease" }}
     >
       {/* Scanline overlay */}
@@ -120,13 +121,11 @@ export function RobotCard({ robotId, name, file, scale, color }: RobotCardProps)
       />
 
       {/* Corner accents */}
-      <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-accent/60 rounded-tl-sm z-20" />
-      <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-accent/60 rounded-tr-sm z-20" />
-      <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-accent/60 rounded-bl-sm z-20" />
-      <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-accent/60 rounded-br-sm z-20" />
+      <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-accent/50 rounded-tr-sm z-20" />
+      <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-accent/50 rounded-br-sm z-20" />
 
       {/* 3D Canvas */}
-      <div className="w-full h-[320px] bg-bg-secondary/40 relative">
+      <div className={`w-full ${isMobile ? "h-[240px]" : "h-[320px]"} bg-gradient-to-b from-bg-secondary/40 to-transparent relative`}>
         {!isLoaded && (
           <div className="absolute inset-0 z-10 pointer-events-none">
             <CanvasFallback />
@@ -135,31 +134,35 @@ export function RobotCard({ robotId, name, file, scale, color }: RobotCardProps)
         <Canvas
           camera={{ position: [0, 1.5, 4], fov: 45 }}
           gl={{ antialias: true, alpha: true }}
+          dpr={[1, 2]} // Performance optimization for mobile
         >
-          <ambientLight intensity={0.4} />
-          <directionalLight position={[5, 5, 5]} intensity={1.2} color={resolvedAccent} />
-          <directionalLight position={[-5, 3, -5]} intensity={0.5} color="#a855f7" />
-          <pointLight position={[0, -2, 0]} intensity={0.8} color={resolvedAccent} distance={6} />
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[5, 5, 5]} intensity={1.5} color={resolvedAccent} />
+          <directionalLight position={[-5, 2, -5]} intensity={0.4} color="#a855f7" />
+          <pointLight position={[0, -2, 0]} intensity={1} color={resolvedAccent} distance={5} />
           <Suspense fallback={null}>
-            <RobotModel file={file} color={effColor} scale={scale} onLoad={() => setIsLoaded(true)} />
+            <RobotModel file={file} color={effColor} scale={isMobile ? (scale ?? 1.2) * 0.9 : scale} onLoad={() => setIsLoaded(true)} />
             <Environment preset="night" />
           </Suspense>
         </Canvas>
       </div>
 
       {/* Card footer */}
-      <div className="px-5 py-4 border-t border-accent/10 flex items-center justify-between bg-bg-primary">
+      <div className={`px-5 ${isMobile ? "py-3" : "py-4"} border-t border-accent/10 flex items-center justify-between bg-bg-primary/50 backdrop-blur-md`}>
         <div>
-          <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-0.5 uppercase">
-            // UNIT_FILE
+          <p className="text-[8px] tracking-[0.28em] text-accent/30 mb-0.5 uppercase font-bold">
+            // UNIT_ID_{robotId.toUpperCase()}
           </p>
-          <h2 className="text-[18px] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)] m-0">
+          <h2 className={`${isMobile ? "text-base" : "text-[18px]"} font-black tracking-[0.18em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)] m-0 uppercase`}>
             {name}
           </h2>
         </div>
-        <span className="text-[10px] tracking-[0.2em] text-accent/40 group-hover:text-accent/80 transition-colors duration-200">
-          INSPECT →
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`${isMobile ? "text-[8px]" : "text-[10px]"} tracking-[0.2em] text-accent/40 group-hover:text-accent font-black transition-colors duration-200 uppercase`}>
+            INSPECT
+          </span>
+          <span className="text-accent/30 tracking-tight group-hover:translate-x-1 transition-transform duration-200">→</span>
+        </div>
       </div>
     </button>
   );

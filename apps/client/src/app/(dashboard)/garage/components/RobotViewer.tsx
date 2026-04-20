@@ -77,20 +77,28 @@ interface RobotViewerProps {
   file: string;
   color: string;
   scale?: number;
+  isMobile?: boolean;
 }
 
-export function RobotViewer({ file, color, scale }: RobotViewerProps) {
+export function RobotViewer({ file, color, scale, isMobile }: RobotViewerProps) {
   return (
-    <div className="w-full h-full rounded-xl overflow-hidden border border-accent/10 bg-bg-secondary/40 relative">
+    <div className="w-full h-full rounded-2xl overflow-hidden border border-accent/10 bg-bg-secondary/20 backdrop-blur-sm relative shadow-2xl">
       {/* Corner decor */}
-      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-accent/60 rounded-tl z-10 pointer-events-none" />
-      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-accent/60 rounded-tr z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-accent/60 rounded-bl z-10 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-accent/60 rounded-br z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-accent/40 rounded-tl-xl z-20 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-accent/40 rounded-br-xl z-20 pointer-events-none" />
+
+      {/* Grid background inside viewer */}
+      <div 
+        className="absolute inset-0 pointer-events-none z-0 opacity-10"
+        style={{
+          backgroundImage: "radial-gradient(circle at 2px 2px, rgba(var(--accent-rgb), 0.5) 1px, transparent 0)",
+          backgroundSize: "24px 24px"
+        }}
+      />
 
       {/* Scanlines */}
       <div
-        className="absolute inset-0 pointer-events-none z-10 opacity-[0.025]"
+        className="absolute inset-0 pointer-events-none z-10 opacity-[0.04]"
         style={{
           backgroundImage:
             "repeating-linear-gradient(0deg, rgba(var(--accent-rgb),0.5) 0px, rgba(var(--accent-rgb),0.5) 1px, transparent 1px, transparent 4px)",
@@ -98,24 +106,26 @@ export function RobotViewer({ file, color, scale }: RobotViewerProps) {
       />
 
       <Canvas
-        camera={{ position: [0, 1.5, 5], fov: 50 }}
+        camera={{ position: [0, 1.2, isMobile ? 6 : 5], fov: isMobile ? 45 : 50 }}
         gl={{ antialias: true, alpha: true }}
+        dpr={[1, 2]}
       >
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 8, 5]} intensity={1.5} color="#22d3ee" />
-        <directionalLight position={[-5, 3, -5]} intensity={0.6} color="#a855f7" />
-        <pointLight position={[0, -3, 0]} intensity={1.2} color="#22d3ee" distance={8} />
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[10, 10, 5]} intensity={2} color="#22d3ee" />
+        <directionalLight position={[-10, 5, -5]} intensity={0.8} color="#a855f7" />
+        <pointLight position={[0, -2, 0]} intensity={2} color="#22d3ee" distance={10} />
         <Suspense fallback={<LoadingPlaceholder />}>
-          <RobotModel file={file} color={color} scale={scale} />
+          <RobotModel file={file} color={color} scale={isMobile ? (scale ?? 1.4) * 0.85 : scale} />
           <Environment preset="night" />
         </Suspense>
         <OrbitControls
           enablePan={false}
-          minDistance={2}
-          maxDistance={8}
+          minDistance={3}
+          maxDistance={isMobile ? 10 : 8}
           autoRotate={false}
           enableDamping
-          dampingFactor={0.08}
+          dampingFactor={0.1}
+          rotateSpeed={isMobile ? 0.8 : 1}
         />
       </Canvas>
     </div>

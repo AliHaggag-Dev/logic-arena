@@ -1,5 +1,6 @@
 import React from 'react';
 import { LeaderboardSkeleton } from './LeaderboardSkeleton';
+import { useMediaQuery } from '../../../../hooks/useMediaQuery';
 
 export interface LeaderboardUser {
   id: string;
@@ -68,88 +69,146 @@ export const LeaderboardTable = ({
   isLoading: boolean;
   currentUserId: string;
   onChallenge: (userId: string, username: string) => void;
-}) => (
-  <div className="bg-card/60 backdrop-blur-xl border border-accent/10 rounded-xl overflow-hidden" style={{ boxShadow: 'var(--card-shadow)' }}>
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="border-b border-accent/10 bg-accent/5">
-            <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-[10px] sm:text-xs font-bold">Rank</th>
-            <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-[10px] sm:text-xs font-bold">Operator</th>
-            <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-[10px] sm:text-xs font-bold">Rank Points</th>
-            <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-[10px] sm:text-xs font-bold">Victories</th>
-            <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-[10px] sm:text-xs font-bold text-right">
-              ⚡ Efficiency
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading ? (
-            <LeaderboardSkeleton />
-          ) : users.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="px-6 py-12 text-center text-text-secondary tracking-widest uppercase text-xs">
-                No combat data available in neural archives.
-              </td>
+}) => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const DesktopTable = (
+    <div className="bg-card/60 backdrop-blur-xl border border-accent/10 rounded-xl overflow-hidden" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-accent/10 bg-accent/5">
+              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%]">Rank</th>
+              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[35%]">Operator</th>
+              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%]">Points</th>
+              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold">Victories</th>
+              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold text-right">
+                ⚡ Efficiency
+              </th>
             </tr>
-          ) : (
-            users.map((user, index) => (
-              <tr key={user.id} className="border-b border-accent/10 hover:bg-accent/5 transition-colors group">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-lg" style={{ color: getRankColor(index) }}>
-                      #{index + 1}
-                    </span>
-                    {index === 0 && <span className="text-xl">👑</span>}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${user.isOnline
-                      ? 'bg-emerald-500 shadow-[0_0_6px_var(--color-emerald-500)]'
-                      : 'bg-accent/15'
-                      }`} />
-                    <span className="text-text-primary font-bold tracking-wider group-hover:text-text-primary transition-colors">
-                      {user.username}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-accent font-bold">{user.rank}</span>
-                    <div className="h-1 w-20 bg-accent/10 rounded-full overflow-hidden hidden sm:block">
-                      <div
-                        className="h-full bg-accent shadow-[0_0_8px_var(--accent)]"
-                        style={{ width: `${Math.min((user.rank / 1000) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="text-green-400 font-bold drop-shadow-[0_0_5px_rgba(74,222,128,0.3)]">
-                    {user._count.wonMatches}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-4">
-                    <EfficiencyBadge score={deriveEfficiency(user)} />
-                    <div className="w-[100px] flex justify-end shrink-0">
-                      {user.isOnline && user.id !== currentUserId && (
-                        <button
-                          onClick={() => onChallenge(user.id, user.username)}
-                          className="text-[10px] tracking-[0.15em] px-3 py-1 rounded border border-accent/30 bg-accent/5 hover:bg-accent/15 text-accent/70 hover:text-accent transition-all whitespace-nowrap"
-                        >
-                          ⚔ CHALLENGE
-                        </button>
-                      )}
-                    </div>
-                  </div>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <LeaderboardSkeleton />
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-12 text-center text-text-secondary tracking-widest uppercase text-xs">
+                  No combat data available in neural archives.
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              users.map((user, index) => (
+                <tr key={user.id} className="border-b border-accent/10 hover:bg-accent/5 transition-colors group">
+                  <td className="px-6 py-4 align-middle">
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-lg drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.3)]" style={{ color: getRankColor(index) }}>
+                        #{index + 1}
+                      </span>
+                      {index === 0 && <span className="text-xl transform rotate-12 drop-shadow-[0_0_10px_#FFD700]">👑</span>}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${user.isOnline
+                          ? 'bg-emerald-500 shadow-[0_0_6px_var(--color-emerald-500)]'
+                          : 'bg-accent/15'
+                          }`} />
+                        <span className="text-text-primary text-base font-bold tracking-wider group-hover:text-text-primary transition-colors truncate max-w-[200px]">
+                          {user.username}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 align-middle text-left">
+                    <div className="flex items-center justify-start gap-2">
+                      <span className="text-accent font-black text-base drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.3)]">{user.rank}</span>
+                      <div className="h-1 w-20 bg-accent/10 rounded-full overflow-hidden hidden xl:block">
+                        <div
+                          className="h-full bg-accent shadow-[0_0_8px_var(--accent)]"
+                          style={{ width: `${Math.min((user.rank / 1000) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-green-400 font-bold drop-shadow-[0_0_5px_rgba(74,222,128,0.3)]">
+                      {user._count.wonMatches}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-end gap-4">
+                      <EfficiencyBadge score={deriveEfficiency(user)} />
+                      <div className="w-[100px] flex justify-end shrink-0">
+                        {user.isOnline && user.id !== currentUserId && (
+                          <button
+                            onClick={() => onChallenge(user.id, user.username)}
+                            className="text-[10px] tracking-[0.15em] px-3 py-1 rounded border border-accent/30 bg-accent/5 hover:bg-accent/15 text-accent/70 hover:text-accent transition-all whitespace-nowrap"
+                          >
+                            ⚔ CHALLENGE
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-);
+  );
+
+  const MobileList = (
+    <div className="flex flex-col gap-3">
+      {isLoading ? (
+        <div className="p-4"><LeaderboardSkeleton /></div>
+      ) : users.length === 0 ? (
+        <div className="px-6 py-12 text-center text-text-secondary tracking-widest uppercase text-xs border border-accent/10 rounded-xl bg-card">
+          No combat data.
+        </div>
+      ) : (
+        users.map((user, index) => (
+          <div key={user.id} className="bg-card border border-accent/20 rounded-xl p-4 flex flex-col gap-4 relative" style={{ boxShadow: 'var(--card-shadow)' }}>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-3">
+                <span className="font-black text-xl" style={{ color: getRankColor(index) }}>
+                  #{index + 1}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-text-primary text-[15px] font-bold tracking-wider flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${user.isOnline ? 'bg-emerald-500 shadow-[0_0_6px_var(--color-emerald-500)]' : 'bg-accent/15'}`} />
+                    {user.username}
+                  </span>
+                </div>
+              </div>
+              <span className="text-accent font-black text-base">{user.rank} PTS</span>
+            </div>
+            {/* Action Bar */}
+            <div className="w-full">
+              {user.isOnline && user.id !== currentUserId ? (
+                <button
+                  onClick={() => onChallenge(user.id, user.username)}
+                  className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent text-accent font-bold tracking-[0.15em] text-[10px] rounded-lg transition-transform duration-150 active:scale-95 uppercase"
+                >
+                  ⚔ CHALLENGE OPERATOR
+                </button>
+              ) : (
+                <button disabled className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent/15 text-accent/30 font-bold tracking-[0.15em] text-[10px] rounded-lg cursor-not-allowed uppercase">
+                  OFFLINE / UNAVAILABLE
+                </button>
+              )}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  return (
+    <div className={isMobile ? "w-full" : ""}>
+      {isMobile ? MobileList : DesktopTable}
+    </div>
+  );
+};

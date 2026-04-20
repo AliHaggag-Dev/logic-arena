@@ -2,35 +2,37 @@ import React from "react";
 import { SectionLabel } from "./SectionLabel";
 import { TACTICS_DATA } from "../constants/docsData";
 
-export function BattleTacticsSection({ onLoadScript }: { onLoadScript: (code: string) => void }) {
+export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript: (code: string) => void, isMobile: boolean }) {
   return (
-    <section className="mb-[60px]">
-      <SectionLabel text="BATTLE_TACTICS_MASTERCLASS" />
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5 mt-5">
+    <section className={isMobile ? "mb-10" : "mb-[60px]"}>
+      <SectionLabel text="BATTLE_TACTICS_MASTERCLASS" isMobile={isMobile} />
+      <div className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5"} mt-5`}>
         {TACTICS_DATA.map((tactic) => (
           <div
             key={tactic.title}
-            className="bg-card/60 rounded-xl p-6 relative overflow-hidden backdrop-blur-sm"
+            className="bg-card/60 rounded-xl p-6 relative overflow-hidden backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
             style={{ border: `1px solid ${tactic.color}33` }}
           >
-            <div className="text-[11px] font-black tracking-[0.2em] mb-2" style={{ color: tactic.color }}>
+            <div className="absolute top-0 left-0 w-1 h-full opacity-50" style={{ backgroundColor: tactic.color }} />
+            
+            <div className="text-[11px] font-black tracking-[0.2em] mb-2 uppercase" style={{ color: tactic.color }}>
               {tactic.title}
             </div>
-            <div className="text-[10px] text-text-primary/70 mb-4 leading-relaxed tracking-wide">
+            <div className="text-[10px] text-text-primary/70 mb-4 leading-relaxed tracking-wide font-medium">
               {tactic.desc}
             </div>
-            <div className="bg-bg-primary p-4 rounded-lg font-mono text-[10px] text-accent leading-relaxed whitespace-pre-wrap border border-accent/10">
+            <div className="bg-bg-primary/50 p-4 rounded-xl font-mono text-[10px] text-accent leading-relaxed whitespace-pre-wrap border border-accent/10 shadow-inner overflow-x-auto docs-scrollbar">
               {tactic.code}
             </div>
             <button
               onClick={() => onLoadScript(tactic.code)}
-              className="mt-4 w-full p-2 bg-transparent text-[10px] font-bold cursor-pointer rounded transition-all hover:bg-white/5"
+              className="mt-4 w-full py-3 bg-transparent text-[9px] font-bold tracking-[0.2em] uppercase cursor-pointer rounded-xl transition-all hover:bg-white/5 border border-white/10 active:scale-[0.98]"
               style={{
-                border: `1px solid ${tactic.color}44`,
+                borderColor: `${tactic.color}33`,
                 color: tactic.color,
               }}
             >
-              LOAD INTO PLAYGROUND
+              LOAD_PATTERN
             </button>
           </div>
         ))}
