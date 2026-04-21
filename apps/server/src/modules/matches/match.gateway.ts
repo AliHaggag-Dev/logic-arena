@@ -2,24 +2,16 @@ import {
   WebSocketGateway, SubscribeMessage, MessageBody,
   ConnectedSocket, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { MatchEngine } from './match.engine';
+import { Server } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import { PrismaService } from '../../common/prisma.service';
 import { RedisService } from '../../common/redis.service';
 
-type AuthenticatedSocket = Socket & {
-  userId?: string;
-  matchId?: string;
-};
-
-/** Robot props included in every delta-diff calculation. */
-const TRACKED_ROBOT_PROPS = [
-  'position', 'velocity', 'health', 'rotation', 'isAlive', 'color',
-  'maxHealth', 'slowedUntil', 'speedMultiplier', 'trappedUntil', 'shields',
-  // Energy / FOV / Physics additions
-  'energy', 'maxEnergy', 'inStasis', 'fovDirection', 'hitWallTimestamp',
-] as const;
+import { AuthenticatedSocket } from './gateway/types';
+import { MatchState } from './gateway/match.state';
+import { MatchLobbyManager } from './gateway/match.lobby';
+import { MatchSocialManager } from './gateway/match.social';
+import { MatchLoopManager } from './gateway/match.loop';
 
 @WebSocketGateway({
   cors: {
@@ -35,19 +27,28 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
-  private matches = new Map<string, MatchEngine>();
-  private lastStateMap = new Map<string, any>();
-  private lobbyMatches = new Map<string, { hostId: string; hostName: string; matchId: string; createdAt: number }>();
-  private matchStartTime = new Map<string, number>();
-  private replaySnapshots = new Map<string, any[]>();
-  private tickCount = new Map<string, number>();
-  private savingMatches = new Set<string>();
-  private matchModes = new Map<string, string>();
+  // Internal State
+  private state = new MatchState();
+
+  // Child Managers
+  private lobbyManager!: MatchLobbyManager;
+  private socialManager!: MatchSocialManager;
+  private loopManager!: MatchLoopManager;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly redisService: RedisService,
   ) {}
+
+  onModuleInit() {
+    // Initialize the separated managers
+    this.lobbyManager = new MatchLobbyManager(this.state, this.server, this.prisma);
+    this.socialManager = new MatchSocialManager(this.server, this.prisma, this.redisService);
+    this.loopManager = new MatchLoopManager(this.state, this.server, this.prisma);
+
+    // Boot up the global match tick loop
+    this.loopManager.startLoop();
+  }
 
   // ---------------------------------------------------------------------------
   // Connection / Auth
@@ -83,7 +84,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // ---------------------------------------------------------------------------
-  // Match management
+  // Match Lobby routing
   // ---------------------------------------------------------------------------
 
   @SubscribeMessage('joinMatch')
@@ -91,92 +92,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { matchId: string; scriptId: string; mode?: 'COMBAT' | 'RACING' | 'TRAINING_SOLO' },
   ) {
-    if (!client.userId) {
-      client.emit('error', { message: 'Unauthorized: User not authenticated.' });
-      return;
-    }
-    if (!data.scriptId) {
-      client.emit('error', { message: 'Invalid scriptId provided.' });
-      return;
-    }
-
-    const script = await this.prisma.robotScript.findUnique({
-      where: { id: data.scriptId, userId: client.userId },
-    });
-    if (!script) {
-      client.emit('error', { message: 'Script not found or unauthorized.' });
-      return;
-    }
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: client.userId },
-      select: { selectedColor: true },
-    });
-
-    let match = this.matches.get(data.matchId);
-    const currentMode = this.matchModes.get(data.matchId);
-    const mode = data.mode || 'COMBAT';
-
-    // If mode changed, tear down the old match instance
-    if (match && currentMode && currentMode !== mode) {
-      match.stop();
-      this.cleanupMatch(data.matchId);
-      match = undefined;
-    }
-
-    if (!match) {
-      const playerToken = {
-        id: client.userId,
-        script: script.content,
-        color: user?.selectedColor ?? '#22d3ee'
-      };
-
-      const initialPlayers =
-        mode === 'RACING' || mode === 'TRAINING_SOLO'
-          ? [playerToken]
-          : [playerToken, { id: 'bot-2', script: '', color: '#ff00ff' }];
-
-      match = new MatchEngine(data.matchId, initialPlayers, {
-        mode,
-        disableProjectiles: mode === 'RACING' || mode === 'TRAINING_SOLO',
-      });
-      this.matches.set(data.matchId, match);
-      this.matchModes.set(data.matchId, mode);
-      this.matchStartTime.set(data.matchId, Date.now());
-      match.start();
-
-      // update match status to in_progress and set startedAt
-      await this.prisma.match.upsert({
-        where: { id: data.matchId },
-        create: {
-          id: data.matchId,
-          type: 'Friendly',
-          status: 'in_progress',
-          startedAt: new Date(),
-          duration: 0,
-        },
-        update: {
-          status: 'in_progress',
-          startedAt: new Date(),
-        },
-      });
-    } else {
-      if (this.lobbyMatches.has(data.matchId)) {
-        match.removePlayer('bot-2');
-        match.addPlayer({ id: client.userId!, script: script.content, color: user?.selectedColor ?? '#22d3ee' });
-        this.lobbyMatches.delete(data.matchId);
-        this.server.emit('lobbyUpdated', Array.from(this.lobbyMatches.values()));
-      } else {
-        match.removePlayer(client.userId!);
-        match.addPlayer({ id: client.userId!, script: script.content, color: user?.selectedColor ?? '#22d3ee' });
-        match.updateInitialPlayer(client.userId!, script.content);
-      }
-    }
-
-    client.matchId = data.matchId;
-    client.join(data.matchId);
-    client.emit('matchJoinedInfo', { mode });
-    this.broadcastMatchState(data.matchId, match.getState());
+    return this.lobbyManager.handleJoinMatch(client, data);
   }
 
   @SubscribeMessage('createMatch')
@@ -184,96 +100,12 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { scriptId: string },
   ) {
-    if (!client.userId) return;
-    const user = await this.prisma.user.findUnique({ where: { id: client.userId } });
-    const matchId = crypto.randomUUID();
-
-    // save match in db with status pending
-    await this.prisma.match.create({
-      data: {
-        id: matchId,
-        type: 'Friendly',
-        status: 'pending',
-        duration: 0,
-      },
-    });
-
-    this.lobbyMatches.set(matchId, {
-      hostId: client.userId,
-      hostName: user?.username || 'Unknown Hacker',
-      matchId,
-      createdAt: Date.now(),
-    });
-    client.emit('matchCreated', { matchId });
-    this.server.emit('lobbyUpdated', Array.from(this.lobbyMatches.values()));
+    return this.lobbyManager.handleCreateMatch(client, data);
   }
 
   @SubscribeMessage('getLobby')
   handleGetLobby(@ConnectedSocket() client: AuthenticatedSocket) {
-    client.emit('lobbyList', Array.from(this.lobbyMatches.values()));
-  }
-
-  // ---------------------------------------------------------------------------
-  // Online presence & instant challenge
-  // ---------------------------------------------------------------------------
-
-  @SubscribeMessage('ping')
-  async handlePing(@ConnectedSocket() client: AuthenticatedSocket) {
-    if (client.userId) {
-      await this.redisService.set(`user:online:${client.userId}`, '1', 300);
-      client.emit('pong');
-    }
-  }
-
-  @SubscribeMessage('send-challenge')
-  async handleSendChallenge(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { targetUserId: string },
-  ) {
-    if (!client.userId) return;
-
-    const isOnline = await this.redisService.get(`user:online:${data.targetUserId}`);
-    if (!isOnline) {
-      client.emit('challenge-failed', { reason: 'TARGET_OFFLINE' });
-      return;
-    }
-
-    const sockets = await this.server.fetchSockets();
-    const targetSocket = sockets.find((s: any) => s.userId === data.targetUserId);
-    if (!targetSocket) {
-      client.emit('challenge-failed', { reason: 'TARGET_OFFLINE' });
-      return;
-    }
-
-    const challenger = await this.prisma.user.findUnique({
-      where:  { id: client.userId },
-      select: { username: true },
-    });
-
-    targetSocket.emit('challenge-received', {
-      challengerId:   client.userId,
-      challengerName: challenger?.username ?? 'UNKNOWN',
-    });
-
-    client.emit('challenge-sent', { targetUserId: data.targetUserId });
-  }
-
-  @SubscribeMessage('accept-challenge')
-  async handleAcceptChallenge(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { challengerId: string },
-  ) {
-    if (!client.userId) return;
-
-    const matchId = crypto.randomUUID();
-
-    client.emit('challenge-accepted', { matchId });
-
-    const sockets = await this.server.fetchSockets();
-    const challengerSocket = sockets.find((s: any) => s.userId === data.challengerId);
-    if (challengerSocket) {
-      challengerSocket.emit('challenge-accepted', { matchId });
-    }
+    return this.lobbyManager.handleGetLobby(client);
   }
 
   @SubscribeMessage('resetGame')
@@ -281,11 +113,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { matchId: string },
   ) {
-    if (client.matchId && this.matches.has(client.matchId)) {
-      const match = this.matches.get(client.matchId);
-      match?.reset();
-      this.broadcastMatchState(client.matchId, match?.getState());
-    }
+    return this.lobbyManager.handleResetGame(client, data);
   }
 
   @SubscribeMessage('updateLogic')
@@ -293,15 +121,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { robotId: string; scriptContent: string },
   ) {
-    if (client.matchId && this.matches.has(client.matchId)) {
-      const match = this.matches.get(client.matchId);
-      match?.updateRobotScript(data.robotId, data.scriptContent);
-      client.emit('logicExecuted', {
-        robotId: data.robotId,
-        action: 'SCRIPT_DEPLOYED',
-        message: 'Neural payload active.',
-      });
-    }
+    return this.lobbyManager.handleUpdateLogic(client, data);
   }
 
   @SubscribeMessage('manualCommand')
@@ -309,283 +129,31 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { command: string },
   ) {
-    if (client.matchId && this.matches.has(client.matchId)) {
-      const match = this.matches.get(client.matchId);
-      match?.receiveManualCommand(client.userId!, data.command);
-      client.emit('logicExecuted', {
-        robotId: client.userId,
-        action: data.command,
-        message: 'Manual command executed.',
-      });
-    }
+    return this.lobbyManager.handleManualCommand(client, data);
   }
 
   // ---------------------------------------------------------------------------
-  // Broadcast loop — runs every 50ms (20Hz)
+  // Social Presence / Challenge routing
   // ---------------------------------------------------------------------------
 
-  onModuleInit() {
-    setInterval(async () => {
-      for (const [matchId, match] of this.matches.entries()) {
-        const state = match.getState();
-
-        // --- Replay snapshot (every 10th tick) ---
-        const tick = (this.tickCount.get(matchId) || 0) + 1;
-        this.tickCount.set(matchId, tick);
-        if (tick % 10 === 0) {
-          const snapshots = this.replaySnapshots.get(matchId) || [];
-          snapshots.push({
-            t: tick,
-            robots: state.robots.map((r: any) => ({
-              id: r.id,
-              position: { x: r.position.x, y: r.position.y },
-              health: r.health,
-              energy: r.energy,
-              inStasis: r.inStasis,
-              color: r.color,
-              rotation: r.rotation,
-              isAlive: r.isAlive,
-            })),
-            projectiles: state.projectiles.map((p: any) => ({
-              id: p.id,
-              position: { x: p.position.x, y: p.position.y },
-              velocity: p.velocity,
-              ownerId: p.ownerId,
-            })),
-          });
-          this.replaySnapshots.set(matchId, snapshots);
-        }
-
-        // --- Win condition ---
-        const aliveRobots = state.robots.filter((r: any) => r.health > 0);
-        const mode = this.matchModes.get(matchId) || 'COMBAT';
-        let matchIsOver = false;
-        let winner: any = null;
-
-        if (mode === 'RACING') {
-          const TARGET_X = 700, TARGET_Y = 300;
-          winner = state.robots.find(
-            (r: any) => Math.hypot(r.position.x - TARGET_X, r.position.y - TARGET_Y) < 50,
-          );
-          if (winner) matchIsOver = true;
-        } else if (mode === 'TRAINING_SOLO') {
-          matchIsOver = false;
-        } else if (state.robots.length > 0 && aliveRobots.length <= 1) {
-          matchIsOver = true;
-          winner = aliveRobots.length === 1 ? aliveRobots[0] : null;
-        }
-
-        if (matchIsOver) {
-          // Guard must be checked AND set synchronously before any await —
-          // the setInterval callback is not awaited, so multiple ticks can
-          // race past a guard that is only set after the first await.
-          if (this.savingMatches.has(matchId)) continue;
-          this.savingMatches.add(matchId); // set synchronously, before any await
-
-          // Compute efficiency scores before teardown
-          const efficiencyScores = match.getEfficiencyScores();
-
-          this.server.to(matchId).emit('matchOver', {
-            winner: winner ? { id: winner.id, color: winner.color } : null,
-            draw: !winner && mode !== 'RACING',
-            efficiencyScores, // { [robotId]: score }
-          });
-
-          // Persist match to DB
-          const playerIds = state.robots
-            .map((r: any) => r.id)
-            .filter((id: string) => id !== 'bot-2');
-          const startTime = this.matchStartTime.get(matchId) || Date.now();
-
-          if (playerIds.length > 0) {
-            const snapshots = this.replaySnapshots.get(matchId) || [];
-
-            // determine the placement for each player
-            const aliveAtEnd = state.robots
-              .filter((r: any) => r.id !== 'bot-2')
-              .sort((a: any, b: any) => b.health - a.health);
-
-            // get script id for each player from the match
-            const playerScriptMap = new Map<string, string>();
-            for (const p of match['initialPlayers'] as { id: string; script: string }[]) {
-              if (p.id === 'bot-2') continue;
-              // get script id from the DB
-              const dbScript = await this.prisma.robotScript.findFirst({
-                where: { userId: p.id },
-                orderBy: { createdAt: 'desc' },
-              });
-              if (dbScript) playerScriptMap.set(p.id, dbScript.id);
-            }
-
-            const createdMatch = await this.prisma.match.upsert({
-              where: { id: matchId },
-              create: {
-                id: matchId,
-                type: 'Friendly',
-                status: 'completed',
-                winnerId: winner && winner.id !== 'bot-2' ? winner.id : null,
-                duration: Math.floor((Date.now() - startTime) / 1000),
-                startedAt: new Date(startTime),
-                endedAt: new Date(),
-                replayData: snapshots,
-                participants: { connect: playerIds.map((id: string) => ({ id })) },
-              },
-              update: {
-                status: 'completed',
-                winnerId: winner && winner.id !== 'bot-2' ? winner.id : null,
-                duration: Math.floor((Date.now() - startTime) / 1000),
-                startedAt: new Date(startTime),
-                endedAt: new Date(),
-                replayData: snapshots,
-                participants: { connect: playerIds.map((id: string) => ({ id })) },
-              },
-            });
-
-            // create match participant for each player
-            for (let i = 0; i < aliveAtEnd.length; i++) {
-              const robot = aliveAtEnd[i];
-              const scriptId = playerScriptMap.get(robot.id);
-              if (!scriptId) continue;
-
-              // Use upsert so that any duplicate (matchId, userId) pairs
-              // caused by rapid ticks are handled gracefully instead of throwing.
-              await this.prisma.matchParticipant.upsert({
-                where: {
-                  matchId_userId: {
-                    matchId: createdMatch.id,
-                    userId: robot.id,
-                  },
-                },
-                create: {
-                  matchId: createdMatch.id,
-                  userId: robot.id,
-                  robotScriptId: scriptId,
-                  score: efficiencyScores[robot.id] ?? 0,
-                  placement: i + 1,
-                },
-                update: {
-                  robotScriptId: scriptId,
-                  score: efficiencyScores[robot.id] ?? 0,
-                  placement: i + 1,
-                },
-              });
-            }
-
-            if (winner && winner.id !== 'bot-2') {
-              await this.prisma.user.update({
-                where: { id: winner.id },
-                data: { rank: { increment: 10 } },
-              });
-            }
-          }
-
-          match.stop();
-          this.cleanupMatch(matchId);
-          continue;
-        }
-
-        // --- Delta-state diff ---
-        const prevState = this.lastStateMap.get(matchId);
-        let delta: any = { type: 'full', state };
-
-        if (prevState) {
-          const robotsDiff = state.robots.map((r: any) => {
-            const prevR = prevState.robots.find((pr: any) => pr.id === r.id);
-            // New robot — send full snapshot
-            if (!prevR) return r;
-
-            let rd: any = { id: r.id };
-            let changed = false;
-
-            for (const prop of TRACKED_ROBOT_PROPS) {
-              // Deep-compare using JSON (safe, works for nested {x,y} objects)
-              const curVal = JSON.stringify(r[prop]);
-              const prevVal = JSON.stringify((prevR as any)[prop]);
-              if (curVal !== prevVal) {
-                rd[prop] = r[prop];
-                changed = true;
-              }
-            }
-
-            // ALWAYS include position and rotation for alive, moving robots.
-            // This guarantees the client is never left with stale coordinates
-            // even if the snapshot reference diffing missed an update.
-            if (r.isAlive) {
-              const vMag = Math.hypot(r.velocity?.x ?? 0, r.velocity?.y ?? 0);
-              if (vMag > 0.01) {
-                rd.position = r.position;
-                rd.velocity = r.velocity;
-                rd.rotation = r.rotation;
-                changed = true;
-              }
-            }
-
-            // visibleRobotIds — compare against the safe snapshot's pre-stripped id list
-            const curIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id).sort().join(',');
-            const prevIds = ((prevR as any).visibleRobotIds ?? []).slice().sort().join(',');
-            if (curIds !== prevIds) {
-              rd.visibleRobotIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id);
-              changed = true;
-            }
-
-            return changed ? rd : null;
-          }).filter(Boolean);
-
-          delta = {
-            type: 'delta',
-            diff: { robots: robotsDiff, projectiles: state.projectiles },
-          };
-        }
-
-        const hasChanges =
-          delta.type === 'full' ||
-          (delta.diff && (delta.diff.robots.length > 0 || delta.diff.projectiles.length > 0));
-
-        if (hasChanges) {
-          // Safe snapshot — strip visibleEntities to avoid circular reference crash.
-          // CRITICAL: shallow-clone all object-type props (position, velocity) so the
-          // snapshot is immutable — if we store a live reference the diff will always
-          // see them as equal on the next tick because the object mutates in-place.
-          const safeSnapshot = {
-            robots: state.robots.map((r: any) => {
-              const snap: any = { id: r.id };
-              for (const prop of TRACKED_ROBOT_PROPS) {
-                const val = r[prop];
-                // Shallow-clone plain objects (position, velocity) to freeze the value
-                snap[prop] = val !== null && typeof val === 'object' && !Array.isArray(val)
-                  ? { ...val }
-                  : val;
-              }
-              snap.visibleRobotIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id);
-              return snap;
-            }),
-            projectiles: state.projectiles.map((p: any) => ({
-              id: p.id, position: { ...p.position }, velocity: { ...p.velocity },
-            })),
-            obstacles: undefined,
-          };
-          this.lastStateMap.set(matchId, safeSnapshot);
-          this.broadcastMatchState(matchId, delta);
-        }
-      }
-    }, 50);
+  @SubscribeMessage('ping')
+  async handlePing(@ConnectedSocket() client: AuthenticatedSocket) {
+    return this.socialManager.handlePing(client);
   }
 
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
-
-  private broadcastMatchState(matchId: string, state: any) {
-    this.server.to(matchId).emit('gameState', state);
+  @SubscribeMessage('send-challenge')
+  async handleSendChallenge(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { targetUserId: string },
+  ) {
+    return this.socialManager.handleSendChallenge(client, data);
   }
 
-  private cleanupMatch(matchId: string) {
-    this.matches.delete(matchId);
-    this.lastStateMap.delete(matchId);
-    this.matchStartTime.delete(matchId);
-    this.matchModes.delete(matchId);
-    this.replaySnapshots.delete(matchId);
-    this.tickCount.delete(matchId);
-    this.savingMatches.delete(matchId);
+  @SubscribeMessage('accept-challenge')
+  async handleAcceptChallenge(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { challengerId: string },
+  ) {
+    return this.socialManager.handleAcceptChallenge(client, data);
   }
 }
