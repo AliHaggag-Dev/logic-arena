@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma.service';
 import { RedisService } from '../../common/redis.service';
 
@@ -10,9 +12,13 @@ const PROFILE_TTL        = 600; // 10 minutes
 const profileKey  = (id: string) => `user:profile:${id}`;
 const loadoutKey  = (id: string) => `user:loadout:${id}`;
 
+const BCRYPT_ROUNDS = 12;
+const PRISMA_UNIQUE_VIOLATION = 'P2002';
+
 // ── Types ────────────────────────────────────────────────────────────────────
 export interface UserProfile {
   username:        string;
+  email:           string;
   rank:            number;
   memberSince:     Date;
   selectedRobotId: string | null;
@@ -22,6 +28,9 @@ export interface UserProfile {
   losses:          number;
   winRate:         number;
   matchHistory:    MatchSummary[];
+  hasGoogle:       boolean;
+  hasGithub:       boolean;
+  provider:        string | null;
 }
 
 export interface MatchSummary {
@@ -57,10 +66,14 @@ export class UsersService {
       where:  { id: userId },
       select: {
         username:        true,
+        email:           true,
         rank:            true,
         createdAt:       true,
         selectedRobotId: true,
         selectedColor:   true,
+        googleId:        true,
+        githubId:        true,
+        provider:        true,
         Match: {
           orderBy: { createdAt: 'desc' },
           select:  {
@@ -96,6 +109,7 @@ export class UsersService {
 
     const profile: UserProfile = {
       username:        user.username,
+      email:           user.email,
       rank:            user.rank,
       memberSince:     user.createdAt,
       selectedRobotId: user.selectedRobotId,
@@ -105,6 +119,9 @@ export class UsersService {
       losses,
       winRate,
       matchHistory,
+      hasGoogle:       !!user.googleId,
+      hasGithub:       !!user.githubId,
+      provider:        user.provider,
     };
 
     // 3. Populate cache with 10-minute TTL
@@ -143,6 +160,64 @@ export class UsersService {
     });
 
     // Invalidate both caches on write-through
+    await this.redis.del(profileKey(userId), loadoutKey(userId));
+  }
+
+  // ── Identity update ───────────────────────────────────────────────────────────
+
+  async updateIdentity(
+    userId: string,
+    data: { username?: string; email?: string },
+  ): Promise<void> {
+    if (!data.username && !data.email) return;
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data,
+      });
+      await this.redis.del(profileKey(userId), loadoutKey(userId));
+    } catch (err: any) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === PRISMA_UNIQUE_VIOLATION
+      ) {
+        const target = (err.meta?.target as string[]) ?? [];
+        if (target.includes('username')) throw new ConflictException('Username already taken');
+        if (target.includes('email'))    throw new ConflictException('Email already registered');
+      }
+      throw err;
+    }
+  }
+
+  // ── Password change ───────────────────────────────────────────────────────────
+
+  async updatePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where:  { id: userId },
+      select: { passwordHash: true },
+    });
+    if (!user?.passwordHash) {
+      throw new UnauthorizedException('Account uses OAuth — password cannot be changed here');
+    }
+    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+    const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data:  { passwordHash: newHash },
+    });
+  }
+
+  // ── Account deletion ──────────────────────────────────────────────────────────
+
+  async deleteAccount(userId: string): Promise<void> {
+    await this.prisma.user.delete({ where: { id: userId } });
     await this.redis.del(profileKey(userId), loadoutKey(userId));
   }
 

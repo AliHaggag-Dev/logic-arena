@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { Settings } from "lucide-react";
 import NavLink from "../../components/ui/NavLink";
 import { ThemeSwitcher } from "../../components/ui/ThemeSwitcher";
 import { useGlobalSocket } from "../../hooks/useGlobalSocket";
@@ -15,14 +16,14 @@ const MobileHeader = dynamic(() => import("../../components/MobileHeader").then(
 const SIDEBAR_WIDTH = 220;
 
 const navItems = [
-  { href: "/dashboard", label: "COMMAND_CENTER", icon: "⬡" },
-  { href: "/leaderboard", label: "NEURAL_RANKINGS", icon: "◈" },
-  { href: "/lobby", label: "BATTLE_LOBBY", icon: "▶" },
-  { href: "/campaign", label: "CAMPAIGN_MODE", icon: "⚡" },
-  { href: "/profile", label: "OPERATOR_PROFILE", icon: "◉" },
-  { href: "/garage", label: "ROBOT_GARAGE", icon: "⚙" },
-  { href: "/docs", label: "ALISCRIPT_DOCS", icon: "◈" },
-  { href: "/tournaments", label: "TOURNAMENT_HUB", icon: "⚔" },
+  { href: "/dashboard",   label: "COMMAND_CENTER",    icon: "⬡" },
+  { href: "/leaderboard", label: "NEURAL_RANKINGS",   icon: "◈" },
+  { href: "/lobby",       label: "BATTLE_LOBBY",      icon: "▶" },
+  { href: "/campaign",    label: "CAMPAIGN_MODE",     icon: "⚡" },
+  { href: "/profile",     label: "OPERATOR_PROFILE",  icon: "◉" },
+  { href: "/garage",      label: "ROBOT_GARAGE",      icon: "⚙" },
+  { href: "/docs",        label: "ALISCRIPT_DOCS",    icon: "◈" },
+  { href: "/tournaments", label: "TOURNAMENT_HUB",    icon: "⚔" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -109,10 +110,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {navItems.map((item) => (
               <NavLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
             ))}
+            <div className="my-2 h-px bg-accent/[0.06]" />
+            <NavLink
+              href="/settings"
+              label="OPERATOR_SETTINGS"
+              iconNode={<Settings size={13} strokeWidth={2.5} />}
+            />
           </nav>
-
-          {/* ── THEME SWITCHER ── */}
-          <ThemeSwitcher />
 
           {/* ── USER + LOGOUT ── */}
           <div className="p-[14px_12px] border-t border-accent/[0.08] relative z-10">
@@ -145,6 +149,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* ── MAIN CONTENT ── */}
         <main className={`flex-1 overflow-x-hidden overflow-y-auto bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent ${isMobile ? "pt-12 pb-[calc(80px+env(safe-area-inset-bottom))] max-w-[100vw]" : ""}`}>
+          {!isMobile && (
+            <div className="fixed top-4 right-5 z-50">
+              <ThemeSwitcher variant="minimal" />
+            </div>
+          )}
           {children}
         </main>
 

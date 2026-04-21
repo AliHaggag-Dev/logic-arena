@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
   Patch,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -89,5 +91,51 @@ export class UsersController {
     });
     if (!match) throw new NotFoundException('Match not found');
     return match;
+  }
+
+  // ── Update Identity (auth-gated) ─────────────────────────────────────────
+  @UseGuards(AuthGuard)
+  @Put('identity')
+  async updateIdentity(
+    @Req() req: any,
+    @Body() body: { username?: string; email?: string },
+  ) {
+    try {
+      await this.usersService.updateIdentity(req.user.sub, body);
+      return { success: true };
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  // ── Change Password (auth-gated) ────────────────────────────────────────
+  @UseGuards(AuthGuard)
+  @Put('password')
+  async updatePassword(
+    @Req() req: any,
+    @Body() body: { currentPassword: string; newPassword: string },
+  ) {
+    try {
+      await this.usersService.updatePassword(
+        req.user.sub,
+        body.currentPassword,
+        body.newPassword,
+      );
+      return { success: true };
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  // ── Delete Account (auth-gated) ─────────────────────────────────────────
+  @UseGuards(AuthGuard)
+  @Delete('account')
+  async deleteAccount(@Req() req: any) {
+    try {
+      await this.usersService.deleteAccount(req.user.sub);
+      return { success: true };
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
   }
 }
