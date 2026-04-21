@@ -154,6 +154,7 @@ export class GameLoop {
         this.ARENA.width,
         this.ARENA.height,
         this.obstacles,
+        deltaTime,
       );
     }
 

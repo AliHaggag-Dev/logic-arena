@@ -376,8 +376,11 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
 
         if (matchIsOver) {
+          // Guard must be checked AND set synchronously before any await —
+          // the setInterval callback is not awaited, so multiple ticks can
+          // race past a guard that is only set after the first await.
           if (this.savingMatches.has(matchId)) continue;
-          this.savingMatches.add(matchId);
+          this.savingMatches.add(matchId); // set synchronously, before any await
 
           // Compute efficiency scores before teardown
           const efficiencyScores = match.getEfficiencyScores();
@@ -444,10 +447,23 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
               const scriptId = playerScriptMap.get(robot.id);
               if (!scriptId) continue;
 
-              await this.prisma.matchParticipant.create({
-                data: {
+              // Use upsert so that any duplicate (matchId, userId) pairs
+              // caused by rapid ticks are handled gracefully instead of throwing.
+              await this.prisma.matchParticipant.upsert({
+                where: {
+                  matchId_userId: {
+                    matchId: createdMatch.id,
+                    userId: robot.id,
+                  },
+                },
+                create: {
                   matchId: createdMatch.id,
                   userId: robot.id,
+                  robotScriptId: scriptId,
+                  score: efficiencyScores[robot.id] ?? 0,
+                  placement: i + 1,
+                },
+                update: {
                   robotScriptId: scriptId,
                   score: efficiencyScores[robot.id] ?? 0,
                   placement: i + 1,

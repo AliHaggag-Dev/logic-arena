@@ -18,41 +18,58 @@ export function updateProjectiles(
   arenaWidth: number,
   arenaHeight: number,
   obstacles: Obstacle[] = [],
+  deltaTime: number = 1 / 60,
 ): Projectile[] {
   const solidObstacles = obstacles.filter(o => o.type === 'SOLID');
 
   return projectiles.filter(p => {
-    p.position.x += p.velocity.x * (1 / 60);
-    p.position.y += p.velocity.y * (1 / 60);
+    // Step distance this tick using the ACTUAL elapsed deltaTime, not a
+    // hardcoded 1/60. When the physics loop runs at 100ms ticks the bullet
+    // was previously jumping 6× too far, tunnelling through robots.
+    const stepX = p.velocity.x * deltaTime;
+    const stepY = p.velocity.y * deltaTime;
+    const stepDist = Math.hypot(stepX, stepY);
 
-    // 1. Robot hit check
-    for (const robot of robots) {
-      if (robot.id !== p.ownerId && robot.isAlive) {
-        const dx = p.position.x - robot.position.x;
-        const dy = p.position.y - robot.position.y;
-        if (dx * dx + dy * dy < ROBOT_RADIUS * ROBOT_RADIUS) {
-          robot.health = Math.max(0, robot.health - 10);
-          if (robot.health === 0) robot.isAlive = false;
-          return false; // destroy projectile
+    // --- Swept-segment hit detection ---
+    // Sub-step along the path so a fast bullet can never jump over a robot
+    // in a single tick, no matter how large deltaTime is.
+    const SUB_STEPS = Math.max(1, Math.ceil(stepDist / (ROBOT_RADIUS * 0.5)));
+    const subStepX = stepX / SUB_STEPS;
+    const subStepY = stepY / SUB_STEPS;
+
+    for (let s = 0; s < SUB_STEPS; s++) {
+      p.position.x += subStepX;
+      p.position.y += subStepY;
+
+      // 1. Robot hit check (every sub-step)
+      for (const robot of robots) {
+        if (robot.id !== p.ownerId && robot.isAlive) {
+          const dx = p.position.x - robot.position.x;
+          const dy = p.position.y - robot.position.y;
+          if (dx * dx + dy * dy < ROBOT_RADIUS * ROBOT_RADIUS) {
+            robot.health = Math.max(0, robot.health - 10);
+            if (robot.health === 0) robot.isAlive = false;
+            return false; // destroy projectile immediately on first hit
+          }
+        }
+      }
+
+      // 2. SOLID obstacle hit check (every sub-step)
+      for (const obs of solidObstacles) {
+        const halfW = obs.width / 2;
+        const halfH = obs.height / 2;
+        if (
+          p.position.x >= obs.position.x - halfW &&
+          p.position.x <= obs.position.x + halfW &&
+          p.position.y >= obs.position.y - halfH &&
+          p.position.y <= obs.position.y + halfH
+        ) {
+          return false; // wall absorbed the projectile
         }
       }
     }
 
-    // 2. SOLID obstacle hit check
-    for (const obs of solidObstacles) {
-      const halfW = obs.width / 2;
-      const halfH = obs.height / 2;
-      if (
-        p.position.x >= obs.position.x - halfW &&
-        p.position.x <= obs.position.x + halfW &&
-        p.position.y >= obs.position.y - halfH &&
-        p.position.y <= obs.position.y + halfH
-      ) {
-        return false; // wall absorbed the projectile
-      }
-    }
-
-    // 3. Arena boundary cull
+    // 3. Arena boundary cull (after full step)
     const isOutOfBounds =
       p.position.x < 0 || p.position.x > arenaWidth ||
       p.position.y < 0 || p.position.y > arenaHeight;
