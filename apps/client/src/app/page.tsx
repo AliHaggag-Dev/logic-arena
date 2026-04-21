@@ -1,11 +1,5 @@
-"use client";
-
-import Arena from "./arena/page";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <main>
-      <Arena />
-    </main>
-  );
+  redirect("/dashboard");
 }
