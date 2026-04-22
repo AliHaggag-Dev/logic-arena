@@ -122,23 +122,25 @@ export default function PatchNotesPage() {
         {/* Back nav */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-[10px] tracking-[0.3em] text-accent hover:text-accent/70 uppercase mb-10 transition-colors duration-150"
+          className="group inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.3em] text-accent/70 hover:text-accent uppercase mb-10 transition-all duration-300"
         >
-          ← BACK
+          <span className="group-hover:-translate-x-1 transition-transform">←</span> BACK
         </Link>
 
         {/* Hero */}
-        <div className="mb-14 relative">
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent/50 rounded-tl" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent/50 rounded-br" />
-          <div className="px-6 py-8">
-            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3">
-              ⌐ CHANGELOG_FEED ¬
+        <div className="mb-14 relative flex items-center bg-accent/5 border border-accent/20 rounded-xl overflow-hidden shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.05)]">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)]" />
+          <div className="absolute top-0 right-0 w-48 h-full bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
+          <div className="px-10 py-12 relative z-10 w-full">
+            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-accent/40 animate-pulse" />
+              CHANGELOG_FEED
             </p>
-            <h1 className="text-4xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_20px_rgba(var(--accent-rgb),0.5)] mb-4 uppercase">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] mb-4 uppercase">
               Patch Notes
             </h1>
-            <p className="text-text-secondary text-sm leading-relaxed">
+            <div className="h-px w-full max-w-sm bg-gradient-to-r from-accent/50 to-transparent mb-5" />
+            <p className="text-[13px] font-mono text-accent/70 leading-[1.8] tracking-[0.03em] max-w-2xl drop-shadow-[0_0_1px_rgba(var(--accent-rgb),0.1)]">
               Full changelog for every Logic Arena release. Sorted newest-first.
             </p>
           </div>
@@ -149,40 +151,42 @@ export default function PatchNotesPage() {
           {RELEASES.map((release) => (
             <div
               key={release.version}
-              className="bg-card border border-accent/50 rounded-xl overflow-hidden"
-              style={{ boxShadow: "var(--card-shadow)" }}
+              className="bg-bg-secondary/40 backdrop-blur-sm border border-accent/20 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(var(--accent-rgb),0.03)] group hover:border-accent/40 hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)] transition-all duration-300 relative"
             >
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-accent/[0.02] to-transparent" />
               {/* Version header */}
-              <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-accent/50 bg-bg-secondary/40">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-4 px-8 py-5 border-b border-accent/20 bg-accent/[0.03] relative z-10">
+                <div className="flex items-center gap-4">
                   <code
-                    className="text-lg font-black tracking-[0.1em] text-accent"
+                    className="text-2xl font-black tracking-[0.1em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]"
                     style={{ fontFamily: "var(--font-geist-mono, monospace)" }}
                   >
                     {release.version}
                   </code>
-                  <span className="text-[10px] text-text-secondary tracking-[0.2em]">
+                  <span className="text-[11px] font-mono text-accent/50 tracking-[0.2em] border border-accent/20 px-3 py-1 rounded bg-bg-primary/50 shadow-[inset_0_0_8px_rgba(var(--accent-rgb),0.05)]">
                     {release.date}
                   </span>
                 </div>
-                <div className="text-[9px] text-accent/70 tracking-[0.2em] text-right hidden sm:block">
+                <div className="text-[9px] text-accent/30 tracking-[0.3em] text-right hidden sm:block font-black">
                   LOGIC_ARENA_CHANGELOG
                 </div>
               </div>
 
               {/* Headline */}
-              <div className="px-6 pt-4 pb-2">
-                <p className="text-[12px] font-black tracking-[0.08em] text-text-primary uppercase">
+              <div className="px-8 pt-6 pb-2 relative z-10">
+                <p className="text-[14px] font-black tracking-[0.15em] text-accent uppercase drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.3)]">
                   {release.headline}
                 </p>
               </div>
 
               {/* Changes */}
-              <div className="px-6 pb-5 flex flex-col gap-2 mt-2">
+              <div className="px-8 pb-8 flex flex-col gap-3 mt-3 relative z-10">
                 {release.changes.map((change, i) => (
-                  <div key={i} className="flex items-start gap-3 py-1.5 border-b border-accent/50/40 last:border-0">
-                    <TagPill tag={change.tag} />
-                    <p className="text-[11px] text-text-secondary leading-relaxed pt-0.5">
+                  <div key={i} className="flex items-start gap-4 py-2 border-b border-accent/10 group-hover:border-accent/20 transition-colors last:border-0 last:pb-0">
+                    <div className="mt-0.5">
+                      <TagPill tag={change.tag} />
+                    </div>
+                    <p className="text-[12.5px] font-mono text-accent/70 leading-[1.8] tracking-[0.03em] max-w-2xl">
                       {change.text}
                     </p>
                   </div>

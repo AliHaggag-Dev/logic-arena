@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { NAV_LINKS, ARENA_LINKS, COMMUNITY_LINKS, LEGAL_LINKS } from './constants';
+import { NAV_LINKS, ARENA_LINKS, SOCIAL_LINKS, LEGAL_LINKS } from './constants';
 import { GitHubIcon, LinkedinIcon, PortfolioIcon } from './Icons';
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
@@ -91,9 +91,9 @@ export function DesktopLayout() {
         </div>
 
         <div>
-          <SectionHeader>Community</SectionHeader>
+          <SectionHeader>Social</SectionHeader>
           <div className="flex flex-col">
-            {COMMUNITY_LINKS.map((l) => <FooterLink key={l.label} target={l.target} href={l.href}>{l.label}</FooterLink>)}
+            {SOCIAL_LINKS.map((l) => <FooterLink key={l.label} target={l.target} href={l.href}>{l.label}</FooterLink>)}
           </div>
         </div>
 

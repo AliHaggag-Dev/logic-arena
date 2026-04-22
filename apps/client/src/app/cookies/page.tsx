@@ -84,23 +84,25 @@ export default function CookiesPage() {
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-[10px] tracking-[0.3em] text-accent hover:text-accent/70 uppercase mb-10 transition-colors duration-150"
+          className="group inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.3em] text-accent/70 hover:text-accent uppercase mb-10 transition-all duration-300"
         >
-          ← BACK
+          <span className="group-hover:-translate-x-1 transition-transform">←</span> BACK
         </Link>
 
-        <div className="mb-12 relative">
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent/50 rounded-tl" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent/50 rounded-br" />
-          <div className="px-6 py-8">
-            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3">
-              ⌐ LEGAL_DOCUMENT ¬
+        <div className="mb-12 relative flex items-center bg-accent/5 border border-accent/20 rounded-xl overflow-hidden shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.05)]">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)]" />
+          <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
+          <div className="px-10 py-10 relative z-10 w-full">
+            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-accent/40 animate-pulse" />
+              LEGAL_DOCUMENT
             </p>
-            <h1 className="text-4xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_20px_rgba(var(--accent-rgb),0.5)] mb-4 uppercase">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] mb-4 uppercase">
               Cookie Policy
             </h1>
-            <p className="text-[11px] text-text-secondary tracking-[0.15em]">
-              Last updated: <span className="text-accent/70">January 2026</span>
+            <div className="h-px w-full max-w-sm bg-gradient-to-r from-accent/50 to-transparent mb-4" />
+            <p className="text-[11px] font-mono tracking-[0.2em] uppercase text-accent/50">
+              Last updated: <span className="text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.5)]">January 2026</span>
             </p>
           </div>
         </div>
@@ -110,21 +112,19 @@ export default function CookiesPage() {
           {COOKIE_TYPES.map((ct) => (
             <div
               key={ct.type}
-              className="bg-card border border-accent/50 rounded-xl overflow-hidden"
-              style={{ boxShadow: "var(--card-shadow)" }}
+              className="bg-bg-secondary/40 backdrop-blur-sm border border-accent/20 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(var(--accent-rgb),0.03)] group transition-all duration-300 hover:border-accent/40 hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)] relative"
             >
-              <div className="flex items-center justify-between px-6 py-4 border-b border-accent/50 bg-bg-secondary/40">
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-accent/[0.02] to-transparent" />
+              <div className="flex items-center justify-between px-6 py-4 border-b border-accent/20 bg-accent/[0.03] relative z-10">
                 <div className="flex items-center gap-2">
-                  <span className="text-accent/70 font-mono text-xs">⌐</span>
-                  <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-accent">
+                  <h2 className="text-[12px] font-black tracking-[0.25em] uppercase text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.3)]">
                     {ct.type} COOKIES
                   </h2>
-                  <span className="text-accent/70 font-mono text-xs">¬</span>
                 </div>
                 <span
-                  className="text-[9px] font-black tracking-[0.2em] uppercase px-2 py-0.5 rounded"
+                  className="text-[9px] font-black tracking-[0.2em] uppercase px-3 py-1 rounded-md shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.1)]"
                   style={{
-                    background: ct.type === "ESSENTIAL" ? "rgba(var(--accent-rgb),0.12)" : "rgba(var(--accent-rgb),0.06)",
+                    background: ct.type === "ESSENTIAL" ? "rgba(var(--accent-rgb),0.12)" : "rgba(var(--accent-rgb),0.05)",
                     border: `1px solid ${ct.type === "ESSENTIAL" ? "rgba(var(--accent-rgb),0.4)" : "rgba(var(--accent-rgb),0.2)"}`,
                     color: "var(--accent)",
                   }}
@@ -132,44 +132,48 @@ export default function CookiesPage() {
                   {ct.type === "ESSENTIAL" ? "ALWAYS ON" : "OPT-IN"}
                 </span>
               </div>
-              <div className="px-6 pt-3 pb-1">
-                <p className="text-[11px] text-text-secondary leading-relaxed mb-4">{ct.description}</p>
+              <div className="px-6 pt-5 pb-5 relative z-10">
+                <p className="text-[12.5px] font-mono text-accent/70 leading-[1.8] tracking-[0.03em] mb-4">{ct.description}</p>
                 <div className="flex flex-col gap-2">
                   {ct.examples.map((ex) => (
-                    <div key={ex.name} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4 py-2 border-t border-accent/50/40">
+                    <div key={ex.name} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 py-3 border-t border-accent/10 group-hover:border-accent/20 transition-colors">
                       <code
-                        className="text-[10px] text-accent shrink-0 font-bold"
-                        style={{ fontFamily: "var(--font-geist-mono, monospace)" }}
+                        className="text-[11px] text-accent tracking-widest px-2 py-0.5 bg-accent/5 rounded border border-accent/10"
                       >
                         {ex.name}
                       </code>
-                      <p className="text-[11px] text-text-secondary leading-relaxed">{ex.purpose}</p>
+                      <p className="text-[12px] font-mono text-accent/60 leading-relaxed">{ex.purpose}</p>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="pb-4" />
             </div>
           ))}
         </div>
 
         {/* General sections */}
-        <div className="bg-card border border-accent/50 rounded-xl p-6 flex flex-col gap-6" style={{ boxShadow: "var(--card-shadow)" }}>
+        <div className="bg-bg-secondary/40 backdrop-blur-sm border border-accent/20 rounded-xl p-8 flex flex-col gap-4 shadow-[0_0_30px_rgba(var(--accent-rgb),0.03)] relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-accent/[0.02] to-transparent" />
+          
           {SECTIONS.map((section) => (
-            <div key={section.title} className="border-b border-accent/50/50 last:border-0 pb-5 last:pb-0">
-              <h2 className="text-[11px] font-black tracking-[0.2em] text-accent uppercase mb-2">
+            <div 
+              key={section.title} 
+              className="group p-5 rounded-lg border border-transparent hover:border-accent/20 hover:bg-accent/[0.03] hover:shadow-[inset_0_0_15px_rgba(var(--accent-rgb),0.05)] transition-all duration-300"
+            >
+              <h2 className="text-[12px] font-black tracking-[0.2em] text-accent uppercase mb-3 flex items-center gap-3">
+                <span className="text-accent/40 font-light text-[14px]">›</span>
                 {section.title}
               </h2>
-              <p className="text-[12px] text-text-secondary leading-relaxed">
+              <p className="text-[12.5px] font-mono text-accent/70 leading-[1.8] tracking-[0.03em] drop-shadow-[0_0_1px_rgba(var(--accent-rgb),0.1)]">
                 {section.content}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-[10px] text-text-secondary/50 tracking-[0.2em]">
-            More questions? <Link href="/contact" className="text-accent hover:text-accent/70 transition-colors">Contact us →</Link>
+        <div className="mt-12 mb-8 text-center bg-accent/5 border border-accent/10 p-6 rounded-xl">
+          <p className="text-[11px] font-mono text-accent/60 tracking-[0.2em] uppercase">
+            More questions? <Link href="/contact" className="text-accent border-b border-accent/30 hover:border-accent hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.8)] pb-0.5 ml-2 transition-all">Contact us →</Link>
           </p>
         </div>
       </div>

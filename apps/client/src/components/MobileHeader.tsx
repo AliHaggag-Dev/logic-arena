@@ -21,8 +21,15 @@ export function MobileHeader() {
   const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email"];
   const isAuthPage = authRoutes.some(route => pathname.startsWith(route));
 
-  // Render on mobile everywhere, but also render on desktop for auth pages
-  if (!isMobile && !isAuthPage) return null;
+  const staticRoutes = [
+    "/how-it-works", "/aliscript-docs", "/robot-builder", "/tournaments", "/practice",
+    "/patch-notes", "/linkedin", "/github", "/portfolio", "/terms", "/privacy", "/cookie", "/contact",
+    "/bug-report", "/feature-requests"
+  ];
+  const isStaticPage = staticRoutes.some(route => pathname.startsWith(route)) || pathname === "/";
+
+  // Render on mobile everywhere, but also render on desktop for auth & static pages
+  if (!isMobile && !isAuthPage && !isStaticPage) return null;
 
   const handleLogout = () => {
     localStorage.removeItem("token");

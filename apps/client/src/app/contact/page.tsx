@@ -79,136 +79,154 @@ export default function ContactPage() {
       <div className="relative z-10 max-w-2xl mx-auto px-6 py-16">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-[10px] tracking-[0.3em] text-accent hover:text-accent/70 uppercase mb-10 transition-colors duration-150"
+          className="group inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.3em] text-accent/70 hover:text-accent uppercase mb-10 transition-all duration-300"
         >
-          ← BACK
+          <span className="group-hover:-translate-x-1 transition-transform">←</span> BACK
         </Link>
 
         {/* Hero */}
-        <div className="mb-12 relative">
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent/50 rounded-tl" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent/50 rounded-br" />
-          <div className="px-6 py-8">
-            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3">
-              ⌐ SECURE_CHANNEL ¬
+        <div className="mb-12 relative flex items-center bg-accent/5 border border-accent/20 rounded-xl overflow-hidden shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.05)]">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)]" />
+          <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
+          <div className="px-10 py-10 relative z-10 w-full">
+            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-accent/40 animate-pulse" />
+              SECURE_CHANNEL
             </p>
-            <h1 className="text-4xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_20px_rgba(var(--accent-rgb),0.5)] mb-4 uppercase">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] mb-4 uppercase">
               Contact Us
             </h1>
-            <p className="text-text-secondary text-sm leading-relaxed">
+            <div className="h-px w-full max-w-sm bg-gradient-to-r from-accent/50 to-transparent mb-4" />
+            <p className="text-[12px] font-mono text-accent/70 leading-relaxed tracking-[0.03em] drop-shadow-[0_0_1px_rgba(var(--accent-rgb),0.1)]">
               Open a secure channel to the Logic Arena command center. We respond within 24–48 hours.
             </p>
           </div>
         </div>
 
         {/* Form card */}
-        <div className="bg-card border border-accent/50 rounded-xl p-6 mb-6" style={{ boxShadow: "var(--card-shadow)" }}>
-          {submitted ? (
-            <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-              <div className="w-16 h-16 rounded-full border border-accent/40 bg-accent/5 flex items-center justify-center text-2xl text-accent">
-                ✓
+        <div className="bg-bg-secondary/40 backdrop-blur-sm border border-accent/20 rounded-xl p-8 mb-8 shadow-[0_0_30px_rgba(var(--accent-rgb),0.03)] relative overflow-hidden group">
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-accent/[0.02] to-transparent" />
+          <div className="relative z-10 w-full">
+            {submitted ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-16 text-center animate-in fade-in zoom-in duration-500">
+                <div className="w-20 h-20 rounded-full border-2 border-accent bg-accent/5 flex items-center justify-center text-4xl text-accent shadow-[0_0_30px_rgba(var(--accent-rgb),0.3)] mb-2">
+                  ✓
+                </div>
+                <h2 className="text-[16px] font-black tracking-[0.3em] text-accent uppercase drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]">
+                  MESSAGE RECEIVED BY COMMAND CENTER _
+                </h2>
+                <p className="text-[13px] font-mono text-accent/60 max-w-md leading-[1.8] tracking-[0.03em]">
+                  Your message has been securely transmitted. Expect a response within 24–48 hours.
+                </p>
+                <button
+                  onClick={() => { setSubmitted(false); setName(""); setEmail(""); setSubject(""); setMessage(""); }}
+                  className="mt-6 px-8 py-3.5 text-[11px] tracking-[0.3em] font-black uppercase border border-accent/30 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 hover:border-accent hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)] transition-all duration-300"
+                >
+                  TRANSMIT ANOTHER
+                </button>
               </div>
-              <h2 className="text-[14px] font-black tracking-[0.25em] text-accent uppercase">
-                MESSAGE RECEIVED BY COMMAND CENTER ✓
-              </h2>
-              <p className="text-[11px] text-text-secondary max-w-sm leading-relaxed">
-                Your message has been securely transmitted. Expect a response within 24–48 hours.
-              </p>
-              <button
-                onClick={() => { setSubmitted(false); setName(""); setEmail(""); setSubject(""); setMessage(""); }}
-                className="mt-4 px-6 py-2.5 text-[10px] tracking-[0.3em] font-black uppercase border border-accent/30 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 hover:border-accent/60 transition-all duration-150"
-              >
-                SEND ANOTHER
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {/* Name */}
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Name */}
+                  <div>
+                    <label htmlFor="contact-name" className={labelClass}>// OPERATOR_NAME</label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      className={inputClass}
+                      placeholder="Your name..."
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label htmlFor="contact-email" className={labelClass}>// EMAIL_ADDRESS</label>
+                    <input
+                      id="contact-email"
+                      type="email"
+                      className={inputClass}
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                {/* Subject */}
                 <div>
-                  <label htmlFor="contact-name" className={labelClass}>// OPERATOR_NAME</label>
+                  <label htmlFor="contact-subject" className={labelClass}>// SUBJECT</label>
                   <input
-                    id="contact-name"
+                    id="contact-subject"
                     type="text"
                     className={inputClass}
-                    placeholder="Your name..."
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Brief subject line..."
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
                     required
                     disabled={loading}
                   />
                 </div>
 
-                {/* Email */}
+                {/* Message */}
                 <div>
-                  <label htmlFor="contact-email" className={labelClass}>// EMAIL_ADDRESS</label>
-                  <input
-                    id="contact-email"
-                    type="email"
+                  <label htmlFor="contact-message" className={labelClass}>// MESSAGE_PAYLOAD</label>
+                  <textarea
+                    id="contact-message"
                     className={inputClass}
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Your message..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
                     required
+                    rows={6}
                     disabled={loading}
                   />
                 </div>
-              </div>
 
-              {/* Subject */}
-              <div>
-                <label htmlFor="contact-subject" className={labelClass}>// SUBJECT</label>
-                <input
-                  id="contact-subject"
-                  type="text"
-                  className={inputClass}
-                  placeholder="Brief subject line..."
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Message */}
-              <div>
-                <label htmlFor="contact-message" className={labelClass}>// MESSAGE</label>
-                <textarea
-                  id="contact-message"
-                  className={inputClass}
-                  placeholder="Your message..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  required
-                  rows={5}
-                  disabled={loading}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full mt-2 py-4 bg-accent/10 border border-accent/30 text-accent font-black text-[11px] tracking-[0.3em] uppercase rounded-lg hover:bg-accent/20 hover:border-accent/60 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "TRANSMITTING..." : "OPEN SECURE CHANNEL →"}
-              </button>
-            </form>
-          )}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full relative group/btn flex items-center justify-center h-14 bg-accent/10 border border-accent/40 text-accent font-black text-[12px] tracking-[0.3em] uppercase rounded-lg hover:bg-accent/20 hover:border-accent/80 hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.3)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                  >
+                    <div className="absolute inset-0 w-0 group-hover/btn:w-full bg-accent/5 transition-all duration-500 ease-out" />
+                    <span className="relative z-10 flex items-center gap-3">
+                      {loading ? (
+                        <>
+                          <span className="w-3 h-3 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+                          TRANSMITTING PAYLOAD...
+                        </>
+                      ) : (
+                        <>OPEN SECURE CHANNEL <span>→</span></>
+                      )}
+                    </span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
 
         {/* Social row */}
-        <div className="bg-card border border-accent/50 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4" style={{ boxShadow: "var(--card-shadow)" }}>
-          <p className="text-[10px] font-black tracking-[0.25em] text-text-secondary uppercase">
-            OR REACH US ON
+        <div className="bg-bg-secondary/40 backdrop-blur-sm border border-accent/20 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_0_30px_rgba(var(--accent-rgb),0.03)] overflow-hidden relative">
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-accent/[0.02] to-transparent" />
+          <p className="text-[11px] font-black tracking-[0.3em] text-accent/60 uppercase z-10">
+            OR REACH US ON_
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4 z-10 w-full sm:w-auto">
             {SOCIAL_LINKS.map((s) => (
               <a
                 key={s.label}
                 href={s.href}
                 aria-label={s.label}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-accent/50 hover:border-accent/50 bg-bg-secondary/50 hover:bg-accent/10 text-text-secondary hover:text-accent transition-all duration-150 text-[10px] tracking-[0.2em] font-black uppercase"
-                style={{ minHeight: "44px" }}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-5 py-3 rounded-lg border border-accent/20 bg-bg-primary/50 text-accent/70 hover:text-accent hover:border-accent/50 hover:bg-accent/10 hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.2)] transition-all duration-300 text-[10.5px] tracking-[0.2em] font-black uppercase"
+                style={{ minHeight: "48px" }}
               >
                 {s.icon}
                 <span className="hidden sm:inline">{s.label}</span>

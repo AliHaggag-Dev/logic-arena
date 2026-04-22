@@ -71,23 +71,25 @@ export default function HowItWorksPage() {
         {/* Back nav */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-[10px] tracking-[0.3em] text-accent hover:text-accent/70 uppercase mb-10 transition-colors duration-150"
+          className="group inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.3em] text-accent/70 hover:text-accent uppercase mb-10 transition-all duration-300"
         >
-          ← BACK
+          <span className="group-hover:-translate-x-1 transition-transform">←</span> BACK
         </Link>
 
         {/* Hero */}
-        <div className="mb-14 relative">
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent/50 rounded-tl" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent/50 rounded-br" />
-          <div className="px-6 py-8">
-            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3">
-              ⌐ SYSTEM_OVERVIEW ¬
+        <div className="mb-14 relative flex items-center bg-accent/5 border border-accent/20 rounded-xl overflow-hidden shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.05)]">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)]" />
+          <div className="absolute top-0 right-0 w-48 h-full bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
+          <div className="px-10 py-12 relative z-10 w-full">
+            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-accent/40 animate-pulse" />
+              SYSTEM_OVERVIEW
             </p>
-            <h1 className="text-4xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_20px_rgba(var(--accent-rgb),0.5)] mb-4 uppercase">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] mb-4 uppercase">
               How It Works
             </h1>
-            <p className="text-text-secondary text-sm leading-relaxed max-w-2xl">
+            <div className="h-px w-full max-w-sm bg-gradient-to-r from-accent/50 to-transparent mb-5" />
+            <p className="text-[13px] font-mono text-accent/70 leading-[1.8] tracking-[0.03em] max-w-2xl drop-shadow-[0_0_1px_rgba(var(--accent-rgb),0.1)]">
               Logic Arena transforms your code into a living, fighting robot. Four steps stand between
               you and combat glory. Master each one to rise through the ranks.
             </p>
@@ -99,25 +101,22 @@ export default function HowItWorksPage() {
           {STEPS.map((step) => (
             <div
               key={step.number}
-              className="relative bg-card border border-accent/50 rounded-xl p-6 overflow-hidden group"
-              style={{ boxShadow: "var(--card-shadow)" }}
+              className="relative bg-bg-secondary/40 backdrop-blur-sm border border-accent/20 rounded-xl p-8 overflow-hidden group hover:border-accent/40 hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.1)] transition-all duration-300 shadow-[0_0_30px_rgba(var(--accent-rgb),0.03)]"
             >
-              {/* Corner accent */}
-              <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-accent/40 rounded-tl-xl" />
-              <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-accent/20 rounded-br-xl" />
-
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-accent/[0.02] to-transparent" />
+              <div className="absolute top-0 left-0 w-1 h-0 group-hover:h-full bg-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)] transition-all duration-500" />
               <div
-                className="text-[56px] font-black leading-none text-accent/10 select-none mb-3 tracking-tight group-hover:text-accent/20 transition-colors duration-300"
+                className="text-[64px] font-black leading-none text-accent/5 select-none mb-4 tracking-tighter group-hover:text-accent/15 transition-all duration-500 drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.1)]"
               >
                 {step.number}
               </div>
-              <p className="text-[9px] font-black tracking-[0.35em] text-accent/50 uppercase mb-2">
+              <p className="text-[9px] font-black tracking-[0.35em] text-accent/50 uppercase mb-3 drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.2)]">
                 {step.tag}
               </p>
-              <h2 className="text-lg font-black tracking-[0.12em] text-text-primary uppercase mb-3">
+              <h2 className="text-lg font-black tracking-[0.15em] text-accent uppercase mb-4 group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)] transition-all">
                 {step.title}
               </h2>
-              <p className="text-[12px] text-text-secondary leading-relaxed">
+              <p className="text-[12.5px] font-mono text-accent/70 leading-[1.8] tracking-[0.03em]">
                 {step.description}
               </p>
             </div>
@@ -125,49 +124,51 @@ export default function HowItWorksPage() {
         </div>
 
         {/* AliScript Overview */}
-        <div className="bg-card border border-accent/50 rounded-xl p-6 mb-10" style={{ boxShadow: "var(--card-shadow)" }}>
-          <div className="flex items-center gap-2 mb-6">
-            <span className="text-accent/70 font-mono">⌐</span>
-            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-accent">
-              AliScript Language
-            </h2>
-            <span className="text-accent/70 font-mono">¬</span>
-          </div>
-          <p className="text-[12px] text-text-secondary leading-relaxed mb-6 max-w-3xl">
-            AliScript is a purpose-built combat scripting language designed from the ground up for the Logic Arena engine.
-            It compiles to a deterministic bytecode that runs inside each robot's execution sandbox at 60 ticks per second.
-          </p>
+        <div className="bg-bg-secondary/40 backdrop-blur-sm border border-accent/20 rounded-xl p-8 lg:p-10 mb-10 shadow-[0_0_30px_rgba(var(--accent-rgb),0.03)] relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-accent/[0.02] to-transparent" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(var(--accent-rgb),0.8)]" />
+              <h2 className="text-[14px] font-black tracking-[0.25em] uppercase text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]">
+                AliScript Language
+              </h2>
+            </div>
+            <p className="text-[13px] font-mono text-accent/70 leading-[1.8] tracking-[0.03em] mb-8 max-w-3xl drop-shadow-[0_0_1px_rgba(var(--accent-rgb),0.1)]">
+              AliScript is a purpose-built combat scripting language designed from the ground up for the Logic Arena engine.
+              It compiles to a deterministic bytecode that runs inside each robot's execution sandbox at 60 ticks per second.
+            </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {ALISCRIPT_FEATURES.map((f) => (
-              <div
-                key={f.label}
-                className="flex items-start gap-3 p-3 rounded-lg border border-accent/50/60 bg-bg-primary/60"
-              >
-                <span className="text-accent shrink-0 mt-0.5">{f.icon}</span>
-                <div>
-                  <p className="text-[11px] font-black tracking-[0.1em] text-text-primary mb-1 uppercase">
-                    {f.label}
-                  </p>
-                  <p className="text-[10px] text-text-secondary leading-relaxed">{f.desc}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {ALISCRIPT_FEATURES.map((f) => (
+                <div
+                  key={f.label}
+                  className="group flex items-start gap-4 p-4 rounded-xl border border-transparent hover:border-accent/30 bg-accent/[0.02] hover:bg-accent/5 hover:shadow-[inset_0_0_15px_rgba(var(--accent-rgb),0.05)] transition-all duration-300"
+                >
+                  <span className="text-accent text-lg mt-0.5 drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.4)] group-hover:drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.8)]">{f.icon}</span>
+                  <div>
+                    <p className="text-[11px] font-black tracking-[0.1em] text-accent mb-1.5 uppercase group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)] transition-all">
+                      {f.label}
+                    </p>
+                    <p className="text-[11px] font-mono text-accent/60 leading-relaxed group-hover:text-accent/80 transition-all">{f.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/docs#aliscript"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-accent/30 bg-accent/10 text-accent text-[10px] tracking-[0.3em] font-black uppercase hover:bg-accent/20 hover:border-accent/60 transition-all duration-150"
-            >
-              READ FULL DOCS →
-            </Link>
-            <Link
-              href="/arena"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-accent/50 text-text-secondary text-[10px] tracking-[0.3em] font-black uppercase hover:border-accent/40 hover:text-accent transition-all duration-150"
-            >
-              TRY PRACTICE MODE
-            </Link>
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Link
+                href="/docs#aliscript"
+                className="group flex items-center justify-center min-w-[200px] h-12 bg-accent/10 border border-accent/40 rounded-lg text-accent text-[11px] font-black tracking-[0.3em] uppercase hover:bg-accent/20 hover:border-accent/80 hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)] transition-all duration-300"
+              >
+                READ FULL DOCS <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
+              <Link
+                href="/arena"
+                className="flex items-center justify-center min-w-[200px] h-12 bg-bg-secondary/50 border border-accent/20 rounded-lg text-accent/60 text-[11px] font-black tracking-[0.3em] uppercase hover:text-accent hover:border-accent/50 hover:bg-accent/5 transition-all duration-300"
+              >
+                TRY PRACTICE MODE
+              </Link>
+            </div>
           </div>
         </div>
       </div>
