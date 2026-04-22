@@ -1,13 +1,21 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { DesktopLayout } from "./footer/DesktopLayout";
 import { MobileLayout } from "./footer/MobileLayout";
 import { BottomBar } from "./footer/BottomBar";
 
+// Routes where the footer should be hidden entirely
+const FOOTER_SUPPRESSED_PATHS = ["/arena"];
+
 export default function Footer() {
+  const pathname = usePathname();
   const isMobile = useMediaQuery("(max-width: 768px)");
+
+  // Suppress footer on full-screen app routes (e.g. the 3D arena)
+  if (FOOTER_SUPPRESSED_PATHS.some((p) => pathname?.startsWith(p))) return null;
 
   return (
     <>

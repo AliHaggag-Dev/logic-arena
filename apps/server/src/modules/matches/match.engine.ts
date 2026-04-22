@@ -80,14 +80,18 @@ export class MatchEngine {
     const exists = this.gameLoop.getRobots().some(p => p.id === playerScript.id);
     if (!exists) {
       let initIdx = this.initialPlayers.findIndex(p => p.id === playerScript.id);
-      
+
       if (initIdx === -1) {
-        initIdx = this.initialPlayers.findIndex(p => p.id === 'bot-2');
-        if (initIdx !== -1) {
+        // Try to claim the bot-2 placeholder slot first (lobby join scenario)
+        const botSlot = this.initialPlayers.findIndex(p => p.id === 'bot-2');
+        if (botSlot !== -1) {
+          initIdx = botSlot;
           this.initialPlayers[initIdx] = playerScript;
         } else {
-          initIdx = this.initialPlayers.length;
-          this.initialPlayers.push(playerScript);
+          // Reconnect scenario: reuse the first player slot (index 0) rather than
+          // appending a brand-new entry, which would create a 3rd robot.
+          initIdx = 0;
+          this.initialPlayers[initIdx] = playerScript;
         }
       }
 
