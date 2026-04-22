@@ -1,10 +1,12 @@
 'use client';
-import React, { useMemo, MutableRefObject, useRef, useState } from 'react';
+import React, { useMemo, MutableRefObject, useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import {
   GameState, RobotState, ObstacleState,
   FiredTracer, SpeechBubbleState,
 } from '../../types';
+import * as THREE from 'three';
+import { useThree } from '@react-three/fiber';
 import { useSceneAnimation } from '../../hooks/useSceneAnimation';
 import { RobotModel, RobotErrorBoundary, FallbackRobot } from './models/RobotModel';
 import { ObstacleModel } from './models/ObstacleModel';
@@ -22,23 +24,59 @@ const toSceneZ = (y: number) => (y / 40) - 7.5;
 
 export const ArenaModels = ({
   gameStateRef,
-  obstacles  = [],
-  firedTracer  = null,
+  obstacles = [],
+  firedTracer = null,
   speechBubble = null,
-  fogEnabled   = true,
+  fogEnabled = true,
   localRobotFile,
   localRobotColor,
 }: {
-  gameStateRef:    MutableRefObject<GameState>;
-  obstacles?:      ObstacleState[];
-  firedTracer?:    FiredTracer | null;
-  speechBubble?:   SpeechBubbleState | null;
-  fogEnabled?:     boolean;
-  localRobotFile?:  string;
+  gameStateRef: MutableRefObject<GameState>;
+  obstacles?: ObstacleState[];
+  firedTracer?: FiredTracer | null;
+  speechBubble?: SpeechBubbleState | null;
+  fogEnabled?: boolean;
+  localRobotFile?: string;
   localRobotColor?: string;
 }) => {
+  const { scene } = useThree();
+  const robotMeshesRef = useRef<THREE.Group[]>([]);
+  const obstacleMeshesRef = useRef<THREE.Group[]>([]);
   const [renderTick, setRenderTick] = useState(0);
   const lastUpdateRef = useRef(0);
+
+  // BUG FIX: Clear existing static meshes on unmount to prevent 3+ robot duplication on reconnect
+  useEffect(() => {
+    return () => {
+      robotMeshesRef.current.forEach(mesh => {
+        if (mesh) {
+          scene.remove(mesh);
+          mesh.traverse((child: any) => {
+            if (child.isMesh) {
+              child.geometry?.dispose();
+              if (Array.isArray(child.material)) child.material.forEach((m: any) => m.dispose());
+              else child.material?.dispose();
+            }
+          });
+        }
+      });
+      robotMeshesRef.current = [];
+
+      obstacleMeshesRef.current.forEach(mesh => {
+        if (mesh) {
+          scene.remove(mesh);
+          mesh.traverse((child: any) => {
+            if (child.isMesh) {
+              child.geometry?.dispose();
+              if (Array.isArray(child.material)) child.material.forEach((m: any) => m.dispose());
+              else child.material?.dispose();
+            }
+          });
+        }
+      });
+      obstacleMeshesRef.current = [];
+    };
+  }, [scene]);
 
   // Throttle renders to ~20fps (50ms) — matches the server broadcast rate
   useFrame(() => {
@@ -48,7 +86,7 @@ export const ArenaModels = ({
     setRenderTick(t => t + 1);
   });
 
-  const robots      = gameStateRef.current?.robots ?? [];
+  const robots = gameStateRef.current?.robots ?? [];
   const projectiles = gameStateRef.current?.projectiles ?? [];
 
   const { hitBursts, setHitBursts, hitFlashMap, isSpotted } = useSceneAnimation(robots, firedTracer);
@@ -78,7 +116,9 @@ export const ArenaModels = ({
       <HitParticles bursts={hitBursts} setBursts={setHitBursts} />
 
       {obstacles.map(obs => (
-        <ObstacleModel key={obs.id} obstacle={obs} />
+        <group key={`obs-${obs.id}`} ref={(el) => { if (el && !obstacleMeshesRef.current.includes(el)) obstacleMeshesRef.current.push(el); }}>
+          <ObstacleModel obstacle={obs} />
+        </group>
       ))}
 
       {robots.map(robot => {
@@ -90,7 +130,7 @@ export const ArenaModels = ({
         const inFog = fogEnabled && !visibleIdSet.has(robot.id);
 
         return (
-          <group key={robot.id}>
+          <group key={`rob-${robot.id}`} ref={(el) => { if (el && !robotMeshesRef.current.includes(el)) robotMeshesRef.current.push(el); }}>
             {/* FOV cone — rendered when fog is on */}
             {fogEnabled && robot.fov && (
               <FovCone
@@ -139,7 +179,7 @@ export const ArenaModels = ({
       {firedTracer && robots.map(robot => {
         if (robot.id !== firedTracer.robotId) return null;
         const start: [number, number, number] = [toSceneX(robot.position.x), 0.375, toSceneZ(robot.position.y)];
-        const end:   [number, number, number] = [toSceneX(firedTracer.targetPosition.x), 0.375, toSceneZ(firedTracer.targetPosition.y)];
+        const end: [number, number, number] = [toSceneX(firedTracer.targetPosition.x), 0.375, toSceneZ(firedTracer.targetPosition.y)];
         return <LaserBeam key={`tracer-${robot.id}`} start={start} end={end} />;
       })}
 
