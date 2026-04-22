@@ -127,11 +127,11 @@ export default function HowItWorksPage() {
         {/* AliScript Overview */}
         <div className="bg-card border border-accent/50 rounded-xl p-6 mb-10" style={{ boxShadow: "var(--card-shadow)" }}>
           <div className="flex items-center gap-2 mb-6">
-            <span className="text-accent/40 font-mono">⌐</span>
+            <span className="text-accent/70 font-mono">⌐</span>
             <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-accent">
               AliScript Language
             </h2>
-            <span className="text-accent/40 font-mono">¬</span>
+            <span className="text-accent/70 font-mono">¬</span>
           </div>
           <p className="text-[12px] text-text-secondary leading-relaxed mb-6 max-w-3xl">
             AliScript is a purpose-built combat scripting language designed from the ground up for the Logic Arena engine.

@@ -158,7 +158,7 @@ export function RobotCard({ robotId, name, file, scale, color, isMobile }: Robot
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`${isMobile ? "text-[8px]" : "text-[10px]"} tracking-[0.2em] text-accent/40 group-hover:text-accent font-black transition-colors duration-200 uppercase`}>
+          <span className={`${isMobile ? "text-[8px]" : "text-[10px]"} tracking-[0.2em] text-accent/70 group-hover:text-accent font-black transition-colors duration-200 uppercase`}>
             INSPECT
           </span>
           <span className="text-accent/30 tracking-tight group-hover:translate-x-1 transition-transform duration-200">→</span>

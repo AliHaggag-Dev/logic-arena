@@ -69,7 +69,7 @@ function MatchRow({ m, isLast }: TableRowProps) {
           <span className="text-[8px] text-accent/30 sm:hidden">{m.type}</span>
         </div>
       </td>
-      <td className="hidden sm:table-cell px-4 py-3 sm:p-[12px_16px] text-accent/40">{m.type}</td>
+      <td className="hidden sm:table-cell px-4 py-3 sm:p-[12px_16px] text-accent/70">{m.type}</td>
       <td className="px-3 sm:px-4 py-3 sm:p-[12px_16px]">
         <span
           className="inline-block p-[3px_8px] sm:p-[3px_10px] rounded text-[9px] sm:text-[10px] font-bold tracking-[0.16em]"
@@ -136,7 +136,7 @@ export function MatchHistoryTable({ loading, history }: Props) {
                 >
                   <td className="p-[12px_16px] text-accent/45">{fmtDate(m.date)}</td>
                   <td className="p-[12px_16px] text-accent/90 font-bold truncate max-w-[200px]">{m.opponent}</td>
-                  <td className="p-[12px_16px] text-accent/40">{m.type}</td>
+                  <td className="p-[12px_16px] text-accent/70">{m.type}</td>
                   <td className="p-[12px_16px]">
                     <span
                       className="inline-block p-[3px_10px] rounded text-[10px] font-bold tracking-[0.16em]"
@@ -174,47 +174,47 @@ export function MatchHistoryTable({ loading, history }: Props) {
   const MobileList = (
     <div className="flex flex-col gap-3">
       {loading ? (
-         Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-[120px] rounded-xl border border-accent/10 bg-accent/5 animate-[shimmer_1.5s_infinite]" />
-         ))
+        Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-[120px] rounded-xl border border-accent/10 bg-accent/5 animate-[shimmer_1.5s_infinite]" />
+        ))
       ) : history.length > 0 ? (
         history.map((m) => {
           const isWin = m.result === "WIN";
           return (
             <div key={m.id} className="flex flex-col p-4 border border-accent/20 bg-card rounded-xl gap-3 shadow-md relative">
               <div className="flex justify-between items-start">
-                 <div className="flex flex-col gap-1">
-                    <span className="font-bold text-base text-accent">{m.opponent}</span>
-                    <span className="text-[10px] text-accent/40">{fmtDate(m.date)} • {m.type}</span>
-                    <span className="text-[10px] text-accent/40">Duration: {fmtDuration(m.duration)}</span>
-                 </div>
-                 <span
-                    className="inline-block p-[4px_10px] rounded text-[10px] font-bold tracking-[0.16em]"
-                    style={{
-                      backgroundColor: isWin ? "rgba(var(--color-emerald-500),0.12)" : "rgba(var(--color-red-500),0.12)",
-                      border: isWin ? "1px solid rgba(var(--color-emerald-500),0.35)" : "1px solid rgba(var(--color-red-500),0.35)",
-                      color: isWin ? "#4ade80" : "#f87171",
-                      textShadow: isWin ? "0 0 8px rgba(var(--color-emerald-500),0.4)" : "0 0 8px rgba(var(--color-red-500),0.4)",
-                    }}
-                  >
-                    {isWin ? "WIN" : "LOSS"}
-                  </span>
+                <div className="flex flex-col gap-1">
+                  <span className="font-bold text-base text-accent">{m.opponent}</span>
+                  <span className="text-[10px] text-accent/70">{fmtDate(m.date)} • {m.type}</span>
+                  <span className="text-[10px] text-accent/70">Duration: {fmtDuration(m.duration)}</span>
+                </div>
+                <span
+                  className="inline-block p-[4px_10px] rounded text-[10px] font-bold tracking-[0.16em]"
+                  style={{
+                    backgroundColor: isWin ? "rgba(var(--color-emerald-500),0.12)" : "rgba(var(--color-red-500),0.12)",
+                    border: isWin ? "1px solid rgba(var(--color-emerald-500),0.35)" : "1px solid rgba(var(--color-red-500),0.35)",
+                    color: isWin ? "#4ade80" : "#f87171",
+                    textShadow: isWin ? "0 0 8px rgba(var(--color-emerald-500),0.4)" : "0 0 8px rgba(var(--color-red-500),0.4)",
+                  }}
+                >
+                  {isWin ? "WIN" : "LOSS"}
+                </span>
               </div>
               <div className="w-full mt-2 border-t border-accent/10 pt-3">
-                 <button
-                   onClick={() => router.push(`/replay/${m.id}`)}
-                   className="w-full h-[44px] flex items-center justify-center bg-accent/10 border border-accent/40 text-accent font-bold tracking-[0.2em] text-[10px] rounded-lg transition-transform active:scale-95 shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase"
-                 >
-                   ▶ WATCH REPLAY
-                 </button>
+                <button
+                  onClick={() => router.push(`/replay/${m.id}`)}
+                  className="w-full h-[44px] flex items-center justify-center bg-accent/10 border border-accent/40 text-accent font-bold tracking-[0.2em] text-[10px] rounded-lg transition-transform active:scale-95 shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase"
+                >
+                  ▶ WATCH REPLAY
+                </button>
               </div>
             </div>
           )
         })
       ) : (
-         <div className="p-8 text-center border border-accent/10 rounded-xl bg-accent/5 text-[10px] text-accent/30 tracking-widest uppercase">
-           No match records.
-         </div>
+        <div className="p-8 text-center border border-accent/10 rounded-xl bg-accent/5 text-[10px] text-accent/30 tracking-widest uppercase">
+          No match records.
+        </div>
       )}
     </div>
   );

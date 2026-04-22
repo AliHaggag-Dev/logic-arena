@@ -143,7 +143,7 @@ export default function RobotDetailPage() {
 
             <button
               onClick={() => router.push("/garage")}
-              className={`${isMobile ? "text-[8px] px-3 py-1.5" : "text-[10px] px-4 py-2"} tracking-[0.2em] text-accent/40 hover:text-accent/80 transition-colors duration-200 border border-accent/10 hover:border-accent/30 rounded-lg bg-accent/5 hover:bg-accent/10 uppercase font-bold font-mono`}
+              className={`${isMobile ? "text-[8px] px-3 py-1.5" : "text-[10px] px-4 py-2"} tracking-[0.2em] text-accent/70 hover:text-accent/80 transition-colors duration-200 border border-accent/10 hover:border-accent/30 rounded-lg bg-accent/5 hover:bg-accent/10 uppercase font-bold font-mono`}
             >
               ← BACK
             </button>
@@ -169,15 +169,15 @@ export default function RobotDetailPage() {
                 </p>
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] tracking-[0.12em] font-mono">
-                    <span className="text-accent/40 uppercase font-bold">Designation</span>
+                    <span className="text-accent/70 uppercase font-bold">Designation</span>
                     <span className="text-accent/90 font-black">{robot.name}</span>
                   </div>
                   <div className="flex justify-between text-[10px] tracking-[0.12em] font-mono">
-                    <span className="text-accent/40 uppercase font-bold">Model_ID</span>
+                    <span className="text-accent/70 uppercase font-bold">Model_ID</span>
                     <span className="text-accent/90 font-black">{robotId.toUpperCase()}</span>
                   </div>
                   <div className="flex justify-between text-[10px] tracking-[0.12em] font-mono">
-                    <span className="text-accent/40 uppercase font-bold">Hue_Signature</span>
+                    <span className="text-accent/70 uppercase font-bold">Hue_Signature</span>
                     <span className="font-black drop-shadow-[0_0_8px_currentColor]" style={{ color: color !== "DEFAULT" ? color : "var(--accent)" }}>
                       {color.toUpperCase()}
                     </span>

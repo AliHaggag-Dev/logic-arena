@@ -38,11 +38,10 @@ export function ReplayControls({
             <button
               key={s}
               onClick={() => onSpeedChange(s)}
-              className={`p-[6px_12px] rounded font-mono text-[10px] font-bold tracking-[0.1em] cursor-pointer transition-all duration-200 border ${
-                speed === s
+              className={`p-[6px_12px] rounded font-mono text-[10px] font-bold tracking-[0.1em] cursor-pointer transition-all duration-200 border ${speed === s
                   ? "text-accent border-accent/60 bg-accent/[0.12]"
                   : "text-accent/50 border-accent/20 bg-card/60 hover:text-accent hover:border-accent/45"
-              }`}
+                }`}
             >
               {s}x
             </button>
@@ -98,11 +97,10 @@ export function ReplayControls({
             <button
               key={s}
               onClick={() => onSpeedChange(s)}
-              className={`h-[36px] px-3 rounded-md font-mono text-[10px] font-bold tracking-[0.1em] transition-transform active:scale-95 border ${
-                speed === s
+              className={`h-[36px] px-3 rounded-md font-mono text-[10px] font-bold tracking-[0.1em] transition-transform active:scale-95 border ${speed === s
                   ? "text-accent border-accent/60 bg-accent/20 shadow-[0_0_8px_rgba(var(--accent-rgb),0.3)]"
-                  : "text-accent/40 border-transparent bg-transparent"
-              }`}
+                  : "text-accent/70 border-transparent bg-transparent"
+                }`}
             >
               {s}x
             </button>
@@ -164,7 +162,7 @@ export function ReplayControls({
           box-shadow: 0 0 10px rgba(var(--accent-rgb),0.7); border: 2px solid rgba(0,0,0,0.8); 
         }
       `}</style>
-      
+
       {isMobile ? MobileControls : DesktopControls}
     </>
   );

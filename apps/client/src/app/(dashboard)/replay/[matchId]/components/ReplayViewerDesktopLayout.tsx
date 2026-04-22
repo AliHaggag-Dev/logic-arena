@@ -26,12 +26,12 @@ export function ReplayViewerDesktopLayout({
         <div className="flex flex-col gap-4">
           <button
             onClick={() => router.back()}
-            className="w-max bg-transparent border border-accent/15 rounded px-3 py-1 hover:border-accent/40 text-accent/40 cursor-pointer text-[10px] tracking-[0.25em] font-mono mb-2 flex items-center gap-1.5 transition-all duration-200 uppercase"
+            className="w-max bg-transparent border border-accent/15 rounded px-3 py-1 hover:border-accent/40 text-accent/70 cursor-pointer text-[10px] tracking-[0.25em] font-mono mb-2 flex items-center gap-1.5 transition-all duration-200 uppercase"
           >
             ← BACK TO HISTORY
           </button>
           <div>
-            <p className="text-[9px] tracking-[0.28em] text-accent/40 mb-2 uppercase">
+            <p className="text-[9px] tracking-[0.28em] text-accent/70 mb-2 uppercase">
               // MATCH_REPLAY
             </p>
             <h1
@@ -46,7 +46,7 @@ export function ReplayViewerDesktopLayout({
           </div>
         </div>
         {replayData && (
-          <p className="mt-2 text-[10px] text-accent/40 tracking-[0.14em] flex items-center gap-2 flex-wrap uppercase">
+          <p className="mt-2 text-[10px] text-accent/70 tracking-[0.14em] flex items-center gap-2 flex-wrap uppercase">
             <span className="shrink-0">ID: {replayData.id.slice(0, 8)}…</span>
             <span>·</span>
             <span className="shrink-0">
@@ -98,11 +98,11 @@ export function ReplayViewerDesktopLayout({
             className="w-full bg-black/35 border border-accent/[0.07] rounded-lg p-[12px_18px] flex gap-5 flex-wrap"
             style={{ maxWidth: CANVAS_W }}
           >
-            <div className="flex items-center gap-2 text-[10px] tracking-[0.14em] text-accent/40">
+            <div className="flex items-center gap-2 text-[10px] tracking-[0.14em] text-accent/70">
               <div className="w-2.5 h-2.5 rounded-full bg-accent/20 border-[1.5px] border-accent" />
               ROBOT
             </div>
-            <div className="flex items-center gap-2 text-[10px] tracking-[0.14em] text-accent/40">
+            <div className="flex items-center gap-2 text-[10px] tracking-[0.14em] text-accent/70">
               <div className="w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_6px_var(--accent)]" />
               PROJECTILE
             </div>

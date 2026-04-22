@@ -21,7 +21,7 @@ export default function RegisterPage() {
     type: "error" | "success" | null;
   }>({ message: "", errors: [], type: null });
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const isMobile = useMediaQuery("(max-width: 768px)");
   const router = useRouter();
 
@@ -68,7 +68,7 @@ export default function RegisterPage() {
           <input
             type="text"
             id="username"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-20 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
+            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
             placeholder="SPECIFY_ALIAS..."
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -84,7 +84,7 @@ export default function RegisterPage() {
           <input
             type="email"
             id="email"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-20 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
+            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
             placeholder="OPERATOR@NETWORK.LOCAL"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -100,7 +100,7 @@ export default function RegisterPage() {
           <input
             type="password"
             id="password"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-20 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
+            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
             placeholder="••••••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -108,12 +108,12 @@ export default function RegisterPage() {
             disabled={isLoading}
           />
           {password.length > 0 && (
-            <PasswordStrengthIndicator 
-              score={score} 
-              checks={checks} 
-              strengthColor={strengthColor} 
-              strengthLabel={strengthLabel} 
-              isMobile={isMobile} 
+            <PasswordStrengthIndicator
+              score={score}
+              checks={checks}
+              strengthColor={strengthColor}
+              strengthLabel={strengthLabel}
+              isMobile={isMobile}
             />
           )}
         </div>

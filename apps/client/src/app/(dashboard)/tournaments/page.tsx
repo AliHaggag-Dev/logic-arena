@@ -90,7 +90,7 @@ export default function TournamentsPage() {
               </p>
               <h1 className="m-0 text-[clamp(28px,5vw,48px)] font-black tracking-[0.22em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.9)] leading-none uppercase">
                 TOURNAMENT
-                <span className={`block ${isMobile ? "text-[0.45em]" : "text-[0.38em]"} text-accent/40 tracking-[0.35em] mt-1.5 drop-shadow-none`}>
+                <span className={`block ${isMobile ? "text-[0.45em]" : "text-[0.38em]"} text-accent/70 tracking-[0.35em] mt-1.5 drop-shadow-none`}>
                   _OPERATIONS
                 </span>
               </h1>
@@ -103,8 +103,8 @@ export default function TournamentsPage() {
                 onMouseLeave={() => setHoveredBtn(null)}
                 onClick={() => setShowCreate(true)}
                 className={`group relative overflow-hidden px-7 py-3 rounded-lg text-[10px] font-black tracking-[0.28em] font-mono cursor-pointer transition-all duration-200 border ${isMobile ? "w-full" : ""} ${hoveredBtn === "create"
-                    ? "bg-accent/20 border-accent/70 text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.6)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.15)]"
-                    : "bg-accent/10 border-accent/30 text-accent/70"
+                  ? "bg-accent/20 border-accent/70 text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.6)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.15)]"
+                  : "bg-accent/10 border-accent/30 text-accent/70"
                   }`}
               >
                 <span className="relative z-10">[+] DEPLOY_BRACKET</span>
@@ -132,7 +132,7 @@ export default function TournamentsPage() {
             ].map(({ label, value }) => (
               <div
                 key={label}
-                className="px-3 py-1.5 border border-accent/10 rounded-lg bg-accent/5 text-[9px] tracking-[0.18em] text-accent/40 flex gap-2 items-center backdrop-blur-sm"
+                className="px-3 py-1.5 border border-accent/10 rounded-lg bg-accent/5 text-[9px] tracking-[0.18em] text-accent/70 flex gap-2 items-center backdrop-blur-sm"
               >
                 <span className="text-accent/20 font-bold">{label}:</span>
                 <span className="text-accent font-black">{value}</span>

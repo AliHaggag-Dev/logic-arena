@@ -199,15 +199,13 @@ const DashboardPage = () => {
 
             {/* Status Feedback (Mobile Optimized) */}
             {status.message && (
-                <div className={`p-4 rounded-xl border text-[10px] font-bold tracking-wider shadow-sm animate-in fade-in slide-in-from-top-2 duration-200 ${
-                    status.type === 'error' ? 'bg-red-950/20 border-red-900/40 text-red-400' :
-                    status.type === 'success' ? 'bg-green-950/20 border-green-900/40 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
-                    'bg-accent/10 border-accent/20 text-accent'
-                }`}>
+                <div className={`p-4 rounded-xl border text-[10px] font-bold tracking-wider shadow-sm animate-in fade-in slide-in-from-top-2 duration-200 ${status.type === 'error' ? 'bg-red-950/20 border-red-900/40 text-red-400' :
+                        status.type === 'success' ? 'bg-green-950/20 border-green-900/40 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.1)]' :
+                            'bg-accent/10 border-accent/20 text-accent'
+                    }`}>
                     <div className="flex items-center gap-2">
-                        <div className={`w-1 h-1 rounded-full animate-pulse ${
-                            status.type === 'error' ? 'bg-red-500' : status.type === 'success' ? 'bg-green-500' : 'bg-accent'
-                        }`} />
+                        <div className={`w-1 h-1 rounded-full animate-pulse ${status.type === 'error' ? 'bg-red-500' : status.type === 'success' ? 'bg-green-500' : 'bg-accent'
+                            }`} />
                         {status.message}
                     </div>
                 </div>
@@ -221,7 +219,7 @@ const DashboardPage = () => {
                     <div className="flex flex-col items-center justify-center p-12 bg-bg-secondary/20 border-2 border-dashed border-accent/10 rounded-2xl text-center gap-4">
                         <div className="relative">
                             <Box size={48} className="text-accent/20" />
-                            <Terminal size={20} className="text-accent/40 absolute -bottom-1 -right-1" />
+                            <Terminal size={20} className="text-accent/70 absolute -bottom-1 -right-1" />
                         </div>
                         <div className="flex flex-col gap-1">
                             <h3 className="text-accent font-bold tracking-widest text-xs uppercase">NO SCRIPTS DETECTED</h3>

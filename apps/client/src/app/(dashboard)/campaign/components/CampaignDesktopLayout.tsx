@@ -25,7 +25,7 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router }:
         {/* Progress bar */}
         {!loading && (
           <div className="mt-5 flex items-center gap-4">
-            <span className="text-[10px] tracking-[0.2em] text-accent/40">PROGRESS</span>
+            <span className="text-[10px] tracking-[0.2em] text-accent/70">PROGRESS</span>
             <div className="flex-1 h-[3px] bg-accent/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-accent rounded-full transition-all duration-700"
@@ -97,7 +97,7 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router }:
                     }
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] tracking-[0.3em] text-accent/40">
+                      <span className="text-[10px] tracking-[0.3em] text-accent/70">
                         LEVEL {String(level.id).padStart(2, "0")}
                       </span>
                       <span className="text-[14px]">
@@ -142,7 +142,7 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router }:
         <div className="mt-6 text-center p-8 border border-accent/20 rounded-xl bg-accent/5">
           <div className="text-3xl mb-3">🏆</div>
           <p className="text-accent font-black tracking-[0.2em] text-[13px]">CAMPAIGN COMPLETE</p>
-          <p className="text-accent/40 text-[10px] mt-1 tracking-[0.1em]">All enemy units eliminated. You are the Overlord.</p>
+          <p className="text-accent/70 text-[10px] mt-1 tracking-[0.1em]">All enemy units eliminated. You are the Overlord.</p>
         </div>
       )}
     </div>

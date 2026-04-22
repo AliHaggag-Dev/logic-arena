@@ -22,15 +22,15 @@ export default function ForgotPasswordPage() {
 
     try {
       await apiClient.post("/auth/forgot-password", { email });
-      setStatus({ 
-        message: "[SYS] RESET_LINK_TRANSMITTED. CHECK COMMS.", 
-        type: "success" 
+      setStatus({
+        message: "[SYS] RESET_LINK_TRANSMITTED. CHECK COMMS.",
+        type: "success"
       });
       setTimeout(() => router.push(`/reset-password?email=${encodeURIComponent(email)}`), 1500);
     } catch (err: any) {
-      setStatus({ 
-        message: `[ERR] ${err.response?.data?.message || err.message}`, 
-        type: "error" 
+      setStatus({
+        message: `[ERR] ${err.response?.data?.message || err.message}`,
+        type: "error"
       });
       setIsLoading(false);
     }
@@ -48,24 +48,24 @@ export default function ForgotPasswordPage() {
           to { opacity: 1; transform: scale(1); }
         }
       `}</style>
-      
-      <div className="min-h-screen flex items-center justify-center bg-bg-primary font-mono selection:bg-accent/30 relative overflow-hidden p-4 sm:p-6">
+
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary font-mono selection:bg-accent/30 relative overflow-hidden p-4 pt-16 sm:p-6 sm:pt-20">
         {/* Background Grid Illusion */}
-        <div 
+        <div
           className="absolute inset-0 z-0 pointer-events-none"
-          style={{ 
+          style={{
             backgroundImage: 'linear-gradient(rgba(var(--accent-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.06) 1px, transparent 1px)',
-            backgroundSize: '40px 40px' 
+            backgroundSize: '40px 40px'
           }}
         />
-        
+
         {/* Moving Scanline */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden mix-blend-overlay opacity-20">
           <div className="w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent animate-[scanline_8s_linear_infinite]" />
         </div>
 
         <div className={`w-full max-w-[420px] bg-card/60 backdrop-blur-xl border border-accent/20 rounded-xl ${isMobile ? "p-6" : "p-8"} relative z-20 shadow-[0_0_50px_rgba(0,0,0,0.8),inset_0_0_20px_rgba(var(--accent-rgb),0.05)] animate-[fadeInScale_0.4s_ease-out] ${isMobile ? "shadow-[inset_3px_0_0_0_var(--color-red-500)]" : ""}`}>
-          
+
           {/* Decorative Corner Accents */}
           {!isMobile && (
             <>
@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
               <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-red-500/40 rounded-br-xl" />
             </>
           )}
-          
+
           <div className="absolute top-3 right-4 text-[9px] text-red-500/30 tracking-[0.2em] pointer-events-none">RECOVERY_NODE_V1.0</div>
 
           <div className="mb-10 text-center flex flex-col items-center">
@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
               <input
                 type="email"
                 id="email"
-                className={`w-full bg-bg-primary/80 border border-red-500/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-red-500 outline-none focus:border-red-500/60 focus:bg-red-500/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-20 focus:shadow-[0_0_20px_rgba(var(--color-red-500),0.1)]`}
+                className={`w-full bg-bg-primary/80 border border-red-500/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-red-500 outline-none focus:border-red-500/60 focus:bg-red-500/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--color-red-500),0.1)]`}
                 placeholder="OPERATOR@NETWORK.LOCAL"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -108,13 +108,12 @@ export default function ForgotPasswordPage() {
             {/* In-UI Status Terminal */}
             <div className="min-h-[48px] flex items-start justify-center">
               {status.message && (
-                <div className={`w-full p-3.5 rounded-lg border text-[10px] tracking-[0.1em] text-center font-bold break-words transition-all ${
-                  status.type === "success"
-                    ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-500 shadow-[0_0_15px_rgba(var(--color-emerald-500),0.2)]"
-                    : status.type === "error"
+                <div className={`w-full p-3.5 rounded-lg border text-[10px] tracking-[0.1em] text-center font-bold break-words transition-all ${status.type === "success"
+                  ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-500 shadow-[0_0_15px_rgba(var(--color-emerald-500),0.2)]"
+                  : status.type === "error"
                     ? "bg-red-500/10 border-red-500/40 text-red-500 animate-pulse"
                     : "bg-accent/10 border-accent/40 text-accent animate-pulse"
-                }`}>
+                  }`}>
                   {status.message}
                 </div>
               )}

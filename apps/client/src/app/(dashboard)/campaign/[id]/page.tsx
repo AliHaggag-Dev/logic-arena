@@ -40,7 +40,7 @@ export default function CampaignLevelPage() {
       });
 
       if (fightRes.data.won) {
-        try { await apiClient.post(`/campaign/levels/${levelId}/complete`); } catch {}
+        try { await apiClient.post(`/campaign/levels/${levelId}/complete`); } catch { }
         setReward(level?.rewardRank ?? 0);
         setModal("victory");
       } else {
@@ -56,7 +56,7 @@ export default function CampaignLevelPage() {
   if (fetching || !level) {
     return (
       <div className="min-h-screen bg-bg-primary font-mono flex items-center justify-center">
-        <div className="text-accent/40 text-[11px] tracking-[0.3em] animate-pulse">
+        <div className="text-accent/70 text-[11px] tracking-[0.3em] animate-pulse">
           LOADING LEVEL DATA...
         </div>
       </div>
@@ -76,22 +76,22 @@ export default function CampaignLevelPage() {
         />
 
         {isMobile ? (
-          <LevelMobileLayout 
-            level={level} 
-            script={script} 
-            setScript={setScript} 
-            modal={modal} 
-            handleFight={handleFight} 
-            router={router} 
+          <LevelMobileLayout
+            level={level}
+            script={script}
+            setScript={setScript}
+            modal={modal}
+            handleFight={handleFight}
+            router={router}
           />
         ) : (
-          <LevelDesktopLayout 
-            level={level} 
-            script={script} 
-            setScript={setScript} 
-            modal={modal} 
-            handleFight={handleFight} 
-            router={router} 
+          <LevelDesktopLayout
+            level={level}
+            script={script}
+            setScript={setScript}
+            modal={modal}
+            handleFight={handleFight}
+            router={router}
           />
         )}
 

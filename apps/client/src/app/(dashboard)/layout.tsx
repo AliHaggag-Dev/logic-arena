@@ -16,14 +16,14 @@ const MobileHeader = dynamic(() => import("../../components/MobileHeader").then(
 const SIDEBAR_WIDTH = 220;
 
 const navItems = [
-  { href: "/dashboard",   label: "COMMAND_CENTER",    icon: "⬡" },
-  { href: "/leaderboard", label: "NEURAL_RANKINGS",   icon: "◈" },
-  { href: "/lobby",       label: "BATTLE_LOBBY",      icon: "▶" },
-  { href: "/campaign",    label: "CAMPAIGN_MODE",     icon: "⚡" },
-  { href: "/profile",     label: "OPERATOR_PROFILE",  icon: "◉" },
-  { href: "/garage",      label: "ROBOT_GARAGE",      icon: "⚙" },
-  { href: "/docs",        label: "ALISCRIPT_DOCS",    icon: "◈" },
-  { href: "/tournaments", label: "TOURNAMENT_HUB",    icon: "⚔" },
+  { href: "/dashboard", label: "COMMAND_CENTER", icon: "⬡" },
+  { href: "/leaderboard", label: "NEURAL_RANKINGS", icon: "◈" },
+  { href: "/lobby", label: "BATTLE_LOBBY", icon: "▶" },
+  { href: "/campaign", label: "CAMPAIGN_MODE", icon: "⚡" },
+  { href: "/profile", label: "OPERATOR_PROFILE", icon: "◉" },
+  { href: "/garage", label: "ROBOT_GARAGE", icon: "⚙" },
+  { href: "/docs", label: "ALISCRIPT_DOCS", icon: "◈" },
+  { href: "/tournaments", label: "TOURNAMENT_HUB", icon: "⚔" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -75,84 +75,99 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* ── SIDEBAR ── */}
         {!isMobile && (
-        <aside
-          className="flex flex-col bg-bg-primary/95 border-r border-accent/[0.12] shadow-[4px_0_30px_rgba(var(--accent-rgb),0.04)] sticky top-0 h-screen overflow-y-auto z-50 shrink-0 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent"
-          style={{ width: SIDEBAR_WIDTH }}
-        >
-          {/* Scanline overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none z-0"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(var(--accent-rgb),0.015) 3px, rgba(var(--accent-rgb),0.015) 4px)",
-            }}
-          />
-
-          {/* Top accent line */}
-          <div className="h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent opacity-60 shrink-0" />
-
-          {/* ── LOGO ── */}
-          <div className="p-[24px_18px_20px] border-b border-accent/[0.08] relative z-10">
-            <div className="text-[9px] tracking-[0.25em] text-accent/40 font-bold mb-1.5 uppercase">
-              // SYS_v1.8.0
-            </div>
-            <h1 className="m-0 text-[17px] font-black tracking-[0.2em] text-accent leading-[1.2] [text-shadow:0_0_8px_rgba(var(--accent-rgb),0.8),0_0_25px_rgba(var(--accent-rgb),0.4),0_0_50px_rgba(var(--accent-rgb),0.15)]">
-              LOGIC ARENA
-            </h1>
-            <div className="mt-2 h-[1px] bg-gradient-to-r from-accent to-transparent opacity-30" />
-          </div>
-
-          {/* ── NAV LINKS ── */}
-          <nav className="flex-1 p-[16px_10px] flex flex-col gap-1 relative z-10">
-            <div className="text-[9px] tracking-[0.22em] text-accent/25 font-bold px-1 pb-2 uppercase">
-              navigation
-            </div>
-            {navItems.map((item) => (
-              <NavLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
-            ))}
-            <div className="my-2 h-px bg-accent/[0.06]" />
-            <NavLink
-              href="/settings"
-              label="OPERATOR_SETTINGS"
-              iconNode={<Settings size={13} strokeWidth={2.5} />}
+          <aside
+            className="flex flex-col bg-bg-primary/95 border-r border-accent/[0.12] shadow-[4px_0_30px_rgba(var(--accent-rgb),0.04)] sticky top-0 h-screen overflow-y-auto z-50 shrink-0 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent"
+            style={{ width: SIDEBAR_WIDTH }}
+          >
+            {/* Scanline overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none z-0"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(var(--accent-rgb),0.015) 3px, rgba(var(--accent-rgb),0.015) 4px)",
+              }}
             />
-          </nav>
 
-          {/* ── USER + LOGOUT ── */}
-          <div className="p-[14px_12px] border-t border-accent/[0.08] relative z-10">
-            <div className="flex items-center gap-2 mb-2.5 p-[8px_10px] bg-accent/[0.04] rounded-md border border-accent/10 hover:border-accent/30 transition-colors group cursor-default">
-              <span className="w-6 h-6 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center text-[10px] text-accent shrink-0 shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)] group-hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.4)] transition-all duration-300">
-                ◉
-              </span>
-              <div className="overflow-hidden">
-                <div className="text-[9px] text-accent/35 tracking-[0.18em] mb-[2px]">OPERATOR</div>
-                <div className="text-[10px] text-accent/80 font-bold tracking-[0.1em] overflow-hidden text-ellipsis whitespace-nowrap">
-                  {username ?? "UNKNOWN"}
-                </div>
+            {/* Top accent line */}
+            <div className="h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent opacity-60 shrink-0" />
+
+            {/* ── SYSTEM STATUS (Replaces Logo for more Nav room) ── */}
+            <div className="p-[20px_14px_8px] relative z-10 w-full">
+              <div className="flex items-center gap-2.5 px-3 py-2 bg-emerald-500/5 border border-emerald-500/20 rounded-md shadow-[inset_0_0_10px_rgba(16,185,129,0.05)] text-[9px] tracking-[0.2em] font-bold text-emerald-500 uppercase overflow-hidden">
+                <span className="w-1.5 h-1.5 shrink-0 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                <span className="truncate">UPLINK_SECURE</span>
               </div>
             </div>
 
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-red-500/5 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/60 rounded-md text-red-500/50 hover:text-red-300 text-[10px] font-bold tracking-[0.2em] font-mono cursor-pointer transition-all duration-200 group"
-            >
-              <span className="text-[11px] transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">⏻</span>
-              <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">DISCONNECT</span>
-            </button>
+            {/* ── NAV LINKS ── */}
+            <nav className="flex-1 p-[16px_10px] flex flex-col gap-1 relative z-10">
+              <div className="text-[9px] tracking-[0.22em] text-accent/25 font-bold px-1 pb-2 uppercase">
+                navigation
+              </div>
+              {navItems.map((item) => (
+                <NavLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
+              ))}
+              <div className="my-2 h-px bg-accent/[0.06]" />
+              <NavLink
+                href="/settings"
+                label="OPERATOR_SETTINGS"
+                iconNode={<Settings size={13} strokeWidth={2.5} />}
+              />
+            </nav>
 
-            <div className="mt-3 text-[8px] text-accent/15 tracking-[0.15em] text-center uppercase">
-              LOGIC-ARENA © 2026
+            {/* ── USER + LOGOUT ── */}
+            <div className="p-[14px_12px] border-t border-accent/[0.08] relative z-10">
+              <div className="flex items-center gap-2 mb-2.5 p-[8px_10px] bg-accent/[0.04] rounded-md border border-accent/10 hover:border-accent/30 transition-colors group cursor-default">
+                <span className="w-6 h-6 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center text-[10px] text-accent shrink-0 shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)] group-hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.4)] transition-all duration-300">
+                  ◉
+                </span>
+                <div className="overflow-hidden">
+                  <div className="text-[9px] text-accent/35 tracking-[0.18em] mb-[2px]">OPERATOR</div>
+                  <div className="text-[10px] text-accent/80 font-bold tracking-[0.1em] overflow-hidden text-ellipsis whitespace-nowrap">
+                    {username ?? "UNKNOWN"}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-red-500/5 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/60 rounded-md text-red-500/50 hover:text-red-300 text-[10px] font-bold tracking-[0.2em] font-mono cursor-pointer transition-all duration-200 group"
+              >
+                <span className="text-[11px] transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">⏻</span>
+                <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">DISCONNECT</span>
+              </button>
+
+              <div className="mt-3 text-[8px] text-accent/15 tracking-[0.15em] text-center uppercase">
+                LOGIC-ARENA © 2026
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
         )}
 
         {/* ── MAIN CONTENT ── */}
-        <main className={`flex-1 overflow-x-hidden overflow-y-auto bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent ${isMobile ? "pt-12 pb-[calc(80px+env(safe-area-inset-bottom))] max-w-[100vw]" : ""}`}>
+        <main className={`flex-1 flex flex-col overflow-x-hidden overflow-y-auto bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent ${isMobile ? "pt-12 pb-[calc(80px+env(safe-area-inset-bottom))] max-w-[100vw]" : ""}`}>
+          
+          {/* ── DESKTOP TOP HEADER ── */}
           {!isMobile && (
-            <div className="fixed top-4 right-5 z-50">
-              <ThemeSwitcher variant="minimal" />
-            </div>
+            <header className="sticky top-0 z-40 w-full bg-bg-primary/90 backdrop-blur-xl border-b border-accent/[0.08] p-[16px_28px] flex items-center justify-between shrink-0 shadow-[0_10px_40px_rgba(var(--accent-rgb),0.05)]">
+              <div>
+                <div className="text-[9px] tracking-[0.25em] text-accent/60 font-bold mb-1.5 uppercase">
+                  // SYS_v2.2.0
+                </div>
+                <h1 className="m-0 text-[18px] font-black tracking-[0.25em] text-accent leading-none [text-shadow:0_0_8px_rgba(var(--accent-rgb),0.8),0_0_15px_rgba(var(--accent-rgb),0.3)]">
+                  LOGIC ARENA
+                </h1>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 px-3 py-1.5 border border-accent/20 bg-accent/5 rounded-md text-[9px] tracking-[0.2em] font-bold text-accent/60 shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.05)] uppercase max-w-[200px]">
+                  <span className="shrink-0 text-accent/40">NODE:</span>
+                  <span className="text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.6)] truncate">
+                    {username || "UNKNOWN"}
+                  </span>
+                </div>
+                <ThemeSwitcher variant="minimal" />
+              </div>
+            </header>
           )}
           {children}
         </main>

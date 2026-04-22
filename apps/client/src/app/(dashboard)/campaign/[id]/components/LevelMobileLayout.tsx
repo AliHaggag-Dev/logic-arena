@@ -19,13 +19,13 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
       <div className="flex flex-col gap-3 pb-4 mb-4 border-b border-accent/20 shrink-0">
         <button
           onClick={() => router.push("/campaign")}
-          className="w-max text-[9px] tracking-[0.25em] text-accent/40 hover:text-accent border border-accent/15 rounded px-2.5 py-1 uppercase"
+          className="w-max text-[9px] tracking-[0.25em] text-accent/70 hover:text-accent border border-accent/15 rounded px-2.5 py-1 uppercase"
         >
           ← BACK TO MAP
         </button>
         <div className="flex justify-between items-center w-full">
           <div className="flex flex-col">
-            <span className="text-[9px] text-accent/40 tracking-[0.3em] font-bold block mb-0.5 uppercase">
+            <span className="text-[9px] text-accent/70 tracking-[0.3em] font-bold block mb-0.5 uppercase">
               LEVEL {String(level.id).padStart(2, "0")}
             </span>
             <h1 className="m-0 text-xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-[1.1] uppercase max-w-[200px]">
@@ -53,12 +53,12 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
         <div className="border border-red-500/20 rounded-xl p-4 bg-red-500/[0.03]">
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center text-[10px]">
-              <span className="text-accent/40 tracking-[0.15em]">INTEL</span>
+              <span className="text-accent/70 tracking-[0.15em]">INTEL</span>
               <span className="font-bold text-red-500/80 tracking-[0.12em]">{level.name}</span>
             </div>
             <div className="h-[1px] bg-red-500/10" />
             <div className="flex justify-between items-center text-[10px]">
-              <span className="text-accent/40 tracking-[0.15em]">REWARD</span>
+              <span className="text-accent/70 tracking-[0.15em]">REWARD</span>
               <span className="font-bold text-accent/70 tracking-[0.12em]">+{level.rewardRank} PTS</span>
             </div>
           </div>
@@ -84,12 +84,11 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
         <button
           onClick={handleFight}
           disabled={!script.trim() || modal === "loading"}
-          className={`w-full h-[44px] shrink-0 rounded-xl text-[10px] font-black tracking-[0.2em] font-mono transition-transform duration-150 border active:scale-95 ${
-             modal === "loading"
-            ? "bg-accent/5 border-accent/20 text-accent/40"
-            : !script.trim()
-              ? "bg-accent/5 border-accent/15 text-accent/25"
-              : "bg-accent/10 border-accent/40 text-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"
+          className={`w-full h-[44px] shrink-0 rounded-xl text-[10px] font-black tracking-[0.2em] font-mono transition-transform duration-150 border active:scale-95 ${modal === "loading"
+              ? "bg-accent/5 border-accent/20 text-accent/70"
+              : !script.trim()
+                ? "bg-accent/5 border-accent/15 text-accent/25"
+                : "bg-accent/10 border-accent/40 text-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"
             }`}
         >
           {modal === "loading" ? "INITIALIZING..." : "DEPLOY SCRIPT"}

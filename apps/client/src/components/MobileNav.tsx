@@ -41,10 +41,14 @@ const navItems = [
 ];
 
 export function MobileNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
   const isMobile = useMediaQuery("(max-width: 768px)");
 
-  if (!isMobile) return null;
+  const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email"];
+  const isAuthPage = authRoutes.some(route => pathname.startsWith(route));
+
+  // Hide on desktop AND hide on mobile auth pages
+  if (!isMobile || isAuthPage) return null;
 
   return (
     <div 

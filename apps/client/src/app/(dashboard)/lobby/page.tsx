@@ -63,7 +63,7 @@ export default function LobbyPage() {
   const MobileLayout = (
     <div className="w-full px-4 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))] relative z-10 animate-[fadeIn_0.35s_ease] flex flex-col min-h-[calc(100vh-80px)]">
       <div className="border-b border-accent/20 pb-5 mb-5 flex flex-col text-center">
-        <p className="text-[9px] tracking-[0.4em] text-accent/40 mb-1.5 uppercase">// GLOBAL_NETWORK</p>
+        <p className="text-[9px] tracking-[0.4em] text-accent/70 mb-1.5 uppercase">// GLOBAL_NETWORK</p>
         <h1 className="m-0 text-2xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-tight">LOBBY</h1>
         <ConnectionStatusBar connectionStatus={connectionStatus} isMobile={true} />
         <button onClick={handleDeployMatch} className="mt-5 w-full h-[44px] rounded-lg text-[10px] font-black tracking-[0.25em] font-mono cursor-pointer transition-transform active:scale-95 bg-accent/10 border border-accent/40 text-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase flex items-center justify-center">

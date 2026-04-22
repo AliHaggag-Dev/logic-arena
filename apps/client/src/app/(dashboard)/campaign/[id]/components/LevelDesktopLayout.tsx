@@ -20,12 +20,12 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
         <div className="flex flex-col gap-4">
           <button
             onClick={() => router.push("/campaign")}
-            className="w-max text-[10px] tracking-[0.25em] text-accent/40 hover:text-accent border border-accent/15 hover:border-accent/40 rounded px-3 py-1 transition-all duration-200 cursor-pointer bg-transparent uppercase"
+            className="w-max text-[10px] tracking-[0.25em] text-accent/70 hover:text-accent border border-accent/15 hover:border-accent/40 rounded px-3 py-1 transition-all duration-200 cursor-pointer bg-transparent uppercase"
           >
             ← BACK TO MAP
           </button>
           <div>
-            <span className="text-[10px] text-accent/40 tracking-[0.3em] font-bold block mb-1 uppercase">
+            <span className="text-[10px] text-accent/70 tracking-[0.3em] font-bold block mb-1 uppercase">
               LEVEL {String(level.id).padStart(2, "0")}
             </span>
             <h1 className="m-0 text-3xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-none uppercase">
@@ -33,7 +33,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             </h1>
           </div>
         </div>
-        
+
         <div>
           <span
             className="inline-block text-[10px] font-black tracking-[0.3em] border rounded px-3 py-1.5 shadow-sm"
@@ -62,17 +62,17 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             </p>
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center text-[10px]">
-                <span className="text-accent/40 tracking-[0.15em]">DESIGNATION</span>
+                <span className="text-accent/70 tracking-[0.15em]">DESIGNATION</span>
                 <span className="font-bold text-red-500/80 tracking-[0.12em]">{level.name}</span>
               </div>
               <div className="h-[1px] bg-red-500/10" />
               <div className="flex justify-between items-center text-[10px]">
-                <span className="text-accent/40 tracking-[0.15em]">THREAT LEVEL</span>
+                <span className="text-accent/70 tracking-[0.15em]">THREAT LEVEL</span>
                 <span className="font-bold tracking-[0.12em]" style={{ color: dc.color }}>{level.difficulty}</span>
               </div>
               <div className="h-[1px] bg-red-500/10" />
               <div className="flex justify-between items-center text-[10px]">
-                <span className="text-accent/40 tracking-[0.15em]">REWARD</span>
+                <span className="text-accent/70 tracking-[0.15em]">REWARD</span>
                 <span className="font-bold text-accent/70 tracking-[0.12em]">+{level.rewardRank} RANK</span>
               </div>
             </div>
@@ -113,7 +113,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             onClick={handleFight}
             disabled={!script.trim() || modal === "loading"}
             className={`w-full py-4 rounded-xl text-[11px] font-black tracking-[0.3em] font-mono cursor-pointer transition-all duration-200 border ${modal === "loading"
-              ? "bg-accent/5 border-accent/20 text-accent/40 cursor-not-allowed"
+              ? "bg-accent/5 border-accent/20 text-accent/70 cursor-not-allowed"
               : !script.trim()
                 ? "bg-accent/5 border-accent/15 text-accent/25 cursor-not-allowed"
                 : "bg-accent/10 border-accent/40 text-accent hover:bg-accent/20 hover:border-accent/70 hover:drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.5)]"

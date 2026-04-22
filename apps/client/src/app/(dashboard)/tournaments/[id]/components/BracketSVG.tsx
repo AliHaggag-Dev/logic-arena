@@ -97,10 +97,10 @@ export function BracketSVG({ tournament, userId, isMobile }: Props) {
     <div className="relative overflow-visible">
       {isMobile && (
         <div className="absolute top-0 right-0 z-20 flex items-center gap-2 px-3 py-1 bg-accent/10 border border-accent/20 rounded-bl-lg backdrop-blur-md pointer-events-none">
-            <span className="text-[8px] font-black tracking-[0.2em] text-accent/40 animate-pulse">
-                DRAG_TO_PAN_BRACKET
-            </span>
-            <span className="text-[10px] text-accent/30">↔</span>
+          <span className="text-[8px] font-black tracking-[0.2em] text-accent/70 animate-pulse">
+            DRAG_TO_PAN_BRACKET
+          </span>
+          <span className="text-[10px] text-accent/30">↔</span>
         </div>
       )}
 
@@ -164,7 +164,7 @@ export function BracketSVG({ tournament, userId, isMobile }: Props) {
                 strokeWidth={isHovered || isMyMatch ? 1.5 : 1}
                 className="transition-all duration-300"
               />
-              
+
               {/* P1 Name */}
               <text
                 x={pos.x + 10}
@@ -178,7 +178,7 @@ export function BracketSVG({ tournament, userId, isMobile }: Props) {
               >
                 {m.player1 ? m.player1.username.toUpperCase() : "SYNC_PENDING"}
               </text>
-              
+
               {/* Divider / VS */}
               <text
                 x={pos.x + m_W - 10}

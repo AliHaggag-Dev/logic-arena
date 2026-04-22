@@ -74,7 +74,7 @@ export function IdentitySection() {
           {initials}
         </div>
         <div>
-          <div className="text-[9px] tracking-[0.22em] text-accent/40 font-bold uppercase mb-0.5">Avatar Initial</div>
+          <div className="text-[9px] tracking-[0.22em] text-accent/70 font-bold uppercase mb-0.5">Avatar Initial</div>
           <div className="text-[11px] text-text-secondary tracking-[0.1em]">
             Derived from your display name — updates automatically.
           </div>

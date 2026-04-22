@@ -165,7 +165,7 @@ export default function PatchNotesPage() {
                     {release.date}
                   </span>
                 </div>
-                <div className="text-[9px] text-accent/40 tracking-[0.2em] text-right hidden sm:block">
+                <div className="text-[9px] text-accent/70 tracking-[0.2em] text-right hidden sm:block">
                   LOGIC_ARENA_CHANGELOG
                 </div>
               </div>

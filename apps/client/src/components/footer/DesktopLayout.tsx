@@ -6,9 +6,9 @@ import { GitHubIcon, LinkedinIcon, PortfolioIcon } from './Icons';
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 mb-4">
-      <span className="text-accent/40 text-xs font-mono select-none">⌐</span>
+      <span className="text-accent/70 text-xs font-mono select-none">⌐</span>
       <h3 className="text-[10px] font-black tracking-[0.4em] uppercase text-accent">{children}</h3>
-      <span className="text-accent/40 text-xs font-mono select-none">¬</span>
+      <span className="text-accent/70 text-xs font-mono select-none">¬</span>
     </div>
   );
 }
@@ -18,9 +18,14 @@ function FooterLink({ target, href, children }: { target?: string; href: string;
     <Link
       target={target}
       href={href}
-      className="block text-[12px] text-text-secondary hover:text-accent py-1 transition-colors duration-150 leading-relaxed"
+      className="group flex items-center text-[11.5px] font-mono tracking-[0.15em] uppercase text-accent/40 hover:text-accent py-2 transition-all duration-300 w-fit"
     >
-      {children}
+      <span className="inline-block w-0 overflow-hidden group-hover:w-3 text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.8)] transition-all duration-300 ease-out">
+        ›
+      </span>
+      <span className="group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.8)] group-hover:translate-x-0.5 transition-all duration-300">
+        {children}
+      </span>
     </Link>
   );
 }
@@ -38,8 +43,8 @@ function DesktopSocialIcons() {
           key={label}
           href="#"
           aria-label={label}
-          className="flex items-center justify-center w-9 h-9 rounded-lg border border-accent/50 hover:border-accent/50 bg-bg-secondary/50 hover:bg-accent/10 text-text-secondary hover:text-accent transition-all duration-150"
-          onMouseEnter={(e) => (e.currentTarget.style.filter = "drop-shadow(0 0 6px var(--accent))")}
+          className="flex items-center justify-center w-9 h-9 rounded-lg border border-accent/30 hover:border-accent/60 bg-bg-secondary/50 hover:bg-accent/10 text-accent/60 hover:text-accent transition-all duration-300"
+          onMouseEnter={(e) => (e.currentTarget.style.filter = "drop-shadow(0 0 8px rgba(var(--accent-rgb),0.6))")}
           onMouseLeave={(e) => (e.currentTarget.style.filter = "")}
         >
           {el}
@@ -65,7 +70,7 @@ export function DesktopLayout() {
           <p className="text-[9px] font-black tracking-[0.35em] text-accent/60 uppercase mb-3">
             WHERE CODE MEETS COMBAT
           </p>
-          <p className="text-[11px] text-text-secondary leading-relaxed mb-2">
+          <p className="text-[11px] font-mono tracking-[0.1em] text-accent/40 leading-relaxed max-w-xs mb-2">
             The competitive programming arena where your algorithms fight to the death.
           </p>
           <DesktopSocialIcons />

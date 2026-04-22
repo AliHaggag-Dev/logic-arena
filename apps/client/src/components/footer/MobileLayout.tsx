@@ -18,11 +18,11 @@ function MobileSocialIcons() {
           key={label}
           href="#"
           aria-label={label}
-          className="flex items-center justify-center rounded-xl border border-accent/50 bg-bg-secondary/60 text-text-secondary hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-colors duration-150"
+          className="flex items-center justify-center rounded-xl border border-accent/30 bg-bg-secondary/60 text-accent/60 hover:text-accent hover:border-accent/60 hover:bg-accent/10 transition-all duration-300"
           style={{ width: 40, height: 40, minWidth: 40, minHeight: 40 }}
-          onTouchStart={(e) => (e.currentTarget.style.filter = "drop-shadow(0 0 6px var(--accent))")}
+          onTouchStart={(e) => (e.currentTarget.style.filter = "drop-shadow(0 0 8px rgba(var(--accent-rgb),0.6))")}
           onTouchEnd={(e) => (e.currentTarget.style.filter = "")}
-          onMouseEnter={(e) => (e.currentTarget.style.filter = "drop-shadow(0 0 6px var(--accent))")}
+          onMouseEnter={(e) => (e.currentTarget.style.filter = "drop-shadow(0 0 8px rgba(var(--accent-rgb),0.6))")}
           onMouseLeave={(e) => (e.currentTarget.style.filter = "")}
         >
           {el}
@@ -60,11 +60,11 @@ function AccordionCard({
         style={{ minHeight: 44, padding: "0 20px" }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-accent/40 text-xs font-mono select-none">⌐</span>
+          <span className="text-accent/70 text-xs font-mono select-none">⌐</span>
           <span className="text-[10px] font-black tracking-[0.38em] uppercase text-accent">
             {title}
           </span>
-          <span className="text-accent/40 text-xs font-mono select-none">¬</span>
+          <span className="text-accent/70 text-xs font-mono select-none">¬</span>
         </div>
         <span className="text-accent/60 shrink-0">
           <ChevronIcon expanded={isOpen} />
@@ -83,10 +83,15 @@ function AccordionCard({
             <Link
               key={link.label}
               href={link.href}
-              className="flex items-center text-[13px] text-text-secondary hover:text-accent transition-colors duration-150"
+              className="group flex items-center text-[11.5px] font-mono tracking-[0.15em] uppercase text-accent/40 hover:text-accent transition-all duration-300"
               style={{ minHeight: 44, padding: "0 20px" }}
             >
-              {link.label}
+              <span className="inline-block w-0 overflow-hidden group-hover:w-3 text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.8)] transition-all duration-300 ease-out">
+                ›
+              </span>
+              <span className="group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.8)] group-hover:translate-x-0.5 transition-all duration-300">
+                {link.label}
+              </span>
             </Link>
           ))}
         </div>
@@ -115,7 +120,7 @@ export function MobileLayout() {
         <p className="text-[9px] font-black tracking-[0.38em] text-accent/60 uppercase mb-3">
           WHERE CODE MEETS COMBAT
         </p>
-        <p className="text-[12px] text-text-secondary leading-relaxed max-w-[340px]">
+        <p className="text-[11px] font-mono tracking-[0.1em] text-accent/40 leading-relaxed max-w-[340px]">
           The competitive programming arena where your algorithms fight to the death.
         </p>
         <MobileSocialIcons />

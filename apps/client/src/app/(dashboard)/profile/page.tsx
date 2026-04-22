@@ -44,7 +44,7 @@ export default function ProfilePage() {
           {loading ? "LOADING..." : error ? "ERROR" : profile?.username ?? "UNKNOWN"}
         </h1>
         {profile && (
-          <p className="mt-2 text-[10px] text-accent/40 tracking-[0.15em] flex items-center gap-2 flex-wrap">
+          <p className="mt-2 text-[10px] text-accent/70 tracking-[0.15em] flex items-center gap-2 flex-wrap">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_var(--color-emerald-500)] block shrink-0" />
             RANK #{profile.rank} <span>·</span> MEMBER SINCE {fmtDate(profile.memberSince).toUpperCase()}
           </p>
@@ -111,7 +111,7 @@ export default function ProfilePage() {
           {loading ? "LOADING..." : error ? "ERROR" : profile?.username ?? "UNKNOWN"}
         </h1>
         {profile && (
-          <div className="mt-3 text-[10px] text-accent/40 tracking-[0.15em] flex flex-col items-center gap-1.5 focus:outline-none">
+          <div className="mt-3 text-[10px] text-accent/70 tracking-[0.15em] flex flex-col items-center gap-1.5 focus:outline-none">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_var(--color-emerald-500)] block shrink-0" />
               RANK #{profile.rank}

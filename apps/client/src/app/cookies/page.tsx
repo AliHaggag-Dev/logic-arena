@@ -115,11 +115,11 @@ export default function CookiesPage() {
             >
               <div className="flex items-center justify-between px-6 py-4 border-b border-accent/50 bg-bg-secondary/40">
                 <div className="flex items-center gap-2">
-                  <span className="text-accent/40 font-mono text-xs">⌐</span>
+                  <span className="text-accent/70 font-mono text-xs">⌐</span>
                   <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-accent">
                     {ct.type} COOKIES
                   </h2>
-                  <span className="text-accent/40 font-mono text-xs">¬</span>
+                  <span className="text-accent/70 font-mono text-xs">¬</span>
                 </div>
                 <span
                   className="text-[9px] font-black tracking-[0.2em] uppercase px-2 py-0.5 rounded"

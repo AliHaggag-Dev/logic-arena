@@ -19,7 +19,7 @@ export default function LoginPage() {
     type: "error" | "success" | null;
   }>({ message: "", errors: [], type: null });
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -65,7 +65,7 @@ export default function LoginPage() {
           <input
             type="text"
             id="username"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-20 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
+            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
             placeholder="SPECIFY_ALIAS..."
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -81,7 +81,7 @@ export default function LoginPage() {
           <input
             type="password"
             id="password"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-20 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
+            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
             placeholder="••••••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -105,7 +105,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => router.push("/register")}
-              className="text-accent/40 hover:text-accent text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
+              className="text-accent/70 hover:text-accent text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
             >
               [ Request_Access ]
             </button>
