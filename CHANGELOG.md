@@ -696,3 +696,160 @@ that were blocking local development alongside production.
   discipline and mobile UX patterns at the convention level via 
   `CLAUDE.md`. Ready for: **Fog of War, Energy System, and University 
   Competition features.**
+
+## [2.2.0] - The Refactor Marathon, UI Polish & Infrastructure Cleanup - 2026-04-23
+
+Executed a comprehensive codebase refactoring across every major module,
+shipped a premium cyberpunk redesign for all static and auth pages,
+resolved critical production bugs, and restructured the project's
+route architecture into a clean group-based hierarchy.
+
+---
+
+### New Features
+
+* **Settings Page (5 Sections):** Launched a full operator settings
+  experience with: Operator Identity (username/email updates), Security
+  Protocol (password change + account deletion with confirmation modal),
+  Appearance (3 theme cards with palette preview), Arena Preferences
+  (default robot, sound FX, FPS counter), and Neural Notifications
+  (challenge/tournament/match toggles). Desktop: 2-column layout.
+  Mobile: accordion cards with left-accent inset glow.
+
+* **Functional EDIT SCRIPT Modal:** Replaced the non-functional button
+  with a full-screen code editor modal featuring line numbers, tab-key
+  support, optimistic UI (version+1 instantly, reverts on failure),
+  and inline success/error feedback.
+
+* **Premium Static Pages Redesign:** Overhauled all 8 footer static
+  pages with glassmorphic cards, mono typography, accent glow headers,
+  and pulsing status dots. Built CyberSelect custom dropdown on
+  /bug-report and /feature-requests — opens upward to avoid footer
+  collision.
+
+* **Smart Contextual Header:** MobileHeader now renders on all screen
+  sizes for auth and public pages. Shows LOGIN/REGISTER split pill for
+  unauthenticated users, LOGOUT/DASHBOARD based on route and token
+  state. Desktop sticky header with NODE:[USERNAME] badge extracted
+  from sidebar. UPLINK_SECURE indicator fills freed sidebar space.
+
+* **GEMINI.md Agent Rules:** Added three GEMINI.md files (root,
+  apps/client/, apps/server/) mirroring CLAUDE.md conventions for
+  Gemini-based AI agent sessions.
+
+---
+
+### Refactoring — Component Decomposition
+
+* **Settings page** 762→50 lines: Shared.tsx, SettingsLayout,
+  IdentitySection, SecuritySection, AppearanceSection,
+  PreferencesSection, NotificationsSection.
+
+* **Dashboard layout** 247→80 lines: useDashboardAuth,
+  useChallengeSystem, DashboardSidebar, DashboardHeader,
+  ChallengeModal, ToastNotification.
+
+* **Lobby page** 285→99 lines: useLobbySocket, useDeployMatch,
+  ConnectionStatusBar, ErrorPanel.
+
+* **Replay viewer** 424→109 lines: useReplayPlayback hook,
+  canvasRenderer.ts, ReplayCanvas shell, desktop/mobile layouts.
+
+* **Campaign pages** 329→53 / 369→80 lines: styles, skeletons,
+  desktop/mobile layouts, types, LevelModal.
+
+* **EditScriptModal** 429→97 lines: EditScriptModalStyles,
+  EditScriptHeader, EditScriptFooter, EditScriptEditor.
+
+* **Footer** 453→56 lines: constants, Icons, MobileLayout,
+  DesktopLayout, BottomBar.
+
+* **Arena page** 535→150 lines: useFPS, OrientationLock,
+  MobileTopRightHUD, MobileControls, DesktopHUD, ArenaStyles.
+
+* **Auth pages** 303→147 / 235→110 lines: AuthBackground,
+  AuthContainer, AuthHeader, AuthSocials, AuthStatusTerminal,
+  PasswordStrengthIndicator, parseApiError util.
+
+* **match.gateway.ts (server)** 591→140 lines via delegation
+  pattern: match.state, match.loop, match.lobby, match.social.
+
+---
+
+### Technical Scars and Resolutions
+
+* **Issue — "The Infinite Lobby Skeleton":**
+  The lobby page showed an infinite skeleton loader when the
+  WebSocket server was unreachable, with no feedback or recovery path.
+  Additionally, the socket was initialized before the JWT token was
+  available, burning through 5 reconnect attempts on every page load
+  for unauthenticated users.
+
+  **Resolution:** Added a token guard in useLobbySocket that shows
+  ErrorPanel immediately if no token is found. Implemented tristate
+  connection status (connecting/connected/error), named .off() cleanup
+  on unmount, and a RETRY button that recreates the socket instance
+  via retryKey increment. Fixed Socket.IO URL by stripping /api suffix
+  from NEXT_PUBLIC_API_URL for correct WebSocket origin.
+
+* **Issue — "The 3-Robot Arena" (Reconnect Duplication):**
+  Reconnecting to an active match spawned a third robot instead of
+  reusing the existing player slot, because addPlayer() was pushing
+  a new entry when findIndex() returned -1 on the re-registered player.
+
+  **Resolution:** Fixed the fallback branch in match.engine.ts to
+  overwrite slot 0 in-place instead of pushing, keeping the player
+  count permanently at 2.
+
+* **Issue — "The Footer Invasion" (Dashboard & Arena Contamination):**
+  The global Footer in root layout.tsx was leaking into dashboard
+  routes and the /arena page because Next.js route groups extend
+  rather than replace the root layout.
+
+  **Resolution:** Added FOOTER_SUPPRESSED_PATHS array in Footer.tsx
+  using usePathname() to return null on /arena and all dashboard
+  sub-routes. Fixed double scrollbar simultaneously by isolating
+  overflow-y-auto to the main element only.
+
+* **Issue — "The OAuth Callback 404" (Route Group Collision):**
+  Moving the callback page into the (auth) route group changed its
+  effective URL from /auth/callback to /callback, breaking the
+  server's hardcoded redirect target and producing a 404 on every
+  OAuth login attempt.
+
+  **Resolution:** Updated auth.controller.ts redirect from
+  /auth/callback to /callback to align with the (auth) group's
+  URL output. Removed the duplicate auth/callback folder entirely.
+
+* **Issue — "The Orphaned 3D Meshes" (Scene Accumulation):**
+  React Three Fiber was leaving orphaned robot and obstacle meshes
+  in the THREE.Scene during rapid WebSocket reconnects, causing
+  visual duplication in the arena.
+
+  **Resolution:** Added robotMeshesRef and obstacleMeshesRef to
+  track every spawned group. useEffect cleanup now calls
+  scene.remove() and traverses each mesh to dispose geometry
+  and materials before re-adding on reconnect.
+
+---
+
+### Infrastructure & Project Structure
+
+* Reorganized app/ into clean route groups: (auth), (dashboard),
+  (public) — static footer pages now live under (public) instead
+  of floating in app/ root.
+* Removed stale arena .bak files and temp package.json artifacts.
+* Improved light and desert theme CSS variables for stronger
+  contrast — accent colors, border opacity, text readability.
+* Footer links upgraded to font-mono uppercase with hover chevron
+  slide animation and drop-shadow glow.
+
+---
+
+### Current Status
+
+- Logic Arena codebase is now fully modular with no critical-path
+  file exceeding 200 lines. Route architecture is clean with proper
+  group hierarchy. All production bugs from v2.1.0 are resolved.
+  Ready for: **Fog of War, Energy System, and University Competition
+  features.**
