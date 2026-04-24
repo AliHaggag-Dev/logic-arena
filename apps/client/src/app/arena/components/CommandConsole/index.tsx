@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useState, useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 import { useConsole } from "../../hooks/useConsole";
 import { BotSelector } from "./BotSelector";
@@ -13,11 +13,16 @@ interface CommandConsoleProps {
     availableRobots: string[];
     onRobotChange: (id: string) => void;
     isMobile: boolean;
-    mobileSheet?: 'controls' | 'script'; // which sheet is this instance for
+    mobileSheet?: 'controls' | 'script';
+    onDeployDone?: () => void;
+    onInsertAndSwitch?: (snippet: string) => void;
+    consumeSnippet?: () => string | null;
+    snippetVersion?: number;
 }
 
 const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
-    socket, robotId, scriptId, availableRobots, onRobotChange, isMobile, mobileSheet
+    socket, robotId, scriptId, availableRobots, onRobotChange, isMobile, mobileSheet,
+    onDeployDone, onInsertAndSwitch, consumeSnippet, snippetVersion
 }) => {
     const {
         output, commandInput, setCommandInput, scriptInput, setScriptInput,
@@ -27,68 +32,106 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
 
     const [isZenMode, setIsZenMode] = useState(false);
     const [isLogsOpen, setIsLogsOpen] = useState(true);
+    const [hubTab, setHubTab] = useState<'controls' | 'bots' | 'handbook'>('controls');
 
-    // ── MOBILE: CONTROLS sheet ────────────────────────────────────────────────
+    // Pick up pending snippet from HUB when ZEN_CORE opens
+    const lastSnippetVersion = useRef(snippetVersion ?? 0);
+    useEffect(() => {
+        if (mobileSheet === 'script' && consumeSnippet && snippetVersion !== undefined && snippetVersion > lastSnippetVersion.current) {
+            lastSnippetVersion.current = snippetVersion;
+            const snippet = consumeSnippet();
+            if (snippet) {
+                appendScriptLine(snippet);
+            }
+        }
+    }, [mobileSheet, snippetVersion, consumeSnippet, appendScriptLine]);
+
+    // ── MOBILE: CONTROLS sheet (📟 HUB — tabbed: Controls / Bots / Handbook) ──
     if (isMobile && mobileSheet === 'controls') {
-        return (
-            <div className="flex flex-col gap-3 w-full">
-                <ArenaControls
-                    isMobile={isMobile}
-                    commandInput={commandInput}
-                    setCommandInput={setCommandInput}
-                    handleCommandSubmit={handleCommandSubmit}
-                    output={output}
-                    isLogsOpen={isLogsOpen}
-                    setIsLogsOpen={setIsLogsOpen}
-                />
-                <BotSelector
-                    availableRobots={availableRobots}
-                    robotId={robotId}
-                    onRobotChange={onRobotChange}
-                />
-            </div>
-        );
-    }
+        const tabs = [
+            { id: 'controls' as const, label: 'CONTROLS', icon: '⚙' },
+            { id: 'bots' as const, label: 'BOTS', icon: '🤖' },
+            { id: 'handbook' as const, label: 'HANDBOOK', icon: '📖' },
+        ];
 
-    // ── MOBILE: SCRIPT sheet ──────────────────────────────────────────────────
-    if (isMobile && mobileSheet === 'script') {
         return (
-            <div className="flex flex-col gap-3 w-full h-full">
-                {/* ZEN MODE always on — full editor experience */}
-                <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse shadow-[0_0_6px_rgba(168,85,247,0.8)]" />
-                        <span className="text-purple-300 text-[9px] font-black tracking-[0.3em] uppercase">AliScript_V2 // Zen Core</span>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setIsLibraryOpen(!isLibraryOpen)}
-                        className="px-2 py-1 bg-purple-950/40 border border-purple-500/30 text-purple-300 text-[8px] font-black rounded-lg uppercase tracking-widest hover:bg-purple-500/20 transition-all"
-                    >
-                        {isLibraryOpen ? '← Editor' : 'Handbook →'}
-                    </button>
+            <div className="flex flex-col gap-3 w-full flex-1 min-h-0">
+                {/* Tab Bar */}
+                <div className="flex gap-1.5 p-1 bg-black/40 rounded-xl border border-cyan-900/30 shrink-0">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setHubTab(tab.id)}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[9px] font-black tracking-[0.2em] uppercase transition-all duration-200 ${
+                                hubTab === tab.id
+                                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(34,211,238,0.1)]'
+                                    : 'text-cyan-700 hover:text-cyan-500 border border-transparent'
+                            }`}
+                        >
+                            <span className="text-xs">{tab.icon}</span>
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
 
-                <div className="flex flex-row flex-1 gap-2 overflow-hidden min-h-0">
-                    {!isLibraryOpen ? (
-                        <ScriptEditor
-                            scriptInput={scriptInput}
-                            setScriptInput={setScriptInput}
-                            handleDeployBrain={() => handleDeployBrain(scriptInput)}
-                            toggleLibrary={() => setIsLibraryOpen(true)}
-                            clearPrebuilt={() => setActivePrebuilt(null)}
+                {/* Tab Content */}
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                    {hubTab === 'controls' && (
+                        <ArenaControls
+                            isMobile={isMobile}
+                            commandInput={commandInput}
+                            setCommandInput={setCommandInput}
+                            handleCommandSubmit={handleCommandSubmit}
+                            output={output}
+                            isLogsOpen={isLogsOpen}
+                            setIsLogsOpen={setIsLogsOpen}
                         />
-                    ) : (
+                    )}
+                    {hubTab === 'bots' && (
+                        <BotSelector
+                            availableRobots={availableRobots}
+                            robotId={robotId}
+                            onRobotChange={onRobotChange}
+                        />
+                    )}
+                    {hubTab === 'handbook' && (
                         <div className="flex-1 overflow-hidden">
                             <NeuralHandbook
                                 isOpen={true}
+                                fullWidth={true}
                                 onSelect={(cmd) => {
-                                    appendScriptLine(cmd);
-                                    setIsLibraryOpen(false);
+                                    onInsertAndSwitch?.(cmd);
                                 }}
                             />
                         </div>
                     )}
+                </div>
+            </div>
+        );
+    }
+
+    // ── MOBILE: SCRIPT sheet (⚡ ZEN CORE — pure editor) ─────────────────────
+    if (isMobile && mobileSheet === 'script') {
+        return (
+            <div className="flex flex-col gap-3 w-full flex-1 min-h-0">
+                {/* Zen header */}
+                <div className="flex items-center gap-2 shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse shadow-[0_0_6px_rgba(168,85,247,0.8)]" />
+                    <span className="text-purple-300 text-[9px] font-black tracking-[0.3em] uppercase">AliScript_V2 // Zen Core</span>
+                </div>
+
+                {/* Editor fills all space */}
+                <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <ScriptEditor
+                        scriptInput={scriptInput}
+                        setScriptInput={setScriptInput}
+                        handleDeployBrain={() => {
+                            handleDeployBrain(scriptInput);
+                            onDeployDone?.();
+                        }}
+                        toggleLibrary={() => setIsLibraryOpen(true)}
+                        clearPrebuilt={() => setActivePrebuilt(null)}
+                    />
                 </div>
 
                 <style jsx global>{`
