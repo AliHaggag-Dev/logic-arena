@@ -1,7 +1,7 @@
 import { GameLoop, EnergyManager } from '@logic-arena/engine';
 import { Socket } from 'socket.io';
 import { ActionExpression, ScanStatement } from '../../../../../../packages/logic-parser/src';
-import { Pathfinder } from '../pathfinder';
+import { Pathfinder } from '../pathfinder/index';
 import { CooldownManager } from './cooldown-manager';
 import { MovementExecutor } from './movement-executor';
 import { CombatExecutor } from './combat-executor';

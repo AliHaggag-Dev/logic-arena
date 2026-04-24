@@ -1,7 +1,7 @@
 import { GameLoop, EnergyManager } from '@logic-arena/engine';
 import { Socket } from 'socket.io';
 import { ActionExecutor } from '../../game/core/executor/action-executor';
-import { Pathfinder } from '../../game/core/pathfinder';
+import { Pathfinder } from '../../game/core/pathfinder/index';
 import { LogicEvaluator } from '../../game/core/evaluator/logic-evaluator';
 
 export interface GameDependencies {

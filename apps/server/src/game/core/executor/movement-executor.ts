@@ -1,6 +1,6 @@
 import { GameLoop, Robot } from "@logic-arena/engine";
 import { ActionExpression } from "../../../../../../packages/logic-parser/src";
-import { Pathfinder } from "../pathfinder";
+import { Pathfinder } from "../pathfinder/index";
 
 export class MovementExecutor {
     private readonly MOVE_SPEED = 150;
