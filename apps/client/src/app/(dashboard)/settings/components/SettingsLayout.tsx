@@ -38,12 +38,17 @@ export function SettingsLayout({
       `}</style>
 
       <div className="min-h-screen bg-bg-primary font-mono">
-        {/* Page header */}
-        <div className="border-b border-accent/[0.08] px-6 py-5 bg-bg-primary/95 sticky top-0 z-40 backdrop-blur-sm">
-          <div className="text-[9px] tracking-[0.28em] text-accent/35 font-bold mb-1">// SYS_CONFIG</div>
-          <h1 className="text-[20px] font-black tracking-[0.18em] text-accent [text-shadow:0_0_12px_rgba(var(--accent-rgb),0.5)]">
-            SETTINGS
-          </h1>
+        {/* Page title — matches other dashboard pages (inline, not a second header bar) */}
+        <div className={`${isMobile ? "px-4 pt-4 pb-3" : "max-w-5xl mx-auto pt-16 px-6"}`}>
+          <div className="mb-0 border-b border-accent/20 pb-6">
+            <h1 className={`text-accent font-black tracking-[0.15em] drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)] mb-2 ${isMobile ? "text-2xl tracking-[0.1em]" : "text-4xl"}`}>
+              OPERATOR SETTINGS
+            </h1>
+            <h2 className="text-accent/60 text-xs tracking-widest uppercase flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_var(--color-emerald-500)] shrink-0"></span>
+              System Configuration | Neural Parameters
+            </h2>
+          </div>
         </div>
 
         {isMobile ? (
@@ -86,9 +91,9 @@ export function SettingsLayout({
           </div>
         ) : (
           /* ── DESKTOP: Two-column layout ── */
-          <div className="flex min-h-[calc(100vh-73px)]">
+          <div className="flex max-w-5xl mx-auto px-6">
             {/* Left sidebar */}
-            <aside className="w-[220px] shrink-0 border-r border-accent/[0.08] bg-bg-secondary/50 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto flex flex-col py-4">
+            <aside className="w-[180px] shrink-0 border-r border-accent/[0.08] bg-bg-secondary/50 sticky top-[60px] h-fit flex flex-col py-4">
               <div className="text-[8px] tracking-[0.3em] text-accent/25 font-bold px-4 pb-3 uppercase">
                 Sections
               </div>

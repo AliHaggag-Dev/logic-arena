@@ -63,9 +63,11 @@ export function DesktopLayout() {
             <div className="w-8 h-8 border border-accent/40 rounded-lg flex items-center justify-center bg-accent/5 shadow-[0_0_12px_rgba(var(--accent-rgb),0.15)]">
               <span className="text-accent text-sm">⬡</span>
             </div>
-            <h2 className="footer-brand-name text-[15px] font-black tracking-[0.2em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)] cursor-default select-none">
-              LOGIC ARENA
-            </h2>
+            <Link href="/dashboard">
+              <h2 className="footer-brand-name text-[15px] font-black tracking-[0.2em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)] cursor-pointer select-none hover:opacity-90 transition-opacity">
+                LOGIC ARENA
+              </h2>
+            </Link>
           </div>
           <p className="text-[9px] font-black tracking-[0.35em] text-accent/60 uppercase mb-3">
             WHERE CODE MEETS COMBAT

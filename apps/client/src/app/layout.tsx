@@ -29,21 +29,21 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          {/* Fixed top bar — mobile only (desktop has the sidebar header) */}
+          {/* Mobile-only top bar (self-guards via useMediaQuery) */}
           <MobileHeader />
 
-          {/* Page content — dashboard layout manages its own padding internally */}
+          {/* Page content — each route group manages its own inner layout */}
           <main className="flex-1">{children}</main>
 
-          {/* Global footer — appears on every route including dashboard pages */}
+          {/* Global footer — self-suppresses on /arena via FOOTER_SUPPRESSED_PATHS */}
           <Footer />
 
-          {/* Fixed bottom nav dock — mobile only */}
+          {/* Mobile-only bottom nav dock (self-guards via useMediaQuery) */}
           <MobileNav />
         </ThemeProvider>
       </body>

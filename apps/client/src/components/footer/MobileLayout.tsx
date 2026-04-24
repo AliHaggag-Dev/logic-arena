@@ -113,9 +113,11 @@ export function MobileLayout() {
           <div className="w-9 h-9 border border-accent/40 rounded-lg flex items-center justify-center bg-accent/5">
             <span className="text-accent">⬡</span>
           </div>
-          <h2 className="footer-brand-name text-[16px] font-black tracking-[0.2em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)] cursor-default select-none">
-            LOGIC ARENA
-          </h2>
+          <Link href="/dashboard">
+            <h2 className="footer-brand-name text-[16px] font-black tracking-[0.2em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)] cursor-pointer select-none hover:opacity-90 transition-opacity">
+              LOGIC ARENA
+            </h2>
+          </Link>
         </div>
         <p className="text-[9px] font-black tracking-[0.38em] text-accent/60 uppercase mb-3">
           WHERE CODE MEETS COMBAT

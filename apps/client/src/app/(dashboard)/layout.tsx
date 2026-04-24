@@ -32,12 +32,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
       `}</style>
 
-      <div className="flex min-h-screen bg-bg-primary font-mono selection:bg-accent/30 overflow-hidden">
+      <div className="flex min-h-screen bg-bg-primary font-mono selection:bg-accent/30">
         {isMobile && <MobileHeader />}
 
         {!isMobile && <DashboardSidebar username={username} onLogout={handleLogout} />}
 
-        <main className={`flex-1 flex flex-col overflow-x-hidden overflow-y-auto bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent ${isMobile ? "pt-12 pb-[calc(80px+env(safe-area-inset-bottom))] max-w-[100vw]" : ""}`}>
+        <main className={`flex-1 flex flex-col overflow-x-clip bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent ${isMobile ? "pt-12 pb-[calc(80px+env(safe-area-inset-bottom))] max-w-[100vw]" : ""}`}>
           {!isMobile && <DashboardHeader username={username} />}
           {children}
         </main>
