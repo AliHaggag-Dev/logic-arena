@@ -15,17 +15,17 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { PrismaService } from '../../common/prisma.service';
 import { RedisService }  from '../../common/redis.service';
 import { AuthGuard }     from '../../common/auth.guard';
-import { UsersService }  from './users.service';
-
-
+import { UsersQueryService }  from './users-query.service';
+import { UsersCommandService }  from './users-command.service';
 
 @SkipThrottle({ auth: true })
 @Controller('users')
 export class UsersController {
   constructor(
-    private readonly prisma:       PrismaService,
-    private readonly usersService: UsersService,
-    private readonly redis:        RedisService,
+    private readonly prisma:        PrismaService,
+    private readonly queryService:  UsersQueryService,
+    private readonly commandService: UsersCommandService,
+    private readonly redis:         RedisService,
   ) {}
 
   // ── Leaderboard (public, live online status — no cache) ──────────────────
@@ -57,7 +57,7 @@ export class UsersController {
   @Get('profile')
   async getProfile(@Req() req: any) {
     const userId: string = req.user.sub;
-    const profile = await this.usersService.getProfile(userId);
+    const profile = await this.queryService.getProfile(userId);
 
     if (!profile) {
       return { username: 'UNKNOWN', totalMatches: 0, wins: 0, losses: 0, winRate: 0, rank: 0, matchHistory: [] };
@@ -74,7 +74,7 @@ export class UsersController {
     @Body() body: { robotId: string; color: string },
   ) {
     try {
-      await this.usersService.updateLoadout(req.user.sub, body.robotId, body.color);
+      await this.commandService.updateLoadout(req.user.sub, body.robotId, body.color);
       return { success: true };
     } catch (err: any) {
       throw new BadRequestException(err.message);
@@ -101,7 +101,7 @@ export class UsersController {
     @Body() body: { username?: string; email?: string },
   ) {
     try {
-      await this.usersService.updateIdentity(req.user.sub, body);
+      await this.commandService.updateIdentity(req.user.sub, body);
       return { success: true };
     } catch (err: any) {
       throw new BadRequestException(err.message);
@@ -116,7 +116,7 @@ export class UsersController {
     @Body() body: { currentPassword: string; newPassword: string },
   ) {
     try {
-      await this.usersService.updatePassword(
+      await this.commandService.updatePassword(
         req.user.sub,
         body.currentPassword,
         body.newPassword,
@@ -132,7 +132,7 @@ export class UsersController {
   @Delete('account')
   async deleteAccount(@Req() req: any) {
     try {
-      await this.usersService.deleteAccount(req.user.sub);
+      await this.commandService.deleteAccount(req.user.sub);
       return { success: true };
     } catch (err: any) {
       throw new BadRequestException(err.message);
