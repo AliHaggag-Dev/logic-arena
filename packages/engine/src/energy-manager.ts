@@ -5,12 +5,12 @@ import { Robot } from './types';
 // ---------------------------------------------------------------------------
 export const ENERGY_COSTS: Readonly<Record<string, number>> = {
   MOVE:        1,
-  MOVE_FAST:   3,
+  MOVE_FAST:   2,   // was 3
   BACKUP:      1,
   ROTATE:      0.5,
-  FIRE:        15,
-  BURST_FIRE:  20,
-  SCAN:        5,
+  FIRE:        8,   // was 15
+  BURST_FIRE:  15,  // was 20  (×3 shots = 45 total; higher than FIRE's 8 is intentional)
+  SCAN:        1,   // was 5
   PATHFIND:    2,
   // Free — cognitive only:
   STOP:        0,
@@ -25,7 +25,7 @@ export const ENERGY_COSTS: Readonly<Record<string, number>> = {
 // ---------------------------------------------------------------------------
 
 /** Passive energy regeneration per game tick. */
-export const ENERGY_REGEN_PER_TICK = 2;
+export const ENERGY_REGEN_PER_TICK = 3; // was 2 — rebalanced alongside cost reductions
 
 /** Energy level at which a robot enters STASIS (cannot move/fire). */
 export const STASIS_ENTRY_THRESHOLD = 0;

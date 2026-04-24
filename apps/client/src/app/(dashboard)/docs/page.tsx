@@ -9,6 +9,7 @@ import { BattleTacticsSection } from './components/BattleTacticsSection';
 import { CommandReferenceSection } from './components/CommandReferenceSection';
 import { AlgorithmChallenges } from './components/AlgorithmChallenges';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
+import { EnergyCostSection } from './components/EnergyCostSection';
 
 const CATEGORY_COLORS: Record<string, string> = {
   Self: 'var(--accent)',
@@ -157,6 +158,9 @@ export default function DocsPage() {
 
           {/* Built-in Identifiers reference */}
           <IdentifierReferenceSection isMobile={isMobile} />
+
+          {/* Energy cost breakdown + simulator */}
+          <EnergyCostSection isMobile={isMobile} />
         </div>
       </div>
     </>
