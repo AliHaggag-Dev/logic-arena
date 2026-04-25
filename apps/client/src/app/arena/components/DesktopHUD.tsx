@@ -1,23 +1,23 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Socket } from 'socket.io-client';
 import { CommandConsole } from './CommandConsole';
 import { TacticalRadar } from './TacticalRadar';
+import { RobotState, ProjectileState } from '../types';
 
 interface DesktopHUDProps {
   displayMode: string;
   scriptTitle?: string;
-  socket: any;
+  socket: Socket | null;
   fogEnabled: boolean;
   setFogEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   selectedRobotId: string;
-  scriptId: string | null;
-  availableRobots: any[];
+  availableRobots: string[];
   setSelectedRobotId: (id: string) => void;
   isMobile: boolean;
-  robots: any[];
-  obstacles: any[];
-  projectiles: any[];
+  robots: RobotState[];
+  projectiles: ProjectileState[];
   isConnected: boolean;
 }
 
@@ -28,12 +28,10 @@ export function DesktopHUD({
   fogEnabled,
   setFogEnabled,
   selectedRobotId,
-  scriptId,
   availableRobots,
   setSelectedRobotId,
   isMobile,
   robots,
-  obstacles,
   projectiles,
   isConnected,
 }: DesktopHUDProps) {
@@ -75,22 +73,22 @@ export function DesktopHUD({
           </div>
         </div>
 
-        <div className="absolute top-6 left-[450px] pointer-events-none flex opacity-40">
+        <div className="absolute top-6 left-112.5 pointer-events-none flex opacity-40">
           <h2 className="text-xl font-bold text-red-500/80 tracking-[0.5em] uppercase italic">
             Arena: {scriptTitle}
           </h2>
         </div>
 
         <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-3 bg-black/80 backdrop-blur-xl border-l-4 border-cyan-500 p-4 rounded-r shadow-[10px_10px_30px_rgba(0,0,0,0.9)]">
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-cyan-500/50 to-transparent" />
-          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-cyan-500/50 to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-cyan-500/50 to-transparent" />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-linear-to-r from-cyan-500/50 to-transparent" />
           <button
             type="button"
             onClick={() => socket?.emit('resetGame')}
             className="group relative border border-red-900 bg-red-950/30 text-red-500 text-[10px] font-black px-6 py-2.5 transition-all hover:bg-red-900/50 hover:border-red-500 hover:text-white tracking-[0.2em] overflow-hidden shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
           >
             <span className="relative z-10">[ EXECUTE RESPAWN ]</span>
-            <div className="absolute top-0 left-[-100%] w-[50%] h-full bg-gradient-to-r from-transparent via-red-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+            <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-red-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
           </button>
           <button
             type="button"
@@ -102,7 +100,7 @@ export function DesktopHUD({
           >
             <span className="relative z-10">[ FOG_SYSTEM: {fogEnabled ? 'ONLINE' : 'OFFLINE'} ]</span>
             {fogEnabled && (
-              <div className="absolute top-0 left-[-100%] w-[50%] h-full bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-cyan-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
             )}
           </button>
         </div>
@@ -111,7 +109,6 @@ export function DesktopHUD({
           <CommandConsole
             socket={socket}
             robotId={selectedRobotId}
-            scriptId={scriptId}
             availableRobots={availableRobots}
             onRobotChange={setSelectedRobotId}
             isMobile={isMobile}
@@ -131,7 +128,6 @@ export function DesktopHUD({
           <TacticalRadar
             isMobile={isMobile}
             robots={robots}
-            obstacles={obstacles}
             projectiles={projectiles}
             fogEnabled={fogEnabled}
             displayMode={displayMode}
@@ -146,7 +142,7 @@ export function DesktopHUD({
             {isConnected ? 'UPLINK_STABLE' : 'REESTABLISHING_LINK...'}
           </span>
         </div>
-        <div className="h-8 w-[1px] bg-cyan-900/50" />
+        <div className="h-8 w-px bg-cyan-900/50" />
         <div className="flex flex-col items-end">
           <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">FOV_SYSTEM</span>
           <span className={`text-[11px] font-black tracking-widest ${fogEnabled ? 'text-cyan-400' : 'text-white/30'}`}>

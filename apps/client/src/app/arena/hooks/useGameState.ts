@@ -39,6 +39,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
 
   useEffect(() => {
     gameStateRef.current = { robots: [], projectiles: [], obstacles: [] };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUiState({ robots: [], projectiles: [], obstacles: [] });
     setMatchResult(null);
 
@@ -73,12 +74,12 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
       let parsed: GameState = { robots: [], projectiles: [], obstacles: [] };
 
       if (payload.type === 'delta') {
-        const diff: any = payload.diff;
+        const diff = payload.diff as Partial<GameState> & { robots?: Partial<RobotState>[] };
         parsed = { ...gameStateRef.current };
 
         if (diff.robots) {
           parsed.robots = parsed.robots.map(r => {
-            const rd = diff.robots.find((d: any) => d.id === r.id);
+            const rd = diff.robots!.find((d) => d.id === r.id);
             if (!rd) return r;
             // Merge delta — preserve existing visibleRobotIds if not in diff
             return { ...r, ...rd };

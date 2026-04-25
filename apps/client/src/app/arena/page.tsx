@@ -74,14 +74,15 @@ const ArenaPageContent = () => {
       try {
         const response = await apiClient.get(`/scripts/${scriptId}`);
         setScript(response.data);
-      } catch (err: any) {
-        setError(err.response?.data?.message || err.message);
+      } catch (err: unknown) {
+        const e = err as { response?: { data?: { message?: string } }; message?: string };
+        setError(e.response?.data?.message || e.message || 'Unknown error');
       } finally {
         setLoading(false);
       }
     };
     fetchScript();
-  }, [scriptId]);
+  }, [router, scriptId]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">UPLINKING TO NEURAL NETWORK...</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">CRITICAL_SYSTEM_ERROR: {error}</div>;
@@ -129,14 +130,12 @@ const ArenaPageContent = () => {
             socket={socket}
             isConnected={isConnected}
             robots={robots}
-            obstacles={obstacles}
             projectiles={projectiles}
             displayMode={displayMode}
           />
           <MobileControls
             socket={socket}
             selectedRobotId={selectedRobotId}
-            scriptId={scriptId}
             availableRobots={availableRobots}
             setSelectedRobotId={setSelectedRobotId}
             isMobile={isMobile}
@@ -150,12 +149,10 @@ const ArenaPageContent = () => {
           fogEnabled={fogEnabled}
           setFogEnabled={setFogEnabled}
           selectedRobotId={selectedRobotId}
-          scriptId={scriptId}
           availableRobots={availableRobots}
           setSelectedRobotId={setSelectedRobotId}
           isMobile={isMobile}
           robots={robots}
-          obstacles={obstacles}
           projectiles={projectiles}
           isConnected={isConnected}
         />

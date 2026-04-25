@@ -6,10 +6,10 @@ import { MobileScriptSheet } from "./MobileScriptSheet";
 import { DesktopConsole } from "./DesktopConsole";
 
 const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
-    socket, robotId, scriptId, availableRobots, onRobotChange, isMobile, mobileSheet,
+    socket, robotId, availableRobots, onRobotChange, isMobile, mobileSheet,
     onDeployDone, onInsertAndSwitch, consumeSnippet, snippetVersion
 }) => {
-    const consoleState = useConsole(socket, robotId, scriptId);
+    const consoleState = useConsole(socket, robotId);
     const [isZenMode, setIsZenMode] = useState(false);
     const [isLogsOpen, setIsLogsOpen] = useState(true);
     const [hubTab, setHubTab] = useState<'controls' | 'bots' | 'handbook'>('controls');

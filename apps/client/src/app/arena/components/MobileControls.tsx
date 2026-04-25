@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
+import { Socket } from 'socket.io-client';
 import { BottomSheet } from './BottomSheet';
 import { CommandConsole } from './CommandConsole';
 
 interface MobileControlsProps {
-  socket: any;
+  socket: Socket | null;
   selectedRobotId: string;
-  scriptId: string | null;
-  availableRobots: any[];
+  availableRobots: string[];
   setSelectedRobotId: (id: string) => void;
   isMobile: boolean;
 }
@@ -16,7 +16,6 @@ interface MobileControlsProps {
 export function MobileControls({
   socket,
   selectedRobotId,
-  scriptId,
   availableRobots,
   setSelectedRobotId,
   isMobile,
@@ -43,9 +42,10 @@ export function MobileControls({
   return (
     <>
       {/* ── Floating Dock ─────────────────────────────────────────── */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[50] flex flex-row items-end gap-4 pointer-events-auto">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-row items-end gap-4 pointer-events-auto">
         {/* ⚡ ZEN EDITOR — pure code */}
         <button
+          type='button'
           onClick={() => setActiveSheet(activeSheet === 'script' ? null : 'script')}
           className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${activeSheet === 'script' ? 'scale-105' : ''}`}
         >
@@ -62,6 +62,7 @@ export function MobileControls({
 
         {/* 📟 COMMAND HUB — controls, bots, handbook */}
         <button
+          type='button'
           onClick={() => setActiveSheet(activeSheet === 'controls' ? null : 'controls')}
           className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${activeSheet === 'controls' ? 'scale-105' : ''}`}
         >
@@ -87,7 +88,6 @@ export function MobileControls({
         <CommandConsole
           socket={socket}
           robotId={selectedRobotId}
-          scriptId={scriptId}
           availableRobots={availableRobots}
           onRobotChange={setSelectedRobotId}
           isMobile={isMobile}
@@ -108,7 +108,6 @@ export function MobileControls({
         <CommandConsole
           socket={socket}
           robotId={selectedRobotId}
-          scriptId={scriptId}
           availableRobots={availableRobots}
           onRobotChange={setSelectedRobotId}
           onInsertAndSwitch={handleInsertAndSwitch}

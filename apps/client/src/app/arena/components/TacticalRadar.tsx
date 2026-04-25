@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
+import { RobotState, ProjectileState } from '../types';
 
 interface TacticalRadarProps {
   isMobile: boolean;
   isExpanded?: boolean;
-  robots: any[];
-  obstacles: any[];
-  projectiles: any[];
+  robots: RobotState[];
+  projectiles: ProjectileState[];
   fogEnabled: boolean;
   displayMode: string;
 }
@@ -16,7 +16,6 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
   isMobile,
   isExpanded = false,
   robots,
-  obstacles,
   projectiles,
   fogEnabled,
   displayMode,
@@ -28,7 +27,7 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
   return (
     <div className={containerClasses}>
       {/* Scan line */}
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-cyan-400/30 shadow-[0_0_8px_#22d3ee] animate-scan z-10" />
+      <div className="absolute top-0 left-0 w-full h-px bg-cyan-400/30 shadow-[0_0_8px_#22d3ee] animate-scan z-10" />
 
       {/* Grid */}
       <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 opacity-10 pointer-events-none">
@@ -37,13 +36,13 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
         ))}
       </div>
 
-      {robots.map((robot: any) => {
+      {robots.map((robot) => {
         const posX = (robot.position.x / 800) * 100;
         const posY = (robot.position.y / 600) * 100;
         const energyPct = Math.round(((robot.energy ?? 1000) / (robot.maxEnergy ?? 1000)) * 100);
 
         const isVisible = !fogEnabled || robots.some(
-          (r: any) => r.id !== robot.id && (r.visibleRobotIds ?? []).includes(robot.id)
+          (r) => r.id !== robot.id && (r.visibleRobotIds ?? []).includes(robot.id)
         );
 
         const dotSize = isMobile && !isExpanded ? 'w-2 h-2' : 'w-2.5 h-2.5';
@@ -77,12 +76,12 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
               />
 
               {/* Health bar */}
-              <div className={`absolute -top-3 ${barWidth} h-[2px] bg-gray-900 border border-white/10`}>
+              <div className={`absolute -top-3 ${barWidth} h-0.5 bg-gray-900 border border-white/10`}>
                 <div className="h-full bg-green-400" style={{ width: `${robot.health || 100}%` }} />
               </div>
 
               {/* Energy bar */}
-              <div className={`absolute -top-[7px] ${barWidth} h-[2px] bg-gray-900/80 border border-cyan-900/30`}>
+              <div className={`absolute -top-1.75 ${barWidth} h-0.5 bg-gray-900/80 border border-cyan-900/30`}>
                 <div
                   className={`h-full transition-all ${robot.inStasis ? 'bg-blue-400' :
                     energyPct <= 20 ? 'bg-amber-400 animate-pulse' :
@@ -106,7 +105,7 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
       })}
 
       {/* Projectiles */}
-      {displayMode === 'COMBAT' && projectiles.map((p: any) => (
+      {displayMode === 'COMBAT' && projectiles.map((p) => (
         <div
           key={p.id}
           className="absolute"

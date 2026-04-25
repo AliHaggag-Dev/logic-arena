@@ -1,23 +1,24 @@
 "use client";
 
 import React from 'react';
+import { Socket } from 'socket.io-client';
 import { TacticalRadar } from './TacticalRadar';
+import { RobotState, ProjectileState } from '../types';
 
 interface MobileHUDProps {
   fps: number;
   fogEnabled: boolean;
   setFogEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-  socket: any;
+  socket: Socket | null;
   isConnected: boolean;
-  robots: any[];
-  obstacles: any[];
-  projectiles: any[];
+  robots: RobotState[];
+  projectiles: ProjectileState[];
   displayMode: string;
 }
 
 export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
   fps, fogEnabled, setFogEnabled, socket, isConnected,
-  robots, obstacles, projectiles, displayMode,
+  robots, projectiles, displayMode,
 }) => {
   const fpsColor = fps >= 50 ? '#4ade80' : fps >= 30 ? '#facc15' : '#f87171';
 
@@ -34,7 +35,6 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
               isMobile={true}
               isExpanded={false}
               robots={robots}
-              obstacles={obstacles}
               projectiles={projectiles}
               fogEnabled={fogEnabled}
               displayMode={displayMode}
