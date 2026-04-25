@@ -7,13 +7,16 @@ AliScript is a simple, line-based scripting language specifically designed for p
 - **Block Formatting**: Conditionals and loops require explicit block keywords (`THEN`, `DO`) and must be terminated with `END`.
 - **Case Insensitive**: Keywords can be written in uppercase or lowercase.
 - **Comments**: Use `//` to add comments.
+- **Parentheses**: Mathematical and logical expressions support grouping using parentheses. Example: `SET x = (a + b) * 2`
 
 ## Commands Reference
 
 ### Structural Flow
+- `SET [var] = expression`: Defines memory allocation. Example: `SET limit = (10 % 3) + 1`
 - `IF [condition] THEN ... ELSE ... END`: Branching conditionals.
 - `WHILE [condition] DO ... END`: Loops over a block of code (Max 10 iterations/tick limit applied automatically).
-- `FUNCTION [name] ... END` and `CALL [name]`: Define and invoke modular routines.
+- `FUNCTION [name] ... END`: Define a modular routine.
+- `CALL [name]`: Invoke a defined modular routine.
 
 ### Movement & Haptic Constraints
 - `MOVE`: Moves the robot forward.
@@ -24,14 +27,16 @@ AliScript is a simple, line-based scripting language specifically designed for p
 - `WAIT [ticks]`: Suspends code execution for the defined cycles (60 ticks = 1 second).
 
 ### Sensors & Combat
-- `SCAN`: Rotates the FOV cone +15° per call (sweeping the environment) and populates `scanned_distance`, `scanned_angle`, and `scanned_spotted`. Costs 5 energy but is not blocked by STASIS.
+- `SCAN`: Rotates the FOV cone +15° per call (sweeping the environment) and populates `scanned_distance`, `scanned_angle`, and `scanned_spotted`. Cost: 5 energy (not blocked by STASIS).
 - `FIRE`: Standard projectile (500ms cooldown).
-- `BURST_FIRE`: Rapid multi-fire variant.
+- `BURST_FIRE`: Rapid multi-fire variant. Fires 3 projectiles simultaneously at angles -8°, 0°, and +8°.
 
 ### Math & Logic
 Operators `+`, `-`, `*`, `/`, `%` are supported in calculations.
-- `SET [var] = expression`: Defines memory allocation. Example: `SET limit = 10 % 3`
-- `NOT`: Inverts a boolean condition. Example: `IF NOT spotted THEN SCAN`
+New logical and comparative operators:
+- `!=`, `<=`, `>=`, `<`, `>`, `==`
+- `AND`, `OR`, `NOT`
+Constants: `TRUE`, `FALSE`
 
 ### Memory Interface
 
@@ -52,15 +57,15 @@ Operators `+`, `-`, `*`, `/`, `%` are supported in calculations.
 #### Read-Only — FOV / Visibility
 - `CAN_SEE_ENEMY`: TRUE if one or more enemies are within the current FOV cone.
 - `VISIBLE_ENEMY_COUNT`: Number of enemies currently within the FOV cone.
-- `NEAREST_VISIBLE_X` / `NEAREST_VISIBLE_Y`: Coordinates of the nearest visible enemy (own position if none visible).
+- `NEAREST_VISIBLE_X` / `NEAREST_VISIBLE_Y`: Coordinates of the nearest visible enemy (own position if none).
 - `FOV_ANGLE`: Current FOV cone angle in degrees (default 120°).
 
 #### Read-Only — Scan Memory (populated by `SCAN`)
 - `scanned_distance`: Distance to nearest visible enemy as of the last `SCAN` call.
 - `scanned_angle`: Angle toward nearest visible enemy as of the last `SCAN` call.
-- `scanned_spotted`: TRUE if any enemy was visible during the last `SCAN` call.
+- `scanned_spotted`: TRUE if any enemy was visible during the last `SCAN`.
 
-#### Read-Only — Advanced Targeting (undocumented until now)
+#### Read-Only — Advanced Targeting (Hidden Identifiers)
 - `target_vx`: Velocity of the nearest visible enemy on the X axis. Useful for predictive leading shots.
 - `target_vy`: Velocity of the nearest visible enemy on the Y axis.
 - `last_spotted_x`: Last **known** X position of the nearest visible enemy. Retained between ticks — updated only when the enemy is within FOV.
@@ -115,4 +120,18 @@ END
 ```
 
 ## Energy System
-Each action (movement and firing) consumes energy. Robots regenerate energy passively over time. Complex commands like `BURST_FIRE` and `MOVE_FAST` consume energy at a significantly higher rate.
+Each action (movement and firing) consumes energy. Robots regenerate energy passively over time (3 energy per tick). Complex commands like `BURST_FIRE` and `MOVE_FAST` consume energy at a significantly higher rate.
+
+### Energy Costs Table
+| Command | Energy Cost | blocked by STASIS |
+| :--- | :--- | :--- |
+| `MOVE` | 2 per tick | Yes |
+| `MOVE_FAST` | 5 per tick | Yes |
+| `BACKUP` | 2 per tick | Yes |
+| `STOP` | 0 | No |
+| `PATHFIND` | 3 per tick | Yes |
+| `SCAN` | 5 per call | No |
+| `FIRE` | 50 per shot | Yes |
+| `BURST_FIRE` | 150 per burst | Yes |
+| `WAIT` | 0 | No |
+| `SET` / Logic | 0 | No |
