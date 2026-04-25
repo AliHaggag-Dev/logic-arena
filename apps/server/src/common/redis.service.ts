@@ -9,31 +9,31 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit() {
     this.client = new Redis({
-      host:                    process.env.REDIS_HOST ?? '127.0.0.1',
-      port:                    Number(process.env.REDIS_PORT) || 6379,
-      password:                process.env.REDIS_PASSWORD,
-      family:                  4, // Force IPv4 to prevent Node DNS timeouts
-      tls:                     {}, // explicitly pass tls as requested
+      host: process.env.REDIS_HOST ?? '127.0.0.1',
+      port: Number(process.env.REDIS_PORT) || 6379,
+      password: process.env.REDIS_PASSWORD,
+      family: 4, // Force IPv4 to prevent Node DNS timeouts
+      tls: {}, // explicitly pass tls as requested
       // ── Resilience ────────────────────────────────────────────────────────
-      lazyConnect:             true,        // don't block app startup
-      enableReadyCheck:        true,
-      connectTimeout:          5_000,
-      maxRetriesPerRequest:    2,
-      retryStrategy:           (times) => {
+      lazyConnect: true,        // don't block app startup
+      enableReadyCheck: true,
+      connectTimeout: 5_000,
+      maxRetriesPerRequest: 2,
+      retryStrategy: (times) => {
         if (times > 5) return null;         // stop retrying after 5 attempts
         return Math.min(times * 300, 3_000);
       },
       reconnectOnError: (err) => err.message.includes('READONLY'),
     });
 
-    this.client.on('connect',      () => {
+    this.client.on('connect', () => {
       console.log('Redis Connected Successfully');
       this.logger.log('✅ Redis connected');
     });
-    this.client.on('ready',        () => { this.isReady = true;  this.logger.log('✅ Redis ready'); });
+    this.client.on('ready', () => { this.isReady = true; this.logger.log('✅ Redis ready'); });
     this.client.on('reconnecting', () => { this.isReady = false; this.logger.warn('🔄 Redis reconnecting…'); });
-    this.client.on('error',        (err) => { this.isReady = false; this.logger.error(`❌ Redis: ${err.message}`); });
-    this.client.on('end',          () => { this.isReady = false; this.logger.warn('🔌 Redis disconnected'); });
+    this.client.on('error', (err) => { this.isReady = false; this.logger.error(`❌ Redis: ${err.message}`); });
+    this.client.on('end', () => { this.isReady = false; this.logger.warn('🔌 Redis disconnected'); });
 
     // Non-blocking connect — app boots regardless of Redis state
     this.client.connect().catch((err: any) => {
@@ -86,6 +86,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       } while (cursor !== '0');
       if (keys.length) await this.client.del(...keys);
     } catch { /* silent */ }
+  }
+
+  /** Atomic increment with TTL — returns the new count (0 if Redis is down). */
+  async incr(key: string, ttlSeconds: number): Promise<number> {
+    if (!this.isReady) return 0;
+    try {
+      const count = await this.client.incr(key);
+      if (count === 1) await this.client.expire(key, ttlSeconds);
+      return count;
+    } catch { return 0; }
   }
 
   get healthy(): boolean { return this.isReady; }

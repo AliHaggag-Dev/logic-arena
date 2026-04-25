@@ -8,6 +8,24 @@ import { ActionExecutor } from '../executor';
 import { ExpressionEvaluator } from './expression-facade';
 import { CONSTANTS } from './types';
 
+// ── Sandbox: allowed AST node types ─────────────────────────────────────────
+const ALLOWED_NODE_TYPES = new Set<string>([
+  NodeType.AssignmentStatement,
+  NodeType.IfStatement,
+  NodeType.WhileStatement,
+  NodeType.ActionStatement,
+  NodeType.CallStatement,
+  NodeType.WaitStatement,
+  NodeType.ScanStatement,
+  NodeType.FunctionDeclaration,
+]);
+
+// ── Sandbox: allowed action command strings ─────────────────────────────────
+const ALLOWED_ACTION_COMMANDS = new Set<string>([
+  'MOVE', 'MOVE_FAST', 'BACKUP', 'STOP', 'PATHFIND',
+  'WAIT', 'SCAN', 'FIRE', 'BURST_FIRE',
+]);
+
 export class BlockExecutor {
   constructor(
     private gameLoop: GameLoop,
@@ -26,9 +44,16 @@ export class BlockExecutor {
     for (const stmt of statements) {
       if (robot.health <= 0) return;
       if (Date.now() - tickStart > CONSTANTS.MAX_TICK_DURATION_MS) {
-        console.warn(`[SANDBOX] Robot ${robotId} exceeded tick CPU limit`);
+        console.warn(`SANDBOX: tick timeout for robot ${robotId}`);
         return;
       }
+
+      // ── Whitelist gate — skip unknown node types silently ────────────────
+      if (!ALLOWED_NODE_TYPES.has(stmt.type)) {
+        console.warn(`[SANDBOX] Skipping disallowed node type "${stmt.type}" for robot ${robotId}`);
+        continue;
+      }
+
       switch (stmt.type) {
         // SET always executes — even in STASIS (preserves stateful scripts)
         case NodeType.AssignmentStatement: {
@@ -91,6 +116,11 @@ export class BlockExecutor {
 
         case NodeType.ActionStatement: {
           const action = (stmt as ActionStatement).consequence;
+          const cmd = action.command.toUpperCase();
+          if (!ALLOWED_ACTION_COMMANDS.has(cmd)) {
+            console.warn(`[SANDBOX] Skipping disallowed action "${cmd}" for robot ${robotId}`);
+            break;
+          }
           this.executeActionIfOffCooldown(robotId, action, memory);
           break;
         }
