@@ -215,7 +215,7 @@ export default function ContactPage() {
 
         {/* Social row */}
         <div className="bg-bg-secondary/40 backdrop-blur-sm border border-accent/20 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_0_30px_rgba(var(--accent-rgb),0.03)] overflow-hidden relative">
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-accent/[0.02] to-transparent" />
+          <div className="absolute inset-0 pointer-events-none bg-linear-to-r from-accent/2 to-transparent" />
           <p className="text-[11px] font-black tracking-[0.3em] text-accent/60 uppercase z-10">
             OR REACH US ON_
           </p>

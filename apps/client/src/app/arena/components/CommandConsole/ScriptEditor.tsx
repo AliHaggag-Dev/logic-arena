@@ -69,7 +69,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
     const [syntaxValid, setSyntaxValid] = useState<boolean | null>(null);
     const [suggestions, setSuggestions] = useState<typeof AUTOCOMPLETE_SUGGESTIONS>([]);
     const [activeIdx, setActiveIdx] = useState(0);
-    const [caretXY, setCaretXY] = useState({ top: 0, left: 56 });
+    const [caretXY, setCaretXY] = useState({ bottom: 0, left: 56 });
 
     useEffect(() => {
         workerRef.current = new Worker(new URL('../../../../workers/parser.worker.ts', import.meta.url));
@@ -102,13 +102,15 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
             setSuggestions(filtered.slice(0, 8));
             setActiveIdx(0);
 
-            // Compute caret position — place dropdown 34px BELOW the current line
-            // so it never overlaps the text being typed
+            // Compute caret position — place dropdown ABOVE the current line
+            // using bottom-offset so it opens upward and never gets clipped
             const ta = e.target;
             const linesBefore = ta.value.slice(0, ta.selectionStart).split('\n');
+            const totalLines = ta.value.split('\n').length;
             const lineIdx = linesBefore.length - 1;
             const LINE_HEIGHT = 20;
-            setCaretXY({ top: lineIdx * LINE_HEIGHT + 28 + 34, left: 56 });
+            const linesBelow = totalLines - lineIdx - 1;
+            setCaretXY({ bottom: linesBelow * LINE_HEIGHT + 28 + 4, left: 56 });
         } else {
             setSuggestions([]);
         }
@@ -158,23 +160,27 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
     };
 
     return (
-        <div className="relative flex flex-col gap-3 flex-grow overflow-hidden">
-            <div className="relative flex-grow flex flex-col border border-cyan-900/40 bg-black/50 rounded-lg overflow-hidden group">
-                {/* Visual Overlay */}
-                <div
-                    className="absolute inset-0 p-3 pt-4 pointer-events-none font-mono text-[13px] leading-[20px] text-cyan-300 overflow-hidden"
-                    dangerouslySetInnerHTML={{ __html: highlightCode(scriptInput) }}
-                />
-                <textarea
-                    ref={textareaRef}
-                    className="absolute inset-0 w-full h-full p-3 pt-4 font-mono text-[13px] leading-[20px] text-transparent caret-purple-500 bg-transparent resize-none outline-none group-focus-within:border-cyan-500/50 transition-colors custom-scrollbar"
-                    style={{ paddingLeft: "56px" }}
-                    spellCheck={false}
-                    value={scriptInput}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    onBlur={() => setTimeout(() => setSuggestions([]), 150)}
-                />
+        <div className="relative flex flex-col gap-3 flex-grow overflow-visible">
+            <div className="relative flex-grow flex flex-col border border-cyan-900/40 bg-black/50 rounded-lg overflow-visible group min-h-0">
+                {/* Scroll wrapper — only this container clips */}
+                <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative custom-scrollbar">
+                    {/* Visual Overlay */}
+                    <div
+                        className="absolute inset-0 p-3 pt-4 pointer-events-none font-mono text-[13px] leading-[20px] text-cyan-300"
+                        dangerouslySetInnerHTML={{ __html: highlightCode(scriptInput) }}
+                    />
+                    <textarea
+                        title="script editor"
+                        ref={textareaRef}
+                        className="relative w-full min-h-full p-3 pt-4 font-mono text-[13px] leading-[20px] text-transparent caret-purple-500 bg-transparent resize-none outline-none group-focus-within:border-cyan-500/50 transition-colors"
+                        style={{ paddingLeft: "56px" }}
+                        spellCheck={false}
+                        value={scriptInput}
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        onBlur={() => setTimeout(() => setSuggestions([]), 150)}
+                    />
+                </div>
                 {/* Watermark */}
                 <div className="absolute top-2 right-4 text-[10px] text-cyan-600/50 tracking-[0.3em] font-black pointer-events-none select-none">
                     [ALISCRIPT_V2] {syntaxValid === false && <span className="text-red-500 ml-2 drop-shadow-[0_0_5px_rgba(239,68,68,0.8)] animate-pulse">SYNTAX_ERR</span>}
@@ -184,7 +190,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                 {suggestions.length > 0 && (
                     <div
                         className="absolute z-50 font-mono text-[11px] bg-black/95 border border-cyan-700/60 rounded-lg shadow-[0_8px_40px_rgba(0,0,0,0.9),0_0_20px_rgba(34,211,238,0.1)] overflow-hidden backdrop-blur-md min-w-[280px]"
-                        style={{ top: caretXY.top, left: caretXY.left }}
+                        style={{ bottom: caretXY.bottom, left: caretXY.left }}
                     >
                         <div className="px-3 py-1.5 border-b border-cyan-900/40 flex items-center gap-2">
                             <span className="text-cyan-600/60 text-[10px] tracking-widest uppercase">ALISCRIPT INTELLISENSE</span>

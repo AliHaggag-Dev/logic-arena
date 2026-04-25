@@ -60,13 +60,14 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
                 <div className="flex gap-1.5 p-1 bg-black/40 rounded-xl border border-cyan-900/30 shrink-0">
                     {tabs.map((tab) => (
                         <button
+                            title={tab.label}
+                            type="button"
                             key={tab.id}
                             onClick={() => setHubTab(tab.id)}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[9px] font-black tracking-[0.2em] uppercase transition-all duration-200 ${
-                                hubTab === tab.id
-                                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(34,211,238,0.1)]'
-                                    : 'text-cyan-700 hover:text-cyan-500 border border-transparent'
-                            }`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[9px] font-black tracking-[0.2em] uppercase transition-all duration-200 ${hubTab === tab.id
+                                ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(34,211,238,0.1)]'
+                                : 'text-cyan-700 hover:text-cyan-500 border border-transparent'
+                                }`}
                         >
                             <span className="text-xs">{tab.icon}</span>
                             {tab.label}
@@ -121,7 +122,7 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
                 </div>
 
                 {/* Editor fills all space */}
-                <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="flex flex-col flex-1 min-h-0 overflow-visible">
                     <ScriptEditor
                         scriptInput={scriptInput}
                         setScriptInput={setScriptInput}
@@ -181,8 +182,8 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
                 />
             </div>
 
-            <div className="flex flex-row flex-grow overflow-hidden relative min-h-0">
-                <div className="flex flex-col flex-1 min-h-0 gap-3 overflow-hidden relative">
+            <div className="flex flex-row flex-grow overflow-visible relative min-h-0">
+                <div className="flex flex-col flex-1 min-h-0 gap-3 overflow-visible relative">
                     {!isZenMode && (
                         <BotSelector
                             availableRobots={availableRobots}
