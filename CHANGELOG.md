@@ -853,3 +853,184 @@ route architecture into a clean group-based hierarchy.
   group hierarchy. All production bugs from v2.1.0 are resolved.
   Ready for: **Fog of War, Energy System, and University Competition
   features.**
+
+## [2.3.0] - The Refactor Blitz, AliScript Audit & PWA Launch - 2026-04-25
+
+Executed a full SOLID decomposition pass across every remaining God
+module on the server, shipped a complete AliScript v2.2 language audit
+with critical parser fixes, overhauled the A* pathfinding engine, and
+launched a production-grade PWA with a custom pull-to-refresh and
+Android nav bar theme sync.
+
+---
+
+### New Features
+
+* **Progressive Web App (PWA):** Launched full PWA support — manifest
+  with all 8 icon sizes (72→512), network-first service worker with
+  API/socket bypass and offline fallback, cyberpunk offline page with
+  pulsing hex and retry button, iOS meta tags, and safe-area CSS vars.
+  A `PWAInstallPrompt` component (30s delay, localStorage dismissed
+  state) is injected into the dashboard layout.
+
+* **Custom Pull-to-Refresh:** Replaced the browser's native
+  pull-to-refresh with a custom `PullToRefresh` component — rubber-band
+  easing, cyan arc that fills with pull progress (matching Thunder's
+  minimal style), spinning loader on release, and snap-back animation
+  on abort. Only activates when the page is scrolled to the top.
+
+* **AliScript v2.2 Language Audit:** Complete audit of the AliScript
+  parser and evaluator. Added `!=`, `<=`, `>=`, `AND`, `OR` operators,
+  full parenthesis grouping with `LPAREN`/`RPAREN` tokens, a proper
+  operator precedence tower (OR→AND→comparison→arithmetic→unary→primary),
+  and AND/OR short-circuit evaluation. BURST_FIRE now fires 3 projectiles
+  at -8/0/+8 degree spread with 150ms stagger and a liveness guard.
+  Hidden identifiers `target_vx`, `target_vy`, `last_spotted_x`,
+  `last_spotted_y`, and SCAN FOV behavior documented.
+
+* **A* Pathfinding Overhaul + Energy Rebalance:** Replaced the O(n²)
+  open list scan with a Map + binary min-heap for O(log n) extraction.
+  Fixed heuristic from Manhattan to Diagonal distance for free movement.
+  Fixed diagonal wall-clipping by checking both cardinal neighbors.
+  Added `nearestWalkable()` BFS fallback and Bresenham string-pulling
+  to eliminate zig-zag waypoints. Path cached per robot — zero per-tick
+  allocation. Grid built once via `ensureGrid()`. Energy rebalanced:
+  SCAN 5→1, FIRE 15→8, BURST_FIRE 20→15, MOVE_FAST 3→2. Regen rate
+  2→3 per tick. SCAN+PATHFIND loop now net neutral, SCAN+MOVE net +1.
+
+* **Updated Docs (v2.2.0):** All 6 documentation files updated to
+  reflect current state — AliScript operators/grouping/hidden
+  identifiers, 4-service auth split, CQRS for users/tournaments,
+  match gateway decomposition, energy costs table, BURST_FIRE spread
+  angles, STASIS mechanic, lava/trap bounds, BlockExecutor sandbox
+  architecture, and full ERD Mermaid diagram synced with schema.prisma.
+
+---
+
+### Refactoring — Server SOLID Decomposition
+
+* **Pathfinder** 362→modular: Deleted `pathfinder.ts`, replaced with
+  `pathfinder/` folder — `types.ts` (GridCell/PathNode/Vec2),
+  `min-heap.ts` (generic MinHeap replacing O(n) array scans),
+  `grid-builder.ts` (ensureGrid/invalidateGrid/nearestWalkable BFS),
+  `string-puller.ts` (Bresenham LOS + path smoothing as pure functions),
+  `astar.ts` (A* core only), `index.ts` (clean re-exports). Zero
+  behavior change — same A* logic, same output.
+
+* **LogicEvaluator** 223→modular: Extracted `types.ts` (sandbox limits),
+  `memory-sync.ts` (FOV and position sync), `logic-registry.ts` (robot
+  logic states and AST instances), `block-executor.ts` (recursive
+  statement interpreter with loop/condition handling and cooldown gates),
+  `logic-facade.ts` (replaces LogicEvaluator, unifies internal modules),
+  `index.ts` (public re-exports).
+
+* **ExpressionEvaluator** decomposed into SOLID modules:
+  `identifier-resolver.ts` (sandbox variable resolution — health, energy,
+  CAN_SEE_ENEMY, etc.), `operator-handlers.ts` (pure binary/unary/comparison
+  operators with zero engine coupling), `expression-facade.ts` (bridges
+  AST traversal to handlers, replaces ExpressionEvaluator).
+
+* **Engine `index.ts`** decomposed: Extracted `constants.ts` (lava zones,
+  arena boundaries, static config), `utils/animation-loop.ts` (Node
+  requestAnimationFrame polyfill), `core/robot-updater.ts` (movement,
+  lava damage, collision, FOV sync), `core/game-loop.ts` (master tick
+  loop orchestrating robots/projectiles/SpatialGrid). `index.ts` rewritten
+  as clean facade — zero upstream import changes needed.
+
+* **Match loop** 250→84 lines: Extracted `match.snapshot.ts` (runtime
+  payload mapping to replay queue cache), `match.win-condition.ts` (win
+  condition checks per game mode), `match.persistence.ts` (Prisma
+  transaction logic isolated from tick execution), `match.delta-diff.ts`
+  (frame differential generator minimizing broadcast payload).
+
+* **TournamentsController** 288→48 lines via CQRS: Extracted
+  `tournaments-query.service.ts` (read-only findAll/findOne with relation
+  enrichment) and `tournaments-command.service.ts` (create, join, bracket
+  generation, round advancement). Prisma logic fully out of controller.
+
+* **UsersService** 239→modular via CQRS: Extracted `types.ts` (Redis key
+  constants and user DTO interfaces), `users-query.service.ts` (profile
+  queries, win rate analytics, Redis cache mapping), `users-command.service.ts`
+  (password updates, account deletion, P2002 constraint handling). Controller
+  now injects Query and Command services separately.
+
+* **AuthService** 219→modular: Extracted `types.ts` (bcrypt rounds, Prisma
+  P2002 code), `auth-registration.service.ts` (local registration, P2002
+  handling, SMTP verification), `auth-login.service.ts` (login pipeline with
+  constant-time dummy hash for timing-attack prevention),
+  `auth-password.service.ts` (password reset flow), `auth-oauth.service.ts`
+  (Google/GitHub OAuth entity matching and creation). Controller injects
+  Registration/Login/Password services separately.
+
+---
+
+### Technical Scars and Resolutions
+
+* **Issue — "The Android Nav Bar Blindspot":**
+  The mobile navigation bar (3-button system bar on Android) was ignoring
+  the active theme color, staying black regardless of the Light or Desert
+  theme being active. The `theme-color` meta tag only affects the top
+  status bar — the bottom system nav bar reads the computed `background-color`
+  on `body`, which was set via a CSS variable that Android couldn't resolve
+  statically.
+
+  **Resolution:** Added `document.body.style.backgroundColor = color`
+  inside `ThemeMetaSync`'s `useEffect`, injecting an explicit inline style
+  on every theme change. This gives Android a static hex value it can
+  apply directly to the nav bar. Simultaneously fixed a `THEME_COLORS`
+  mismatch where `desert` was `#fdf4e3` in the provider but `#fdf6e3`
+  in `globals.css` — unified to `#fdf6e3`.
+
+* **Issue — "The Duplicate theme-color Meta Tags":**
+  After adding `media="(prefers-color-scheme: dark/light)"` attributes to
+  the `theme-color` meta tags, `ThemeMetaSync`'s `querySelector` was only
+  finding and updating the first tag, leaving the second stale. This caused
+  the status bar color to desync from the active theme on some devices.
+
+  **Resolution:** Reverted to a single `<meta name="theme-color">` tag
+  without any `media` attribute, letting `ThemeMetaSync` own full control
+  over the value programmatically on every theme change.
+
+* **Issue — "The Script Save Rate Limit Gap":**
+  The AliScript save endpoint had no server-side rate limiting, making it
+  vulnerable to script-spam abuse that could flood the database with rapid
+  sequential saves.
+
+  **Resolution:** Added Redis rate limiting on the script save route —
+  max 10 saves per minute per user. Introduced an `incr()` helper to
+  `RedisService` with a graceful Redis-down fallback to prevent the
+  feature from blocking saves during Redis outages.
+
+* **Issue — "The AliScript Operator Blindspot":**
+  The lexer had no lookahead for `<=`, `>=`, and `!=`, tokenizing them as
+  two separate tokens (`<` + `=`, etc.) and breaking all comparison
+  expressions using these operators. Additionally, parenthesized
+  sub-expressions crashed the parser because `LPAREN`/`RPAREN` were
+  never defined as token types.
+
+  **Resolution:** Added single-char lookahead in the lexer for all
+  compound operators. Added `LPAREN`/`RPAREN` token definitions and
+  integrated them into the expression parser's `primary()` rule as the
+  lowest-precedence entry point for grouped expressions.
+
+---
+
+### Infrastructure
+
+* Added `AliScript` sandbox size validation on create and update:
+  max 5,000 characters / 100 lines enforced server-side.
+* Unknown AST nodes in `block-executor` are now silently skipped
+  with a log entry instead of crashing the tick loop.
+* Tick timeout log format standardized:
+  `SANDBOX: tick timeout for robot {robotId}`.
+
+---
+
+### Current Status
+
+- Every major server module is now SOLID-compliant with no file
+  exceeding ~150 lines. The AliScript engine is audited, tested,
+  and handles all operator edge cases. The A* pathfinder is O(log n)
+  and zig-zag free. The PWA is live with native-feeling pull-to-refresh
+  and full Android theme sync. Ready for: **Fog of War, Energy System
+  UI, and University Competition features.**
