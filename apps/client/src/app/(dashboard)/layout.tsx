@@ -10,6 +10,7 @@ import { DashboardSidebar } from "./components/layout/components/DashboardSideba
 import { DashboardHeader } from "./components/layout/components/DashboardHeader";
 import { ChallengeModal } from "./components/layout/components/ChallengeModal";
 import { ToastNotification } from "./components/layout/components/ToastNotification";
+import { PWAInstallPrompt } from "../../components/PWAInstallPrompt";
 
 const MobileNav = dynamic(() => import("../../components/MobileNav").then((mod) => mod.MobileNav), { ssr: false });
 const MobileHeader = dynamic(() => import("../../components/MobileHeader").then((mod) => mod.MobileHeader), { ssr: false });
@@ -45,6 +46,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {isMobile && <MobileNav />}
 
         <ToastNotification toast={toast} isMobile={isMobile} />
+
+        {/* PWA install prompt — appears after 30s or immediately on /dashboard */}
+        <PWAInstallPrompt />
 
         {incomingChallenge && (
           <ChallengeModal

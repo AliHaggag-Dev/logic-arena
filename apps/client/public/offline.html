@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#030712" />
+  <title>Uplink Lost — Logic Arena</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #030712;
+      --accent: #22d3ee;
+      --accent-dim: rgba(34, 211, 238, 0.15);
+      --accent-border: rgba(34, 211, 238, 0.25);
+      --text: #f8fafc;
+      --text-muted: #9ca3af;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      overflow: hidden;
+    }
+
+    /* ── Grid background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(34,211,238,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34,211,238,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Radial glow ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(34,211,238,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 28px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    /* ── Hex icon ── */
+    .hex-wrap {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hex-icon {
+      font-size: 96px;
+      line-height: 1;
+      color: var(--accent);
+      text-shadow:
+        0 0 20px rgba(34, 211, 238, 0.8),
+        0 0 40px rgba(34, 211, 238, 0.5),
+        0 0 80px rgba(34, 211, 238, 0.3);
+      animation: hexPulse 2.4s ease-in-out infinite;
+      display: block;
+    }
+
+    @keyframes hexPulse {
+      0%, 100% {
+        opacity: 1;
+        text-shadow:
+          0 0 20px rgba(34, 211, 238, 0.8),
+          0 0 40px rgba(34, 211, 238, 0.5),
+          0 0 80px rgba(34, 211, 238, 0.3);
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.6;
+        text-shadow:
+          0 0 10px rgba(34, 211, 238, 0.4),
+          0 0 20px rgba(34, 211, 238, 0.2);
+        transform: scale(0.96);
+      }
+    }
+
+    /* ── Text ── */
+    .title {
+      font-size: clamp(22px, 6vw, 32px);
+      font-weight: 900;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-shadow: 0 0 12px rgba(34, 211, 238, 0.6);
+    }
+
+    .subtitle {
+      font-size: clamp(12px, 3vw, 14px);
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      max-width: 340px;
+      line-height: 1.6;
+    }
+
+    /* ── Status badge ── */
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--accent-border);
+      background: var(--accent-dim);
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.2s step-start infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* ── Button ── */
+    .retry-btn {
+      margin-top: 8px;
+      padding: 12px 36px;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.15), inset 0 0 12px rgba(34, 211, 238, 0.04);
+    }
+
+    .retry-btn:hover {
+      background: rgba(34, 211, 238, 0.1);
+      box-shadow: 0 0 24px rgba(34, 211, 238, 0.4), inset 0 0 20px rgba(34, 211, 238, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .retry-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ── Scan line ── */
+    .scanline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(34,211,238,0.4), transparent);
+      animation: scan 4s linear infinite;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0%   { top: 0; opacity: 1; }
+      95%  { opacity: 0.5; }
+      100% { top: 100%; opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <div class="container">
+    <span class="hex-icon">⬢</span>
+
+    <div>
+      <div class="title">UPLINK_LOST</div>
+    </div>
+
+    <p class="subtitle">
+      Connection to Logic Arena servers interrupted.<br />
+      Please check your network and try again.
+    </p>
+
+    <div class="badge">
+      <div class="badge-dot"></div>
+      STATUS: OFFLINE
+    </div>
+
+    <button class="retry-btn" onclick="window.location.reload()">
+      ⟳ RETRY CONNECTION
+    </button>
+  </div>
+</body>
+</html>

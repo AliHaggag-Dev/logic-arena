@@ -148,3 +148,30 @@ body {
 [data-theme='desert'] [class~="text-accent/50"] {
   color: rgba(var(--accent-rgb), 0.8) !important;
 }
+
+/* ─────────────────────────────────────────────────────────
+ *  SAFE AREA INSETS — Notch / Home Indicator / PWA standalone
+ * ───────────────────────────────────────────────────────── */
+
+:root {
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+}
+
+/* MobileHeader: push content below the status bar in standalone mode */
+.mobile-header-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* MobileNav: lift above the home indicator */
+.mobile-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Utility: apply both horizontal safe insets */
+.px-safe {
+  padding-left:  max(env(safe-area-inset-left, 0px), 16px);
+  padding-right: max(env(safe-area-inset-right, 0px), 16px);
+}
