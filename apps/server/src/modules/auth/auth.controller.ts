@@ -27,7 +27,9 @@ import {
   ResetPasswordDto,
   ResetPasswordSchema,
 } from './auth.dto';
-import { AuthService } from './auth.service';
+import { AuthRegistrationService } from './auth-registration.service';
+import { AuthLoginService } from './auth-login.service';
+import { AuthPasswordService } from './auth-password.service';
 
 /**
  * Auth endpoints are protected by a strict per-IP rate limit:
@@ -36,41 +38,45 @@ import { AuthService } from './auth.service';
 @Throttle({ auth: { limit: 5, ttl: 900_000 } })
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authRegistrationService: AuthRegistrationService,
+    private readonly authLoginService: AuthLoginService,
+    private readonly authPasswordService: AuthPasswordService,
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ZodValidationPipe(RegisterSchema))
   async register(@Body() body: RegisterDto) {
-    return this.authService.register(body.email, body.username, body.password);
+    return this.authRegistrationService.register(body.email, body.username, body.password);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(LoginSchema))
   async login(@Body() body: LoginDto) {
-    return this.authService.login(body.username, body.password);
+    return this.authLoginService.login(body.username, body.password);
   }
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(VerifyEmailSchema))
   async verifyEmail(@Body() body: VerifyEmailDto) {
-    return this.authService.verifyEmail(body.email, body.code);
+    return this.authRegistrationService.verifyEmail(body.email, body.code);
   }
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(ForgotPasswordSchema))
   async forgotPassword(@Body() body: ForgotPasswordDto) {
-    return this.authService.forgotPassword(body.email);
+    return this.authPasswordService.forgotPassword(body.email);
   }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(ResetPasswordSchema))
   async resetPassword(@Body() body: ResetPasswordDto) {
-    return this.authService.resetPassword(body.email, body.code, body.newPassword);
+    return this.authPasswordService.resetPassword(body.email, body.code, body.newPassword);
   }
 
   @Get('google')

@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
-import { AuthService } from '../auth.service';
+import { AuthOAuthService } from '../auth-oauth.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor(private authService: AuthService) {
+  constructor(private authOAuthService: AuthOAuthService) {
     const isDev = process.env.NODE_ENV === 'development';
     const callbackURL = isDev 
       ? 'http://localhost:3001/api/auth/google/callback' 
@@ -20,7 +20,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback) {
-    const user = await this.authService.findOrCreateOAuthUser({
+    const user = await this.authOAuthService.findOrCreateOAuthUser({
       provider: 'google',
       providerId: profile.id,
       email: profile.emails[0].value,
