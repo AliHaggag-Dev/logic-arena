@@ -17,7 +17,7 @@ export const TerminalOutput: React.FC<{ output: string[] }> = ({ output }) => {
                 if (line.includes("Logic Triggered")) colorClass = "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.4)]";
                 if (line.includes("[ERR]")) colorClass = "text-red-400";
 
-                return <p key={index} className={`${colorClass} break-words font-medium py-0.5`}>{line}</p>;
+                return <p key={index} className={`${colorClass} wrap-break-word font-medium py-0.5`}>{line}</p>;
             })}
             <div className="flex items-center gap-2 text-cyan-800/70 italic tracking-widest mt-2 shrink-0">
                 <span className="w-1.5 h-3.5 bg-cyan-800/50 animate-pulse"></span>

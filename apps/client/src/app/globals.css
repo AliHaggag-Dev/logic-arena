@@ -176,3 +176,15 @@ html, body {
   padding-left:  max(env(safe-area-inset-left, 0px), 16px);
   padding-right: max(env(safe-area-inset-right, 0px), 16px);
 }
+
+/* ─────────────────────────────────────────────────────────
+ *  CUSTOM SCROLLBAR (Command Console)
+ * ───────────────────────────────────────────────────────── */
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.2); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(34,211,238,0.5); }
+
+.mobile-zen-sheet .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.2); }
+.mobile-zen-sheet .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.5); }
