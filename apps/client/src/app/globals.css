@@ -48,8 +48,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-body {
+html, body {
   background: var(--bg-primary);
+  background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
