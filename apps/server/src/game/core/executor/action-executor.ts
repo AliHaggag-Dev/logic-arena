@@ -50,25 +50,30 @@ export class ActionExecutor {
         : (action as ActionExpression).command.toUpperCase();
 
     // --- Energy gate ---
-    // deduct() returns false if the robot is in STASIS and the command is blocked.
-    // It still deducts cost for allowed commands (SCAN costs energy even in stasis).
+    // FIRE / BURST_FIRE skip this gate — CombatExecutor handles their own
+    // visibility check first, then deducts energy only if a valid target exists.
+    // All other commands go through the upfront gate as normal.
     const robot = this.gameLoop.getRobots().find((r) => r.id === robotId);
     if (!robot) return;
 
-    const allowed = this.energyManager.deduct(robot, actionCommand);
-    if (!allowed) {
-      // Robot is in stasis and this command is blocked — emit STASIS hint once
-      if (this.cooldowns.shouldEmitAction(robotId, 'STASIS')) {
-        this.connectedClients.forEach((client) =>
-          client.emit('logicExecuted', {
-            robotId,
-            action: 'STASIS',
-            message: `[STASIS] ${robotId} is recharging...`,
-          }),
-        );
-        this.cooldowns.markEmitted(robotId, 'STASIS');
+    const isCombatCommand = actionCommand === 'FIRE' || actionCommand === 'BURST_FIRE';
+
+    if (!isCombatCommand) {
+      const allowed = this.energyManager.deduct(robot, actionCommand);
+      if (!allowed) {
+        // Robot is in stasis and this command is blocked — emit STASIS hint once
+        if (this.cooldowns.shouldEmitAction(robotId, 'STASIS')) {
+          this.connectedClients.forEach((client) =>
+            client.emit('logicExecuted', {
+              robotId,
+              action: 'STASIS',
+              message: `[STASIS] ${robotId} is recharging...`,
+            }),
+          );
+          this.cooldowns.markEmitted(robotId, 'STASIS');
+        }
+        return;
       }
-      return;
     }
 
     // Mark that the robot performed an active command (blocks regen for this tick)
