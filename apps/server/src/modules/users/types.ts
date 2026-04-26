@@ -8,6 +8,14 @@ export const loadoutKey = (id: string) => `user:loadout:${id}`;
 export const BCRYPT_ROUNDS = 12;
 export const PRISMA_UNIQUE_VIOLATION = 'P2002';
 
+export interface CombatStats {
+  efficiency: number;  // damage dealt per energy consumed (0-100)
+  aggression: number;  // offensive pressure: shots fired, damage dealt (0-100)
+  defense:    number;  // survival: health remaining, time alive (0-100)
+  precision:  number;  // hit accuracy: hits / shots (0-100)
+  speed:      number;  // match pace: commands / second (0-100)
+}
+
 export interface UserProfile {
   username: string;
   email: string;
@@ -23,6 +31,7 @@ export interface UserProfile {
   hasGoogle: boolean;
   hasGithub: boolean;
   provider: string | null;
+  combatStats: CombatStats;
 }
 
 export interface MatchSummary {

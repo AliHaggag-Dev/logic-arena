@@ -24,6 +24,7 @@ model User {
   resetCode           String?
   resetExpiry         DateTime?
   rank                Int                @default(0)
+  combatStats         Json? // { efficiency, aggression, defense, precision, speed } (0-100)
   currentLevel        Int                @default(1)
   selectedRobotId     String             @default("unit-01")
   selectedColor       String             @default("#22d3ee")

@@ -3,175 +3,416 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
-import { ProfileData } from "./types";
+import { ProfileData, CombatStats } from "./types";
 import { StatCard } from "./components/StatCard";
 import { MatchHistoryTable } from "./components/MatchHistoryTable";
+import { RadarChart } from "./components/RadarChart";
+import { StatRing } from "./components/StatRing";
+import { OperatorBadge } from "./components/OperatorBadge";
 import { fmtDate } from "./utils";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 
+const EMPTY_STATS: CombatStats = {
+  efficiency: 0, aggression: 0, defense: 0, precision: 0, speed: 0,
+};
+
+// ─── Skeleton shimmer block ──────────────────────────────────────────────────
+function Shimmer({ className }: { className?: string }) {
+  return (
+    <div
+      className={`rounded-lg animate-[shimmer_1.5s_infinite] ${className ?? ""}`}
+      style={{
+        background:
+          "linear-gradient(90deg, rgba(var(--accent-rgb),0.03) 0%, rgba(var(--accent-rgb),0.09) 50%, rgba(var(--accent-rgb),0.03) 100%)",
+        backgroundSize: "200% 100%",
+      }}
+    />
+  );
+}
+
+// ─── HEX avatar component ────────────────────────────────────────────────────
+function HexAvatar({
+  username,
+  color,
+  size,
+}: {
+  username: string;
+  color: string;
+  size: number;
+}) {
+  const initials = username.slice(0, 2).toUpperCase();
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        position: "relative",
+        flexShrink: 0,
+      }}
+      aria-label={`Avatar for ${username}`}
+    >
+      <svg
+        viewBox="0 0 100 100"
+        width={size}
+        height={size}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <defs>
+          <filter id="hex-glow">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        {/* Outer hex */}
+        <polygon
+          points="50,4 95,27.5 95,72.5 50,96 5,72.5 5,27.5"
+          fill={`${color}18`}
+          stroke={color}
+          strokeWidth="2"
+          filter="url(#hex-glow)"
+        />
+        {/* Inner hex */}
+        <polygon
+          points="50,16 84,34.5 84,65.5 50,84 16,65.5 16,34.5"
+          fill={`${color}10`}
+          stroke={`${color}40`}
+          strokeWidth="1"
+        />
+        {/* Initials */}
+        <text
+          x="50" y="58"
+          textAnchor="middle"
+          fontFamily="monospace"
+          fontWeight="900"
+          fontSize="28"
+          fill={color}
+          style={{ filter: `drop-shadow(0 0 6px ${color})` }}
+        >
+          {initials}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+// ─── Section header ──────────────────────────────────────────────────────────
+function SectionHeader({ label, sub }: { label: string; sub?: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-5">
+      <div
+        className="h-[1px] w-4 shrink-0"
+        style={{ background: "var(--accent)", opacity: 0.6 }}
+      />
+      <h2
+        className="text-[10px] font-black tracking-[0.3em] uppercase m-0 shrink-0"
+        style={{ color: "var(--accent)", opacity: 0.7 }}
+      >
+        {label}
+      </h2>
+      {sub && (
+        <span className="text-[8px] text-accent/30 tracking-[0.15em] font-mono shrink-0">
+          {sub}
+        </span>
+      )}
+      <div
+        className="h-[1px] flex-1"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(var(--accent-rgb),0.3), transparent)",
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Main page ───────────────────────────────────────────────────────────────
 export default function ProfilePage() {
-  const router = useRouter();
+  const router  = useRouter();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error,   setError]   = useState<string | null>(null);
+
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetch = async () => {
       try {
         const res = await apiClient.get("/users/profile");
         setProfile(res.data);
-      } catch (err: any) {
-        if (err.response?.status === 401) {
+      } catch (err: unknown) {
+        const e = err as { response?: { status?: number }; message?: string };
+        if (e.response?.status === 401) {
           router.push("/login");
         } else {
-          setError(err.message ?? "Unknown error");
+          setError(e.message ?? "Unknown error");
         }
       } finally {
         setLoading(false);
       }
     };
-
-    fetchProfile();
+    fetch();
   }, [router]);
 
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const stats   = profile?.combatStats ?? EMPTY_STATS;
+  const username = loading ? "LOADING…" : error ? "ERROR" : profile?.username ?? "UNKNOWN";
+  const accentColor = profile?.combatStats
+    ? "var(--accent)"
+    : "var(--accent)";
 
-  const DesktopLayout = (
-    <div className="max-w-[900px] mx-auto px-6 pt-12 pb-[120px] relative z-10 animate-[fadeIn_0.35s_ease]">
-      {/* ── Header ── */}
-      <div className="border-b border-accent/20 pb-6 mb-9">
-        <h1 className="m-0 text-[clamp(24px,4vw,36px)] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-none break-words">
-          {loading ? "LOADING..." : error ? "ERROR" : profile?.username ?? "UNKNOWN"}
-        </h1>
-        {profile && (
-          <p className="mt-2 text-[10px] text-accent/70 tracking-[0.15em] flex items-center gap-2 flex-wrap">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_var(--color-emerald-500)] block shrink-0" />
-            RANK #{profile.rank} <span>·</span> MEMBER SINCE {fmtDate(profile.memberSince).toUpperCase()}
-          </p>
-        )}
-      </div>
+  // Dominant stat label
+  const dominantKey = profile
+    ? (Object.entries(stats).sort((a, b) => b[1] - a[1])[0][0] as keyof CombatStats)
+    : null;
+  const STAT_LABELS: Record<keyof CombatStats, string> = {
+    efficiency: "EFFICIENT", aggression: "AGGRESSIVE",
+    defense: "DEFENSIVE", precision: "PRECISE", speed: "SWIFT",
+  };
 
-      {/* ── Error state ── */}
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-[20px_24px] text-[#fca5a5] text-[11px] tracking-[0.12em] mb-8">
-          [ERR] UPLINK FAILURE: {error}
-        </div>
+  const profileColor = profile?.combatStats
+    ? (() => {
+        const dom = dominantKey!;
+        const map: Record<keyof CombatStats, string> = {
+          efficiency: "#22d3ee",
+          aggression: "#f97316",
+          defense:    "#4ade80",
+          precision:  "#a855f7",
+          speed:      "#facc15",
+        };
+        return map[dom];
+      })()
+    : "var(--accent)";
+
+  // ── Shared Hero section ────────────────────────────────────────────────────
+  const HeroSection = (
+    <div
+      className={`relative flex ${isMobile ? "flex-col items-center text-center gap-5" : "flex-row items-center gap-7"} pb-7 mb-7`}
+      style={{ borderBottom: "1px solid rgba(var(--accent-rgb),0.15)" }}
+    >
+      {/* Hex avatar */}
+      {loading ? (
+        <div
+          className="rounded-full animate-[shimmer_1.5s_infinite] shrink-0"
+          style={{
+            width: isMobile ? 80 : 100,
+            height: isMobile ? 80 : 100,
+            background: "rgba(var(--accent-rgb),0.07)",
+            backgroundSize: "200% 100%",
+          }}
+        />
+      ) : (
+        <HexAvatar
+          username={profile?.username ?? "XX"}
+          color={profileColor}
+          size={isMobile ? 80 : 100}
+        />
       )}
 
-      {/* ── Stats grid ── */}
-      {!error && (
-        <>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-4 mb-10">
-            {loading ? (
-              [0, 1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-[100px] rounded-[10px] animate-[shimmer_1.5s_infinite]"
-                  style={{
-                    background: "linear-gradient(90deg, rgba(var(--accent-rgb),0.03) 0%, rgba(var(--accent-rgb),0.08) 50%, rgba(var(--accent-rgb),0.03) 100%)",
-                    backgroundSize: "200% 100%",
-                  }}
-                />
-              ))
-            ) : (
-              <>
-                <StatCard label="Total Matches" value={profile?.totalMatches ?? 0} accent="var(--accent)" />
-                <StatCard label="Wins" value={profile?.wins ?? 0} accent="var(--color-emerald-500)" />
-                <StatCard label="Losses" value={profile?.losses ?? 0} accent="var(--color-red-500)" />
-                <StatCard label="Win Rate" value={`${profile?.winRate ?? 0}%`} accent="#a855f7" />
-              </>
+      <div className={`flex flex-col ${isMobile ? "items-center" : "items-start"} gap-2 flex-1 min-w-0`}>
+        <h1
+          className="m-0 font-black tracking-[0.18em] leading-none break-words"
+          style={{
+            fontSize: isMobile ? "clamp(24px,6vw,32px)" : "clamp(28px,4vw,42px)",
+            color: profileColor,
+            textShadow: `0 0 20px ${profileColor}80`,
+          }}
+        >
+          {username}
+        </h1>
+
+        {profile && !error && (
+          <div className={`flex ${isMobile ? "flex-col items-center" : "flex-row items-center"} gap-3 flex-wrap`}>
+            <OperatorBadge rank={profile.rank} />
+
+            {dominantKey && (
+              <span
+                className="text-[9px] font-bold tracking-[0.2em] font-mono px-2 py-1 rounded"
+                style={{
+                  color: profileColor,
+                  background: `${profileColor}15`,
+                  border: `1px solid ${profileColor}30`,
+                }}
+              >
+                {STAT_LABELS[dominantKey]} OPERATOR
+              </span>
             )}
           </div>
+        )}
 
-          {/* ── Match History section ── */}
-          <div>
-            <div className="flex justify-between items-center mb-3.5">
-              <h2 className="text-[10px] tracking-[0.22em] font-bold text-accent/50 m-0 uppercase">
-                Match History
-              </h2>
-              {profile && (
-                <span className="text-[10px] text-accent/25 tracking-[0.15em]">
-                  TOTAL: {profile.totalMatches}
-                </span>
-              )}
-            </div>
-
-            <MatchHistoryTable loading={loading} history={profile?.matchHistory ?? []} />
-          </div>
-        </>
-      )}
-    </div>
-  );
-
-  const MobileLayout = (
-    <div className="w-full px-4 pt-6 pb-[env(safe-area-inset-bottom)] relative z-10 animate-[fadeIn_0.35s_ease]">
-      {/* ── Header ── */}
-      <div className="border-b border-accent/20 pb-5 mb-6 text-center">
-        <h1 className="m-0 text-3xl font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-tight break-words">
-          {loading ? "LOADING..." : error ? "ERROR" : profile?.username ?? "UNKNOWN"}
-        </h1>
         {profile && (
-          <div className="mt-3 text-[10px] text-accent/70 tracking-[0.15em] flex flex-col items-center gap-1.5 focus:outline-none">
-            <span className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_var(--color-emerald-500)] block shrink-0" />
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="flex items-center gap-1.5 text-[10px] text-accent/50 tracking-[0.12em] font-mono">
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{
+                  background: "#4ade80",
+                  boxShadow: "0 0 6px #4ade80",
+                }}
+              />
+              ONLINE
+            </span>
+            <span className="text-accent/20 text-[10px]">•</span>
+            <span className="text-[10px] text-accent/40 tracking-[0.12em] font-mono">
               RANK #{profile.rank}
             </span>
-            <span>MEMBER SINCE {fmtDate(profile.memberSince).toUpperCase()}</span>
+            <span className="text-accent/20 text-[10px]">•</span>
+            <span className="text-[10px] text-accent/40 tracking-[0.12em] font-mono">
+              SINCE {fmtDate(profile.memberSince).toUpperCase()}
+            </span>
           </div>
         )}
       </div>
 
-      {/* ── Error state ── */}
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-[16px] text-[#fca5a5] text-[10px] tracking-[0.12em] mb-6">
-          [ERR] UPLINK FAILURE: {error}
-        </div>
+      {/* Corner scanline decoration (desktop) */}
+      {!isMobile && (
+        <div
+          className="absolute top-0 right-0 w-16 h-16 pointer-events-none opacity-20"
+          style={{
+            backgroundImage: "repeating-linear-gradient(0deg, rgba(var(--accent-rgb),0.3) 0px, rgba(var(--accent-rgb),0.3) 1px, transparent 1px, transparent 8px)",
+          }}
+        />
       )}
+    </div>
+  );
 
-      {/* ── Stats grid ── */}
-      {!error && (
+  // ── Stat cards row ─────────────────────────────────────────────────────────
+  const StatCardsSection = (
+    <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-4"} gap-3 mb-8`}>
+      {loading ? (
+        [0, 1, 2, 3].map((i) => (
+          <Shimmer key={i} className={isMobile ? "h-[90px]" : "h-[100px]"} />
+        ))
+      ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 mb-8 w-full">
-            {loading ? (
-              [0, 1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-[90px] rounded-xl animate-[shimmer_1.5s_infinite]"
-                  style={{
-                    background: "linear-gradient(90deg, rgba(var(--accent-rgb),0.03) 0%, rgba(var(--accent-rgb),0.08) 50%, rgba(var(--accent-rgb),0.03) 100%)",
-                    backgroundSize: "200% 100%",
-                  }}
-                />
-              ))
-            ) : (
-              <>
-                <StatCard label="Total Matches" value={profile?.totalMatches ?? 0} accent="var(--accent)" />
-                <StatCard label="Wins" value={profile?.wins ?? 0} accent="var(--color-emerald-500)" />
-                <StatCard label="Losses" value={profile?.losses ?? 0} accent="var(--color-red-500)" />
-                <StatCard label="Win Rate" value={`${profile?.winRate ?? 0}%`} accent="#a855f7" />
-              </>
-            )}
-          </div>
-
-          {/* ── Match History section ── */}
-          <div className="w-full">
-            <div className="flex justify-between items-center mb-4 w-full">
-              <h2 className="text-[11px] tracking-[0.2em] font-bold text-accent/60 m-0 uppercase">
-                Match History
-              </h2>
-              {profile && (
-                <span className="text-[9px] text-accent/30 tracking-[0.15em]">
-                  TOTAL: {profile.totalMatches}
-                </span>
-              )}
-            </div>
-
-            <MatchHistoryTable loading={loading} history={profile?.matchHistory ?? []} />
-          </div>
+          <StatCard label="Total Matches" value={profile?.totalMatches ?? 0} accent="var(--accent)" />
+          <StatCard label="Wins"          value={profile?.wins ?? 0}         accent="#4ade80" />
+          <StatCard label="Losses"        value={profile?.losses ?? 0}       accent="#f87171" />
+          <StatCard label="Win Rate"      value={`${profile?.winRate ?? 0}%`} accent="#a855f7" />
         </>
       )}
     </div>
   );
+
+  // ── Analytics section (Radar + Rings) ─────────────────────────────────────
+  const AnalyticsSection = (
+    <div className="mb-8">
+      <SectionHeader label="OPERATOR ANALYTICS" sub="COMBAT DNA" />
+
+      {loading ? (
+        <Shimmer className={isMobile ? "h-[340px]" : "h-[300px]"} />
+      ) : (
+        <div
+          className={`rounded-xl overflow-hidden`}
+          style={{
+            background: "rgba(var(--accent-rgb),0.025)",
+            border: "1px solid rgba(var(--accent-rgb),0.12)",
+            boxShadow: "0 0 40px rgba(var(--accent-rgb),0.05)",
+          }}
+        >
+          {/* Top strip — glows */}
+          <div
+            className="h-[2px] w-full"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${profileColor}, transparent)`,
+              opacity: 0.6,
+            }}
+          />
+
+          <div className={`flex ${isMobile ? "flex-col items-center gap-8" : "flex-row items-center justify-around gap-4"} p-6`}>
+            {/* Radar chart */}
+            <div className="flex flex-col items-center gap-2">
+              <RadarChart stats={stats} size={isMobile ? 260 : 280} />
+              <p className="text-[8px] text-accent/30 tracking-[0.18em] font-mono m-0">
+                COMBAT SIGNATURE ANALYSIS
+              </p>
+            </div>
+
+            {/* Stat rings */}
+            <div className={`grid ${isMobile ? "grid-cols-3" : "grid-cols-2"} gap-6`}>
+              <StatRing
+                value={profile?.winRate ?? 0}
+                label="WIN RATE"
+                sublabel="%"
+                color="#a855f7"
+                size={isMobile ? 78 : 88}
+              />
+              <StatRing
+                value={Math.min(100, (profile?.wins ?? 0) * 10)}
+                label="WIN COUNT"
+                sublabel={`${profile?.wins ?? 0} wins`}
+                color="#4ade80"
+                size={isMobile ? 78 : 88}
+              />
+              <StatRing
+                value={Math.min(100, profile?.rank ?? 0)}
+                label="RANK PTS"
+                sublabel={`#${profile?.rank ?? 0}`}
+                color="var(--accent)"
+                size={isMobile ? 78 : 88}
+              />
+              <StatRing
+                value={stats.efficiency}
+                label="EFFICIENCY"
+                sublabel="dmg/energy"
+                color="#22d3ee"
+                size={isMobile ? 78 : 88}
+              />
+              <StatRing
+                value={stats.aggression}
+                label="AGGRESSION"
+                sublabel="dmg output"
+                color="#f97316"
+                size={isMobile ? 78 : 88}
+              />
+              <StatRing
+                value={stats.precision}
+                label="PRECISION"
+                sublabel="targeting"
+                color="#a855f7"
+                size={isMobile ? 78 : 88}
+              />
+            </div>
+          </div>
+
+          {/* Bottom strip */}
+          <div
+            className="h-[1px] w-full"
+            style={{
+              background: "linear-gradient(90deg, transparent, rgba(var(--accent-rgb),0.25), transparent)",
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  // ── Match history section ──────────────────────────────────────────────────
+  const HistorySection = (
+    <div>
+      <SectionHeader
+        label="BATTLE RECORDS"
+        sub={profile ? `TOTAL: ${profile.totalMatches}` : undefined}
+      />
+      <MatchHistoryTable
+        loading={loading}
+        history={profile?.matchHistory ?? []}
+        isMobile={isMobile}
+      />
+    </div>
+  );
+
+  // ── Error banner ───────────────────────────────────────────────────────────
+  const ErrorBanner = error ? (
+    <div
+      className="rounded-lg p-4 text-[11px] tracking-[0.12em] mb-8 font-mono"
+      style={{
+        background: "rgba(239,68,68,0.08)",
+        border: "1px solid rgba(239,68,68,0.25)",
+        color: "#fca5a5",
+      }}
+    >
+      [ERR] UPLINK FAILURE: {error}
+    </div>
+  ) : null;
 
   return (
     <>
@@ -181,22 +422,65 @@ export default function ProfilePage() {
           100% { background-position: -200% 0; }
         }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
+          from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scanline {
+          0%   { transform: translateY(-100%); }
+          100% { transform: translateY(100vh); }
         }
       `}</style>
 
-      <div className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile ? "pb-[calc(80px+env(safe-area-inset-bottom))]" : ""}`}>
+      <div
+        className={`min-h-screen font-mono relative overflow-hidden`}
+        style={{
+          background: "var(--bg-primary)",
+          color: "var(--text-primary)",
+          paddingBottom: isMobile ? "calc(80px + env(safe-area-inset-bottom))" : undefined,
+        }}
+      >
         {/* Grid background */}
         <div
           className="fixed inset-0 pointer-events-none z-0"
           style={{
-            backgroundImage: "linear-gradient(rgba(var(--accent-rgb),0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.07) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
+            backgroundImage:
+              "linear-gradient(rgba(var(--accent-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.06) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
           }}
         />
 
-        {isMobile ? MobileLayout : DesktopLayout}
+        {/* Corner glow accent */}
+        <div
+          className="fixed top-0 right-0 pointer-events-none z-0 w-[500px] h-[500px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, ${profileColor}08 0%, transparent 70%)`,
+          }}
+        />
+        <div
+          className="fixed bottom-0 left-0 pointer-events-none z-0 w-[400px] h-[400px] rounded-full"
+          style={{
+            background: `radial-gradient(circle, rgba(var(--accent-rgb),0.04) 0%, transparent 70%)`,
+          }}
+        />
+
+        {/* Content */}
+        <div
+          className="relative z-10 mx-auto animate-[fadeIn_0.4s_ease]"
+          style={{
+            maxWidth: isMobile ? "100%" : 960,
+            padding: isMobile ? "24px 16px 0" : "48px 32px 120px",
+          }}
+        >
+          {HeroSection}
+          {ErrorBanner}
+          {!error && (
+            <>
+              {StatCardsSection}
+              {AnalyticsSection}
+              {HistorySection}
+            </>
+          )}
+        </div>
       </div>
     </>
   );

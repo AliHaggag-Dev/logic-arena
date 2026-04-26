@@ -171,6 +171,10 @@ export class MatchEngine {
     return this.gameLoop.getGameState();
   }
 
+  getInitialPlayers(): { id: string; script: string; color?: string; model?: string }[] {
+    return this.initialPlayers;
+  }
+
   /**
    * Returns per-robot efficiency scores keyed by robot ID.
    * Called by the gateway when the match ends.

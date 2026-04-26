@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { RedisService } from '../../common/redis.service';
-import { UserProfile, MatchSummary, UserLoadout, profileKey, loadoutKey, PROFILE_TTL } from './types';
+import { UserProfile, MatchSummary, UserLoadout, CombatStats, profileKey, loadoutKey, PROFILE_TTL } from './types';
 
 @Injectable()
 export class UsersQueryService {
@@ -26,6 +26,7 @@ export class UsersQueryService {
         googleId: true,
         githubId: true,
         provider: true,
+        combatStats: true,
         Match: {
           orderBy: { createdAt: 'desc' },
           select: {
@@ -59,6 +60,8 @@ export class UsersQueryService {
       };
     });
 
+    const zeroCombatStats: CombatStats = { efficiency: 0, aggression: 0, defense: 0, precision: 0, speed: 0 };
+
     const profile: UserProfile = {
       username: user.username,
       email: user.email,
@@ -74,6 +77,7 @@ export class UsersQueryService {
       hasGoogle: !!user.googleId,
       hasGithub: !!user.githubId,
       provider: user.provider,
+      combatStats: (user.combatStats as CombatStats | null) ?? zeroCombatStats,
     };
 
     await this.redis.set(profileKey(userId), profile, PROFILE_TTL);

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MatchEntry } from "../types";
 import { fmtDuration, fmtDate } from "../utils";
-import { useMediaQuery } from "../../../../hooks/useMediaQuery";
 
 function SkeletonRow() {
   return (
@@ -27,6 +26,7 @@ function ReplayButton({ id }: ReplayButtonProps) {
 
   return (
     <button
+      type="button"
       onClick={() => router.push(`/replay/${id}`)}
       className="inline-flex items-center gap-[5px] p-[4px_10px] rounded text-[9px] font-bold tracking-[0.14em] cursor-pointer font-mono whitespace-nowrap transition-all duration-200"
       style={{
@@ -94,10 +94,10 @@ function MatchRow({ m, isLast }: TableRowProps) {
 interface Props {
   loading: boolean;
   history: MatchEntry[];
+  isMobile: boolean;
 }
 
-export function MatchHistoryTable({ loading, history }: Props) {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+export function MatchHistoryTable({ loading, history, isMobile }: Props) {
 
   const DesktopTable = (
     <div className="rounded-[10px] border border-accent/10 overflow-hidden bg-card/50 backdrop-blur-md">
@@ -202,6 +202,7 @@ export function MatchHistoryTable({ loading, history }: Props) {
               </div>
               <div className="w-full mt-2 border-t border-accent/10 pt-3">
                 <button
+                  type="button"
                   onClick={() => router.push(`/replay/${m.id}`)}
                   className="w-full h-[44px] flex items-center justify-center bg-accent/10 border border-accent/40 text-accent font-bold tracking-[0.2em] text-[10px] rounded-lg transition-transform active:scale-95 shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase"
                 >
