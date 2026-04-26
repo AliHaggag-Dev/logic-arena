@@ -3,29 +3,34 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useSearchParams } from 'next/navigation';
+import { API_BASE_URL } from '../../../lib/api-client';
 import {
   GameState, RobotState, ProjectileState, ObstacleState,
   FiredTracer, SpeechBubbleState,
 } from '../types';
 
 export const useGameState = (scriptId: string | null, mode: string | null) => {
-  const searchParams    = useSearchParams();
-  const matchIdFromUrl  = searchParams.get('matchId');
+  const searchParams = useSearchParams();
+  const matchIdFromUrl = searchParams.get('matchId');
 
   const socket: Socket = useMemo(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    return io('http://localhost:3001', { autoConnect: false, auth: { token } });
+    const wsUrl = API_BASE_URL
+      .replace('https://', 'wss://')
+      .replace('http://', 'ws://')
+      .replace(/\/api$/, '');
+    return io(wsUrl, { autoConnect: false, auth: { token } });
   }, []);
 
   // Core game state — ref for zero-re-render R3F reads, state for UI
   const gameStateRef = useRef<GameState>({ robots: [], projectiles: [], obstacles: [] });
-  const [uiState, setUiState]               = useState<GameState>({ robots: [], projectiles: [], obstacles: [] });
-  const [firedTracer, setFiredTracer]       = useState<FiredTracer | null>(null);
-  const [speechBubble, setSpeechBubble]     = useState<SpeechBubbleState | null>(null);
+  const [uiState, setUiState] = useState<GameState>({ robots: [], projectiles: [], obstacles: [] });
+  const [firedTracer, setFiredTracer] = useState<FiredTracer | null>(null);
+  const [speechBubble, setSpeechBubble] = useState<SpeechBubbleState | null>(null);
   const [selectedRobotId, setSelectedRobotId] = useState<string>('');
-  const [matchResult, setMatchResult]       = useState<{
-    winner:           { id: string; color: string } | null;
-    draw:             boolean;
+  const [matchResult, setMatchResult] = useState<{
+    winner: { id: string; color: string } | null;
+    draw: boolean;
     efficiencyScores: Record<string, number>;
   } | null>(null);
   const [serverConfirmedMode, setServerConfirmedMode] = useState<string>(mode || 'COMBAT');
@@ -33,7 +38,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
   // FOG toggle (spectator/debug)
   const [fogEnabled, setFogEnabled] = useState<boolean>(true);
 
-  const lastUiUpdateRef  = useRef(0);
+  const lastUiUpdateRef = useRef(0);
   const tracerTimeoutRef = useRef<number | null>(null);
   const speechTimeoutRef = useRef<number | null>(null);
 
@@ -87,7 +92,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
         }
 
         if (diff.projectiles) parsed.projectiles = diff.projectiles;
-        if (diff.obstacles)   parsed.obstacles   = diff.obstacles;
+        if (diff.obstacles) parsed.obstacles = diff.obstacles;
 
       } else if (payload.type === 'full') {
         parsed = payload.state as GameState;
@@ -105,8 +110,8 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
         });
         const projRaw = payload['projectiles'];
         parsed.projectiles = Array.isArray(projRaw) ? (projRaw as ProjectileState[]) : [];
-        const obsRaw  = payload['obstacles'];
-        parsed.obstacles   = Array.isArray(obsRaw)  ? (obsRaw  as ObstacleState[])   : [];
+        const obsRaw = payload['obstacles'];
+        parsed.obstacles = Array.isArray(obsRaw) ? (obsRaw as ObstacleState[]) : [];
       }
 
       gameStateRef.current = parsed;
@@ -126,7 +131,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
     const handleLogicExecuted = (data: { robotId: string; action: string; message?: string }) => {
       if (data.action === 'FIRE') {
         const currentState = gameStateRef.current;
-        const targetRobot  = currentState.robots.find(r => r.id !== data.robotId);
+        const targetRobot = currentState.robots.find(r => r.id !== data.robotId);
         if (targetRobot) {
           setFiredTracer({ robotId: data.robotId, targetPosition: targetRobot.position });
           if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
@@ -145,26 +150,26 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
     };
 
     const handleMatchOver = (data: {
-      winner:           { id: string; color: string } | null;
-      draw:             boolean;
+      winner: { id: string; color: string } | null;
+      draw: boolean;
       efficiencyScores: Record<string, number>;
     }) => {
       setMatchResult({
-        winner:           data.winner,
-        draw:             data.draw,
+        winner: data.winner,
+        draw: data.draw,
         efficiencyScores: data.efficiencyScores ?? {},
       });
     };
 
     // Register listeners
-    socket.on('connect',         handleConnect);
-    socket.on('authenticated',   handleAuthenticated);
-    socket.on('error',           handleError);
-    socket.on('gameState',       handleGameState);
-    socket.on('logicExecuted',   handleLogicExecuted);
-    socket.on('matchOver',       handleMatchOver);
+    socket.on('connect', handleConnect);
+    socket.on('authenticated', handleAuthenticated);
+    socket.on('error', handleError);
+    socket.on('gameState', handleGameState);
+    socket.on('logicExecuted', handleLogicExecuted);
+    socket.on('matchOver', handleMatchOver);
     socket.on('matchJoinedInfo', handleMatchJoinedInfo);
-    socket.on('queryResult',     handleQueryResult);
+    socket.on('queryResult', handleQueryResult);
 
     if (socket.connected) {
       handleConnect();
@@ -173,14 +178,14 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
     }
 
     return () => {
-      socket.off('connect',         handleConnect);
-      socket.off('authenticated',   handleAuthenticated);
-      socket.off('error',           handleError);
-      socket.off('gameState',       handleGameState);
-      socket.off('logicExecuted',   handleLogicExecuted);
-      socket.off('matchOver',       handleMatchOver);
+      socket.off('connect', handleConnect);
+      socket.off('authenticated', handleAuthenticated);
+      socket.off('error', handleError);
+      socket.off('gameState', handleGameState);
+      socket.off('logicExecuted', handleLogicExecuted);
+      socket.off('matchOver', handleMatchOver);
       socket.off('matchJoinedInfo', handleMatchJoinedInfo);
-      socket.off('queryResult',     handleQueryResult);
+      socket.off('queryResult', handleQueryResult);
       socket.disconnect();
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
       if (speechTimeoutRef.current !== null) window.clearTimeout(speechTimeoutRef.current);

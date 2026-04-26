@@ -26,7 +26,8 @@ export function useGlobalSocket(handlers: Handlers) {
 
     const wsUrl = API_BASE_URL
       .replace('https://', 'wss://')
-      .replace('http://', 'ws://');
+      .replace('http://', 'ws://')
+      .replace(/\/api$/, '');
 
     const socket = io(wsUrl, { auth: { token }, transports: ['websocket', 'polling'] },
     );
