@@ -7,6 +7,7 @@ import { QuickReferenceSection } from './components/QuickReferenceSection';
 import { InteractivePlayground } from './components/InteractivePlayground';
 import { BattleTacticsSection } from './components/BattleTacticsSection';
 import { CommandReferenceSection } from './components/CommandReferenceSection';
+import { RotationSystemSection } from './components/RotationSystemSection';
 import { AlgorithmChallenges } from './components/AlgorithmChallenges';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { EnergyCostSection } from './components/EnergyCostSection';
@@ -155,6 +156,9 @@ export default function DocsPage() {
           <BattleTacticsSection onLoadScript={loadCodeToPlayground} isMobile={isMobile} />
 
           <CommandReferenceSection isMobile={isMobile} />
+
+          {/* Rotation System Guide */}
+          <RotationSystemSection onLoadScript={loadCodeToPlayground} isMobile={isMobile} />
 
           {/* Built-in Identifiers reference */}
           <IdentifierReferenceSection isMobile={isMobile} />
