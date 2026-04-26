@@ -58,13 +58,20 @@ export class MatchLobbyManager {
       };
 
       const initialPlayers =
-        mode === 'RACING' || mode === 'TRAINING_SOLO'
+        mode === 'RACING'
           ? [playerToken]
+          : mode === 'TRAINING_SOLO'
+          ? [
+              playerToken,
+              { id: 'dummy-1', script: '', color: '#ef4444', model: 'dummy' },
+              { id: 'dummy-2', script: '', color: '#eab308', model: 'dummy' },
+              { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
+            ]
           : [playerToken, { id: 'bot-2', script: '', color: '#ff00ff', model: 'unit-02' }];
 
       match = new MatchEngine(data.matchId, initialPlayers, {
         mode,
-        disableProjectiles: mode === 'RACING' || mode === 'TRAINING_SOLO',
+        disableProjectiles: mode === 'RACING',
       }, (event, payload) => {
         this.server.to(data.matchId).emit(event, payload);
       });

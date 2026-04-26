@@ -17,6 +17,7 @@ import { HitParticles } from './effects/HitBurstEffect';
 import { BoundaryLine } from './models/BoundaryLine';
 import { FovCone } from './models/FovCone';
 import { StasisEffect } from './effects/StasisEffect';
+import { TrainingDummy } from '../TrainingMode/TrainingDummy';
 
 /** Convert arena units (0–800, 0–600) to 3D scene units (-10→10, -7.5→7.5) */
 const toSceneX = (x: number) => (x / 40) - 10;
@@ -136,44 +137,55 @@ export const ArenaModels = ({
 
         return (
           <group key={`rob-${robot.id}`} ref={(el) => { if (el && !robotMeshesRef.current.includes(el)) robotMeshesRef.current.push(el); }}>
-            {/* FOV cone — rendered when fog is on */}
-            {fogEnabled && robot.fov && (
-              <FovCone
-                position={robotPosition}
-                color={robot.color}
-                fov={robot.fov}
-                fovDirection={robot.fovDirection ?? robot.rotation ?? 0}
+            {robot.id.startsWith('dummy-') ? (
+              <TrainingDummy 
+                position={robotPosition} 
+                color={robot.color} 
+                health={robot.health} 
+                hitTimestamp={hitFlashMap.get(robot.id)} 
               />
-            )}
+            ) : (
+              <>
+                {/* FOV cone — rendered when fog is on */}
+                {fogEnabled && robot.fov && (
+                  <FovCone
+                    position={robotPosition}
+                    color={robot.color}
+                    fov={robot.fov}
+                    fovDirection={robot.fovDirection ?? robot.rotation ?? 0}
+                  />
+                )}
 
-            {/* Stasis electric aura */}
-            {robot.inStasis && (
-              <StasisEffect position={robotPosition} />
-            )}
+                {/* Stasis electric aura */}
+                {robot.inStasis && (
+                  <StasisEffect position={robotPosition} />
+                )}
 
-            <RobotErrorBoundary
-              fallback={<FallbackRobot position={robotPosition} color={robot.color} />}
-            >
-              <group>
-                <RobotModel
-                  position={robotPosition}
-                  color={robot.color}
-                  health={robot.health}
-                  velocity={robot.velocity ?? { x: 0, y: 0 }}
-                  rotation={typeof robot.rotation === 'number' ? robot.rotation : undefined}
-                  hitTimestamp={hitFlashMap.get(robot.id)}
-                  spotted={isSpotted(robot)}
-                  energy={robot.energy ?? 1000}
-                  maxEnergy={robot.maxEnergy ?? 1000}
-                  inStasis={robot.inStasis ?? false}
-                  fov={robot.fov}
-                  fovDirection={robot.fovDirection}
-                  modelFile={
-                    robot.model ? ROBOT_FILES[robot.model] ?? '/robot.glb' : '/robot.glb'
-                  }
-                />
-              </group>
-            </RobotErrorBoundary>
+                <RobotErrorBoundary
+                  fallback={<FallbackRobot position={robotPosition} color={robot.color} />}
+                >
+                  <group>
+                    <RobotModel
+                      position={robotPosition}
+                      color={robot.color}
+                      health={robot.health}
+                      velocity={robot.velocity ?? { x: 0, y: 0 }}
+                      rotation={typeof robot.rotation === 'number' ? robot.rotation : undefined}
+                      hitTimestamp={hitFlashMap.get(robot.id)}
+                      spotted={isSpotted(robot)}
+                      energy={robot.energy ?? 1000}
+                      maxEnergy={robot.maxEnergy ?? 1000}
+                      inStasis={robot.inStasis ?? false}
+                      fov={robot.fov}
+                      fovDirection={robot.fovDirection}
+                      modelFile={
+                        robot.model ? ROBOT_FILES[robot.model] ?? '/robot.glb' : '/robot.glb'
+                      }
+                    />
+                  </group>
+                </RobotErrorBoundary>
+              </>
+            )}
           </group>
         );
       })}

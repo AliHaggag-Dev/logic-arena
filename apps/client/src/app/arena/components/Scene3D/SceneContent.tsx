@@ -7,6 +7,7 @@ import { SceneOverlay } from "./SceneOverlay";
 import { Scene3DComponentProps } from "../../types/scene.types";
 import * as THREE from "three";
 import { BoundaryLine } from "./models/BoundaryLine";
+import { TrainingEnvironment } from "../TrainingMode/TrainingEnvironment";
 
 /**
  * Contains the actual 3D scene content, including lighting, models, and UI overlays.
@@ -51,17 +52,37 @@ export const SceneContent = (props: Scene3DComponentProps) => {
         robots={props.gameStateRef.current?.robots ?? []}
       />
 
-      {/* Custom Grid: Scaled to match the 20x15 (800x600) Arena */}
-      <gridHelper args={[20, 20, "#1a1a4a", "#0d0d2a"]} scale={[1, 1, 0.75]} position={[0, 0, 0]} />
+      {/* UNIFIED DYNAMIC ARENA LAYOUT */}
+      {/* Custom Grid: Appearance changes dynamically based on mode */}
+      <gridHelper 
+        args={[
+          20, 
+          props.displayMode === 'TRAINING_SOLO' ? 40 : 20, 
+          props.displayMode === 'TRAINING_SOLO' ? "#00ffcc" : "#1a1a4a", 
+          props.displayMode === 'TRAINING_SOLO' ? "#003333" : "#0d0d2a"
+        ]} 
+        scale={[1, 1, 0.75]} 
+        position={[0, 0.01, 0]} 
+      />
 
       {/* Arena Floor - Matches Engine Bounds */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
         <planeGeometry args={[arena.width, arena.height]} />
-        <meshStandardMaterial color="#050510" roughness={0.95} metalness={0.1} />
+        <meshStandardMaterial 
+          color={props.displayMode === 'TRAINING_SOLO' ? "#020813" : "#050510"} 
+          emissive={props.displayMode === 'TRAINING_SOLO' ? "#001122" : "#000000"}
+          roughness={props.displayMode === 'TRAINING_SOLO' ? 0.7 : 0.95} 
+          metalness={props.displayMode === 'TRAINING_SOLO' ? 0.8 : 0.1} 
+        />
       </mesh>
 
-      {/* Boundary Line (Neon Cyan Rectangle) */}
+      {/* Boundary Line (Neon Rectangle) */}
       <BoundaryLine points={boundaryPoints} />
+
+      {/* MODE-SPECIFIC ADDONS */}
+      {props.displayMode === 'TRAINING_SOLO' && (
+        <TrainingEnvironment width={arena.width} height={arena.height} />
+      )}
     </>
   );
 };

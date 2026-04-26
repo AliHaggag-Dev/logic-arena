@@ -25,6 +25,8 @@ export interface RobotState {
   fovDirection?:     number;
   /** IDs of robots visible to this robot — sent by server in delta-diff */
   visibleRobotIds?:  string[];
+  totalEnergyConsumed?: number;
+  totalDamageDealt?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,6 +115,7 @@ export interface Scene3DComponentProps {
   localRobotFile?: string;
   /** Hex color saved in the local player's loadout — used to identify their robot in the scene */
   localRobotColor?: string;
+  displayMode?:    string;
 }
 
 export interface HealthBarSpriteProps {

@@ -15,6 +15,7 @@ import { MobileTopRightHUD } from './components/MobileTopRightHUD';
 import { MobileControls } from './components/MobileControls';
 import { DesktopHUD } from './components/DesktopHUD';
 import { ArenaStyles } from './components/ArenaStyles';
+import { TrainingHUD } from './components/TrainingMode/TrainingHUD';
 
 interface RobotScript {
   id: string;
@@ -46,7 +47,7 @@ const ArenaPageContent = () => {
   const {
     socket, gameStateRef, uiState,
     selectedRobotId, setSelectedRobotId, availableRobots,
-    matchResult, serverConfirmedMode,
+    matchResult, serverConfirmedMode, trainingStats,
     fogEnabled, setFogEnabled,
     firedTracer, speechBubble,
   } = useGameState(resolvedScriptId, urlMode);
@@ -189,8 +190,19 @@ const ArenaPageContent = () => {
           fogEnabled={fogEnabled}
           localRobotFile={localRobotFile}
           localRobotColor={localRobotColor}
+          displayMode={displayMode}
         />
       </div>
+
+      {displayMode === 'TRAINING_SOLO' && (
+        <TrainingHUD 
+          playerRobot={robots.find(r => r.id === currentUserId)}
+          shotsFired={trainingStats.shotsFired}
+          dummiesDestroyed={trainingStats.dummiesDestroyed}
+          startTime={trainingStats.startTime}
+          isMobile={isMobile}
+        />
+      )}
 
       {isMobile ? (
         <>

@@ -58,6 +58,22 @@ export class MatchLoopManager {
           continue;
         }
 
+        // Training mode: Dummy respawn
+        if (mode === 'TRAINING_SOLO') {
+          for (const robot of state.robots) {
+            if (robot.id.startsWith('dummy-') && (!robot.isAlive || robot.health <= 0)) {
+              robot.health = 100;
+              robot.isAlive = true;
+              // Reset any other required state
+              if (robot.energy !== undefined) robot.energy = robot.maxEnergy ?? 100;
+              robot.inStasis = false;
+              // Add a slight random offset to make respawn more dynamic? Let's just keep original position for simplicity.
+              // Note: The client will handle the "reassembly" animation when it detects health went from 0 to 100
+              this.server.to(matchId).emit('logicExecuted', { robotId: robot.id, action: 'RESPAWN' });
+            }
+          }
+        }
+
         // 3. Emit Delta State
         const prevState = this.state.lastStateMap.get(matchId);
         const delta = computeDeltaDiff(state, prevState);

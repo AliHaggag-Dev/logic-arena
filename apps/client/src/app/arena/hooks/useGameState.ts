@@ -28,6 +28,13 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
   const [firedTracer, setFiredTracer] = useState<FiredTracer | null>(null);
   const [speechBubble, setSpeechBubble] = useState<SpeechBubbleState | null>(null);
   const [selectedRobotId, setSelectedRobotId] = useState<string>('');
+  
+  // Training Stats
+  const [trainingStats, setTrainingStats] = useState({
+    shotsFired: 0,
+    startTime: Date.now(),
+    dummiesDestroyed: 0,
+  });
   const [matchResult, setMatchResult] = useState<{
     winner: { id: string; color: string } | null;
     draw: boolean;
@@ -135,7 +142,17 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
     };
 
     const handleLogicExecuted = (data: { robotId: string; action: string; message?: string }) => {
+      const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+      if (data.action === 'RESPAWN' && data.robotId.startsWith('dummy-')) {
+        setTrainingStats(prev => ({ ...prev, dummiesDestroyed: prev.dummiesDestroyed + 1 }));
+        return;
+      }
+      
       if (data.action === 'FIRE') {
+        if (data.robotId === currentUserId) {
+          setTrainingStats(prev => ({ ...prev, shotsFired: prev.shotsFired + 1 }));
+        }
+        
         const currentState = gameStateRef.current;
         const targetRobot = currentState.robots.find(r => r.id !== data.robotId);
         if (targetRobot) {
@@ -211,6 +228,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
     socket,
     matchResult,
     serverConfirmedMode,
+    trainingStats,
     // FOG toggle
     fogEnabled,
     setFogEnabled,

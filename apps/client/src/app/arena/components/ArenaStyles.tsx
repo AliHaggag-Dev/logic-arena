@@ -24,6 +24,11 @@ export function ArenaStyles() {
         0% { left: -100%; }
         100% { left: 200%; }
       }
+      @keyframes float-up {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+      }
+      .animate-float-up { animation: float-up 1s ease-out forwards; }
     `}</style>
   );
 }
