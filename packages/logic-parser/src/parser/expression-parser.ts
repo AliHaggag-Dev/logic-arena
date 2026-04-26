@@ -64,7 +64,7 @@ export class ExpressionParser {
 
     // ── Comparison layer: <  >  ==  !=  <=  >= ─────────────────────────────
     public parseComparisonExpression(): Expression | null {
-        const left = this.parseBinaryExpression();
+        const left = this.parseAddition();
         if (!left) return null;
 
         const COMPARISON_OPS = ["<", ">", "==", "!=", "<=", ">="];
@@ -76,7 +76,7 @@ export class ExpressionParser {
             const operator = this.parser.currentToken.value;
 
             this.parser.nextToken();
-            const right = this.parseBinaryExpression();
+            const right = this.parseAddition();
             if (!right) return null;
 
             return {
@@ -90,14 +90,41 @@ export class ExpressionParser {
         return left;
     }
 
-    // ── Arithmetic: + − * / % ───────────────────────────────────────────────
-    public parseBinaryExpression(): Expression | null {
+    // ── Addition: + − ───────────────────────────────────────────────────────
+    public parseAddition(): Expression | null {
+        let left = this.parseMultiply();
+        if (!left) return null;
+
+        while (
+            this.parser.peekToken.type === TokenType.OPERATOR &&
+            ["+", "-"].includes(this.parser.peekToken.value)
+        ) {
+            this.parser.nextToken();
+            const operator = this.parser.currentToken.value;
+
+            this.parser.nextToken();
+            const right = this.parseMultiply();
+            if (!right) return null;
+
+            left = {
+                type: NodeType.BinaryExpression,
+                left,
+                operator,
+                right,
+            } as BinaryExpression;
+        }
+
+        return left;
+    }
+
+    // ── Multiplication: * / % ───────────────────────────────────────────────
+    public parseMultiply(): Expression | null {
         let left = this.parseUnaryExpression();
         if (!left) return null;
 
         while (
             this.parser.peekToken.type === TokenType.OPERATOR &&
-            ["+", "-", "*", "/", "%"].includes(this.parser.peekToken.value)
+            ["*", "/", "%"].includes(this.parser.peekToken.value)
         ) {
             this.parser.nextToken();
             const operator = this.parser.currentToken.value;
