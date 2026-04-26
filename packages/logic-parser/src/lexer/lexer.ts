@@ -1,6 +1,17 @@
 import { Token, TokenType } from "../types";
 import { isKeyword } from "./keywords";
 
+const QUERY_FUNCTIONS = [
+    "GET_HEALTH",
+    "GET_ENERGY",
+    "GET_ENERGY_PCT",
+    "GET_DISTANCE",
+    "GET_POSITION",
+    "GET_ROTATION",
+    "GET_FOV_DIR",
+    "GET_VISIBLE_COUNT"
+];
+
 export class Lexer {
     private input: string;
     private position: number = 0;
@@ -132,6 +143,9 @@ export class Lexer {
                     const value = this.readIdentifier();
                     if (isKeyword(value)) {
                         return { type: TokenType.KEYWORD, value: value.toUpperCase() };
+                    }
+                    if (QUERY_FUNCTIONS.includes(value.toUpperCase())) {
+                        return { type: TokenType.QUERY_CALL, value: value.toUpperCase() };
                     }
                     return { type: TokenType.IDENTIFIER, value };
                 } else if (/[0-9]/.test(this.char)) {

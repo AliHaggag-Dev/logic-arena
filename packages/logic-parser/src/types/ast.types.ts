@@ -16,6 +16,7 @@ export enum NodeType {
   BooleanLiteral = "BooleanLiteral",
   BinaryExpression = "BinaryExpression",
   UnaryExpression = "UnaryExpression",
+  QueryStatement = "QueryStatement",
 }
 
 export interface BaseNode {
@@ -70,6 +71,11 @@ export interface WaitStatement extends Statement {
 
 export interface ScanStatement extends Statement {
   type: NodeType.ScanStatement;
+}
+
+export interface QueryStatement extends Statement {
+  type: NodeType.QueryStatement;
+  query: string;
 }
 
 export interface AssignmentStatement extends Statement {

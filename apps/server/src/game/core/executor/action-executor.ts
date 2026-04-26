@@ -18,7 +18,7 @@ export class ActionExecutor {
 
   constructor(
     private gameLoop: GameLoop,
-    private connectedClients: Map<string, Socket>,
+    private onEvent: ((event: string, payload: any) => void) | undefined,
     private pathfinder: Pathfinder,
     private energyManager: EnergyManager,
   ) {
@@ -37,6 +37,38 @@ export class ActionExecutor {
 
   markBareActionExecuted(robotId: string, actionCommand: string): void {
     this.cooldowns.markExecuted(robotId, actionCommand);
+  }
+
+  emitQuery(robotId: string, queryName: string, result: string | number): void {
+    if (!this.cooldowns.shouldEmitQuery(robotId, queryName)) {
+      return;
+    }
+
+    const QUERY_LABELS: Record<string, string> = {
+      GET_HEALTH:        'health',
+      GET_ENERGY:        'energy',
+      GET_ENERGY_PCT:    'energy%',
+      GET_DISTANCE:      'distance',
+      GET_POSITION:      'position',
+      GET_ROTATION:      'rotation',
+      GET_FOV_DIR:       'fov_dir',
+      GET_VISIBLE_COUNT: 'visible',
+    };
+
+    const friendlyName = QUERY_LABELS[queryName] ?? queryName.toLowerCase();
+    const label = `${friendlyName} = ${result}`;
+
+    if (this.onEvent) {
+      this.onEvent('queryResult', {
+        robotId,
+        query:   queryName,
+        result,
+        label,
+        message: `[QUERY] ${label}`,
+      });
+    }
+
+    this.cooldowns.markQueryEmitted(robotId, queryName);
   }
 
   executeAction(
@@ -63,13 +95,13 @@ export class ActionExecutor {
       if (!allowed) {
         // Robot is in stasis and this command is blocked — emit STASIS hint once
         if (this.cooldowns.shouldEmitAction(robotId, 'STASIS')) {
-          this.connectedClients.forEach((client) =>
-            client.emit('logicExecuted', {
+          if (this.onEvent) {
+            this.onEvent('logicExecuted', {
               robotId,
               action: 'STASIS',
               message: `[STASIS] ${robotId} is recharging...`,
-            }),
-          );
+            });
+          }
           this.cooldowns.markEmitted(robotId, 'STASIS');
         }
         return;
@@ -83,13 +115,13 @@ export class ActionExecutor {
 
     // --- Emit logicExecuted to clients (rate-limited by cooldown) ---
     if (this.cooldowns.shouldEmitAction(robotId, actionCommand)) {
-      this.connectedClients.forEach((client) =>
-        client.emit('logicExecuted', {
+      if (this.onEvent) {
+        this.onEvent('logicExecuted', {
           robotId,
           action: actionCommand,
           message: `Logic Triggered: ${actionCommand}`,
-        }),
-      );
+        });
+      }
       this.cooldowns.markEmitted(robotId, actionCommand);
       console.log(`[ActionExecutor] ${robotId} → ${actionCommand}`);
     }

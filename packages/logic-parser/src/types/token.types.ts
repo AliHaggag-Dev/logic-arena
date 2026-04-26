@@ -10,6 +10,7 @@ export enum TokenType {
   COLON = "COLON",
   LPAREN = "LPAREN",
   RPAREN = "RPAREN",
+  QUERY_CALL = "QUERY_CALL",
 }
 
 export interface Token {

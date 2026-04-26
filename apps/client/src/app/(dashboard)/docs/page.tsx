@@ -11,6 +11,7 @@ import { RotationSystemSection } from './components/RotationSystemSection';
 import { AlgorithmChallenges } from './components/AlgorithmChallenges';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { EnergyCostSection } from './components/EnergyCostSection';
+import { QueryFunctionsSection } from './components/QueryFunctionsSection';
 
 const CATEGORY_COLORS: Record<string, string> = {
   Self: 'var(--accent)',
@@ -156,6 +157,9 @@ export default function DocsPage() {
           <BattleTacticsSection onLoadScript={loadCodeToPlayground} isMobile={isMobile} />
 
           <CommandReferenceSection isMobile={isMobile} />
+
+          {/* Query Functions */}
+          <QueryFunctionsSection isMobile={isMobile} />
 
           {/* Rotation System Guide */}
           <RotationSystemSection onLoadScript={loadCodeToPlayground} isMobile={isMobile} />

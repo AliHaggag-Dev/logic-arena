@@ -1,7 +1,8 @@
 import { 
     TokenType, NodeType, Statement, IfStatement, WhileStatement, 
     FunctionDeclaration, CallStatement, WaitStatement, ScanStatement,
-    AssignmentStatement, ActionStatement, Identifier, ActionExpression 
+    AssignmentStatement, ActionStatement, Identifier, ActionExpression,
+    QueryStatement
 } from "../types";
 import type { Parser } from "./parser";
 
@@ -11,6 +12,10 @@ export class StatementParser {
     constructor(private parser: Parser) {}
 
     public parseStatement(): Statement | null {
+        if (this.parser.currentToken.type === TokenType.QUERY_CALL) {
+            return this.parseQueryStatement();
+        }
+
         if (this.parser.currentToken.type === TokenType.KEYWORD) {
             switch (this.parser.currentToken.value) {
                 case "IF": return this.parseIfStatement();
@@ -131,5 +136,17 @@ export class StatementParser {
             type: NodeType.ActionStatement,
             consequence: { type: NodeType.ActionExpression, command, args }
         };
+    }
+
+    private parseQueryStatement(): QueryStatement | null {
+        const query = this.parser.currentToken.value;
+        // Optionally consume ()
+        if (this.parser.peekToken.type === TokenType.LPAREN) {
+            this.parser.nextToken(); // consume LPAREN
+            if ((this.parser.peekToken.type as TokenType) === TokenType.RPAREN) {
+                this.parser.nextToken(); // consume RPAREN
+            }
+        }
+        return { type: NodeType.QueryStatement, query };
     }
 }

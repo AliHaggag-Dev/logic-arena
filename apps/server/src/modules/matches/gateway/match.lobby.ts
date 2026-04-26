@@ -64,6 +64,8 @@ export class MatchLobbyManager {
       match = new MatchEngine(data.matchId, initialPlayers, {
         mode,
         disableProjectiles: mode === 'RACING' || mode === 'TRAINING_SOLO',
+      }, (event, payload) => {
+        this.server.to(data.matchId).emit(event, payload);
       });
       this.state.matches.set(data.matchId, match);
       this.state.matchModes.set(data.matchId, mode);

@@ -138,6 +138,12 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
       speechTimeoutRef.current = window.setTimeout(() => setSpeechBubble(null), 1000);
     };
 
+    const handleQueryResult = (data: { robotId: string; label: string; message: string }) => {
+      setSpeechBubble({ robotId: data.robotId, message: data.label });
+      if (speechTimeoutRef.current !== null) window.clearTimeout(speechTimeoutRef.current);
+      speechTimeoutRef.current = window.setTimeout(() => setSpeechBubble(null), 2000);
+    };
+
     const handleMatchOver = (data: {
       winner:           { id: string; color: string } | null;
       draw:             boolean;
@@ -158,6 +164,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
     socket.on('logicExecuted',   handleLogicExecuted);
     socket.on('matchOver',       handleMatchOver);
     socket.on('matchJoinedInfo', handleMatchJoinedInfo);
+    socket.on('queryResult',     handleQueryResult);
 
     if (socket.connected) {
       handleConnect();
@@ -173,6 +180,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
       socket.off('logicExecuted',   handleLogicExecuted);
       socket.off('matchOver',       handleMatchOver);
       socket.off('matchJoinedInfo', handleMatchJoinedInfo);
+      socket.off('queryResult',     handleQueryResult);
       socket.disconnect();
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
       if (speechTimeoutRef.current !== null) window.clearTimeout(speechTimeoutRef.current);

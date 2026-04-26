@@ -11,6 +11,7 @@ import {
   ScanStatement,
   FunctionDeclaration,
   ActionExpression,
+  QueryStatement,
 } from '../../../../../../packages/logic-parser/src';
 import { ActionExecutor } from '../executor';
 import { ExpressionEvaluator } from './expression-facade';
@@ -26,6 +27,7 @@ const ALLOWED_NODE_TYPES = new Set<string>([
   NodeType.WaitStatement,
   NodeType.ScanStatement,
   NodeType.FunctionDeclaration,
+  NodeType.QueryStatement,
 ]);
 
 // ── Sandbox: allowed action command strings ─────────────────────────────────
@@ -211,7 +213,6 @@ export class BlockExecutor {
           return; // Stop current block execution
         }
 
-        // SCAN is blocked during STASIS — it costs energy which the robot doesn't have.
         case NodeType.ScanStatement: {
           if (robot.inStasis) break;
           this.actionExecutor.executeAction(
@@ -219,6 +220,55 @@ export class BlockExecutor {
             stmt as ScanStatement,
             memory,
           );
+          break;
+        }
+
+        case NodeType.QueryStatement: {
+          const queryStmt = stmt as QueryStatement;
+          const query = queryStmt.query;
+          let result: string | number = 0;
+
+          switch (query) {
+            case 'GET_HEALTH':
+              result = robot.health;
+              break;
+            case 'GET_ENERGY':
+              result = Math.round(robot.energy ?? 0);
+              break;
+            case 'GET_ENERGY_PCT':
+              result = Math.round(((robot.energy ?? 0) / (robot.maxEnergy ?? 100)) * 100);
+              break;
+            case 'GET_DISTANCE': {
+              const visibleEnemies = robot.visibleEntities?.robots.filter(r => r.health > 0 && r.id !== robotId) || [];
+              if (visibleEnemies.length === 0) {
+                result = 'Infinity';
+              } else {
+                let minDist = Infinity;
+                for (const enemy of visibleEnemies) {
+                  const dx = enemy.position.x - robot.position.x;
+                  const dy = enemy.position.y - robot.position.y;
+                  const dist = Math.sqrt(dx * dx + dy * dy);
+                  if (dist < minDist) minDist = dist;
+                }
+                result = Math.round(minDist);
+              }
+              break;
+            }
+            case 'GET_POSITION':
+              result = `{x:${Math.round(robot.position.x)},y:${Math.round(robot.position.y)}}`;
+              break;
+            case 'GET_ROTATION':
+              result = Number(robot.rotation.toFixed(2));
+              break;
+            case 'GET_FOV_DIR':
+              result = Number((robot.fovDirection ?? robot.rotation).toFixed(2));
+              break;
+            case 'GET_VISIBLE_COUNT':
+              result = robot.visibleEntities?.robots.filter(r => r.health > 0 && r.id !== robotId).length ?? 0;
+              break;
+          }
+
+          this.actionExecutor.emitQuery(robotId, query, result);
           break;
         }
       }

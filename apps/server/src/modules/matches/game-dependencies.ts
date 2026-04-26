@@ -13,13 +13,13 @@ export interface GameDependencies {
 
 export function createGameDependencies(
   gameLoop: GameLoop,
-  connectedClients: Map<string, Socket> = new Map(),
+  onEvent?: (event: string, payload: any) => void,
 ): GameDependencies {
   // Reuse the EnergyManager that lives on the GameLoop instance,
   // so both the physics tick and the action executor share the same state.
   const energyManager  = gameLoop.energyManager;
   const pathfinder     = new Pathfinder(gameLoop);
-  const actionExecutor = new ActionExecutor(gameLoop, connectedClients, pathfinder, energyManager);
+  const actionExecutor = new ActionExecutor(gameLoop, onEvent, pathfinder, energyManager);
   const logicEvaluator = new LogicEvaluator(gameLoop, actionExecutor);
 
   return { pathfinder, actionExecutor, logicEvaluator, energyManager };

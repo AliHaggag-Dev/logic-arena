@@ -68,6 +68,28 @@ export const IDENTIFIER_TABLE: IdentifierDoc[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Query Functions (Debug & Telemetry)
+// ---------------------------------------------------------------------------
+
+export interface QueryDoc {
+  command: string;
+  description: string;
+  returns: string;
+  example: string;
+}
+
+export const QUERY_TABLE: QueryDoc[] = [
+  { command: 'GET_HEALTH()', description: 'Prints current robot health to telemetry.', returns: 'number (0-100)', example: 'GET_HEALTH()' },
+  { command: 'GET_ENERGY()', description: 'Prints current energy level to telemetry.', returns: 'number (0-100)', example: 'GET_ENERGY()' },
+  { command: 'GET_ENERGY_PCT()', description: 'Prints current energy as a percentage.', returns: 'number (0-100)', example: 'GET_ENERGY_PCT()' },
+  { command: 'GET_DISTANCE()', description: 'Prints distance to the nearest visible enemy.', returns: 'number | "Infinity"', example: 'GET_DISTANCE()' },
+  { command: 'GET_POSITION()', description: 'Prints current {x, y} position in arena units.', returns: 'string ({x, y})', example: 'GET_POSITION()' },
+  { command: 'GET_ROTATION()', description: 'Prints body facing angle in radians.', returns: 'number', example: 'GET_ROTATION()' },
+  { command: 'GET_FOV_DIR()', description: 'Prints scanner facing angle in radians.', returns: 'number', example: 'GET_FOV_DIR()' },
+  { command: 'GET_VISIBLE_COUNT()', description: 'Prints number of enemies currently in FOV.', returns: 'number', example: 'GET_VISIBLE_COUNT()' },
+];
+
+// ---------------------------------------------------------------------------
 // Algorithm Challenges (new)
 // ---------------------------------------------------------------------------
 
@@ -206,6 +228,7 @@ export const QUICK_REF = [
   { title: 'ENERGY', icon: '⚡', color: '#a855f7', commands: ['MY_ENERGY', 'ENERGY_PCT', 'IN_STASIS'] },
   { title: 'INTELLIGENCE', icon: '◉', color: '#6366f1', commands: ['SET var = val', 'Math (+,-,*,/,%)', 'Logic (NOT,TRUE,FALSE)', 'rotation'] },
   { title: 'ROTATION SYSTEM', icon: '◎', color: '#f59e0b', commands: ['rotation = body', 'fovDirection = eyes', 'lockVision = link', 'SET lockVision = TRUE', 'Auto-disables on SET'] },
+  { title: 'TELEMETRY', icon: '📡', color: '#06b6d4', commands: ['GET_HEALTH()', 'GET_ENERGY()', 'GET_POSITION()', 'GET_DISTANCE()'] },
 ];
 
 export const SAMPLE_SCRIPT =

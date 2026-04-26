@@ -20,12 +20,13 @@ export class MatchEngine {
     matchId: string,
     initialPlayers: { id: string; script: string; color?: string }[],
     config?: GameConfig,
+    private onEvent?: (event: string, payload: any) => void,
   ) {
     this.matchId       = matchId;
     this.config        = config;
     this.gameLoop      = new GameLoop(this.config);
     this.sandboxRunner = new SandboxRunner();
-    this.deps          = createGameDependencies(this.gameLoop);
+    this.deps          = createGameDependencies(this.gameLoop, this.onEvent);
     this.initialPlayers = initialPlayers;
 
     initialPlayers.forEach((p, i) => {
@@ -41,7 +42,7 @@ export class MatchEngine {
   reset(): void {
     this.stop();
     this.gameLoop = new GameLoop(this.config);
-    this.deps     = createGameDependencies(this.gameLoop);
+    this.deps     = createGameDependencies(this.gameLoop, this.onEvent);
     this.initialPlayers.forEach((p, i) => {
       this.gameLoop.addRobot(createRobot(p.id, p.script, i, p.color));
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);

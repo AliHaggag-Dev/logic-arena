@@ -54,13 +54,24 @@ export const useConsole = (socket: Socket | null, robotId: string) => {
 
     useEffect(() => {
         if (!socket) return;
-        const handleLogicExecuted = (data: { robotId: string; action: string }) => {
+        const handleLogicExecuted = (data: { robotId: string; action: string; message?: string }) => {
             if (data.robotId === robotId) {
-                appendOutputLine(`[${data.robotId}] Logic Triggered: ${data.action}`);
+                appendOutputLine(data.message || `[${data.robotId}] Logic Triggered: ${data.action}`);
             }
         };
         socket.on("logicExecuted", handleLogicExecuted);
         return () => { socket.off("logicExecuted", handleLogicExecuted); };
+    }, [socket, robotId, appendOutputLine]);
+
+    useEffect(() => {
+        if (!socket) return;
+        const handleQueryResult = (data: { robotId: string; message: string }) => {
+            if (data.robotId === robotId) {
+                appendOutputLine(data.message);
+            }
+        };
+        socket.on("queryResult", handleQueryResult);
+        return () => { socket.off("queryResult", handleQueryResult); };
     }, [socket, robotId, appendOutputLine]);
 
     return {

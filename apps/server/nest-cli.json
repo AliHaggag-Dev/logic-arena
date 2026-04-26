@@ -4,6 +4,11 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "watchAssets": true,
+    "assets": [
+      { "include": "../../packages/logic-parser/src/**/*.ts", "watchAssets": true },
+      { "include": "../../packages/engine/src/**/*.ts", "watchAssets": true }
+    ]
   }
 }

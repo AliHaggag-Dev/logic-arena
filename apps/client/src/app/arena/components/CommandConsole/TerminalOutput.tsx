@@ -15,6 +15,7 @@ export const TerminalOutput: React.FC<{ output: string[] }> = ({ output }) => {
                 let colorClass = "text-cyan-600";
                 if (line.includes("[SYS]") || line.includes("[UPLINK]")) colorClass = "text-purple-400";
                 if (line.includes("Logic Triggered")) colorClass = "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.4)]";
+                if (line.includes("[QUERY]")) colorClass = "text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.4)]";
                 if (line.includes("[ERR]")) colorClass = "text-red-400";
 
                 return <p key={index} className={`${colorClass} wrap-break-word font-medium py-0.5`}>{line}</p>;

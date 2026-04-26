@@ -19,6 +19,15 @@ export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     { label: 'FUNCTION', detail: 'control', hint: 'Define a reusable function' },
     { label: 'CALL', detail: 'control', hint: 'Call a function by name' },
     { label: 'SET', detail: 'control', hint: 'Assign a variable' },
+    // Queries
+    { label: 'GET_HEALTH()', detail: 'query', hint: 'Print health to telemetry' },
+    { label: 'GET_ENERGY()', detail: 'query', hint: 'Print energy to telemetry' },
+    { label: 'GET_ENERGY_PCT()', detail: 'query', hint: 'Print energy % to telemetry' },
+    { label: 'GET_DISTANCE()', detail: 'query', hint: 'Print nearest enemy distance' },
+    { label: 'GET_POSITION()', detail: 'query', hint: 'Print current {x, y} position' },
+    { label: 'GET_ROTATION()', detail: 'query', hint: 'Print body facing angle' },
+    { label: 'GET_FOV_DIR()', detail: 'query', hint: 'Print scanner facing angle' },
+    { label: 'GET_VISIBLE_COUNT()', detail: 'query', hint: 'Print # enemies in FOV' },
     // Identifiers (readable)
     { label: 'rotation', detail: 'identifier', hint: 'Body facing angle (radians). Writable.' },
     { label: 'angle', detail: 'identifier', hint: 'Alias for rotation' },
@@ -42,4 +51,5 @@ export const DETAIL_COLORS: Record<string, string> = {
     control: '#f59e0b',
     identifier: '#a855f7',
     flag: '#4ade80',
+    query: '#06b6d4',
 };
