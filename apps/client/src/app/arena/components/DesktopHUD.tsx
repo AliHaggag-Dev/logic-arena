@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { CommandConsole } from './CommandConsole';
 import { TacticalRadar } from './TacticalRadar';
@@ -36,6 +36,27 @@ export function DesktopHUD({
   isConnected,
 }: DesktopHUDProps) {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
+  const [lockVision, setLockVision] = useState(false);
+
+  // Listen for lockVision state changes from the server
+  useEffect(() => {
+    if (!socket) return;
+    const handleLockVisionToggled = (data: { robotId: string; lockVision: boolean | null }) => {
+      if (data.lockVision !== null) setLockVision(data.lockVision);
+    };
+    socket.on('lockVisionToggled', handleLockVisionToggled);
+    return () => { socket.off('lockVisionToggled', handleLockVisionToggled); };
+  }, [socket]);
+
+  // Reset lockVision when game resets (robots are re-created with lockVision=false)
+  const handleResetGame = useCallback(() => {
+    socket?.emit('resetGame');
+    setLockVision(false);
+  }, [socket]);
+
+  const handleToggleLockVision = useCallback(() => {
+    socket?.emit('toggleLockVision');
+  }, [socket]);
 
   if (isMobile) return null;
 
@@ -84,7 +105,7 @@ export function DesktopHUD({
           <div className="absolute bottom-0 left-0 w-full h-px bg-linear-to-r from-cyan-500/50 to-transparent" />
           <button
             type="button"
-            onClick={() => socket?.emit('resetGame')}
+            onClick={handleResetGame}
             className="group relative border border-red-900 bg-red-950/30 text-red-500 text-[10px] font-black px-6 py-2.5 transition-all hover:bg-red-900/50 hover:border-red-500 hover:text-white tracking-[0.2em] overflow-hidden shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
           >
             <span className="relative z-10">[ EXECUTE RESPAWN ]</span>
@@ -101,6 +122,20 @@ export function DesktopHUD({
             <span className="relative z-10">[ FOG_SYSTEM: {fogEnabled ? 'ONLINE' : 'OFFLINE'} ]</span>
             {fogEnabled && (
               <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-cyan-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleLockVision}
+            className={`group relative border text-[10px] font-black px-6 py-2.5 transition-all tracking-[0.2em] overflow-hidden ${lockVision
+              ? 'border-amber-500 bg-amber-900/40 text-amber-300 hover:bg-amber-500/40 hover:text-white shadow-[0_0_15px_rgba(245,158,11,0.2)] hover:shadow-[0_0_20px_rgba(245,158,11,0.6)]'
+              : 'border-white/20 bg-white/5 text-white/50 hover:bg-white/10 hover:border-white/40'
+              }`}
+            title="Link scanner (FOV) to body rotation. When ON, the scanner follows the robot body."
+          >
+            <span className="relative z-10">[ LOCK_VISION: {lockVision ? 'LINKED' : 'FREE'} ]</span>
+            {lockVision && (
+              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-amber-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
             )}
           </button>
         </div>
@@ -147,6 +182,13 @@ export function DesktopHUD({
           <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">FOV_SYSTEM</span>
           <span className={`text-[11px] font-black tracking-widest ${fogEnabled ? 'text-cyan-400' : 'text-white/30'}`}>
             {fogEnabled ? 'ACTIVE' : 'DISABLED'}
+          </span>
+        </div>
+        <div className="h-8 w-px bg-cyan-900/50" />
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] text-amber-800 font-bold uppercase tracking-widest">LOCK_VISION</span>
+          <span className={`text-[11px] font-black tracking-widest ${lockVision ? 'text-amber-400' : 'text-white/30'}`}>
+            {lockVision ? 'LINKED' : 'FREE'}
           </span>
         </div>
       </div>

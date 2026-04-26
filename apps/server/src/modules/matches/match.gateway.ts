@@ -132,6 +132,13 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.lobbyManager.handleManualCommand(client, data);
   }
 
+  @SubscribeMessage('toggleLockVision')
+  handleToggleLockVision(
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ) {
+    return this.lobbyManager.handleToggleLockVision(client);
+  }
+
   // ---------------------------------------------------------------------------
   // Social Presence / Challenge routing
   // ---------------------------------------------------------------------------

@@ -32,10 +32,12 @@ export const FovCone = ({ position, color, fov, fovDirection }: FovConeProps) =>
     for (let i = 0; i <= segments; i++) {
         const t     = i / segments;
         const angle = -halfAngle + t * fov.angle * DEG_TO_RAD;
+        // Fan along +Z axis (GLTF robot "forward" direction) so the cone
+        // aligns with the robot body when both use rotation.y = -fovDirection.
         positions.push(
-          Math.cos(angle) * rangeUnits,
+          Math.sin(angle) * rangeUnits,  // X (side)
           0,
-          Math.sin(angle) * rangeUnits,
+          Math.cos(angle) * rangeUnits,  // Z (forward)
         );
         uvs.push(t, 1);
     }
@@ -111,9 +113,10 @@ export const FovCone = ({ position, color, fov, fovDirection }: FovConeProps) =>
   // Update rotation and inject time each frame via ref mutations
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
-    // fovDirection is in radians, X-Z plane (arena is flat)
-    // Negate because Three.js Y-rotation is CW vs counter-CCW in 2D
-    groupRef.current.rotation.y = -dirRef.current;
+    // fovDirection is in standard 2D radians (CCW from +X).
+    // The robot body (GLTF) uses rotation.y = Math.PI/2 - fovDirection to map that to Three.js XZ plane,
+    // so the cone must use the exact same formula to stay visually attached to the robot face.
+    groupRef.current.rotation.y = Math.PI / 2 - dirRef.current;
     
     // Update shader time for animations
     if (material.uniforms) {

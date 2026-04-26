@@ -175,4 +175,15 @@ export class MatchLobbyManager {
       }
     }
   }
+
+  handleToggleLockVision(client: AuthenticatedSocket) {
+    if (client.matchId && this.state.matches.has(client.matchId)) {
+      const match = this.state.matches.get(client.matchId)!;
+      const newState = match.toggleLockVision(client.userId!);
+      client.emit('lockVisionToggled', {
+        robotId: client.userId,
+        lockVision: newState,
+      });
+    }
+  }
 }

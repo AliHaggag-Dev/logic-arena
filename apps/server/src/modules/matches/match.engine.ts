@@ -145,6 +145,23 @@ export class MatchEngine {
     return true;
   }
 
+  /**
+   * Toggle lockVision for a robot.
+   * When enabled, fovDirection syncs to rotation every tick.
+   * When disabled, fovDirection freezes at its current value.
+   * Returns the new lockVision state.
+   */
+  toggleLockVision(userId: string): boolean | null {
+    const robot = this.gameLoop.getRobots().find(r => r.id === userId);
+    if (!robot || !robot.isAlive) return null;
+    robot.lockVision = !robot.lockVision;
+    // When enabling, immediately sync so there's no 1-tick lag
+    if (robot.lockVision) {
+      robot.fovDirection = robot.rotation;
+    }
+    return robot.lockVision;
+  }
+
   // ---------------------------------------------------------------------------
   // State access
   // ---------------------------------------------------------------------------

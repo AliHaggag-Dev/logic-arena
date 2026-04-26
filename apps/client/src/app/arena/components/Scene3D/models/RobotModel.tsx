@@ -132,6 +132,11 @@ const RobotModelInner = memo(({
     return Math.abs(value) > Math.PI * 2 ? THREE.MathUtils.degToRad(value) : value;
   };
 
+  // Arena 2D uses X-right / Y-down. Three.js XZ plane: X-right / Z-south.
+  // So 2D angle 0 (east) must map to Three.js rotation.y = π/2 (facing +X after CW turn).
+  // Formula: rotation.y = Math.PI / 2 - arenaAngle
+  const HALF_PI = Math.PI / 2;
+
   useFrame((state, delta) => {
     const group = groupRef.current;
     if (!group) return;
@@ -140,13 +145,12 @@ const RobotModelInner = memo(({
     const lerpFactor = 1 - Math.pow(0.01, delta * 10);
     basePosition.current.lerp(targetPosition.current, lerpFactor);
 
-    // Rotation lerp
+    // Rotation lerp — convert 2D arena angle to Three.js Y-rotation
+    // The robot BODY always follows `rotation` (tracks/movement direction).
+    // `fovDirection` is handled separately by the FovCone component.
     let targetRot: number | null = null;
-    if (typeof fovDirection === 'number' && !Number.isNaN(fovDirection)) {
-      targetRot = -fovDirection;
-    } else {
-      targetRot = resolveRotation(rotation);
-    }
+    const r = resolveRotation(rotation);
+    targetRot = r !== null ? HALF_PI - r : null;
 
     if (targetRot !== null) {
       // Shortest path angle lerp
@@ -156,7 +160,7 @@ const RobotModelInner = memo(({
     } else {
       const spd = Math.hypot(velocity.x, velocity.y);
       if (spd > 0.001) {
-        const fallback = -Math.atan2(velocity.y, velocity.x);
+        const fallback = HALF_PI - Math.atan2(velocity.y, velocity.x);
         group.rotation.y = THREE.MathUtils.lerp(
           group.rotation.y, fallback, 1 - Math.pow(0.001, delta),
         );

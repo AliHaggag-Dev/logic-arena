@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { TacticalRadar } from './TacticalRadar';
 import { RobotState, ProjectileState } from '../types';
@@ -21,6 +21,25 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
   robots, projectiles, displayMode,
 }) => {
   const fpsColor = fps >= 50 ? '#4ade80' : fps >= 30 ? '#facc15' : '#f87171';
+  const [lockVision, setLockVision] = useState(false);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleLockVisionToggled = (data: { robotId: string; lockVision: boolean | null }) => {
+      if (data.lockVision !== null) setLockVision(data.lockVision);
+    };
+    socket.on('lockVisionToggled', handleLockVisionToggled);
+    return () => { socket.off('lockVisionToggled', handleLockVisionToggled); };
+  }, [socket]);
+
+  const handleResetGame = useCallback(() => {
+    socket?.emit('resetGame');
+    setLockVision(false);
+  }, [socket]);
+
+  const handleToggleLockVision = useCallback(() => {
+    socket?.emit('toggleLockVision');
+  }, [socket]);
 
   return (
     <>
@@ -44,7 +63,8 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
 
         <div className="flex flex-col gap-2 pt-1">
           <button
-            onClick={() => socket?.emit('resetGame')}
+            type="button"
+            onClick={handleResetGame}
             className="group flex items-center gap-1.5 px-2 py-1.5 bg-black/50 backdrop-blur-md border border-red-500/30 rounded-lg hover:border-red-400/60 hover:bg-red-950/30 active:scale-95 transition-all shadow-[0_0_8px_rgba(239,68,68,0.1)] hover:shadow-[0_0_12px_rgba(239,68,68,0.3)]"
           >
             <span className="relative flex items-center justify-center w-2 h-2">
@@ -55,6 +75,7 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
           </button>
 
           <button
+            type="button"
             onClick={() => setFogEnabled((prev: boolean) => !prev)}
             className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${fogEnabled
               ? 'bg-cyan-950/40 border-cyan-500/40 hover:border-cyan-400/70 hover:bg-cyan-900/30 shadow-[0_0_8px_rgba(34,211,238,0.15)] hover:shadow-[0_0_12px_rgba(34,211,238,0.35)]'
@@ -71,6 +92,27 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
             <span className={`text-[7px] font-black tracking-widest uppercase transition-colors ${fogEnabled ? 'text-cyan-400/70' : 'text-white/25'
               }`}>
               {fogEnabled ? 'Fog On' : 'Fog Off'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleToggleLockVision}
+            className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${lockVision
+              ? 'bg-amber-950/40 border-amber-500/40 hover:border-amber-400/70 hover:bg-amber-900/30 shadow-[0_0_8px_rgba(245,158,11,0.15)] hover:shadow-[0_0_12px_rgba(245,158,11,0.35)]'
+              : 'bg-black/50 border-white/10 hover:border-white/25 hover:bg-white/5'
+              }`}
+          >
+            <span className="relative flex items-center justify-center w-2 h-2">
+              {lockVision && <span className="absolute w-2 h-2 rounded-full bg-amber-500/30 animate-ping" />}
+              <span className={`w-1.5 h-1.5 rounded-full transition-all ${lockVision
+                ? 'bg-amber-400 shadow-[0_0_4px_rgba(245,158,11,0.8)]'
+                : 'bg-white/25'
+                }`} />
+            </span>
+            <span className={`text-[7px] font-black tracking-widest uppercase transition-colors ${lockVision ? 'text-amber-400/70' : 'text-white/25'
+              }`}>
+              {lockVision ? 'Vision: Linked' : 'Vision: Free'}
             </span>
           </button>
         </div>

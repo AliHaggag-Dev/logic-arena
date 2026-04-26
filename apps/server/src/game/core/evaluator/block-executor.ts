@@ -106,13 +106,18 @@ export class BlockExecutor {
             }
 
             robot.rotation = val;
-            robot.fovDirection = val;
             robot.isManualRotation = true;
+            // Auto-disable lockVision — user is manually steering the body,
+            // so the FOV should stay frozen at its last known direction.
+            robot.lockVision = false;
           } else if (
             assign.name.value === 'fovDirection' &&
             typeof val === 'number'
           ) {
             robot.fovDirection = val;
+            // Auto-disable lockVision — user is manually steering the scanner,
+            // so the body should stay frozen at its last known direction.
+            robot.lockVision = false;
           } else if (assign.name.value === 'lockVision') {
             robot.lockVision = Boolean(val);
           }
