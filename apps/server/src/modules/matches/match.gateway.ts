@@ -127,7 +127,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('manualCommand')
   handleManualCommand(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { command: string },
+    @MessageBody() data: { robotId?: string; command: string },
   ) {
     return this.lobbyManager.handleManualCommand(client, data);
   }

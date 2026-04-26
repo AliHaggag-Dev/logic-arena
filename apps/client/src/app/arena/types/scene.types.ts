@@ -14,6 +14,7 @@ export interface RobotState {
   health:            number;
   rotation?:         number;
   velocity?:         Vec2;
+  model?:            string;
   spotted?:          boolean;
   // Energy (Feature 2)
   energy?:           number;

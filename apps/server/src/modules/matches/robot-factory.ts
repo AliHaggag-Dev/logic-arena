@@ -19,6 +19,7 @@ export function createRobot(
   script: string,
   index: number,
   colorOverride?: string,
+  modelOverride?: string,
 ): Robot {
   const spawn = SPAWN_POSITIONS[index % SPAWN_POSITIONS.length];
   return {
@@ -26,6 +27,7 @@ export function createRobot(
     position: { ...spawn },
     health: 100,
     color: colorOverride || ROBOT_COLORS[index % ROBOT_COLORS.length],
+    model: modelOverride || 'unit-01',
     velocity: { x: 0, y: 0 },
     rotation: 0,
     isAlive: true,

@@ -22,6 +22,11 @@ import { StasisEffect } from './effects/StasisEffect';
 const toSceneX = (x: number) => (x / 40) - 10;
 const toSceneZ = (y: number) => (y / 40) - 7.5;
 
+const ROBOT_FILES: Record<string, string> = {
+  'unit-01': '/robot.glb',
+  'unit-02': '/robot2.glb',
+};
+
 export const ArenaModels = ({
   gameStateRef,
   obstacles = [],
@@ -164,9 +169,7 @@ export const ArenaModels = ({
                   fov={robot.fov}
                   fovDirection={robot.fovDirection}
                   modelFile={
-                    localRobotFile && localRobotColor && robot.color === localRobotColor
-                      ? localRobotFile
-                      : undefined
+                    robot.model ? ROBOT_FILES[robot.model] ?? '/robot.glb' : '/robot.glb'
                   }
                 />
               </group>

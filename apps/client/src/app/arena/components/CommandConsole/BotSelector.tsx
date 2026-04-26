@@ -6,8 +6,11 @@ interface BotSelectorProps {
     onRobotChange: (id: string) => void;
 }
 
-export const BotSelector: React.FC<BotSelectorProps> = ({ availableRobots, robotId, onRobotChange }) => (
-    <div className="flex gap-2 mb-4 border-b border-cyan-900/60 pb-3">
+export const BotSelector: React.FC<BotSelectorProps> = ({ availableRobots, robotId, onRobotChange }) => {
+    if (availableRobots.length <= 1) return null;
+
+    return (
+        <div className="flex gap-2 mb-4 border-b border-cyan-900/60 pb-3">
         {availableRobots.map(id => (
             <button
                 type="button"
@@ -21,5 +24,6 @@ export const BotSelector: React.FC<BotSelectorProps> = ({ availableRobots, robot
                 {id.toUpperCase()}
             </button>
         ))}
-    </div>
-);
+        </div>
+    );
+};

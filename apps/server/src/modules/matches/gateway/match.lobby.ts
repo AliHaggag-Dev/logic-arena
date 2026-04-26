@@ -35,7 +35,7 @@ export class MatchLobbyManager {
 
     const user = await this.prisma.user.findUnique({
       where: { id: client.userId },
-      select: { selectedColor: true },
+      select: { selectedColor: true, selectedRobotId: true },
     });
 
     let match = this.state.matches.get(data.matchId);
@@ -54,12 +54,13 @@ export class MatchLobbyManager {
         id: client.userId,
         script: script.content,
         color: user?.selectedColor ?? '#22d3ee',
+        model: user?.selectedRobotId ?? 'unit-01',
       };
 
       const initialPlayers =
         mode === 'RACING' || mode === 'TRAINING_SOLO'
           ? [playerToken]
-          : [playerToken, { id: 'bot-2', script: '', color: '#ff00ff' }];
+          : [playerToken, { id: 'bot-2', script: '', color: '#ff00ff', model: 'unit-02' }];
 
       match = new MatchEngine(data.matchId, initialPlayers, {
         mode,
@@ -94,8 +95,13 @@ export class MatchLobbyManager {
         this.state.lobbyMatches.delete(data.matchId);
         this.server.emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
       } else {
-        match.removePlayer(client.userId!);
-        match.addPlayer({ id: client.userId!, script: script.content, color: user?.selectedColor ?? '#22d3ee' });
+        const isReconnect = match.getState().robots.some(r => r.id === client.userId);
+        if (!isReconnect) {
+          match.removePlayer('bot-2');
+        } else {
+          match.removePlayer(client.userId!);
+        }
+        match.addPlayer({ id: client.userId!, script: script.content, color: user?.selectedColor ?? '#22d3ee', model: user?.selectedRobotId ?? 'unit-01' });
         match.updateInitialPlayer(client.userId!, script.content);
       }
     }
@@ -148,6 +154,7 @@ export class MatchLobbyManager {
 
   handleUpdateLogic(client: AuthenticatedSocket, data: { robotId: string; scriptContent: string }) {
     if (client.matchId && this.state.matches.has(client.matchId)) {
+      if (data.robotId !== client.userId && !data.robotId.startsWith('bot-')) return;
       const match = this.state.matches.get(client.matchId);
       match?.updateRobotScript(data.robotId, data.scriptContent);
       client.emit('logicExecuted', {
@@ -158,19 +165,23 @@ export class MatchLobbyManager {
     }
   }
 
-  handleManualCommand(client: AuthenticatedSocket, data: { command: string }) {
+  handleManualCommand(client: AuthenticatedSocket, data: { robotId?: string; command: string }) {
     if (client.matchId && this.state.matches.has(client.matchId)) {
+      const targetRobotId = data.robotId || client.userId!;
+      // Only allow if it's the user's own robot or a test bot
+      if (targetRobotId !== client.userId && !targetRobotId.startsWith('bot-')) return;
+
       const match = this.state.matches.get(client.matchId)!;
-      const executed = match.receiveManualCommand(client.userId!, data.command);
+      const executed = match.receiveManualCommand(targetRobotId, data.command);
       if (!executed) {
         client.emit('logicExecuted', {
-          robotId: client.userId,
+          robotId: targetRobotId,
           action: 'STASIS',
           message: '[STASIS] Manual override rejected — robot is recharging.',
         });
       } else {
         client.emit('logicExecuted', {
-          robotId: client.userId,
+          robotId: targetRobotId,
           action: data.command.toUpperCase(),
           message: `Manual override: ${data.command.toUpperCase()}`,
         });

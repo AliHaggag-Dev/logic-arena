@@ -41,6 +41,9 @@ export interface Robot {
   /** Color hex string used for rendering (e.g. '#00ffff'). */
   color?: string;
 
+  /** The 3D model file ID for rendering (e.g. 'unit-01' or 'unit-02'). */
+  model?: string;
+
   /** Timestamp tracking the exact tick elapsed when a robot slams into a SOLID structure. */
   hitWallTimestamp?: number;
 

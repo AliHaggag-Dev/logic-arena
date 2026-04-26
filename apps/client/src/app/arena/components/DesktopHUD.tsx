@@ -19,6 +19,7 @@ interface DesktopHUDProps {
   robots: RobotState[];
   projectiles: ProjectileState[];
   isConnected: boolean;
+  isPvP?: boolean;
 }
 
 export function DesktopHUD({
@@ -34,6 +35,7 @@ export function DesktopHUD({
   robots,
   projectiles,
   isConnected,
+  isPvP = false,
 }: DesktopHUDProps) {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [lockVision, setLockVision] = useState(false);
@@ -103,14 +105,16 @@ export function DesktopHUD({
         <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-3 bg-black/80 backdrop-blur-xl border-l-4 border-cyan-500 p-4 rounded-r shadow-[10px_10px_30px_rgba(0,0,0,0.9)]">
           <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-cyan-500/50 to-transparent" />
           <div className="absolute bottom-0 left-0 w-full h-px bg-linear-to-r from-cyan-500/50 to-transparent" />
-          <button
-            type="button"
-            onClick={handleResetGame}
-            className="group relative border border-red-900 bg-red-950/30 text-red-500 text-[10px] font-black px-6 py-2.5 transition-all hover:bg-red-900/50 hover:border-red-500 hover:text-white tracking-[0.2em] overflow-hidden shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
-          >
-            <span className="relative z-10">[ EXECUTE RESPAWN ]</span>
-            <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-red-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
-          </button>
+          {!isPvP && (
+            <button
+              type="button"
+              onClick={handleResetGame}
+              className="group relative border border-red-900 bg-red-950/30 text-red-500 text-[10px] font-black px-6 py-2.5 transition-all hover:bg-red-900/50 hover:border-red-500 hover:text-white tracking-[0.2em] overflow-hidden shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
+            >
+              <span className="relative z-10">[ EXECUTE RESPAWN ]</span>
+              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-red-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setFogEnabled((prev: boolean) => !prev)}

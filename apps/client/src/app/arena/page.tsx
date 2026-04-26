@@ -114,10 +114,30 @@ const ArenaPageContent = () => {
           setLoading(false);
         }
       } catch (err: unknown) {
-        if (isMounted) {
-          const e = err as { response?: { data?: { message?: string } }; message?: string };
-          setError(e.response?.data?.message || e.message || 'Unknown error');
-          setLoading(false);
+        // Self-healing: If the script is invalid (e.g. shared localStorage across accounts),
+        // clear the invalid cache and fallback to the user's first available script.
+        localStorage.removeItem('selectedScriptId');
+        
+        try {
+          const res = await apiClient.get('/scripts');
+          if (res.data && res.data.length > 0) {
+            const fallbackId = res.data[0].id as string;
+            localStorage.setItem('selectedScriptId', fallbackId);
+            if (isMounted) {
+              setResolvedScriptId(fallbackId); // Triggers re-run with valid ID
+            }
+          } else {
+            if (isMounted) {
+              setError('No scripts found. Please create a script in the Command Center first.');
+              setLoading(false);
+            }
+          }
+        } catch (fallbackErr) {
+          if (isMounted) {
+            const e = err as { response?: { data?: { message?: string } }; message?: string };
+            setError(e.response?.data?.message || e.message || 'Unknown error');
+            setLoading(false);
+          }
         }
       }
     };
@@ -136,6 +156,14 @@ const ArenaPageContent = () => {
   const isConnected = !!socket?.connected;
   const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
   const matchId = searchParams.get('matchId') || 'default-match';
+
+  // Determine if this is a PvP match
+  const isPvP = availableRobots.length >= 2 && !availableRobots.some(id => id.toLowerCase().includes('bot'));
+  
+  // If PvP, lock the user to their own robot so they cannot switch to the opponent
+  const filteredAvailableRobots = isPvP && currentUserId && availableRobots.includes(currentUserId)
+    ? [currentUserId]
+    : availableRobots;
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden font-mono select-none">
@@ -179,7 +207,7 @@ const ArenaPageContent = () => {
           <MobileControls
             socket={socket}
             selectedRobotId={selectedRobotId}
-            availableRobots={availableRobots}
+            availableRobots={filteredAvailableRobots}
             setSelectedRobotId={setSelectedRobotId}
             isMobile={isMobile}
           />
@@ -192,12 +220,13 @@ const ArenaPageContent = () => {
           fogEnabled={fogEnabled}
           setFogEnabled={setFogEnabled}
           selectedRobotId={selectedRobotId}
-          availableRobots={availableRobots}
+          availableRobots={filteredAvailableRobots}
           setSelectedRobotId={setSelectedRobotId}
           isMobile={isMobile}
           robots={robots}
           projectiles={projectiles}
           isConnected={isConnected}
+          isPvP={isPvP}
         />
       )}
     </div>

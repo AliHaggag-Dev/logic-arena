@@ -121,8 +121,14 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
       if (now - lastUiUpdateRef.current > 100) {
         lastUiUpdateRef.current = now;
         setUiState(parsed);
+        const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
         setSelectedRobotId(prev => {
-          if (!prev && parsed.robots.length > 0) return parsed.robots[0].id;
+          const hasUser = currentUserId && parsed.robots.some(r => r.id === currentUserId);
+          const hasPrev = prev && parsed.robots.some(r => r.id === prev);
+          
+          if (!hasPrev && parsed.robots.length > 0) {
+            return hasUser ? currentUserId : parsed.robots[0].id;
+          }
           return prev;
         });
       }

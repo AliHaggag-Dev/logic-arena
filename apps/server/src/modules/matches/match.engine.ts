@@ -8,7 +8,7 @@ export class MatchEngine {
   private gameLoop: GameLoop;
   private sandboxRunner: SandboxRunner;
   private deps: GameDependencies;
-  private initialPlayers: { id: string; script: string; color?: string }[] = [];
+  private initialPlayers: { id: string; script: string; color?: string; model?: string }[] = [];
   private tickInterval: NodeJS.Timeout | null = null;
   private matchId: string;
   private config?: GameConfig;
@@ -18,7 +18,7 @@ export class MatchEngine {
 
   constructor(
     matchId: string,
-    initialPlayers: { id: string; script: string; color?: string }[],
+    initialPlayers: { id: string; script: string; color?: string; model?: string }[],
     config?: GameConfig,
     private onEvent?: (event: string, payload: any) => void,
   ) {
@@ -30,7 +30,7 @@ export class MatchEngine {
     this.initialPlayers = initialPlayers;
 
     initialPlayers.forEach((p, i) => {
-      this.gameLoop.addRobot(createRobot(p.id, p.script, i, p.color));
+      this.gameLoop.addRobot(createRobot(p.id, p.script, i, p.color, p.model));
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
   }
@@ -44,7 +44,7 @@ export class MatchEngine {
     this.gameLoop = new GameLoop(this.config);
     this.deps     = createGameDependencies(this.gameLoop, this.onEvent);
     this.initialPlayers.forEach((p, i) => {
-      this.gameLoop.addRobot(createRobot(p.id, p.script, i, p.color));
+      this.gameLoop.addRobot(createRobot(p.id, p.script, i, p.color, p.model));
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
     this.start();
@@ -78,7 +78,7 @@ export class MatchEngine {
   // Player management
   // ---------------------------------------------------------------------------
 
-  addPlayer(playerScript: { id: string; script: string; color?: string }): void {
+  addPlayer(playerScript: { id: string; script: string; color?: string; model?: string }): void {
     const exists = this.gameLoop.getRobots().some(p => p.id === playerScript.id);
     if (!exists) {
       let initIdx = this.initialPlayers.findIndex(p => p.id === playerScript.id);
@@ -97,7 +97,7 @@ export class MatchEngine {
         }
       }
 
-      this.gameLoop.addRobot(createRobot(playerScript.id, playerScript.script, initIdx, playerScript.color));
+      this.gameLoop.addRobot(createRobot(playerScript.id, playerScript.script, initIdx, playerScript.color, playerScript.model));
       parseAndSetLogic(playerScript.id, playerScript.script, this.deps.logicEvaluator);
     }
   }
