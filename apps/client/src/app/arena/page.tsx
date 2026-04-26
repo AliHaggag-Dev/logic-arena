@@ -30,12 +30,13 @@ const ROBOT_FILES: Record<string, string> = {
 const ArenaPageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const scriptId = searchParams.get('scriptId');
+  const urlScriptId = searchParams.get('scriptId');
   const urlMode = searchParams.get('mode') || 'COMBAT';
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const isPortrait = useMediaQuery("(orientation: portrait)");
   const fps = useFPS();
 
+  const [resolvedScriptId, setResolvedScriptId] = useState<string | null>(urlScriptId);
   const [script, setScript] = useState<RobotScript | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +49,7 @@ const ArenaPageContent = () => {
     matchResult, serverConfirmedMode,
     fogEnabled, setFogEnabled,
     firedTracer, speechBubble,
-  } = useGameState(scriptId, urlMode);
+  } = useGameState(resolvedScriptId, urlMode);
 
   const displayMode = serverConfirmedMode;
   const projectileAnimRef = useRef<number | null>(null);
@@ -69,20 +70,62 @@ const ArenaPageContent = () => {
 
   useEffect(() => {
     if (!localStorage.getItem('token')) { router.push('/login'); return; }
-    if (!scriptId) { setError('No script ID provided.'); setLoading(false); return; }
-    const fetchScript = async () => {
+
+    let isMounted = true;
+
+    const resolveAndFetch = async () => {
+      let targetScriptId = resolvedScriptId;
+
+      // 1. Try to resolve if missing
+      if (!targetScriptId) {
+        const stored = localStorage.getItem('selectedScriptId');
+        if (stored) {
+          targetScriptId = stored;
+          setResolvedScriptId(stored);
+        } else {
+          try {
+            const res = await apiClient.get('/scripts');
+            if (res.data && res.data.length > 0) {
+              targetScriptId = res.data[0].id as string;
+              localStorage.setItem('selectedScriptId', targetScriptId as string);
+              setResolvedScriptId(targetScriptId);
+            } else {
+              if (isMounted) {
+                setError('No scripts found. Please create a script in the Command Center first.');
+                setLoading(false);
+              }
+              return;
+            }
+          } catch (err) {
+            if (isMounted) {
+              setError('Failed to fetch fallback scripts.');
+              setLoading(false);
+            }
+            return;
+          }
+        }
+      }
+
+      // 2. Fetch the specific script
       try {
-        const response = await apiClient.get(`/scripts/${scriptId}`);
-        setScript(response.data);
+        const response = await apiClient.get(`/scripts/${targetScriptId}`);
+        if (isMounted) {
+          setScript(response.data);
+          setLoading(false);
+        }
       } catch (err: unknown) {
-        const e = err as { response?: { data?: { message?: string } }; message?: string };
-        setError(e.response?.data?.message || e.message || 'Unknown error');
-      } finally {
-        setLoading(false);
+        if (isMounted) {
+          const e = err as { response?: { data?: { message?: string } }; message?: string };
+          setError(e.response?.data?.message || e.message || 'Unknown error');
+          setLoading(false);
+        }
       }
     };
-    fetchScript();
-  }, [router, scriptId]);
+
+    resolveAndFetch();
+
+    return () => { isMounted = false; };
+  }, [router, resolvedScriptId]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">UPLINKING TO NEURAL NETWORK...</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">CRITICAL_SYSTEM_ERROR: {error}</div>;
