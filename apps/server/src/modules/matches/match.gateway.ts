@@ -81,6 +81,33 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (client.userId) {
       await this.redisService.del(`user:online:${client.userId}`);
     }
+
+    // Clean up lobby if they hosted one
+    let lobbyChanged = false;
+    for (const [id, lobby] of this.state.lobbyMatches.entries()) {
+      if (lobby.hostId === client.userId) {
+        this.state.lobbyMatches.delete(id);
+        lobbyChanged = true;
+      }
+    }
+    if (lobbyChanged) {
+      this.server.emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
+    }
+
+    // Clean up match if no players are left
+    if (client.matchId && this.state.matches.has(client.matchId)) {
+      const matchId = client.matchId;
+      const room = this.server.sockets.adapter.rooms.get(matchId);
+      const numClients = room ? room.size : 0;
+
+      if (numClients === 0) {
+        const match = this.state.matches.get(matchId);
+        if (match) {
+          match.stop();
+          this.state.cleanupMatch(matchId);
+        }
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
