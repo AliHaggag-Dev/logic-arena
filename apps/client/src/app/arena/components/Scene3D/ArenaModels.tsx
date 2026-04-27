@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useSceneAnimation } from '../../hooks/useSceneAnimation';
 import { RobotModel, RobotErrorBoundary, FallbackRobot } from './models/RobotModel';
-import { ObstacleModel } from './models/ObstacleModel';
+import { ObstaclesInstanced } from './models/ObstacleModel';
 import { LaserModel } from './models/ProjectileModel';
 import { LaserBeam } from './models/LaserBeam';
 import { SpeechBubble } from './models/SpeechBubble';
@@ -49,7 +49,6 @@ export const ArenaModels = ({
 }) => {
   const { scene } = useThree();
   const robotMeshesRef = useRef<THREE.Group[]>([]);
-  const obstacleMeshesRef = useRef<THREE.Group[]>([]);
   const [renderTick, setRenderTick] = useState(0);
   const lastUpdateRef = useRef(0);
 
@@ -70,19 +69,7 @@ export const ArenaModels = ({
       });
       robotMeshesRef.current = [];
 
-      obstacleMeshesRef.current.forEach(mesh => {
-        if (mesh) {
-          scene.remove(mesh);
-          mesh.traverse((child: any) => {
-            if (child.isMesh) {
-              child.geometry?.dispose();
-              if (Array.isArray(child.material)) child.material.forEach((m: any) => m.dispose());
-              else child.material?.dispose();
-            }
-          });
-        }
-      });
-      obstacleMeshesRef.current = [];
+
     };
   }, [scene]);
 
@@ -123,11 +110,7 @@ export const ArenaModels = ({
       <BoundaryLine points={boundaryPoints} />
       <HitParticles bursts={hitBursts} setBursts={setHitBursts} />
 
-      {obstacles.map(obs => (
-        <group key={`obs-${obs.id}`} ref={(el) => { if (el && !obstacleMeshesRef.current.includes(el)) obstacleMeshesRef.current.push(el); }}>
-          <ObstacleModel obstacle={obs} />
-        </group>
-      ))}
+      <ObstaclesInstanced obstacles={obstacles} />
 
       {robots.map(robot => {
         const sx = toSceneX(robot.position.x);

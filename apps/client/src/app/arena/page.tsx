@@ -46,7 +46,7 @@ const ArenaPageContent = () => {
   const [localRobotColor, setLocalRobotColor] = useState('#22d3ee');
 
   const {
-    socket, gameStateRef, uiState,
+    socket, gameStateRef, obstaclesRef, uiState,
     selectedRobotId, setSelectedRobotId, availableRobots,
     matchResult, serverConfirmedMode, trainingStats,
     fogEnabled, setFogEnabled,
@@ -153,7 +153,7 @@ const ArenaPageContent = () => {
   if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">CRITICAL_SYSTEM_ERROR: {error}</div>;
 
   const robots = uiState?.robots || [];
-  const obstacles = uiState?.obstacles || [];
+  const obstacles = obstaclesRef.current || [];
   const projectiles = gameStateRef.current?.projectiles || [];
   const isConnected = !!socket?.connected;
   const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;

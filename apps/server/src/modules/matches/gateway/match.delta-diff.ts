@@ -1,5 +1,7 @@
 import { TRACKED_ROBOT_PROPS } from './types';
 
+const STATIC_FIELDS = ['obstacles', 'mapBoundaries'];
+
 export function computeDeltaDiff(state: any, prevState: any | null): any {
   let delta: any = { type: 'full', state };
 
@@ -46,6 +48,10 @@ export function computeDeltaDiff(state: any, prevState: any | null): any {
       type: 'delta',
       diff: { robots: robotsDiff, projectiles: state.projectiles },
     };
+    // Skip diffing STATIC_FIELDS entirely
+    STATIC_FIELDS.forEach(field => {
+      if (delta.diff[field]) delete delta.diff[field];
+    });
   }
 
   return delta;

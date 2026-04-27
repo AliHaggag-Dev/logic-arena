@@ -1,7 +1,9 @@
 import { MatchState } from './match.state';
 
+const MAX_REPLAY_SNAPSHOTS = 300;
+
 export function captureReplaySnapshot(matchId: string, state: any, matchState: MatchState, tick: number): void {
-  if (tick % 10 === 0) {
+  if (tick % 20 === 0) {
     const snapshots = matchState.replaySnapshots.get(matchId) || [];
     snapshots.push({
       t: tick,
@@ -22,6 +24,11 @@ export function captureReplaySnapshot(matchId: string, state: any, matchState: M
         ownerId: p.ownerId,
       })),
     });
+    
+    if (snapshots.length > MAX_REPLAY_SNAPSHOTS) {
+      snapshots.shift();
+    }
+    
     matchState.replaySnapshots.set(matchId, snapshots);
   }
 }

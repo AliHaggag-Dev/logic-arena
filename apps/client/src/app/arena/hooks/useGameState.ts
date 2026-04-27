@@ -24,6 +24,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
 
   // Core game state — ref for zero-re-render R3F reads, state for UI
   const gameStateRef = useRef<GameState>({ robots: [], projectiles: [], obstacles: [] });
+  const obstaclesRef = useRef<ObstacleState[]>([]);
   const [uiState, setUiState] = useState<GameState>({ robots: [], projectiles: [], obstacles: [] });
   const [firedTracer, setFiredTracer] = useState<FiredTracer | null>(null);
   const [speechBubble, setSpeechBubble] = useState<SpeechBubbleState | null>(null);
@@ -50,6 +51,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
 
   useEffect(() => {
     gameStateRef.current = { robots: [], projectiles: [], obstacles: [] };
+    obstaclesRef.current = [];
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setUiState({ robots: [], projectiles: [], obstacles: [] });
     setMatchResult(null);
@@ -120,13 +122,17 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
         parsed.obstacles = Array.isArray(obsRaw) ? (obsRaw as ObstacleState[]) : [];
       }
 
+      if (parsed.obstacles && parsed.obstacles.length > 0 && obstaclesRef.current.length === 0) {
+        obstaclesRef.current = parsed.obstacles;
+      }
+
       gameStateRef.current = parsed;
 
       // Throttled UI state update — 10×/sec max
       const now = performance.now();
       if (now - lastUiUpdateRef.current > 100) {
         lastUiUpdateRef.current = now;
-        setUiState(parsed);
+        setUiState({ ...parsed, obstacles: [] });
         const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
         setSelectedRobotId(prev => {
           const hasUser = currentUserId && parsed.robots.some(r => r.id === currentUserId);
@@ -220,6 +226,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
 
   return {
     gameStateRef,
+    obstaclesRef,
     uiState,
     firedTracer,
     speechBubble,
