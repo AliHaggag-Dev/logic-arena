@@ -206,4 +206,21 @@ export class MatchLobbyManager {
       });
     }
   }
+
+  handleRespawnDummies(client: AuthenticatedSocket) {
+    if (!client.matchId || !this.state.matches.has(client.matchId)) return;
+    const match = this.state.matches.get(client.matchId)!;
+    const state = match.getState();
+    for (const robot of state.robots) {
+      if (robot.id.startsWith('dummy-')) {
+        robot.health = 100;
+        robot.isAlive = true;
+        if (robot.energy !== undefined) robot.energy = robot.maxEnergy ?? 100;
+        robot.inStasis = false;
+      }
+    }
+    // Clear the killed-set so the same dummies can fire dummyKilled again
+    this.state.dummyKilledThisTick.delete(client.matchId);
+    this.server.to(client.matchId).emit('gameState', match.getState());
+  }
 }

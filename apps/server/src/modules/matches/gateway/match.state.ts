@@ -9,6 +9,7 @@ export class MatchState {
   tickCount = new Map<string, number>();
   savingMatches = new Set<string>();
   matchModes = new Map<string, string>();
+  dummyKilledThisTick = new Map<string, Set<string>>();
 
   cleanupMatch(matchId: string) {
     this.matches.delete(matchId);
@@ -18,5 +19,6 @@ export class MatchState {
     this.replaySnapshots.delete(matchId);
     this.tickCount.delete(matchId);
     this.savingMatches.delete(matchId);
+    this.dummyKilledThisTick.delete(matchId);
   }
 }

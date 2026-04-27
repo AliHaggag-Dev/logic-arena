@@ -36,6 +36,7 @@ export const ArenaModels = ({
   fogEnabled = true,
   localRobotFile,
   localRobotColor,
+  displayMode,
 }: {
   gameStateRef: MutableRefObject<GameState>;
   obstacles?: ObstacleState[];
@@ -44,6 +45,7 @@ export const ArenaModels = ({
   fogEnabled?: boolean;
   localRobotFile?: string;
   localRobotColor?: string;
+  displayMode?: string;
 }) => {
   const { scene } = useThree();
   const robotMeshesRef = useRef<THREE.Group[]>([]);
@@ -178,6 +180,7 @@ export const ArenaModels = ({
                       inStasis={robot.inStasis ?? false}
                       fov={robot.fov}
                       fovDirection={robot.fovDirection}
+                      hideHealthBar={displayMode === 'TRAINING_SOLO'}
                       modelFile={
                         robot.model ? ROBOT_FILES[robot.model] ?? '/robot.glb' : '/robot.glb'
                       }

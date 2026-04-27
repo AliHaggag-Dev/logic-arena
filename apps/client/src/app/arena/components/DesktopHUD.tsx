@@ -105,7 +105,7 @@ export function DesktopHUD({
         <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-3 bg-black/80 backdrop-blur-xl border-l-4 border-cyan-500 p-4 rounded-r shadow-[10px_10px_30px_rgba(0,0,0,0.9)]">
           <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-cyan-500/50 to-transparent" />
           <div className="absolute bottom-0 left-0 w-full h-px bg-linear-to-r from-cyan-500/50 to-transparent" />
-          {!isPvP && (
+          {!isPvP && displayMode !== 'TRAINING_SOLO' && (
             <button
               type="button"
               onClick={handleResetGame}

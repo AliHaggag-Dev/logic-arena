@@ -77,7 +77,7 @@ export const HealthBarSprite = ({ health }: HealthBarSpriteProps) => {
 const RobotModelInner = memo(({
   scene, color, position, health, velocity, rotation, hitTimestamp, spotted,
   energy = 1000, maxEnergy = 1000, inStasis = false, fovDirection,
-  scale = 2
+  scale = 2, hideHealthBar = false
 }: RobotModelProps & { scene: THREE.Group; scale?: number }) => {
   const groupRef = useRef<THREE.Group>(null);
   const targetPosition = useRef(new THREE.Vector3(...position));
@@ -222,7 +222,7 @@ const RobotModelInner = memo(({
 
       {/* HUD billboard: health + energy bars */}
       <group position={[0, 2.1, 0]}>
-        <HealthBarSprite health={health} />
+        {!hideHealthBar && <HealthBarSprite health={health} />}
         <EnergyBarSprite energy={energy} maxEnergy={maxEnergy} inStasis={inStasis} />
       </group>
     </group>

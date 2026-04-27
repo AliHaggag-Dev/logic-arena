@@ -29,7 +29,6 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
   const [speechBubble, setSpeechBubble] = useState<SpeechBubbleState | null>(null);
   const [selectedRobotId, setSelectedRobotId] = useState<string>('');
   
-  // Training Stats
   const [trainingStats, setTrainingStats] = useState({
     shotsFired: 0,
     startTime: Date.now(),
@@ -141,18 +140,18 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
       }
     };
 
+    const handleDummyKilled = (_data: { robotId: string }) => {
+      setTrainingStats(prev => ({ ...prev, dummiesDestroyed: prev.dummiesDestroyed + 1 }));
+    };
+
     const handleLogicExecuted = (data: { robotId: string; action: string; message?: string }) => {
       const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
-      if (data.action === 'RESPAWN' && data.robotId.startsWith('dummy-')) {
-        setTrainingStats(prev => ({ ...prev, dummiesDestroyed: prev.dummiesDestroyed + 1 }));
-        return;
-      }
-      
+
       if (data.action === 'FIRE') {
         if (data.robotId === currentUserId) {
           setTrainingStats(prev => ({ ...prev, shotsFired: prev.shotsFired + 1 }));
         }
-        
+
         const currentState = gameStateRef.current;
         const targetRobot = currentState.robots.find(r => r.id !== data.robotId);
         if (targetRobot) {
@@ -193,6 +192,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
     socket.on('matchOver', handleMatchOver);
     socket.on('matchJoinedInfo', handleMatchJoinedInfo);
     socket.on('queryResult', handleQueryResult);
+    socket.on('dummyKilled', handleDummyKilled);
 
     if (socket.connected) {
       handleConnect();
@@ -209,6 +209,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
       socket.off('matchOver', handleMatchOver);
       socket.off('matchJoinedInfo', handleMatchJoinedInfo);
       socket.off('queryResult', handleQueryResult);
+      socket.off('dummyKilled', handleDummyKilled);
       socket.disconnect();
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
       if (speechTimeoutRef.current !== null) window.clearTimeout(speechTimeoutRef.current);

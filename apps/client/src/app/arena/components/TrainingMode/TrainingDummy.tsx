@@ -11,122 +11,160 @@ interface TrainingDummyProps {
   hitTimestamp?: number | null;
 }
 
+/** Canvas-texture health bar — no energy bar for dummies */
+const DummyHealthBar = ({ health }: { health: number }) => {
+  const canvas = useMemo(() => {
+    const c = document.createElement("canvas");
+    c.width = 64;
+    c.height = 10;
+    return c;
+  }, []);
+
+  const [texture] = useState(() => {
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.needsUpdate = true;
+    return tex;
+  });
+  const textureRef = useRef(texture);
+
+  useEffect(() => () => { texture.dispose(); }, [texture]);
+
+  useEffect(() => {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(0,0,0,0.75)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#333";
+    ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
+    const ratio = Math.max(0, Math.min(1, health / 100));
+    ctx.fillStyle = health > 50 ? "#00bbff" : health > 25 ? "#0088ff" : "#0055cc";
+    ctx.fillRect(1, 1, (canvas.width - 2) * ratio, canvas.height - 2);
+    textureRef.current.needsUpdate = true;
+  }, [canvas, health]);
+
+  return (
+    <sprite scale={[0.8, 0.10, 1]}>
+      <spriteMaterial map={texture} transparent depthWrite={false} />
+    </sprite>
+  );
+};
+
 export const TrainingDummy = ({ position, color, health, hitTimestamp }: TrainingDummyProps) => {
   const groupRef = useRef<THREE.Group>(null);
   const coreMaterialRef = useRef<THREE.MeshStandardMaterial>(null);
-  const ringMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
 
   const [damageNumbers, setDamageNumbers] = useState<{ id: number; val: number; x: number; y: number }[]>([]);
   const [isRespawning, setIsRespawning] = useState(false);
   const prevHealthRef = useRef(health);
 
-  // Store color instance to avoid creating it in useFrame
   const targetColor = useMemo(() => new THREE.Color(color), [color]);
 
   // Handle hits and respawns
   useEffect(() => {
-    if (health < prevHealthRef.current) {
-      // Took damage
+    if (health < prevHealthRef.current && prevHealthRef.current > 0) {
       const dmg = prevHealthRef.current - health;
       const newId = Date.now() + Math.random();
-      
       setDamageNumbers((prev) => [
         ...prev,
-        { id: newId, val: dmg, x: (Math.random() - 0.5) * 1.5, y: Math.random() * 1.5 }
+        { id: newId, val: Math.round(dmg), x: (Math.random() - 0.5) * 1.2, y: Math.random() * 1.0 },
       ]);
-      
-      // Auto-remove this specific damage number after 1 second
       setTimeout(() => {
-        setDamageNumbers((current) => current.filter(d => d.id !== newId));
-      }, 1000);
-      
-      // Hit flash
+        setDamageNumbers((cur) => cur.filter((d) => d.id !== newId));
+      }, 1200);
+
       if (coreMaterialRef.current) {
-        coreMaterialRef.current.emissiveIntensity = 2.0;
+        coreMaterialRef.current.emissiveIntensity = 2.5;
         coreMaterialRef.current.color.set("#ffffff");
       }
     } else if (health > prevHealthRef.current || (health === 100 && prevHealthRef.current <= 0)) {
-      // Respawned or healed
+      // Respawn animation
       setIsRespawning(true);
-      setTimeout(() => setIsRespawning(false), 1500);
+      setTimeout(() => setIsRespawning(false), 1200);
     }
-
     prevHealthRef.current = health;
   }, [health]);
 
-  // (Cleanup effect removed since we handle it per-number now)
-
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
-    
-    // Core animation (floating & rotating)
     if (groupRef.current) {
-      groupRef.current.position.y = position[1] + Math.sin(t * 3) * 0.1;
-      groupRef.current.rotation.y += delta * 0.5;
+      groupRef.current.position.y = position[1] + Math.sin(t * 2.5) * 0.08;
+      groupRef.current.rotation.y += delta * 0.6;
     }
-
-    // Recover from hit flash
     if (coreMaterialRef.current) {
       coreMaterialRef.current.emissiveIntensity = THREE.MathUtils.lerp(
         coreMaterialRef.current.emissiveIntensity,
-        0.5,
-        0.1
+        0.4,
+        0.08,
       );
-      coreMaterialRef.current.color.lerp(targetColor, 0.1);
-    }
-
-    // Health ring update
-    if (ringMaterialRef.current) {
-      ringMaterialRef.current.opacity = health > 0 ? 0.8 : 0.0;
+      coreMaterialRef.current.color.lerp(targetColor, 0.08);
     }
   });
 
-  // DO NOT return null here, otherwise the respawn animation won't work 
-  // because the component would unmount and lose its state.
   const isVisible = health > 0 || isRespawning;
-
   if (!isVisible) return null;
+
+  const isDead = health <= 0;
 
   return (
     <group position={position} ref={groupRef}>
-      {/* Target Dummy Core (Diamond shape) */}
+      {/* Core diamond body */}
       <mesh castShadow receiveShadow>
-        <octahedronGeometry args={[0.3, 0]} />
+        <octahedronGeometry args={[0.28, 0]} />
         <meshStandardMaterial
           ref={coreMaterialRef}
-          color={color}
-          emissive={color}
-          emissiveIntensity={0.5}
+          color={isDead ? "#222222" : color}
+          emissive={isDead ? "#000000" : color}
+          emissiveIntensity={0.4}
           wireframe={isRespawning}
           transparent
-          opacity={isRespawning ? 0.6 : 1.0}
+          opacity={isDead ? 0.3 : isRespawning ? 0.5 : 1.0}
         />
       </mesh>
 
-      {/* Target Dummy Outer Rings */}
+      {/* Outer decorative ring */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.5, 0.02, 16, 32]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.2} />
-      </mesh>
-      
-      {/* Health Ring indicator */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.4, 0]}>
-        <ringGeometry args={[0.4, 0.45, 32, 1, 0, (health / 100) * Math.PI * 2]} />
-        <meshBasicMaterial ref={ringMaterialRef} color={health > 50 ? "#00ffcc" : health > 20 ? "#ffcc00" : "#ff0055"} side={THREE.DoubleSide} />
+        <torusGeometry args={[0.45, 0.018, 16, 32]} />
+        <meshBasicMaterial color={isDead ? "#333333" : color} transparent opacity={isDead ? 0.1 : 0.4} />
       </mesh>
 
-      {/* Damage Numbers (HTML overlay) */}
+      {/* Second ring (perpendicular) */}
+      <mesh rotation={[0, 0, 0]}>
+        <torusGeometry args={[0.45, 0.018, 16, 32]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={isDead ? 0.05 : 0.15} />
+      </mesh>
+
+      {/* ── Health bar billboard (health only — no energy bar for dummies) */}
+      {!isDead && (
+        <group position={[0, 1.1, 0]}>
+          <DummyHealthBar health={health} />
+        </group>
+      )}
+
+      {/* Damage pop-up numbers */}
       {damageNumbers.map((dmg) => (
-        <Html key={dmg.id} position={[dmg.x, dmg.y + 0.5, 0]} center>
-          <div 
-            className="font-mono text-red-500 font-bold text-lg select-none pointer-events-none animate-float-up" 
-            style={{ textShadow: "0 0 5px #ff0000" }}
+        <Html key={dmg.id} position={[dmg.x, dmg.y + 0.6, 0]} center>
+          <div
+            className="font-mono font-black text-base select-none pointer-events-none"
+            style={{
+              color: "#ff3355",
+              textShadow: "0 0 8px #ff0055, 0 0 16px rgba(255,0,85,0.4)",
+              animation: "floatUp 1.2s ease-out forwards",
+            }}
           >
             -{dmg.val}
           </div>
+          <style>{`
+            @keyframes floatUp {
+              0%   { opacity: 1; transform: translateY(0) scale(1.1); }
+              60%  { opacity: 1; transform: translateY(-18px) scale(1); }
+              100% { opacity: 0; transform: translateY(-28px) scale(0.85); }
+            }
+          `}</style>
         </Html>
       ))}
-
     </group>
   );
 };

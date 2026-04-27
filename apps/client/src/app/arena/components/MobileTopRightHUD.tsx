@@ -23,6 +23,10 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
   const fpsColor = fps >= 50 ? '#4ade80' : fps >= 30 ? '#facc15' : '#f87171';
   const [lockVision, setLockVision] = useState(false);
 
+  const dummies = robots.filter(r => r.id.startsWith('dummy-'));
+  const aliveDummies = dummies.filter(d => d.health > 0).length;
+  const allDead = aliveDummies === 0 && dummies.length > 0;
+
   useEffect(() => {
     if (!socket) return;
     const handleLockVisionToggled = (data: { robotId: string; lockVision: boolean | null }) => {
@@ -62,17 +66,41 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
         </div>
 
         <div className="flex flex-col gap-2 pt-1">
-          <button
-            type="button"
-            onClick={handleResetGame}
-            className="group flex items-center gap-1.5 px-2 py-1.5 bg-black/50 backdrop-blur-md border border-red-500/30 rounded-lg hover:border-red-400/60 hover:bg-red-950/30 active:scale-95 transition-all shadow-[0_0_8px_rgba(239,68,68,0.1)] hover:shadow-[0_0_12px_rgba(239,68,68,0.3)]"
-          >
-            <span className="relative flex items-center justify-center w-2 h-2">
-              <span className="absolute w-2 h-2 rounded-full bg-red-500/30 animate-ping" />
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.8)]" />
-            </span>
-            <span className="text-[7px] text-red-400/70 font-black tracking-widest uppercase">Respawn</span>
-          </button>
+          {displayMode !== 'TRAINING_SOLO' ? (
+            <button
+              type="button"
+              onClick={handleResetGame}
+              className="group flex items-center gap-1.5 px-2 py-1.5 bg-black/50 backdrop-blur-md border border-red-500/30 rounded-lg hover:border-red-400/60 hover:bg-red-950/30 active:scale-95 transition-all shadow-[0_0_8px_rgba(239,68,68,0.1)] hover:shadow-[0_0_12px_rgba(239,68,68,0.3)]"
+            >
+              <span className="relative flex items-center justify-center w-2 h-2">
+                <span className="absolute w-2 h-2 rounded-full bg-red-500/30 animate-ping" />
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.8)]" />
+              </span>
+              <span className="text-[7px] text-red-400/70 font-black tracking-widest uppercase">Respawn</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => socket?.emit('respawnDummies')}
+              className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${
+                allDead
+                  ? 'bg-[#00ffff]/20 border-[#00ffff]/60 shadow-[0_0_12px_rgba(0,255,255,0.4)] animate-pulse'
+                  : 'bg-[#00ffff]/5 border-[#00ffff]/20 hover:border-[#00ffff]/50'
+              }`}
+            >
+              <span className="relative flex items-center justify-center w-2 h-2">
+                <span className={`w-1.5 h-1.5 rounded-full bg-[#00ffff] shadow-[0_0_4px_rgba(0,255,255,0.8)]`} />
+              </span>
+              <span className="text-[7px] text-[#00ffff]/80 font-black tracking-widest uppercase flex items-center gap-1">
+                RESPAWN DUMMIES
+                {dummies.length > 0 && (
+                  <span className={`px-1 py-0.5 rounded text-[6px] ${allDead ? 'bg-[#ff0055] text-white' : 'bg-[#00ffff]/20 text-[#00ffff]'}`}>
+                    {aliveDummies}/{dummies.length}
+                  </span>
+                )}
+              </span>
+            </button>
+          )}
 
           <button
             type="button"

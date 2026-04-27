@@ -201,6 +201,8 @@ const ArenaPageContent = () => {
           dummiesDestroyed={trainingStats.dummiesDestroyed}
           startTime={trainingStats.startTime}
           isMobile={isMobile}
+          socket={socket}
+          dummies={robots.filter(r => r.id.startsWith('dummy-'))}
         />
       )}
 

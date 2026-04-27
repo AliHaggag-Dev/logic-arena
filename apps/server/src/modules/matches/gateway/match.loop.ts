@@ -58,20 +58,22 @@ export class MatchLoopManager {
           continue;
         }
 
-        // Training mode: Dummy respawn
+        // Training mode: Detect when a dummy is killed for the first time this death
         if (mode === 'TRAINING_SOLO') {
+          const killedSet = this.state.dummyKilledThisTick.get(matchId) ?? new Set<string>();
           for (const robot of state.robots) {
             if (robot.id.startsWith('dummy-') && (!robot.isAlive || robot.health <= 0)) {
-              robot.health = 100;
-              robot.isAlive = true;
-              // Reset any other required state
-              if (robot.energy !== undefined) robot.energy = robot.maxEnergy ?? 100;
-              robot.inStasis = false;
-              // Add a slight random offset to make respawn more dynamic? Let's just keep original position for simplicity.
-              // Note: The client will handle the "reassembly" animation when it detects health went from 0 to 100
-              this.server.to(matchId).emit('logicExecuted', { robotId: robot.id, action: 'RESPAWN' });
+              if (!killedSet.has(robot.id)) {
+                // Emit the kill event only once per death
+                killedSet.add(robot.id);
+                this.server.to(matchId).emit('dummyKilled', { robotId: robot.id });
+              }
+            } else {
+              // Dummy is alive again (manually respawned) — clear killed flag
+              killedSet.delete(robot.id);
             }
           }
+          this.state.dummyKilledThisTick.set(matchId, killedSet);
         }
 
         // 3. Emit Delta State

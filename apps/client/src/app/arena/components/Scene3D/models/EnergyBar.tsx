@@ -53,11 +53,11 @@ export const EnergyBarSprite = ({ energy, maxEnergy, inStasis }: EnergyBarSprite
       // Stasis: deep blue fill
       ctx.fillStyle = '#1a55ff';
     } else if (pct <= LOW_ENERGY_THRESHOLD) {
-      // Low energy: amber
-      ctx.fillStyle = '#ff8c00';
+      // Low energy: orange/red
+      ctx.fillStyle = '#ff5500';
     } else {
-      // Normal: neon cyan
-      ctx.fillStyle = '#00ffff';
+      // Normal: neon yellow
+      ctx.fillStyle = '#ffcc00';
     }
 
     ctx.fillRect(1, 1, (canvas.width - 2) * ratio, canvas.height - 2);

@@ -46,6 +46,7 @@ export const SceneContent = (props: Scene3DComponentProps) => {
         fogEnabled={props.fogEnabled}
         localRobotFile={props.localRobotFile}
         localRobotColor={props.localRobotColor}
+        displayMode={props.displayMode}
       />
       <SceneOverlay
         speechBubble={props.speechBubble ?? null}
