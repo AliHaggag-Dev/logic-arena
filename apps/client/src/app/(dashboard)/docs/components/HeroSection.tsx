@@ -5,7 +5,7 @@ export function HeroSection({ isMobile }: { isMobile: boolean }) {
     <div className={`border-b border-accent/10 ${isMobile ? "pb-6 mb-8" : "pb-9 mb-[52px]"} text-center`}>
       <h1 className={`${isMobile ? "text-3xl" : "text-[clamp(32px,6vw,56px)]"} font-black tracking-[0.22em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.9)] mb-4 leading-none`}>
         <p className="text-[10px] tracking-[0.4em] text-accent/30 mb-3 uppercase drop-shadow-none">
-          // LANGUAGE_REFERENCE_v2.0_SENTIENT_UPDATE
+          LANGUAGE REFERENCE
         </p>
         ALISCRIPT
         <span className="text-[0.38em] text-accent/35 tracking-[0.3em] ml-4 align-super">
@@ -14,7 +14,7 @@ export function HeroSection({ isMobile }: { isMobile: boolean }) {
       </h1>
 
       <p className={`${isMobile ? "text-[10px] tracking-[0.15em]" : "text-[13px] tracking-[0.28em]"} text-accent/45 uppercase m-0`}>
-        The Combat Programming Language
+        THE ROBOT PROGRAMMING LANGUAGE
       </p>
 
       {/* Decorative line */}
@@ -23,9 +23,9 @@ export function HeroSection({ isMobile }: { isMobile: boolean }) {
       {/* Status badges */}
       <div className={`flex justify-center ${isMobile ? "gap-2" : "gap-4"} mt-6 flex-wrap`}>
         {[
-          { label: "MODULES", value: "10" },
-          { label: "PARADIGMS", value: "6" },
-          { label: "CORE", value: "v2.0 READY" },
+          { label: "SECTIONS", value: "10" },
+          { label: "LOGIC TYPES", value: "6" },
+          { label: "CORE", value: "v2.0" },
         ].map(({ label, value }) => (
           <div
             key={label}

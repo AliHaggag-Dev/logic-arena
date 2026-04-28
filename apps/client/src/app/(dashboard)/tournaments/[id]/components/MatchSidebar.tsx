@@ -33,7 +33,7 @@ export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulati
           
           <div className="relative z-10">
             <div className="text-[9px] font-black tracking-[0.35em] text-yellow-500/40 mb-4 flex justify-between items-center uppercase">
-              <span>⚡ ACTIVE_ENGAGEMENT</span>
+              <span>⚡ YOUR MATCH</span>
               <span className="w-2 h-2 rounded-full bg-yellow-500 animate-ping" />
             </div>
             
@@ -43,7 +43,7 @@ export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulati
                         VS_{myOpponent.username.toUpperCase()}
                     </div>
                     <div className="text-[8px] text-yellow-500/30 tracking-[0.2em] mt-1 font-bold">
-                        FREQ: {roundLabels[myMatch.round] || `PHASE_${myMatch.round}`}
+                        PHASE: {roundLabels[myMatch.round] || `PHASE_${myMatch.round}`}
                     </div>
                 </div>
                 <div className="text-[10px] text-yellow-500/20 font-black tracking-tighter italic">
@@ -68,10 +68,10 @@ export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulati
                     {isGuest ? (
                         <>
                             <span className="text-[12px]">🔒</span>
-                            <span>LOGIN TO OVERRIDE</span>
+                            <span>LOGIN TO SIMULATE</span>
                         </>
                     ) : (
-                        simulating === myMatch.id ? "SIMULATING_NEURAL_VICTORY..." : "▶ OVERRIDE_VICTORY"
+                        simulating === myMatch.id ? "SIMULATING MATCH..." : "▶ SIMULATE VICTORY"
                     )}
                 </span>
             </button>
@@ -87,7 +87,7 @@ export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulati
         <div className="relative z-10">
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-accent/10">
                 <div className="text-[9px] font-black tracking-[0.3em] text-accent/30 uppercase">
-                    COMBATANTS_MANIFEST
+                    PLAYERS
                 </div>
                 <div className="text-[10px] text-accent/50 font-black">
                     [{tournament.participants.length}/8]

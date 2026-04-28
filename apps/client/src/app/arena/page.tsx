@@ -92,7 +92,7 @@ const ArenaPageContent = () => {
               setResolvedScriptId(targetScriptId);
             } else {
               if (isMounted) {
-                setError('No scripts found. Please create a script in the Command Center first.');
+                setError('No scripts found. Please create a script in the Dashboard first.');
                 setLoading(false);
               }
               return;
@@ -104,7 +104,7 @@ const ArenaPageContent = () => {
                 setResolvedScriptId('guest-script');
                 setScript({
                   id: 'guest-script',
-                  title: 'GUEST_OVERRIDE',
+                  title: 'Guest Script',
                   content: '// Guest Mode active\n// You can write temporary logic here'
                 } as RobotScript);
                 setLoading(false);
@@ -137,7 +137,7 @@ const ArenaPageContent = () => {
             setResolvedScriptId('guest-script');
             setScript({
               id: 'guest-script',
-              title: 'GUEST_OVERRIDE',
+              title: 'Guest Script',
               content: '// Guest Mode active\n// You can write temporary logic here'
             });
             setLoading(false);
@@ -159,7 +159,7 @@ const ArenaPageContent = () => {
             }
           } else {
             if (isMounted) {
-              setError('No scripts found. Please create a script in the Command Center first.');
+              setError('No scripts found. Please create a script in the Dashboard first.');
               setLoading(false);
             }
           }
@@ -178,8 +178,8 @@ const ArenaPageContent = () => {
     return () => { isMounted = false; };
   }, [router, resolvedScriptId]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">UPLINKING TO NEURAL NETWORK...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">CRITICAL_SYSTEM_ERROR: {error}</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">Loading Arena...</div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">ERROR 404: {error}</div>;
 
   const robots = uiState?.robots || [];
   const obstacles = obstaclesRef.current || [];
@@ -287,7 +287,7 @@ const ArenaPageContent = () => {
 
 export default function ArenaPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">UPLINKING TO NEURAL NETWORK...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">Loading Arena...</div>}>
       <ArenaPageContent />
     </Suspense>
   );

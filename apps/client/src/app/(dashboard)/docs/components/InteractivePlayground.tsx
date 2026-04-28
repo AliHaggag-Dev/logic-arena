@@ -14,13 +14,13 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
 
   return (
     <section className={isMobile ? "mb-10" : "mb-[60px]"}>
-      <SectionLabel text="INTERACTIVE_PLAYGROUND" isMobile={isMobile} />
+      <SectionLabel text="LIVE EDITOR" isMobile={isMobile} />
       <div className={`grid grid-cols-1 ${isMobile ? "gap-6" : "md:grid-cols-2 gap-5"} mt-5`}>
         {/* Left: editor */}
         <div>
           <div className="flex justify-between items-center mb-2.5 px-1">
             <span className="text-[10px] tracking-[0.22em] text-accent/30 uppercase font-bold">
-              // script_editor
+              SCRIPT EDITOR
             </span>
             <span className="text-[9px] tracking-[0.15em] text-accent/20 font-bold uppercase">
               {script.split("\n").filter(Boolean).length} LINES
@@ -43,7 +43,7 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
               : "bg-accent/10 border border-accent/20 text-accent/70"
               } active:scale-[0.98] transition-transform`}
           >
-            ▶ PARSE_CORE
+            ▶ RUN PARSER
           </button>
         </div>
 
@@ -51,13 +51,13 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
         <div>
           <div className="mb-2.5 px-1">
             <span className="text-[10px] tracking-[0.22em] text-accent/30 uppercase font-bold">
-              // parsed_stack
+              COMMAND LIST
             </span>
           </div>
           <div className={`docs-scrollbar overflow-y-auto bg-card/70 border border-accent/10 rounded-xl p-4 flex flex-col gap-2 ${isMobile ? "min-h-[140px] max-h-[250px]" : "min-h-[200px] max-h-[360px]"}`}>
             {parsed.length === 0 ? (
               <div className="flex-1 flex items-center justify-center text-accent/20 text-[10px] tracking-[0.2em] text-center p-8 uppercase font-bold">
-                Awaiting compile...
+                Waiting for script...
               </div>
             ) : (
               parsed.map((cmd, idx) => (

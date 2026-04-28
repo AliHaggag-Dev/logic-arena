@@ -111,7 +111,7 @@ export function DesktopHUD({
               onClick={handleResetGame}
               className="group relative border border-red-900 bg-red-950/30 text-red-500 text-[10px] font-black px-6 py-2.5 transition-all hover:bg-red-900/50 hover:border-red-500 hover:text-white tracking-[0.2em] overflow-hidden shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
             >
-              <span className="relative z-10">[ EXECUTE RESPAWN ]</span>
+              <span className="relative z-10">[ RESPAWN ]</span>
               <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-red-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
             </button>
           )}
@@ -158,7 +158,7 @@ export function DesktopHUD({
       <div className="absolute top-8 right-8 z-20 w-72 h-56 group">
         <div className="absolute inset-0 bg-cyan-950/10 backdrop-blur-xl border border-cyan-500/20 rounded-sm overflow-hidden transition-all group-hover:border-cyan-400/50 shadow-2xl">
           <div className="bg-cyan-900/20 px-3 py-2 flex justify-between items-center border-b border-cyan-500/20">
-            <span className="text-cyan-400 text-[10px] font-black tracking-[0.3em]">TACTICAL_VIEW</span>
+            <span className="text-cyan-400 text-[10px] font-black tracking-[0.3em]">RADAR VIEW</span>
             <div className="flex gap-1">
               <span className="w-1 h-1 bg-cyan-500/40 animate-pulse" />
               <span className="w-1 h-1 bg-cyan-500/40 animate-pulse [animation-delay:200ms]" />
@@ -178,7 +178,7 @@ export function DesktopHUD({
         <div className="flex flex-col items-end">
           <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">Connection_Status</span>
           <span className={`text-[11px] font-black tracking-widest ${isConnected ? 'text-cyan-400' : 'text-yellow-500 animate-pulse'}`}>
-            {isConnected ? 'UPLINK_STABLE' : 'REESTABLISHING_LINK...'}
+            {isConnected ? 'ONLINE' : 'RECONNECTING...'}
           </span>
         </div>
         <div className="h-8 w-px bg-cyan-900/50" />

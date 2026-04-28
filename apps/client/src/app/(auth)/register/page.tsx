@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
     try {
       await apiClient.post("/auth/register", { email, username, password });
-      setStatus({ message: "[SYS] REGISTRATION SUCCESSFUL. REROUTING...", errors: [], type: "success" });
+      setStatus({ message: "ACCOUNT CREATED SUCCESSFULLY. REDIRECTING...", errors: [], type: "success" });
       setTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(email)}`), 1500);
     } catch (error: any) {
       const errs = parseApiError(error);
@@ -63,20 +63,20 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthContainer isMobile={isMobile} nodeName="SECURE_NODE_V2.1">
-      <AuthHeader isMobile={isMobile} subtitle={isMobile ? "ID_INIT" : "Initialize Operator ID"} icon="◈" />
+    <AuthContainer isMobile={isMobile} nodeName="// v2.1">
+      <AuthHeader isMobile={isMobile} subtitle={isMobile ? "REGISTER" : "Sign Up"} icon="◈" />
       <AuthSocials isMobile={isMobile} />
 
       <form onSubmit={handleRegister} className="flex flex-col gap-5">
         <div className="flex flex-col gap-2 relative">
           <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="username">
-            // OPERATOR_ID
+            // USERNAME
           </label>
           <input
             type="text"
             id="username"
             className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
-            placeholder="SPECIFY_ALIAS..."
+            placeholder="ENTER USERNAME..."
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -86,13 +86,13 @@ export default function RegisterPage() {
 
         <div className="flex flex-col gap-2 relative">
           <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="email">
-            // COMMS_LINK_ENCRYPT
+            // EMAIL ADDRESS
           </label>
           <input
             type="email"
             id="email"
             className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
-            placeholder="OPERATOR@NETWORK.LOCAL"
+            placeholder="ENTER EMAIL ADDRESS..."
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -102,7 +102,7 @@ export default function RegisterPage() {
 
         <div className="flex flex-col gap-2 relative">
           <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="password">
-            // SEC_KEY_ENCRYPT
+            // PASSWORD
           </label>
           <input
             type="password"
@@ -133,7 +133,7 @@ export default function RegisterPage() {
             disabled={isLoading}
             className={`w-full ${isMobile ? "py-5" : "py-4"} bg-accent/10 border border-accent/40 text-accent font-black text-[11px] hover:bg-accent/20 hover:border-accent/80 transition-all duration-300 rounded-lg uppercase tracking-[0.3em] shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)] hover:shadow-[0_0_25px_rgba(var(--accent-rgb),0.3)] hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed`}
           >
-            {isLoading ? "PROCESSING_UP_LINK..." : "DEPLOY_REGISTER_PROTOCOL"}
+            {isLoading ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"}
           </button>
 
           <div className="text-center flex flex-col gap-4">
@@ -142,14 +142,14 @@ export default function RegisterPage() {
               onClick={() => router.push("/login")}
               className="text-green-500 hover:text-green-600 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
             >
-              [ Est_Existing_Link ]
+              [ Log In instead ]
             </button>
             <button
               type="button"
               onClick={() => router.push("/verify-email")}
               className="text-accent/30 hover:text-accent/60 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300"
             >
-              [ Enter_Verification_Code ]
+              [ Verify Email Code ]
             </button>
             <div className="mt-2 pt-2 border-t border-accent/10 w-full max-w-[200px] mx-auto">
               <button
@@ -157,7 +157,7 @@ export default function RegisterPage() {
                 onClick={() => router.push("/dashboard")}
                 className="text-accent/40 hover:text-accent/80 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.3)]"
               >
-                [ Continue_as_Guest ]
+                [ Continue as Guest ]
               </button>
             </div>
           </div>

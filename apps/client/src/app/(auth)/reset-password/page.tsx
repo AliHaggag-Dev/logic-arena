@@ -21,18 +21,18 @@ function ResetPasswordContent() {
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setStatus({ message: "UPDATING_SECURITY_KEY...", type: null });
+    setStatus({ message: "UPDATING PASSWORD...", type: null });
 
     try {
       await apiClient.post("/auth/reset-password", { email, code, newPassword });
       setStatus({
-        message: "[SYS] SECURITY_KEY_UPDATED. ACCESS_RESTORED.",
+        message: "PASSWORD UPDATED SUCCESSFULLY.",
         type: "success"
       });
       setTimeout(() => router.push("/login"), 1500);
     } catch (err: any) {
       setStatus({
-        message: `[ERR] ${err.response?.data?.message || err.message}`,
+        message: `ERROR: ${err.response?.data?.message || err.message}`,
         type: "error"
       });
       setIsLoading(false);
@@ -77,24 +77,24 @@ function ResetPasswordContent() {
             </>
           )}
 
-          <div className="absolute top-3 right-4 text-[9px] text-accent/30 tracking-[0.2em] pointer-events-none">SEC_OVERRIDE_V1.1</div>
+          <div className="absolute top-3 right-4 text-[9px] text-accent/30 tracking-[0.2em] pointer-events-none">v1.1</div>
 
           <div className="mb-10 text-center flex flex-col items-center">
             <div className="w-10 h-10 mb-4 border border-accent/30 rounded-full flex items-center justify-center bg-accent/5 shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]">
               <span className="text-accent shadow-accent">⚙</span>
             </div>
             <h1 className={`${isMobile ? "text-2xl" : "text-3xl"} text-accent font-black tracking-[0.2em] drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.6)] mb-2 uppercase`}>
-              RESET_BASE
+              RESET PASSWORD
             </h1>
             <h2 className="text-accent/60 text-[10px] tracking-[0.3em] uppercase">
-              [ {isMobile ? "NEW_SEC_P" : "Provision New Security Key"} ]
+              Enter details to reset
             </h2>
           </div>
 
           <form onSubmit={handleReset} className="flex flex-col gap-6">
             <div className="flex flex-col gap-2 relative">
               <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="code">
-                // AUTH_TOKEN (6-DIGIT)
+                // RESET CODE (6-DIGIT)
               </label>
               <input
                 type="text"
@@ -112,7 +112,7 @@ function ResetPasswordContent() {
 
             <div className="flex flex-col gap-2 relative">
               <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="newPassword">
-                // NEW_SEC_KEY
+                // NEW PASSWORD
               </label>
               <input
                 type="password"
@@ -146,7 +146,7 @@ function ResetPasswordContent() {
                 disabled={isLoading}
                 className={`w-full ${isMobile ? "py-5" : "py-4"} bg-accent/10 border border-accent/40 text-accent font-black text-[11px] hover:bg-accent/20 hover:border-accent/80 transition-all duration-300 rounded-lg uppercase tracking-[0.3em] shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)] hover:shadow-[0_0_25px_rgba(var(--accent-rgb),0.3)] hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-50 disabled:translate-y-0`}
               >
-                {isLoading ? "UPDATING_ENCRYPTION..." : "COMMIT_NEW_KEY"}
+                {isLoading ? "UPDATING PASSWORD..." : "RESET PASSWORD"}
               </button>
 
               <button
@@ -154,7 +154,7 @@ function ResetPasswordContent() {
                 onClick={() => router.push("/login")}
                 className="text-accent/70 hover:text-accent text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
               >
-                [ Abort_Reset ]
+                [ Cancel ]
               </button>
             </div>
           </form>

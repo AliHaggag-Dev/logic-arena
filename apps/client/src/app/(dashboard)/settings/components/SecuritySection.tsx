@@ -74,7 +74,7 @@ export function SecuritySection({ isGuest = false }: { isGuest?: boolean }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionHeader>SECURITY PROTOCOL</SectionHeader>
+      <SectionHeader>SECURITY</SectionHeader>
 
       {/* Password change */}
       <div className="flex flex-col gap-4">
@@ -102,7 +102,7 @@ export function SecuritySection({ isGuest = false }: { isGuest?: boolean }) {
           onClick={() => !isGuest && setShowDeleteModal(true)}
           className={`ml-2 px-5 py-2 bg-red-500/10 border border-red-500/40 text-red-400 rounded-lg text-[10px] font-bold tracking-[0.2em] font-mono transition-all duration-150 ${isGuest ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:bg-red-500/20 hover:border-red-500/70"}`}
         >
-          {isGuest ? "[🔒] TERMINATE ACCOUNT" : "TERMINATE ACCOUNT"}
+          {isGuest ? "[🔒] DELETE ACCOUNT" : "DELETE ACCOUNT"}
         </button>
       </div>
 
@@ -117,7 +117,7 @@ export function SecuritySection({ isGuest = false }: { isGuest?: boolean }) {
             style={{ animation: "modalIn 0.2s ease" }}
           >
             <div className="text-[9px] tracking-[0.28em] text-red-400/50 mb-2">// CONFIRM_TERMINATION</div>
-            <h3 className="text-red-400 font-black tracking-[0.15em] text-lg mb-3">TERMINATE ACCOUNT?</h3>
+            <h3 className="text-red-400 font-black tracking-[0.15em] text-lg mb-3">DELETE ACCOUNT?</h3>
             <p className="text-text-secondary/70 text-[11px] tracking-[0.06em] mb-5">
               Type your username{" "}
               <span className="text-accent font-bold">{storedUsername}</span>{" "}

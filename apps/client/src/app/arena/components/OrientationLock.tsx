@@ -41,7 +41,7 @@ export function OrientationLock() {
         </div>
       </div>
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-10 text-[10px] tracking-[1em] text-cyan-500 font-bold whitespace-nowrap">
-        LOGIC_ARENA_SECURITY_PROTOCOL_V4.2
+        v4.2
       </div>
     </div>
   );

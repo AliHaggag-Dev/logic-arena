@@ -66,17 +66,17 @@ function CallbackContent() {
           
           <div className="flex flex-col items-center gap-2">
             <div className="text-accent text-[12px] tracking-[0.4em] font-black animate-pulse">
-              {isMobile ? "LINK_SYNCING..." : "AUTHENTICATING_UPLINK..."}
+              {isMobile ? "SIGNING IN..." : "ESTABLISHING CONNECTION..."}
             </div>
             <div className="text-accent/30 text-[8px] tracking-[0.2em] uppercase">
-              // Establishing Secure Node Connection
+              VERIFYING ACCOUNT...
             </div>
           </div>
         </div>
 
         {/* Decorative corner text */}
         <div className="absolute bottom-6 left-6 text-accent/10 text-[10px] tracking-[0.5em] font-bold uppercase pointer-events-none">
-          SYSTEM_ACCESS_PROTOCOL_V4.0
+          v4.0
         </div>
       </div>
     </>

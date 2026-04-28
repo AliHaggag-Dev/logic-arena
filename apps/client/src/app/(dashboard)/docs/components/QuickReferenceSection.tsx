@@ -5,7 +5,7 @@ import { QUICK_REF } from "../constants/docsData";
 export function QuickReferenceSection({ isMobile }: { isMobile: boolean }) {
   return (
     <section className={isMobile ? "mb-10" : "mb-[60px]"}>
-      <SectionLabel text="QUICK_REFERENCE" isMobile={isMobile} />
+      <SectionLabel text="QUICK REFERENCE" isMobile={isMobile} />
       <div className={`grid ${isMobile ? "grid-cols-1 gap-3" : "grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4"} mt-5`}>
         {QUICK_REF.map((card) => (
           <div

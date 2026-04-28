@@ -10,28 +10,28 @@ const STEPS = [
   {
     number: "01",
     title: "Write Your Script",
-    tag: "[WRITE_SCRIPT]",
+    tag: "STEP 01",
     description:
       "Use AliScript — our purpose-built combat scripting language — to define your robot's movement, attack patterns, and decision logic. The editor gives you full autocomplete, real-time syntax checking, and instant simulation previews.",
   },
   {
     number: "02",
     title: "Deploy Your Robot",
-    tag: "[DEPLOY_ROBOT]",
+    tag: "STEP 02",
     description:
-      "Compile your code against the AliScript engine and deploy your bot to the Logic Arena cloud. Each version is versioned, logged, and battle-tested in a sandboxed environment before it hits the live arena.",
+      "Verify your code against the AliScript engine and deploy your bot to the Logic Arena cloud. Each version is versioned, logged, and battle-tested in a sandboxed environment before it hits the live arena.",
   },
   {
     number: "03",
     title: "Enter the Arena",
-    tag: "[ENTER_ARENA]",
+    tag: "STEP 03",
     description:
-      "Match against other operators in real-time or asynchronous combat. Watch your algorithm execute faithfully under pressure — every decision your code makes is rendered live in the 3D arena viewer.",
+      "Match against other players in real-time or asynchronous combat. Watch your algorithm execute faithfully under pressure — every decision your code makes is rendered live in the 3D arena viewer.",
   },
   {
     number: "04",
     title: "Climb the Ranks",
-    tag: "[CLIMB_RANKS]",
+    tag: "STEP 04",
     description:
       "Wins earn ELO rating points and unlock new arena tiers. Study replays to find weaknesses, iterate on your script, and ascend the global leaderboard to claim the title of Arena Champion.",
   },
@@ -83,7 +83,7 @@ export default function HowItWorksPage() {
           <div className="px-10 py-12 relative z-10 w-full">
             <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-accent/40 animate-pulse" />
-              SYSTEM_OVERVIEW
+              SYSTEM OVERVIEW
             </p>
             <h1 className="text-4xl sm:text-5xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] mb-4 uppercase">
               How It Works
@@ -135,7 +135,7 @@ export default function HowItWorksPage() {
             </div>
             <p className="text-[13px] font-mono text-accent/70 leading-[1.8] tracking-[0.03em] mb-8 max-w-3xl drop-shadow-[0_0_1px_rgba(var(--accent-rgb),0.1)]">
               AliScript is a purpose-built combat scripting language designed from the ground up for the Logic Arena engine.
-              It compiles to a deterministic bytecode that runs inside each robot's execution sandbox at 60 ticks per second.
+              It executes efficiently inside each robot's execution sandbox at 60 ticks per second.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">

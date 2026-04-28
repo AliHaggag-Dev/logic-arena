@@ -20,18 +20,18 @@ function VerifyEmailContent() {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setStatus({ message: "VERIFYING_AUTH_TOKEN...", type: null });
+    setStatus({ message: "Verifying your code...", type: null });
 
     try {
       await apiClient.post("/auth/verify-email", { email, code });
       setStatus({
-        message: "[SYS] IDENTITY_VERIFIED. UPLINK_ESTABLISHED.",
+        message: "Email verified! Taking you to login...",
         type: "success"
       });
       setTimeout(() => router.push("/login"), 1500);
     } catch (err: any) {
       setStatus({
-        message: `[ERR] ${err.response?.data?.message || err.message}`,
+        message: `ERROR: ${err.response?.data?.message || err.message}`,
         type: "error"
       });
       setIsLoading(false);
@@ -76,24 +76,24 @@ function VerifyEmailContent() {
             </>
           )}
 
-          <div className="absolute top-3 right-4 text-[9px] text-accent/30 tracking-[0.2em] pointer-events-none">AUTH_NODE_V3.1</div>
+          <div className="absolute top-3 right-4 text-[9px] text-accent/30 tracking-[0.2em] pointer-events-none">// v3.1</div>
 
           <div className="mb-10 text-center flex flex-col items-center">
             <div className="w-10 h-10 mb-4 border border-accent/30 rounded-full flex items-center justify-center bg-accent/5 shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]">
               <span className="text-accent shadow-accent">⬢</span>
             </div>
             <h1 className={`${isMobile ? "text-2xl" : "text-3xl"} text-accent font-black tracking-[0.2em] drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.6)] mb-2 uppercase`}>
-              VERIFY_ID
+              VERIFY EMAIL
             </h1>
             <h2 className="text-accent/60 text-[10px] tracking-[0.3em] uppercase">
-              [ {isMobile ? "AUTH_UP" : "Complete Authentication Protocol"} ]
+              [ {isMobile ? "Check Inbox" : "Check your inbox for the code"} ]
             </h2>
           </div>
 
           <form onSubmit={handleVerify} className="flex flex-col gap-8">
             <div className="flex flex-col gap-3 relative text-center">
               <label className="text-[10px] text-accent/50 uppercase tracking-[0.3em] font-black" htmlFor="code">
-                // ENTER_6_DIGIT_TOKEN
+                // ENTER YOUR CODE
               </label>
               <input
                 type="text"
@@ -108,7 +108,7 @@ function VerifyEmailContent() {
                 disabled={isLoading}
               />
               <p className="text-[10px] text-accent/30 tracking-[0.1em] mt-2">
-                TRANSMITTED TO: {email.split('@')[0]}***@{email.split('@')[1]}
+                CODE SENT TO: {email.split('@')[0]}***@{email.split('@')[1]}
               </p>
             </div>
 
@@ -132,7 +132,7 @@ function VerifyEmailContent() {
                 disabled={isLoading}
                 className={`w-full ${isMobile ? "py-5" : "py-4"} bg-accent/10 border border-accent/40 text-accent font-black text-[11px] hover:bg-accent/20 hover:border-accent/80 transition-all duration-300 rounded-lg uppercase tracking-[0.3em] shadow-[0_0_15px_rgba(var(--accent-rgb),1)] hover:shadow-[0_0_25px_rgba(var(--accent-rgb),0.3)] hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-50 disabled:translate-y-0`}
               >
-                {isLoading ? "VERIFYING..." : "COMMIT_VERIFICATION"}
+                {isLoading ? "VERIFYING..." : "VERIFY"}
               </button>
 
               <button
@@ -140,7 +140,7 @@ function VerifyEmailContent() {
                 onClick={() => router.push("/login")}
                 className="text-accent/30 hover:text-accent/60 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300"
               >
-                [ Request_New_Token ]
+                [ Request New Code ]
               </button>
             </div>
           </form>

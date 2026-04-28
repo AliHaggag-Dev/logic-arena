@@ -180,7 +180,7 @@ export function RobotCard({ robotId, name, file, scale, color, isMobile, isGuest
       <div className={`px-5 ${isMobile ? "py-3" : "py-4"} border-t border-accent/10 flex items-center justify-between bg-bg-primary/50 backdrop-blur-md`}>
         <div>
           <p className="text-[8px] tracking-[0.28em] text-accent/30 mb-0.5 uppercase font-bold">
-            // UNIT_ID_{robotId.toUpperCase()}
+            // ROBOT_{robotId.toUpperCase()}
           </p>
           <h2 className={`${isMobile ? "text-base" : "text-[18px]"} font-black tracking-[0.18em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)] m-0 uppercase`}>
             {name}
@@ -188,7 +188,7 @@ export function RobotCard({ robotId, name, file, scale, color, isMobile, isGuest
         </div>
         <div className="flex items-center gap-2">
           <span className={`${isMobile ? "text-[8px]" : "text-[10px]"} tracking-[0.2em] text-accent/70 group-hover:text-accent font-black transition-colors duration-200 uppercase`}>
-            {isGuest ? "🔒 LOCKED" : "INSPECT"}
+            {isGuest ? "🔒 LOCKED" : "CUSTOMIZE"}
           </span>
           {!isGuest && <span className="text-accent/30 tracking-tight group-hover:translate-x-1 transition-transform duration-200">→</span>}
         </div>

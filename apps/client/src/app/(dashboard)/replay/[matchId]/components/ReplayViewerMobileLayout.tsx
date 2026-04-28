@@ -31,7 +31,7 @@ export function ReplayViewerMobileLayout({
           </button>
           <div>
             <p className="text-[8px] tracking-[0.28em] text-accent/70 mb-1 uppercase">
-              // MATCH_REPLAY
+              // REPLAY
             </p>
             <h1
               className="text-2xl font-black tracking-[0.16em] text-accent m-0 leading-none"

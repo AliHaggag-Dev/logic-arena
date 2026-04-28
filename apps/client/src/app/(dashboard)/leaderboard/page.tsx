@@ -46,10 +46,10 @@ const LeaderboardPage = () => {
             {/* Header */}
             <div className="mb-8 border-b border-accent/20 pb-6">
                 <h1 className="text-accent font-black text-4xl tracking-[0.15em] drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]">
-                    NEURAL COMBAT RANKINGS
+                    LEADERBOARD
                 </h1>
                 <p className="text-accent/60 text-xs tracking-widest uppercase mt-2">
-                    Global Hackers Leaderboard | Top Tier Operators
+                    Global Player Rankings
                 </p>
             </div>
 
@@ -78,10 +78,10 @@ const LeaderboardPage = () => {
             {/* Header */}
             <div className="mb-6 border-b border-accent/20 pb-4">
                 <h1 className="text-accent font-black text-xl tracking-[0.15em] drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]">
-                    NEURAL COMBAT RANKINGS
+                    LEADERBOARD
                 </h1>
                 <p className="text-accent/60 text-[10px] tracking-widest uppercase mt-2">
-                    Global Hackers Leaderboard
+                    Global Player Rankings
                 </p>
             </div>
 

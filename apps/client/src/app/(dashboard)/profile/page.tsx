@@ -17,7 +17,7 @@ const EMPTY_STATS: CombatStats = {
 };
 
 const ANONYMOUS_PROFILE: ProfileData = {
-  username: "GUEST_OPERATOR",
+  username: "GUEST",
   rank: 9999,
   memberSince: new Date().toISOString(),
   totalMatches: 0,
@@ -246,7 +246,7 @@ export default function ProfilePage() {
                   border: `1px solid ${profileColor}30`,
                 }}
               >
-                {STAT_LABELS[dominantKey]} OPERATOR
+                {STAT_LABELS[dominantKey]} PLAYER
               </span>
             )}
           </div>
@@ -309,7 +309,7 @@ export default function ProfilePage() {
   // ── Analytics section (Radar + Rings) ─────────────────────────────────────
   const AnalyticsSection = (
     <div className="mb-8">
-      <SectionHeader label="OPERATOR ANALYTICS" sub="COMBAT DNA" />
+      <SectionHeader label="PLAYER STATS" sub="YOUR STATS" />
 
       {loading ? (
         <Shimmer className={isMobile ? "h-[340px]" : "h-[300px]"} />
@@ -336,7 +336,7 @@ export default function ProfilePage() {
             <div className="flex flex-col items-center gap-2">
               <RadarChart stats={stats} size={isMobile ? 260 : 280} />
               <p className="text-[8px] text-accent/30 tracking-[0.18em] font-mono m-0">
-                COMBAT SIGNATURE ANALYSIS
+                PERFORMANCE METRICS
               </p>
             </div>
 
@@ -403,7 +403,7 @@ export default function ProfilePage() {
   const HistorySection = (
     <div>
       <SectionHeader
-        label="BATTLE RECORDS"
+        label="MATCHES HISTORY"
         sub={profile ? `TOTAL: ${profile.totalMatches}` : undefined}
       />
       <MatchHistoryTable
@@ -425,7 +425,7 @@ export default function ProfilePage() {
         color: "#fca5a5",
       }}
     >
-      [ERR] UPLINK FAILURE: {error}
+      [ERR] Failed to load profile: {error}
     </div>
   ) : null;
 

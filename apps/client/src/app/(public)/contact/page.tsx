@@ -93,14 +93,14 @@ export default function ContactPage() {
           <div className="px-10 py-10 relative z-10 w-full">
             <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-accent/40 animate-pulse" />
-              SECURE_CHANNEL
+              CONTACT
             </p>
             <h1 className="text-4xl sm:text-5xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] mb-4 uppercase">
               Contact Us
             </h1>
             <div className="h-px w-full max-w-sm bg-gradient-to-r from-accent/50 to-transparent mb-4" />
             <p className="text-[12px] font-mono text-accent/70 leading-relaxed tracking-[0.03em] drop-shadow-[0_0_1px_rgba(var(--accent-rgb),0.1)]">
-              Open a secure channel to the Logic Arena command center. We respond within 24–48 hours.
+              Open a secure channel to the Logic Arena community and developers. We respond within 24–48 hours.
             </p>
           </div>
         </div>
@@ -115,16 +115,17 @@ export default function ContactPage() {
                   ✓
                 </div>
                 <h2 className="text-[16px] font-black tracking-[0.3em] text-accent uppercase drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]">
-                  MESSAGE RECEIVED BY COMMAND CENTER _
+                  MESSAGE SENT
                 </h2>
                 <p className="text-[13px] font-mono text-accent/60 max-w-md leading-[1.8] tracking-[0.03em]">
-                  Your message has been securely transmitted. Expect a response within 24–48 hours.
+                  Your message has been successfully sent. Expect a response within 24–48 hours.
                 </p>
                 <button
+                  type="button"
                   onClick={() => { setSubmitted(false); setName(""); setEmail(""); setSubject(""); setMessage(""); }}
                   className="mt-6 px-8 py-3.5 text-[11px] tracking-[0.3em] font-black uppercase border border-accent/30 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 hover:border-accent hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)] transition-all duration-300"
                 >
-                  TRANSMIT ANOTHER
+                  SEND ANOTHER
                 </button>
               </div>
             ) : (
@@ -132,7 +133,7 @@ export default function ContactPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {/* Name */}
                   <div>
-                    <label htmlFor="contact-name" className={labelClass}>// OPERATOR_NAME</label>
+                    <label htmlFor="contact-name" className={labelClass}>// YOUR NAME</label>
                     <input
                       id="contact-name"
                       type="text"
@@ -178,7 +179,7 @@ export default function ContactPage() {
 
                 {/* Message */}
                 <div>
-                  <label htmlFor="contact-message" className={labelClass}>// MESSAGE_PAYLOAD</label>
+                  <label htmlFor="contact-message" className={labelClass}>// YOUR MESSAGE</label>
                   <textarea
                     id="contact-message"
                     className={inputClass}
@@ -195,17 +196,19 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full relative group/btn flex items-center justify-center h-14 bg-accent/10 border border-accent/40 text-accent font-black text-[12px] tracking-[0.3em] uppercase rounded-lg hover:bg-accent/20 hover:border-accent/80 hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.3)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                    className="w-full relative group/btn flex items-center justify-center h-14 bg-accent/10 border border-accent/40 text-accent font-black 
+                    text-[12px] tracking-[0.3em] uppercase rounded-lg hover:bg-accent/20 hover:border-accent/80 hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.3)] 
+                    transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden cursor-pointer"
                   >
                     <div className="absolute inset-0 w-0 group-hover/btn:w-full bg-accent/5 transition-all duration-500 ease-out" />
                     <span className="relative z-10 flex items-center gap-3">
                       {loading ? (
                         <>
                           <span className="w-3 h-3 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-                          TRANSMITTING PAYLOAD...
+                          Sending...
                         </>
                       ) : (
-                        <>OPEN SECURE CHANNEL <span>→</span></>
+                        <>SEND MESSAGE <span>→</span></>
                       )}
                     </span>
                   </button>

@@ -72,7 +72,7 @@ export function IdentitySection({ isGuest = false }: { isGuest?: boolean }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionHeader>OPERATOR IDENTITY</SectionHeader>
+      <SectionHeader>MY PROFILE</SectionHeader>
 
       {/* Avatar */}
       <div className="flex items-center gap-4 p-4 bg-accent/[0.03] border border-accent/[0.08] rounded-xl">

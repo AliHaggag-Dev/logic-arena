@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Patch Notes — Logic Arena",
+  title: "Updates — Logic Arena",
   description: "Stay up to date with the latest changes to Logic Arena's combat engine, garage, and AliScript compiler.",
 };
 
@@ -134,10 +134,10 @@ export default function PatchNotesPage() {
           <div className="px-10 py-12 relative z-10 w-full">
             <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-accent/40 animate-pulse" />
-              CHANGELOG_FEED
+              UPDATES_FEED
             </p>
             <h1 className="text-4xl sm:text-5xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] mb-4 uppercase">
-              Patch Notes
+              UPDATES
             </h1>
             <div className="h-px w-full max-w-sm bg-gradient-to-r from-accent/50 to-transparent mb-5" />
             <p className="text-[13px] font-mono text-accent/70 leading-[1.8] tracking-[0.03em] max-w-2xl drop-shadow-[0_0_1px_rgba(var(--accent-rgb),0.1)]">

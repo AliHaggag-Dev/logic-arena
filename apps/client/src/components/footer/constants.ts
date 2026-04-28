@@ -11,9 +11,9 @@ export const ARENA_LINKS = [
   { label: "AliScript Language", href: "/docs#aliscript" },
   { label: "Robot Builder", href: "/garage" },
   { label: "Join Tournament", href: "/tournaments" },
-  { label: "Patch Notes", href: "/patch-notes" },
-  { label: "Bug Report", href: "/bug-report" },
-  { label: "Feature Requests", href: "/feature-requests" },
+  { label: "Updates", href: "/patch-notes" },
+  { label: "Report an Issue", href: "/bug-report" },
+  { label: "Suggest a Feature", href: "/feature-requests" },
 ];
 
 export const SOCIAL_LINKS = [

@@ -18,8 +18,8 @@ export function NoScriptModal({ onClose }: Props) {
         <h3 className="text-[14px] font-black tracking-[0.2em] text-red-500 mb-2 uppercase drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.4)]">
           No Script Selected
         </h3>
-        <p className="text-[10px] text-red-500/70 tracking-[0.14em] mb-8 leading-relaxed max-w-[85%]">
-          YOU MUST EQUIP A TACTICAL SCRIPT BEFORE ENTERING COMBAT. RETURN TO HEADQUARTERS TO SELECT YOUR WEAPON.
+        <p className="text-[10px] text-red-500/70 tracking-[0.14em] mb-8 leading-relaxed max-w-[85%] uppercase font-sans font-bold">
+          You must choose a script before entering combat. Return to the dashboard to select yours.
         </p>
 
         <div className="flex gap-3 w-full">

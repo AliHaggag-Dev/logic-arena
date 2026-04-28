@@ -70,16 +70,16 @@ export default function BugReportPage() {
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)]" />
           <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-accent/10 to-transparent pointer-events-none" />
           <div className="px-10 py-10 relative z-10 w-full">
-            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3 flex items-center gap-2">
+            <p className="text-[10px] font-black tracking-[0.45em] text-accent/60 uppercase mb-3 flex items-center gap-2 font-sans font-bold">
               <span className="w-2 h-2 rounded-full bg-accent/40 animate-pulse" />
-              COMMAND_CENTER_REPORT
+              Submit an Issue
             </p>
             <h1 className="text-4xl sm:text-5xl font-black tracking-[0.15em] text-accent drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] mb-4 uppercase">
-              Submit a Bug
+              Submit Issue
             </h1>
             <div className="h-px w-full max-w-sm bg-gradient-to-r from-accent/50 to-transparent mb-4" />
             <p className="text-[12px] font-mono text-accent/70 leading-relaxed tracking-[0.03em] drop-shadow-[0_0_1px_rgba(var(--accent-rgb),0.1)]">
-              Encountered an issue in the arena? Transmit a full report to our engineering team.
+              Send us a detailed report and our engineering team will investigate.
             </p>
           </div>
         </div>
@@ -94,23 +94,23 @@ export default function BugReportPage() {
                   ✓
                 </div>
                 <h2 className="text-[16px] font-black tracking-[0.3em] text-accent uppercase drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]">
-                  REPORT TRANSMITTED TO COMMAND CENTER _
+                  REPORT SUBMITTED
                 </h2>
                 <p className="text-[13px] font-mono text-accent/60 max-w-md leading-[1.8] tracking-[0.03em]">
-                  Our engineering team will triage your report within 48 hours. Thank you for keeping the arena clean.
+                  We'll look into this right away! Thank you for your help.
                 </p>
                 <button
                   onClick={() => { setSubmitted(false); setTitle(""); setDescription(""); setSteps(""); setSeverity(""); }}
                   className="mt-6 px-8 py-3.5 text-[11px] tracking-[0.3em] font-black uppercase border border-accent/30 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 hover:border-accent hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)] transition-all duration-300"
                 >
-                  TRANSMIT ANOTHER
+                  SUBMIT ANOTHER
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 {/* Bug Title */}
                 <div>
-                  <label htmlFor="bug-title" className={labelClass}>// BUG_TITLE</label>
+                  <label htmlFor="bug-title" className={labelClass}>TITLE</label>
                   <input
                     id="bug-title"
                     type="text"
@@ -125,7 +125,7 @@ export default function BugReportPage() {
 
                 {/* Description */}
                 <div>
-                  <label htmlFor="bug-description" className={labelClass}>// DESCRIPTION</label>
+                  <label htmlFor="bug-description" className={labelClass}>DESCRIPTION</label>
                   <textarea
                     id="bug-description"
                     className={inputClass}
@@ -140,7 +140,7 @@ export default function BugReportPage() {
 
                 {/* Steps to Reproduce */}
                 <div>
-                  <label htmlFor="bug-steps" className={labelClass}>// STEPS_TO_REPRODUCE</label>
+                  <label htmlFor="bug-steps" className={labelClass}>STEPS TO REPRODUCE</label>
                   <textarea
                     id="bug-steps"
                     className={inputClass}
@@ -155,7 +155,7 @@ export default function BugReportPage() {
 
                 {/* Severity */}
                 <div>
-                  <label htmlFor="bug-severity" className={labelClass}>// SEVERITY_LEVEL</label>
+                  <label htmlFor="bug-severity" className={labelClass}>SEVERITY</label>
                   <CyberSelect
                     id="bug-severity"
                     value={severity}
@@ -170,17 +170,19 @@ export default function BugReportPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full relative group/btn flex items-center justify-center h-14 bg-accent/10 border border-accent/40 text-accent font-black text-[12px] tracking-[0.3em] uppercase rounded-lg hover:bg-accent/20 hover:border-accent/80 hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.3)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                    className="w-full relative group/btn flex items-center justify-center h-14 bg-accent/10 border border-accent/40 text-accent font-black 
+                    text-[12px] tracking-[0.3em] uppercase rounded-lg hover:bg-accent/20 hover:border-accent/80 hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.3)] 
+                    transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden cursor-pointer"
                   >
                     <div className="absolute inset-0 w-0 group-hover/btn:w-full bg-accent/5 transition-all duration-500 ease-out" />
                     <span className="relative z-10 flex items-center gap-3">
                       {loading ? (
                         <>
                           <span className="w-3 h-3 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-                          TRANSMITTING INCIDENT...
+                          Submitting...
                         </>
                       ) : (
-                        <>TRANSMIT BUG REPORT <span>→</span></>
+                        <>SUBMIT ISSUE<span>→</span></>
                       )}
                     </span>
                   </button>

@@ -35,7 +35,7 @@ export const ArenaControls: React.FC<ArenaControlsProps> = ({
       >
         <span className="text-cyan-500 font-bold ml-1">{'>'}</span>
         <input
-          placeholder="Execute override (e.g. FIRE)"
+          placeholder="Run override command (e.g. FIRE)"
           type="text"
           className="flex-grow bg-transparent outline-none text-cyan-300 text-xs font-mono placeholder-cyan-900"
           value={commandInput}
@@ -54,7 +54,7 @@ export const ArenaControls: React.FC<ArenaControlsProps> = ({
         >
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_5px_var(--accent)]" />
-            <span className="text-[10px] font-black tracking-widest text-cyan-600 uppercase">Telemetry Log</span>
+            <span className="text-[10px] font-black tracking-widest text-cyan-600 uppercase">Activity Log</span>
             {output.length > 0 && (
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-900/50 text-cyan-400 border border-cyan-700/40">
                 {output.length}

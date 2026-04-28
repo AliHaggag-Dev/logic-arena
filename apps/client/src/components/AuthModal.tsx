@@ -9,7 +9,7 @@ interface AuthModalProps {
     message?: string;
 }
 
-export const AuthModal = ({ isOpen, onClose, title = "AUTHENTICATION REQUIRED", message = "You must initialize a neural link (log in) to access this feature." }: AuthModalProps) => {
+export const AuthModal = ({ isOpen, onClose, title = "AUTHENTICATION REQUIRED", message = "You must log in to access this feature." }: AuthModalProps) => {
     const router = useRouter();
 
     if (!isOpen) return null;

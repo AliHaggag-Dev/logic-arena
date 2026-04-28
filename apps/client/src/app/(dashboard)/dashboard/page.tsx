@@ -16,7 +16,7 @@ type GameMode = "COMBAT" | "RACING" | "TRAINING_SOLO";
 
 const GUEST_SCRIPT: RobotScript = {
     id: "guest-script",
-    title: "DEFAULT_GUEST_PROTOCOL",
+    title: "DEFAULT_GUEST_SCRIPT",
     content: "// Standard operating logic\n// Register to edit this script!\nSCAN;\nMOVE_FAST;",
     version: 1,
     createdAt: new Date().toISOString()
@@ -55,7 +55,7 @@ const DashboardPage = () => {
 
     const handleCreateScript = async (e: React.FormEvent) => {
         if (e) e.preventDefault();
-        
+
         if (isGuest) {
             setShowAuthModal(true);
             return;
@@ -64,18 +64,18 @@ const DashboardPage = () => {
         if (!newScriptTitle.trim()) return;
 
         setIsLoading(true);
-        setStatus({ message: "COMPILING NEURAL CORE...", type: null });
+        setStatus({ message: "CREATING NEW SCRIPT...", type: null });
 
         try {
             const response = await apiClient.post("/scripts", { title: newScriptTitle, content: "// Write your AliScript here" });
             setScripts([...scripts, response.data]);
             setNewScriptTitle("");
-            setStatus({ message: "[SYS] NEW SCRIPT PROTOCOL INITIALIZED.", type: "success" });
+            setStatus({ message: "[SYS] SCRIPT CREATED.", type: "success" });
             setTimeout(() => setStatus({ message: "", type: null }), 3000);
         } catch (error: unknown) {
             const axiosError = error as { response?: { status?: number, data?: { message?: string } }; message?: string };
-            const errMsg = axiosError.response?.status === 401 
-                ? "Unauthorized. Please log in to initialize protocols." 
+            const errMsg = axiosError.response?.status === 401
+                ? "Unauthorized. Please log in to create scripts."
                 : (axiosError.response?.data?.message ?? "An unexpected error occurred.");
             console.error("Failed to create script:", errMsg);
             setStatus({
@@ -121,15 +121,15 @@ const DashboardPage = () => {
         // Optimistic removal
         const snapshot = scripts.find((s) => s.id === id);
         setScripts((prev) => prev.filter((s) => s.id !== id));
-        setStatus({ message: "PROTOCOL TERMINATED", type: "error" });
+        setStatus({ message: "SCRIPT DELETED", type: "error" });
         setTimeout(() => setStatus({ message: "", type: null }), 1000);
 
         try {
             await apiClient.delete(`/scripts/${id}`);
         } catch (error: unknown) {
             const axiosError = error as { response?: { status?: number, data?: { message?: string } }; message?: string };
-            const errMsg = axiosError.response?.status === 401 
-                ? "Unauthorized. Please log in to delete protocols." 
+            const errMsg = axiosError.response?.status === 401
+                ? "Unauthorized. Please log in to delete scripts."
                 : (axiosError.response?.data?.message ?? "An unexpected error occurred.");
             console.error("Failed to delete script:", errMsg);
             // Restore on failure
@@ -151,11 +151,11 @@ const DashboardPage = () => {
             <div className="mb-12 border-b border-accent/20 pb-6 flex flex-row justify-between items-end gap-4">
                 <div>
                     <h1 className="text-accent font-black text-4xl tracking-[0.15em] drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)] mb-2">
-                        COMMAND CENTER
+                        DASHBOARD
                     </h1>
                     <h2 className="text-accent/60 text-xs tracking-widest uppercase flex items-center gap-2">
                         <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_var(--color-emerald-500)] shrink-0"></span>
-                        Uplink Established | Operator Dashboard
+                        Connected | User Dashboard
                     </h2>
                 </div>
             </div>
@@ -172,7 +172,7 @@ const DashboardPage = () => {
             <div className="grid grid-cols-3 gap-8 flex-row">
                 <div className="col-span-2 flex flex-col gap-4">
                     <div className="flex flex-row justify-between items-center mb-2 w-full">
-                        <h3 className="text-accent/80 uppercase tracking-widest text-xs font-bold auto">Neural Scripts Repository</h3>
+                        <h3 className="text-accent/80 uppercase tracking-widest text-xs font-bold auto">AVAILABLE SCRIPTS</h3>
                         <div className="flex w-auto items-center justify-end gap-4">
                             <div className="w-auto">
                                 <CustomSelect
@@ -189,7 +189,7 @@ const DashboardPage = () => {
                         <ScriptSkeleton isMobile={isMobile} />
                     ) : scripts.length === 0 ? (
                         <div className="bg-bg-secondary/40 border border-accent/10 border-dashed rounded-lg p-10 text-center text-text-secondary text-sm tracking-wider">
-                            NO PROTOCOLS FOUND. INITIALIZE A NEW SCRIPT TO BEGIN.
+                            NO SCRIPTS FOUND. CREATE A NEW SCRIPT TO BEGIN.
                         </div>
                     ) : (
                         <div className="flex flex-col gap-3">
@@ -228,7 +228,7 @@ const DashboardPage = () => {
             {/* Mobile Header */}
             <header className="flex flex-col gap-1">
                 <h1 className="text-accent font-black text-2xl tracking-widest drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.4)]">
-                    COMMAND CENTER
+                    DASHBOARD
                 </h1>
                 <p className="text-[10px] text-text-secondary tracking-[0.2em] font-medium uppercase opacity-70">
                     Your neural scripts
@@ -286,7 +286,7 @@ const DashboardPage = () => {
                         </div>
                         <div className="flex flex-col gap-1">
                             <h3 className="text-accent font-bold tracking-widest text-xs uppercase">NO SCRIPTS DETECTED</h3>
-                            <p className="text-[10px] text-text-secondary">Initialize your first protocol above</p>
+                            <p className="text-[10px] text-text-secondary">Create your first script above</p>
                         </div>
                     </div>
                 ) : (
@@ -330,7 +330,7 @@ const DashboardPage = () => {
                 isOpen={showAuthModal}
                 onClose={() => setShowAuthModal(false)}
                 title="GUEST ACCESS DETECTED"
-                message="You must initialize an operator account to save custom neural scripts. Register now to permanently store your logic."
+                message="You must create an account to save custom scripts. Register now to store your logic."
             />
         </div>
     );

@@ -10,11 +10,11 @@ export type SectionId =
   | "notifications";
 
 export const SECTIONS: { id: SectionId; label: string; shortLabel: string }[] = [
-  { id: "identity", label: "OPERATOR IDENTITY", shortLabel: "IDENTITY" },
-  { id: "security", label: "SECURITY PROTOCOL", shortLabel: "SECURITY" },
+  { id: "identity", label: "MY PROFILE", shortLabel: "PROFILE" },
+  { id: "security", label: "SECURITY", shortLabel: "SECURITY" },
   { id: "appearance", label: "APPEARANCE", shortLabel: "APPEARANCE" },
   { id: "arena", label: "ARENA PREFERENCES", shortLabel: "ARENA" },
-  { id: "notifications", label: "NEURAL NOTIFICATIONS", shortLabel: "NOTIFS" },
+  { id: "notifications", label: "NOTIFICATIONS", shortLabel: "NOTIFS" },
 ];
 
 export interface FeedbackState {

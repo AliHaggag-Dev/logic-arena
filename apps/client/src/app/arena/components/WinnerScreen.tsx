@@ -20,7 +20,7 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
 }) => {
   const router = useRouter();
   const { winner, draw, efficiencyScores } = matchResult;
-  const [username, setUsername] = useState<string>('OPERATOR');
+  const [username, setUsername] = useState<string>('PLAYER');
 
   useEffect(() => {
     const stored = localStorage.getItem('username');
@@ -72,7 +72,7 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
       <div className="relative z-20 flex flex-col items-center max-w-2xl w-full px-4">
         {/* Status subtitle */}
         <div className="mb-2 text-[10px] tracking-[0.5em] text-white/40 uppercase font-black">
-          {draw ? 'MATCH_TERMINATED' : isWinner ? 'NEURAL_DOMINANCE_ACHIEVED' : `OPERATOR_${username}_ELIMINATED`}
+          {draw ? 'MATCH_DELETED' : isWinner ? 'VICTORY!' : `${username} DEFEATED!`}
         </div>
 
         {/* Main title */}

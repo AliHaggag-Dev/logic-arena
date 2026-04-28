@@ -20,9 +20,9 @@ export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     { label: 'CALL', detail: 'control', hint: 'Call a function by name' },
     { label: 'SET', detail: 'control', hint: 'Assign a variable' },
     // Queries
-    { label: 'GET_HEALTH()', detail: 'query', hint: 'Print health to telemetry' },
-    { label: 'GET_ENERGY()', detail: 'query', hint: 'Print energy to telemetry' },
-    { label: 'GET_ENERGY_PCT()', detail: 'query', hint: 'Print energy % to telemetry' },
+    { label: 'GET_HEALTH()', detail: 'query', hint: 'Print health to logs' },
+    { label: 'GET_ENERGY()', detail: 'query', hint: 'Print energy to logs' },
+    { label: 'GET_ENERGY_PCT()', detail: 'query', hint: 'Print energy % to logs' },
     { label: 'GET_DISTANCE()', detail: 'query', hint: 'Print nearest enemy distance' },
     { label: 'GET_POSITION()', detail: 'query', hint: 'Print current {x, y} position' },
     { label: 'GET_ROTATION()', detail: 'query', hint: 'Print body facing angle' },

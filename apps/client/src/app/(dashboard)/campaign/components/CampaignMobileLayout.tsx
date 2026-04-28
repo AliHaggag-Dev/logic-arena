@@ -47,7 +47,7 @@ export function CampaignMobileLayout({ levels, loading, currentLevel, router, is
                     <div className="text-4xl opacity-30">🔒</div>
                     <div className="flex flex-col gap-1">
                         <h3 className="text-accent font-bold tracking-widest text-xs uppercase">ACCESS RESTRICTED</h3>
-                        <p className="text-[9px] text-accent/40 uppercase tracking-widest">Authentication required to access campaign node</p>
+                        <p className="text-[9px] text-accent/40 uppercase tracking-widest">Log in to start the campaign</p>
                     </div>
                 </div>
             ) : levels.map((level, idx) => {
@@ -111,7 +111,7 @@ export function CampaignMobileLayout({ levels, loading, currentLevel, router, is
         <div className="mt-8 text-center p-6 border border-accent/20 rounded-xl bg-accent/5">
           <div className="text-3xl mb-3">🏆</div>
           <p className="text-accent font-black tracking-[0.2em] text-[12px] uppercase">Campaign Complete</p>
-          <p className="text-accent/50 text-[9px] mt-1 tracking-[0.1em] uppercase">All enemy units eliminated. You are the Overlord.</p>
+          <p className="text-accent/50 text-[9px] mt-1 tracking-[0.1em] uppercase">All enemy bots defeated.</p>
         </div>
       )}
     </div>

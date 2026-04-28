@@ -20,7 +20,7 @@ const SECTIONS = [
   {
     title: "3. OAuth Authentication",
     content:
-      "We support sign-in via Google and GitHub OAuth 2.0. When you authenticate through these providers, we receive only the data you have authorised: typically your public profile name, email address, and avatar. We do not receive or store your Google or GitHub passwords. Your OAuth tokens are stored securely and used solely for authentication purposes.",
+      "We support sign-in via Google and GitHub OAuth 2.0. When you sign in through these providers, we receive only the data you have authorised: typically your public profile name, email address, and avatar. We do not receive or store your Google or GitHub passwords. Your OAuth tokens are stored securely and used solely to verify your identity.",
   },
   {
     title: "4. Data Sharing & Third Parties",
@@ -35,7 +35,7 @@ const SECTIONS = [
   {
     title: "6. Cookies & Tracking",
     content:
-      "We use essential session cookies to keep you authenticated. We may use analytics cookies with your consent to understand how operators use the platform. You can manage cookie preferences at any time via our Cookie Policy page.",
+      "We use essential session cookies to keep you signed in. We may use analytics cookies with your consent to understand how users use the platform. You can manage cookie preferences at any time via our Cookie Policy page.",
   },
   {
     title: "7. Security",

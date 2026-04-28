@@ -82,12 +82,12 @@ export function BracketSVG({ tournament, userId, isMobile }: Props) {
   if (tournament.status === "WAITING") {
     return (
       <div className="text-center p-[80px_24px] text-accent/20 text-[10px] tracking-[0.25em] animate-pulse uppercase font-bold">
-        AWAITING_ARENA_INITIALIZATION...
+        AWAITING MATCH SETUP...
         <br />
         <span className="text-[9px] text-accent/10 mt-2 block">
           {tournament.participants.length >= 4
-            ? "COMMANDS: CREATOR_AUTH_REQUIRED_TO_LAUNCH"
-            : `UPLINK_REQUIRED: ${4 - tournament.participants.length} ADDITIIONAL_PILOTS_NEEDED`}
+            ? "Waiting for creator to start match..."
+            : `NEED ${4 - tournament.participants.length} MORE PLAYERS TO START`}
         </span>
       </div>
     );

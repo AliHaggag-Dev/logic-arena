@@ -77,7 +77,7 @@ export default function TournamentBracketPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center font-mono text-accent/30 text-[10px] tracking-[0.34em] uppercase animate-pulse">
-        <span className="mb-4">UPLINKING_BRACKET_DATA...</span>
+        <span className="mb-4">Loading tournament...</span>
         <div className="w-24 h-[1px] bg-accent/20" />
       </div>
     );
@@ -86,7 +86,7 @@ export default function TournamentBracketPage() {
   if (!tournament) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center font-mono text-red-500/50 text-[11px] tracking-[0.2em] uppercase font-bold">
-        [ERROR] TOURNAMENT_NOT_FOUND
+        [ERROR] Tournament not found
       </div>
     );
   }
@@ -172,7 +172,7 @@ export default function TournamentBracketPage() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         title="GUEST ACCESS DETECTED"
-        message="You must initialize an operator account to participate in tournaments. Register now to compete and override battle outcomes."
+        message="You must create an account to participate in tournaments. Register now to compete and play your matches."
       />
     </>
   );

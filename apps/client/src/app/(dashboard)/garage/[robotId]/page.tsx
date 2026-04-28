@@ -75,15 +75,15 @@ export default function RobotDetailPage() {
   const handleSave = async () => {
     if (saving) return;
     if (isGuest) {
-      showToast("error", "OPERATOR ID REQUIRED FOR CONFIGURATION");
+      showToast("error", "LOG IN REQUIRED TO SAVE CHANGES");
       return;
     }
     setSaving(true);
     try {
       await apiClient.patch("/users/profile", { robotId, color });
-      showToast("success", "LOADOUT SAVED SUCCESSFULLY");
+      showToast("success", "CHANGES SAVED SUCCESSFULLY");
     } catch (err: any) {
-      showToast("error", err?.response?.data?.message ?? "UPLINK FAILURE — RETRY");
+      showToast("error", err?.response?.data?.message ?? "CONNECTION FAILED — PLEASE RETRY");
     } finally {
       setSaving(false);
     }
@@ -95,13 +95,13 @@ export default function RobotDetailPage() {
       <div className="min-h-screen bg-bg-primary font-mono text-accent/90 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500/80 text-[13px] tracking-[0.2em] mb-4 uppercase font-bold">
-            [ERR] UNIT_NOT_FOUND: {robotId}
+            [ERR] ROBOT NOT FOUND: {robotId}
           </p>
           <button
             onClick={() => router.push("/garage")}
             className="text-[10px] tracking-[0.2em] text-accent/50 hover:text-accent transition-colors uppercase font-bold"
           >
-            ← BACK TO HANGAR
+            ← BACK TO GARAGE
           </button>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function RobotDetailPage() {
           <div className={`flex items-center justify-between border-b border-accent/10 ${isMobile ? "pb-4 mb-6" : "pb-5 mb-8"}`}>
             <div>
               <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-1 uppercase font-bold">
-                // UNIT_CONFIGURATION
+                // ROBOT CONFIGURATION
               </p>
               <h1 className={`m-0 ${isMobile ? "text-xl" : "text-[clamp(20px,3.5vw,32px)]"} font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight uppercase`}>
                 {robot.name}
@@ -174,7 +174,7 @@ export default function RobotDetailPage() {
               {/* Robot info */}
               <div className="border-b border-accent/10 pb-5">
                 <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-4 uppercase font-bold">
-                  // UNIT_SPECIFICATIONS
+                  // ROBOT SPECIFICATIONS
                 </p>
                 <div className="space-y-3">
                   <div className="flex justify-between text-[10px] tracking-[0.12em] font-mono">
@@ -182,11 +182,11 @@ export default function RobotDetailPage() {
                     <span className="text-accent/90 font-black">{robot.name}</span>
                   </div>
                   <div className="flex justify-between text-[10px] tracking-[0.12em] font-mono">
-                    <span className="text-accent/70 uppercase font-bold">Model_ID</span>
+                    <span className="text-accent/70 uppercase font-bold">Model</span>
                     <span className="text-accent/90 font-black">{robotId.toUpperCase()}</span>
                   </div>
                   <div className="flex justify-between text-[10px] tracking-[0.12em] font-mono">
-                    <span className="text-accent/70 uppercase font-bold">Hue_Signature</span>
+                    <span className="text-accent/70 uppercase font-bold">Color</span>
                     <span className="font-black drop-shadow-[0_0_8px_currentColor]" style={{ color: color !== "DEFAULT" ? color : "var(--accent)" }}>
                       {color.toUpperCase()}
                     </span>
@@ -217,7 +217,7 @@ export default function RobotDetailPage() {
                     }}
                   >
                     {!isGuest && <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />}
-                    {isGuest ? "🔒 CONFIGURATION LOCKED" : (saving ? "SYNCHRONIZING..." : "INITIATE_UPLOAD")}
+                    {isGuest ? "🔒 CONFIGURATION LOCKED" : (saving ? "SAVING..." : "SAVE CHANGES")}
                   </button>
                   {isGuest && (
                     <p className="text-[8px] text-accent/30 tracking-widest mt-2 uppercase text-center">
@@ -238,7 +238,7 @@ export default function RobotDetailPage() {
               disabled={saving || isGuest}
               className={`w-full py-4 rounded-xl border tracking-[0.3em] text-[11px] font-black transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(var(--accent-rgb),0.15)] active:scale-[0.96] ${isGuest ? 'bg-accent/5 border-accent/10 text-accent/30' : 'bg-accent/20 border-accent/40 text-accent'}`}
             >
-              {isGuest ? "🔒 LOCKED" : (saving ? "UPLOADING..." : "SAVE_LOADOUT")}
+              {isGuest ? "🔒 LOCKED" : (saving ? "SAVING..." : "SAVE CHANGES")}
             </button>
           </div>
         )}

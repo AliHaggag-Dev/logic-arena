@@ -57,14 +57,14 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
             </div>
           ))
           : levels.length === 0 && isGuest ? (
-              <div className="text-center py-20 border border-dashed border-accent/20 rounded-2xl bg-accent/[0.02]">
-                <div className="text-4xl mb-4 opacity-50">🔒</div>
-                <h3 className="text-accent font-black tracking-widest text-lg mb-2 uppercase">Neural Interface Required</h3>
-                <p className="text-accent/40 text-xs tracking-wide max-w-[400px] mx-auto uppercase">
-                  Operator authentication is mandatory to access the campaign node and record progression data.
-                </p>
-              </div>
-            ) : levels.map((level, idx) => {
+            <div className="text-center py-20 border border-dashed border-accent/20 rounded-2xl bg-accent/[0.02]">
+              <div className="text-4xl mb-4 opacity-50">🔒</div>
+              <h3 className="text-accent font-black tracking-widest text-lg mb-2 uppercase">Account Required</h3>
+              <p className="text-accent/40 text-xs tracking-wide max-w-[400px] mx-auto uppercase">
+                You must log in to access the campaign and track your progress.
+              </p>
+            </div>
+          ) : levels.map((level, idx) => {
             const isLeft = idx % 2 === 0;
             const isCurrent = !isGuest && currentLevel?.id === level.id;
             const dc = DIFF_COLORS[level.difficulty];
@@ -152,7 +152,7 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
         <div className="mt-6 text-center p-8 border border-accent/20 rounded-xl bg-accent/5">
           <div className="text-3xl mb-3">🏆</div>
           <p className="text-accent font-black tracking-[0.2em] text-[13px]">CAMPAIGN COMPLETE</p>
-          <p className="text-accent/70 text-[10px] mt-1 tracking-[0.1em]">All enemy units eliminated. You are the Overlord.</p>
+          <p className="text-accent/70 text-[10px] mt-1 tracking-[0.1em]">All enemy bots defeated.</p>
         </div>
       )}
     </div>

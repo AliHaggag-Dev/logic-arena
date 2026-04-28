@@ -18,7 +18,7 @@ const COOKIE_TYPES = [
   },
   {
     type: "ANALYTICS",
-    description: "Help us understand how operators use Logic Arena. Only active with your consent.",
+    description: "Help us understand how users use Logic Arena. Only active with your consent.",
     examples: [
       { name: "_arena_analytics", purpose: "Tracks page views and feature engagement in aggregate." },
       { name: "_session_duration", purpose: "Measures how long sessions last to improve performance." },
@@ -36,7 +36,7 @@ const SECTIONS = [
   {
     title: "How We Use Cookies",
     content:
-      "Logic Arena uses cookies primarily to maintain authentication sessions and remember your UI preferences (such as your chosen theme). With your consent, we may also use analytics cookies to improve the platform based on how operators interact with it.",
+      "Logic Arena uses cookies primarily to maintain authentication sessions and remember your UI preferences (such as your chosen theme). With your consent, we may also use analytics cookies to improve the platform based on how users interact with it.",
   },
   {
     title: "Managing Your Cookie Preferences",
@@ -46,7 +46,7 @@ const SECTIONS = [
   {
     title: "Third-Party Cookies",
     content:
-      "When you authenticate via Google or GitHub OAuth, those providers may set their own cookies during the authentication flow. Logic Arena does not control these third-party cookies. Please review Google's and GitHub's respective cookie and privacy policies for details.",
+      "When you sign in via Google or GitHub OAuth, those providers may set their own cookies during the sign-in flow. Logic Arena does not control these third-party cookies. Please review Google's and GitHub's respective cookie and privacy policies for details.",
   },
   {
     title: "Cookie Lifespan",

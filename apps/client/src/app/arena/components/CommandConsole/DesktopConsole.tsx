@@ -44,7 +44,7 @@ export const DesktopConsole: React.FC<DesktopConsoleProps> = ({
             <div className="flex justify-between items-center mb-4 border-b border-cyan-900/50 pb-2 shrink-0">
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_var(--accent)]" />
-                    <span className="text-cyan-400 text-[10px] font-black tracking-[0.2em] uppercase">Sentient Update // ALISCRIPT V2.0</span>
+                    <span className="text-cyan-400 text-[10px] font-black tracking-[0.2em] uppercase font-sans">ALISCRIPT V2.0</span>
                 </div>
                 <button
                     type="button"

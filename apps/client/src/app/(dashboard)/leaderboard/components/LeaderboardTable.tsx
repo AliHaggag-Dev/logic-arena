@@ -81,7 +81,7 @@ export const LeaderboardTable = ({
           <thead>
             <tr className="border-b border-accent/10 bg-accent/5">
               <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%]">Rank</th>
-              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[35%]">Operator</th>
+              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[35%]">Player</th>
               <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%]">Points</th>
               <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold">Victories</th>
               <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold text-right">
@@ -95,7 +95,7 @@ export const LeaderboardTable = ({
             ) : users.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-12 text-center text-text-secondary tracking-widest uppercase text-xs">
-                  No combat data available in neural archives.
+                  No player data available.
                 </td>
               </tr>
             ) : (
@@ -203,7 +203,7 @@ export const LeaderboardTable = ({
                     onClick={() => onChallenge(user.id, user.username)}
                     className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent text-accent font-bold tracking-[0.15em] text-[10px] rounded-lg transition-transform duration-150 active:scale-95 uppercase"
                   >
-                    ⚔ CHALLENGE OPERATOR
+                    ⚔ CHALLENGE 
                   </button>
                 ) : (
                   <button type="button" aria-label="Challenge user" disabled className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent/15 text-accent/30 font-bold tracking-[0.15em] text-[10px] rounded-lg cursor-not-allowed uppercase">

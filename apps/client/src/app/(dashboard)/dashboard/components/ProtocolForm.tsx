@@ -20,21 +20,21 @@ export const ProtocolForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onS
                     {!isExpanded ? (
                         <button
                             type="button"
-                            aria-label="Initialize new protocol"
+                            aria-label="Create new script"
                             onClick={() => setIsExpanded(true)}
                             className="w-full h-[60px] flex items-center justify-between px-5 text-accent font-bold tracking-widest text-xs group"
                         >
                             <span className="flex items-center gap-3">
                                 <Plus size={16} className="text-accent" />
-                                INITIALIZE NEW PROTOCOL
+                                CREATE NEW SCRIPT
                             </span>
                             <ChevronDown size={16} className="text-text-secondary opacity-50 group-hover:opacity-100 transition-opacity" />
                         </button>
                     ) : (
                         <div className="p-4 flex flex-col gap-4">
                             <div className="flex items-center justify-between mb-1">
-                                <span className="text-[10px] text-accent font-bold tracking-widest uppercase">Protocol Initialization</span>
-                                <button type="button" aria-label="Close protocol initialization" onClick={() => setIsExpanded(false)} className="p-1 cursor-pointer">
+                                <span className="text-[10px] text-accent font-bold tracking-widest uppercase">Script Creation</span>
+                                <button type="button" aria-label="Close script creation" onClick={() => setIsExpanded(false)} className="p-1 cursor-pointer">
                                     <ChevronDown size={16} className="text-text-secondary rotate-180 transition-transform duration-300" />
                                 </button>
                             </div>
@@ -44,7 +44,7 @@ export const ProtocolForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onS
                                     type="text"
                                     value={newScriptTitle}
                                     onChange={(e) => setNewScriptTitle(e.target.value)}
-                                    placeholder="Enter protocol name..."
+                                    placeholder="Enter script name..."
                                     className="w-full bg-bg-secondary border border-accent/50 rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-accent/50 transition-colors"
                                     autoFocus
                                 />
@@ -56,7 +56,7 @@ export const ProtocolForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onS
                                     {isGuest ? (
                                         <>🔒 LOGIN REQUIRED</>
                                     ) : isLoading ? (
-                                        "INITIALIZING..."
+                                        "CREATING..."
                                     ) : (
                                         "GENERATE SCRIPT"
                                     )}
@@ -74,17 +74,17 @@ export const ProtocolForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onS
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-50"></div>
 
             <h3 className="text-accent uppercase tracking-widest text-[10px] sm:text-xs font-bold mb-4 sm:mb-6 flex items-center gap-2">
-                [+] Initialize Protocol
+                [+] CREATE NEW SCRIPT
             </h3>
 
             <form onSubmit={onSubmit} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
                     <label className="text-[9px] sm:text-[10px] text-text-secondary uppercase tracking-[0.2em] font-bold ml-1">
-                        Protocol Designation
+                        SCRIPT NAME
                     </label>
                     <input
                         type="text"
-                        placeholder="e.g. AGGRESSIVE_SWARM"
+                        placeholder="Enter script name..."
                         className="w-full bg-bg-secondary/50 border border-accent/10 rounded-lg p-3 text-accent outline-none focus:border-accent focus:bg-accent/5 transition-all shadow-inner text-[10px] sm:text-xs placeholder-text-secondary/40"
                         value={newScriptTitle}
                         onChange={(e) => setNewScriptTitle(e.target.value)}
@@ -100,9 +100,9 @@ export const ProtocolForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onS
                     {isGuest ? (
                         <>🔒 LOGIN REQUIRED</>
                     ) : isLoading ? (
-                        "COMPILING..."
+                        "CREATING..."
                     ) : (
-                        "GENERATE SCRIPT"
+                        "CREATE SCRIPT"
                     )}
                 </button>
             </form>

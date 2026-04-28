@@ -11,7 +11,7 @@ export const COMMAND_TABLE: CommandDoc[] = [
   // --- Control Flow ---
   { command: 'IF...THEN...ELSE...END', category: 'Control Flow', parameters: 'condition', description: 'Branching logic with optional else clause. Must be closed with END.', example: 'IF health < 50 THEN BACKUP ELSE FIRE END', energyCost: 'Free' },
   { command: 'WHILE...DO...END', category: 'Control Flow', parameters: 'condition', description: 'Looping logic. Executes block while condition is true. Auto-capped at 10 iter/tick.', example: 'WHILE spotted DO FIRE WAIT 1 END', energyCost: 'Free' },
-  { command: 'FUNCTION / CALL', category: 'Control Flow', parameters: 'name', description: 'Define reusable neural pathways (functions) and invoke them.', example: 'FUNCTION retreat BACKUP END CALL retreat', energyCost: 'Free' },
+  { command: 'FUNCTION / CALL', category: 'Control Flow', parameters: 'name', description: 'Define reusable blocks of logic (functions) and invoke them.', example: 'FUNCTION retreat BACKUP END CALL retreat', energyCost: 'Free' },
   // --- Movement ---
   { command: 'MOVE', category: 'Movement', parameters: '—', description: 'Standard forward propulsion.', example: 'MOVE', energyCost: '2/tick' },
   { command: 'MOVE_FAST', category: 'Movement', parameters: '—', description: 'High-speed forward propulsion. Burns 2× the energy of MOVE.', example: 'MOVE_FAST', energyCost: '4/tick' },
@@ -68,7 +68,7 @@ export const IDENTIFIER_TABLE: IdentifierDoc[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Query Functions (Debug & Telemetry)
+// Query Functions (Status & Logs)
 // ---------------------------------------------------------------------------
 
 export interface QueryDoc {
@@ -79,8 +79,8 @@ export interface QueryDoc {
 }
 
 export const QUERY_TABLE: QueryDoc[] = [
-  { command: 'GET_HEALTH()', description: 'Prints current robot health to telemetry.', returns: 'number (0-100)', example: 'GET_HEALTH()' },
-  { command: 'GET_ENERGY()', description: 'Prints current energy level to telemetry.', returns: 'number (0-100)', example: 'GET_ENERGY()' },
+  { command: 'GET_HEALTH()', description: 'Prints current robot health to status logs.', returns: 'number (0-100)', example: 'GET_HEALTH()' },
+  { command: 'GET_ENERGY()', description: 'Prints current energy level to status logs.', returns: 'number (0-100)', example: 'GET_ENERGY()' },
   { command: 'GET_ENERGY_PCT()', description: 'Prints current energy as a percentage.', returns: 'number (0-100)', example: 'GET_ENERGY_PCT()' },
   { command: 'GET_DISTANCE()', description: 'Prints distance to the nearest visible enemy.', returns: 'number | "Infinity"', example: 'GET_DISTANCE()' },
   { command: 'GET_POSITION()', description: 'Prints current {x, y} position in arena units.', returns: 'string ({x, y})', example: 'GET_POSITION()' },
@@ -228,7 +228,7 @@ export const QUICK_REF = [
   { title: 'ENERGY', icon: '⚡', color: '#a855f7', commands: ['MY_ENERGY', 'ENERGY_PCT', 'IN_STASIS'] },
   { title: 'INTELLIGENCE', icon: '◉', color: '#6366f1', commands: ['SET var = val', 'Math (+,-,*,/,%)', 'Logic (NOT,TRUE,FALSE)', 'rotation'] },
   { title: 'ROTATION SYSTEM', icon: '◎', color: '#f59e0b', commands: ['rotation = body', 'fovDirection = eyes', 'lockVision = link', 'SET lockVision = TRUE', 'Auto-disables on SET'] },
-  { title: 'TELEMETRY', icon: '📡', color: '#06b6d4', commands: ['GET_HEALTH()', 'GET_ENERGY()', 'GET_POSITION()', 'GET_DISTANCE()'] },
+  { title: 'STATUS', icon: '📊', color: '#06b6d4', commands: ['GET_HEALTH()', 'GET_ENERGY()', 'GET_POSITION()', 'GET_DISTANCE()'] },
 ];
 
 export const SAMPLE_SCRIPT =

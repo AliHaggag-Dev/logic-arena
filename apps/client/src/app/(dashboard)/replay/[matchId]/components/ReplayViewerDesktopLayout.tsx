@@ -32,7 +32,7 @@ export function ReplayViewerDesktopLayout({
           </button>
           <div>
             <p className="text-[9px] tracking-[0.28em] text-accent/70 mb-2 uppercase">
-              // MATCH_REPLAY
+              // REPLAY
             </p>
             <h1
               className="text-[clamp(20px,3.5vw,30px)] font-black tracking-[0.16em] text-accent m-0 leading-none break-words"
@@ -66,14 +66,14 @@ export function ReplayViewerDesktopLayout({
       {/* Error */}
       {error && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-[20px_24px] text-[#fca5a5] text-[11px] tracking-[0.12em]">
-          [ERR] REPLAY UPLINK FAILURE: {error}
+          [ERR] Failed to load replay: {error}
         </div>
       )}
 
       {/* Loading */}
       {loading && !error && (
         <div className="text-center py-20 text-accent/30 tracking-[0.2em] text-[11px] animate-pulse">
-          DECRYPTING REPLAY DATA…
+          Loading replay...
         </div>
       )}
 

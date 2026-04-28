@@ -107,7 +107,7 @@ export default function TournamentsPage() {
           <div className={`border-b border-accent/10 ${isMobile ? "pb-6 mb-6" : "pb-9 mb-10"} flex justify-between items-end flex-wrap gap-5`}>
             <div>
               <p className="text-[10px] tracking-[0.4em] text-accent/30 mb-2.5 uppercase font-bold">
-                // ARENA_CIRCUIT_v2.1
+                // TOURNAMENTS_v2.1
               </p>
               <h1 className="m-0 text-[clamp(28px,5vw,48px)] font-black tracking-[0.22em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.9)] leading-none uppercase">
                 TOURNAMENT
@@ -132,7 +132,7 @@ export default function TournamentsPage() {
                     : "bg-accent/10 border border-accent/30 text-accent/70 cursor-pointer"
                   }`}
               >
-                {isGuest ? "🔒 LOGIN TO DEPLOY" : "[+] DEPLOY_BRACKET"}
+                {isGuest ? "🔒 LOGIN TO DEPLOY" : "[+] CREATE_TOURNAMENT"}
               </button>
             )}
           </div>
@@ -148,7 +148,7 @@ export default function TournamentsPage() {
 
           <div className={`flex gap-2 mb-7 flex-wrap ${isMobile ? "justify-center" : ""}`}>
             {[
-              { label: "ALL_UNITS", value: tournaments.length },
+              { label: "TOTAL", value: tournaments.length },
               { label: "LIVE", value: tournaments.filter((t) => t.status === "IN_PROGRESS").length },
               { label: "QUEUE", value: tournaments.filter((t) => t.status === "WAITING").length },
             ].map(({ label, value }) => (
@@ -166,10 +166,10 @@ export default function TournamentsPage() {
             <TournamentSkeleton />
           ) : tournaments.length === 0 ? (
             <div className="text-center py-20 border border-dashed border-accent/20 rounded-2xl bg-accent/[0.02] backdrop-blur-sm">
-              <div className="text-accent/30 mb-4 font-mono text-[10px] tracking-[0.3em]">NO_ACTIVE_SIGNALS</div>
-              <h3 className="text-accent font-black tracking-widest text-lg mb-2 uppercase">Awaiting Deployments</h3>
+              <div className="text-accent/30 mb-4 font-mono text-[10px] tracking-[0.3em]">NO TOURNAMENTS YET</div>
+              <h3 className="text-accent font-black tracking-widest text-lg mb-2 uppercase font-sans">AWAITING TOURNAMENTS</h3>
               <p className="text-accent/40 text-[10px] tracking-[0.15em] max-w-[440px] mx-auto uppercase leading-relaxed px-6">
-                The tournament network is currently quiet. Initialize a new bracket to challenge global operators.
+                No tournaments running. Start a new tournament to challenge players.
               </p>
             </div>
           ) : (
@@ -195,7 +195,7 @@ export default function TournamentsPage() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         title="GUEST ACCESS DETECTED"
-        message="You must initialize an operator account to create or join tournament brackets. Register now to compete in the arena."
+        message="You must initialize a user account to create or join tournament brackets. Register now to compete in the arena."
       />
     </>
   );

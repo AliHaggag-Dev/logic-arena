@@ -42,7 +42,7 @@ export class EmailService {
           <div style="background:#030712;color:#22d3ee;font-family:monospace;padding:32px;border:1px solid rgba(34,211,238,0.2);border-radius:8px;max-width:480px">
             <h2 style="color:#22d3ee;letter-spacing:0.2em;margin:0 0 8px">LOGIC ARENA</h2>
             <p style="color:rgba(168,85,247,0.7);font-size:11px;letter-spacing:0.3em;margin:0 0 24px">[ IDENTITY VERIFICATION ]</p>
-            <p style="color:#e2e8f0;margin:0 0 16px">Enter the following code to verify your operator identity:</p>
+            <p style="color:#e2e8f0;margin:0 0 16px">Enter the following code to verify your identity:</p>
             <div style="background:rgba(34,211,238,0.05);border:1px solid rgba(34,211,238,0.3);border-radius:6px;padding:16px;text-align:center;letter-spacing:0.5em;font-size:32px;color:#22d3ee;margin:0 0 16px">${code}</div>
             <p style="color:rgba(148,163,184,0.6);font-size:11px;margin:0">Expires in 15 minutes. Do not share this code.</p>
           </div>

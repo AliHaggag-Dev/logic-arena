@@ -374,7 +374,7 @@ Transformed Logic Arena from a single-player sandbox into a fully competitive mu
 
 ### Major Feature Release
 
-Introduced the Tournament Bracket System, 2D Canvas Match Replay System, an interactive AliScript Documentation page, a dedicated Operator Profile, and unified Cyberpunk Dashboard Navigation.
+Introduced the Tournament Bracket System, 2D Canvas Match Replay System, an interactive AliScript Documentation page, a dedicatedUserProfile, and unified Cyberpunk Dashboard Navigation.
 
 ### Technical Scars and Resolutions
 
@@ -388,7 +388,7 @@ Introduced the Tournament Bracket System, 2D Canvas Match Replay System, an inte
 
 * **Canvas Match Replay System:** Implemented a high-fidelity playback engine. Backends now serialize arena snapshots (robots & projectiles) every 10 ticks and save them to a new optional `replayData` field in Prisma. Features timeline scrubbing and playback speed controls.
 * **Interactive AliScript v1.0 Documentation:** Developed an interactive, hacker-themed documentation page featuring a live parse console, 15 actionable commands, 6 tactically filtered categories, and quick reference cards.
-* **Operator Profile & Navigation:** Shipped an Operator Profile page detailing gameplay stats and match history, combined with a unified cyberpunk Layout containing a sticky sidebar, 'DISCONNECT' command, active route highlighting, and smooth scanline overlays.
+* **Operator Profile & Navigation:** Shipped aUserProfile page detailing gameplay stats and match history, combined with a unified cyberpunk Layout containing a sticky sidebar, 'DISCONNECT' command, active route highlighting, and smooth scanline overlays.
 
 ### Current Status
 
@@ -771,8 +771,8 @@ route architecture into a clean group-based hierarchy.
 
 ### New Features
 
-* **Settings Page (5 Sections):** Launched a full operator settings
-  experience with: Operator Identity (username/email updates), Security
+* **Settings Page (5 Sections):** Launched a fullusersettings
+  experience with:UserIdentity (username/email updates), Security
   Protocol (password change + account deletion with confirmation modal),
   Appearance (3 theme cards with palette preview), Arena Preferences
   (default robot, sound FX, FPS counter), and Neural Notifications
@@ -794,7 +794,7 @@ route architecture into a clean group-based hierarchy.
   sizes for auth and public pages. Shows LOGIN/REGISTER split pill for
   unauthenticated users, LOGOUT/DASHBOARD based on route and token
   state. Desktop sticky header with NODE:[USERNAME] badge extracted
-  from sidebar. UPLINK_SECURE indicator fills freed sidebar space.
+  from sidebar. Connected indicator fills freed sidebar space.
 
 * **GEMINI.md Agent Rules:** Added three GEMINI.md files (root,
   apps/client/, apps/server/) mirroring CLAUDE.md conventions for
@@ -945,7 +945,7 @@ Android nav bar theme sync.
 * **AliScript v2.2 Language Audit:** Complete audit of the AliScript
   parser and evaluator. Added `!=`, `<=`, `>=`, `AND`, `OR` operators,
   full parenthesis grouping with `LPAREN`/`RPAREN` tokens, a proper
-  operator precedence tower (OR→AND→comparison→arithmetic→unary→primary),
+ userprecedence tower (OR→AND→comparison→arithmetic→unary→primary),
   and AND/OR short-circuit evaluation. BURST_FIRE now fires 3 projectiles
   at -8/0/+8 degree spread with 150ms stagger and a liveness guard.
   Hidden identifiers `target_vx`, `target_vy`, `last_spotted_x`,
@@ -1064,7 +1064,7 @@ Android nav bar theme sync.
   `RedisService` with a graceful Redis-down fallback to prevent the
   feature from blocking saves during Redis outages.
 
-* **Issue — "The AliScript Operator Blindspot":**
+* **Issue — "The AliScriptUserBlindspot":**
   The lexer had no lookahead for `<=`, `>=`, and `!=`, tokenizing them as
   two separate tokens (`<` + `=`, etc.) and breaking all comparison
   expressions using these operators. Additionally, parenthesized
@@ -1093,7 +1093,7 @@ Android nav bar theme sync.
 
 * Every major server module is now SOLID-compliant with no file
   exceeding ~150 lines. The AliScript engine is audited, tested,
-  and handles all operator edge cases. The A* pathfinder is O(log n)
+  and handles alluseredge cases. The A* pathfinder is O(log n)
   and zig-zag free. The PWA is live with native-feeling pull-to-refresh
   and full Android theme sync. Ready for: **Fog of War, Energy System
   UI, and University Competition features.**
@@ -1396,7 +1396,7 @@ dead matches at full CPU indefinitely.
   2×2 glassmorphism grid widget (top-left) — time/energy/penalties/target —
   perfect height match with tactical radar, zero arena obstruction.
 
-* **Legendary Operator Profile — Radar Chart & Combat Analytics:**
+* **LegendaryUserProfile — Radar Chart & Combat Analytics:**
   Added `combatStats Json` column to the `User` model in `schema.prisma`
   (pushed to Supabase). Full-stack combat stat pipeline: `match.persistence.ts`
   computes 5 dimensions from end-of-match robot data using a weighted rolling
@@ -1641,7 +1641,7 @@ in sequence.
   strict line: emit only when `actionCommand !== lastExecutedAction.get(robotId)`.
   Zero repeat prints for the same command, ever.
 
-* **Issue — "The Operator Precedence Disaster" (2 + 3 * 4 = 20):**
+* **Issue — "TheUserPrecedence Disaster" (2 + 3 * 4 = 20):**
   The AliScript expression parser evaluated all binary operators
   left-to-right with equal precedence. The expression `2 + 3 * 4`
   evaluated to `(2 + 3) * 4 = 20` instead of the mathematically correct
@@ -1691,6 +1691,6 @@ in sequence.
   zero ghost matches, zero WebGL context crashes, and a mathematically
   correct AliScript expression engine. Training Mode is a fully featured
   cyberpunk proving ground. Racing Mode is a brutal time-trial circuit.
-  The operator profile tracks real combat stats across matches. Ghost
+  Theuserprofile tracks real combat stats across matches. Ghost
   matches are dead. The arena is ready for: **Fog of War, multiplayer
   stress testing, and University Competition launch.**

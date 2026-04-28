@@ -54,7 +54,7 @@ export default function CampaignPage() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         title="RESTRICTED ZONE"
-        message="The Campaign Mode features a 10-level progressive storyline. You must initialize an operator account to track your progress, unlock rewards, and save your completion status."
+        message="The Campaign Mode features a 10-level progressive storyline. You must initialize a user account to track your progress, unlock rewards, and save your completion status."
       />
     </>
   );

@@ -39,7 +39,7 @@ export const NeuralHandbook: React.FC<NeuralHandbookProps> = ({ isOpen, onSelect
     return (
         <div className={outerClass}>
             <div className={innerClass}>
-                <h3 className="text-cyan-400 text-xs font-bold uppercase tracking-widest border-b border-cyan-900/50 pb-2 shrink-0">Neural Handbook</h3>
+                <h3 className="text-cyan-400 text-xs font-bold uppercase tracking-widest border-b border-cyan-900/50 pb-2 shrink-0">Script Guide</h3>
 
                 <div className="flex gap-2 shrink-0">
                     {(["Control", "Haptic", "Math"] as const).map(tab => (

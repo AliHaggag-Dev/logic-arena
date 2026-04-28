@@ -50,7 +50,7 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
       <div className="fixed top-3 right-3 z-40 flex flex-row-reverse items-start gap-2">
         <div className="w-28 bg-black/50 backdrop-blur-md border border-cyan-500/15 rounded-xl overflow-hidden shadow-xl">
           <div className="px-2 py-0.5 border-b border-cyan-500/10 flex justify-between items-center">
-            <span className="text-[6px] text-cyan-700 font-black tracking-widest uppercase">Tactical</span>
+            <span className="text-[6px] text-cyan-700 font-black tracking-widest uppercase font-sans">Radar</span>
             <span className="w-1 h-1 bg-cyan-400/60 rounded-full animate-pulse" />
           </div>
           <div className="aspect-square w-full">
@@ -162,7 +162,7 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
             : 'bg-yellow-400 animate-pulse'
             }`} />
           <span className="text-[7px] font-mono text-white/20 tracking-widest uppercase">
-            {isConnected ? 'uplink' : 'linking'}
+            {isConnected ? 'online' : 'connecting'}
           </span>
         </div>
       </div>

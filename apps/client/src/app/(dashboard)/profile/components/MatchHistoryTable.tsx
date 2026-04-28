@@ -164,7 +164,7 @@ export function MatchHistoryTable({ loading, history, isMobile, isGuest }: Props
           ) : (
             <tr>
               <td colSpan={6} className="p-[48px_16px] text-center text-accent/20 text-[11px] tracking-[0.18em]">
-                NO MATCH RECORDS FOUND. DEPLOY TO BATTLE LOBBY TO BEGIN.
+                NO MATCHES HISTORY FOUND.
               </td>
             </tr>
           )}
@@ -219,7 +219,7 @@ export function MatchHistoryTable({ loading, history, isMobile, isGuest }: Props
         })
       ) : (
         <div className="p-8 text-center border border-accent/10 rounded-xl bg-accent/5 text-[10px] text-accent/30 tracking-widest uppercase">
-          No match records.
+          No match history found.
         </div>
       )}
     </div>

@@ -22,7 +22,7 @@ export const TerminalOutput: React.FC<{ output: string[] }> = ({ output }) => {
             })}
             <div className="flex items-center gap-2 text-cyan-800/70 italic tracking-widest mt-2 shrink-0">
                 <span className="w-1.5 h-3.5 bg-cyan-800/50 animate-pulse"></span>
-                <p>Listening for telemetry streams...</p>
+                <p>Listening for activity logs...</p>
             </div>
         </div>
     );

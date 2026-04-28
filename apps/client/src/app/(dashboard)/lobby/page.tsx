@@ -37,9 +37,9 @@ export default function LobbyPage() {
     <div className="max-w-[1000px] mx-auto px-6 pt-12 pb-[100px] relative z-10 animate-[fadeIn_0.35s_ease]">
       <div className="border-b border-accent/10 pb-7 mb-10 flex justify-between items-end flex-wrap gap-5">
         <div>
-          <p className="text-[10px] tracking-[0.4em] text-accent/30 mb-2.5 uppercase">// GLOBAL_NETWORK</p>
+          <p className="text-[10px] tracking-[0.4em] text-accent/30 mb-2.5 uppercase">// LIVE</p>
           <h1 className="m-0 text-[clamp(24px,5vw,40px)] font-black tracking-[0.2em] text-accent" style={{ textShadow: "0 0 12px rgba(var(--accent-rgb),0.7), 0 0 30px rgba(var(--accent-rgb),0.3)" }}>
-            MULTIPLAYER LOBBY
+            MULTIPLAYER_LOBBY
           </h1>
           <ConnectionStatusBar connectionStatus={connectionStatus} isMobile={false} />
         </div>
@@ -53,14 +53,14 @@ export default function LobbyPage() {
             : "bg-accent/10 border border-accent/30 text-accent/70"
             }`}
         >
-          {isGuest ? "🔒 LOGIN TO DEPLOY" : "[+] DEPLOY MATCH"}
+          {isGuest ? "🔒 LOGIN TO DEPLOY" : "[+] CREATE MATCH"}
         </button>
       </div>
       <div className="flex flex-col gap-4">
         {connectionStatus === "connecting" ? <LobbySkeleton /> : connectionStatus === "error" ? <ErrorPanel onRetry={() => setRetryKey((k) => k + 1)} /> : matches.length === 0 ? (
           <div className="text-center p-[60px_24px] text-accent/25 text-[11px] tracking-[0.2em] border border-dashed border-accent/10 rounded-xl bg-bg-secondary/30 backdrop-blur-md">
             NO ACTIVE MATCHES FOUND.<br />
-            <span className="text-[10px] text-accent/15 mt-2 block">DEPLOY A NEW MATCH TO CHALLENGE OTHER OPERATORS.</span>
+            <span className="text-[10px] text-accent/15 mt-2 block">Create a new match to challenge other players.</span>
           </div>
         ) : matches.map((match, idx) => <LobbyMatchCard key={match.matchId} match={match} index={idx} onJoin={handleJoinMatch} isGuest={isGuest} />)}
       </div>
@@ -70,11 +70,11 @@ export default function LobbyPage() {
   const MobileLayout = (
     <div className="w-full px-4 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))] relative z-10 animate-[fadeIn_0.35s_ease] flex flex-col min-h-[calc(100vh-80px)]">
       <div className="border-b border-accent/20 pb-5 mb-5 flex flex-col text-center">
-        <p className="text-[9px] tracking-[0.4em] text-accent/70 mb-1.5 uppercase">// GLOBAL_NETWORK</p>
+        <p className="text-[9px] tracking-[0.4em] text-accent/70 mb-1.5 uppercase">// LIVE</p>
         <h1 className="m-0 text-2xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-tight">LOBBY</h1>
         <ConnectionStatusBar connectionStatus={connectionStatus} isMobile={true} />
-        <button disabled={isGuest} onClick={handleDeployMatch} className="mt-5 w-full h-[44px] rounded-lg text-[10px] font-black tracking-[0.25em] font-mono transition-transform active:scale-95 bg-accent/10 border border-accent/40 text-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-          {isGuest ? "🔒 LOGIN TO DEPLOY" : "[+] DEPLOY MATCH"}
+        <button type="button" disabled={isGuest} onClick={handleDeployMatch} className="mt-5 w-full h-[44px] rounded-lg text-[10px] font-black tracking-[0.25em] font-mono transition-transform active:scale-95 bg-accent/10 border border-accent/40 text-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+          {isGuest ? "🔒 LOGIN TO CREATE MATCH" : "[+] CREATE MATCH"}
         </button>
       </div>
       <div className="flex flex-col gap-3 flex-1">

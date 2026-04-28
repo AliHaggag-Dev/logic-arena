@@ -33,7 +33,7 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setStatus({ message: "AUTHENTICATING CREDENTIALS...", errors: [], type: null });
+    setStatus({ message: "VERIFYING CREDENTIALS...", errors: [], type: null });
 
     try {
       const response = await apiClient.post("/auth/login", { username, password });
@@ -50,7 +50,7 @@ export default function LoginPage() {
       localStorage.setItem("jwtToken", token);
       localStorage.setItem("token", token);
 
-      setStatus({ message: "[SYS] ACCESS GRANTED. REROUTING...", errors: [], type: "success" });
+      setStatus({ message: "LOGIN SUCCESSFUL. REDIRECTING...", errors: [], type: "success" });
       setTimeout(() => router.push("/dashboard"), 1000);
     } catch (error: any) {
       const errs = parseApiError(error);
@@ -60,20 +60,20 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthContainer isMobile={isMobile} nodeName="AUTH_NODE_V2.1">
-      <AuthHeader isMobile={isMobile} subtitle={isMobile ? "SYNC_OP" : "Authenticate Operator"} icon="⬡" />
+    <AuthContainer isMobile={isMobile} nodeName="// v2.1">
+      <AuthHeader isMobile={isMobile} subtitle={isMobile ? "LOGIN" : "Sign In"} icon="⬡" />
       <AuthSocials isMobile={isMobile} />
 
       <form onSubmit={handleLogin} className="flex flex-col gap-6">
         <div className="flex flex-col gap-2 relative">
           <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="username">
-            // OPERATOR_ID
+            // USERNAME
           </label>
           <input
             type="text"
             id="username"
             className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
-            placeholder="SPECIFY_ALIAS..."
+            placeholder="ENTER USERNAME..."
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -83,7 +83,7 @@ export default function LoginPage() {
 
         <div className="flex flex-col gap-2 relative">
           <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="password">
-            // SEC_KEY_ENCRYPT
+            // PASSWORD
           </label>
           <input
             type="password"
@@ -105,7 +105,7 @@ export default function LoginPage() {
             disabled={isLoading}
             className={`w-full ${isMobile ? "py-5" : "py-4"} bg-accent/10 border border-accent/40 text-accent font-black text-[11px] hover:bg-accent/20 hover:border-accent/80 transition-all duration-300 rounded-lg uppercase tracking-[0.3em] shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)] hover:shadow-[0_0_25px_rgba(var(--accent-rgb),0.3)] hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed`}
           >
-            {isLoading ? "VERIFYING_ENCRYPTION..." : "INITIATE_LOGIN_PROTOCOL"}
+            {isLoading ? "VERIFYING..." : "LOG IN"}
           </button>
 
           <div className="text-center flex flex-col gap-4">
@@ -114,14 +114,14 @@ export default function LoginPage() {
               onClick={() => router.push("/register")}
               className="text-accent/70 hover:text-accent text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
             >
-              [ Request_Access ]
+              [ Create Account ]
             </button>
             <button
               type="button"
               onClick={() => router.push("/forgot-password")}
               className="text-red-500/40 hover:text-red-500 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.6)]"
             >
-              [ Lost_Key?_Reset ]
+              [ Forgot Password? ]
             </button>
             <div className="mt-2 pt-2 border-t border-accent/10 w-full max-w-[200px] mx-auto">
               <button
@@ -129,7 +129,7 @@ export default function LoginPage() {
                 onClick={() => router.push("/dashboard")}
                 className="text-accent/40 hover:text-accent/80 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.3)]"
               >
-                [ Continue_as_Guest ]
+                [ Continue as Guest ]
               </button>
             </div>
           </div>

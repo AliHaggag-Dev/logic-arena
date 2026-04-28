@@ -5,7 +5,7 @@ import { TACTICS_DATA } from "../constants/docsData";
 export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript: (code: string) => void, isMobile: boolean }) {
   return (
     <section className={isMobile ? "mb-10" : "mb-[60px]"}>
-      <SectionLabel text="BATTLE_TACTICS_MASTERCLASS" isMobile={isMobile} />
+      <SectionLabel text="PRESET SCRIPTS" isMobile={isMobile} />
       <div className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-5"} mt-5`}>
         {TACTICS_DATA.map((tactic) => (
           <div
@@ -32,7 +32,7 @@ export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript:
                 color: tactic.color,
               }}
             >
-              LOAD_PATTERN
+              LOAD SCRIPT
             </button>
           </div>
         ))}

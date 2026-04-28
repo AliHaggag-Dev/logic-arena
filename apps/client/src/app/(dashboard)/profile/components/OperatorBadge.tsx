@@ -11,7 +11,7 @@ interface Tier {
 
 const TIERS: Tier[] = [
   { label: "GHOST",      minRank: 0,   color: "#6b7280", glyph: "◈" },
-  { label: "CIRCUIT",    minRank: 10,  color: "#22d3ee", glyph: "⬡" },
+  { label: "ROOKIE",     minRank: 10,  color: "#22d3ee", glyph: "⬡" },
   { label: "SYNAPTIC",   minRank: 50,  color: "#4ade80", glyph: "⬟" },
   { label: "OVERDRIVE",  minRank: 100, color: "#f97316", glyph: "⬣" },
   { label: "APEX",       minRank: 200, color: "#a855f7", glyph: "★" },

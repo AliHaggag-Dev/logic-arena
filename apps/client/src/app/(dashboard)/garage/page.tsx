@@ -12,7 +12,7 @@ const ROBOTS = [
 ];
 
 const GUEST_ROBOT = [
-  { robotId: "guest-unit", name: "GUEST_UNIT", file: "/robot.glb", scale: 2.5 }
+  { robotId: "guest-unit", name: "GUEST_ROBOT", file: "/robot.glb", scale: 2.5 }
 ];
 
 export default function GaragePage() {
@@ -67,13 +67,13 @@ export default function GaragePage() {
           {/* ── Header ── */}
           <div className={`border-b border-accent/10 ${isMobile ? "pb-4 mb-6" : "pb-6 mb-10"}`}>
             <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-2 uppercase font-bold">
-              // HANGAR_DECK_v2.0
+              // GARAGE v2.0
             </p>
             <h1 className={`m-0 ${isMobile ? "text-2xl" : "text-[clamp(24px,4vw,38px)]"} font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight`}>
-              ROBOT_GARAGE
+              GARAGE
             </h1>
             <p className={`mt-2 ${isMobile ? "text-[9px]" : "text-[10px]"} text-accent/30 tracking-[0.15em] uppercase font-bold`}>
-              Inertia dampeners active. Select unit for inspection.
+              SELECT A ROBOT
             </p>
           </div>
 
@@ -100,7 +100,7 @@ export default function GaragePage() {
                           boxShadow: `0 0 6px ${activeColor !== "DEFAULT" ? activeColor : "var(--accent)"}` 
                         }}
                       />
-                      ACTIVE_UNIT
+                      ACTIVE
                     </div>
                   )}
                   <RobotCard
@@ -125,7 +125,7 @@ export default function GaragePage() {
             className={`text-center ${isMobile ? "text-[9px]" : "text-[10px]"} tracking-[0.22em] text-accent/20 ${isMobile ? "mt-8" : "mt-10"} uppercase font-bold`}
             style={{ animation: "pulseGlow 3s ease-in-out infinite" }}
           >
-            ◈ TAP_UNIT_TO_CONFIGURE ◈
+            ◈ CHOOSE YOUR ROBOT ◈
           </p>
         </div>
       </div>
@@ -134,7 +134,7 @@ export default function GaragePage() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         title="CHASSIS LOCKED"
-        message="Robot customization is restricted for guests. Initialize an operator account to unlock new chassis types, apply custom paint jobs, and upgrade your battle bot."
+        message="Robot customization is restricted for guests. Initialize a user account to unlock new chassis types, apply custom paint jobs, and upgrade your battle bot."
       />
     </>
   );

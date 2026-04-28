@@ -30,7 +30,7 @@ const SECTIONS = [
   {
     title: "5. Prohibited Conduct",
     content:
-      "You agree not to: (a) attempt to circumvent the AliScript sandbox or execution environment; (b) submit code designed to harm the platform or other users; (c) exploit bugs or vulnerabilities without reporting them; (d) engage in harassment, hate speech, or abusive behaviour toward other operators; (e) create multiple accounts to gain an unfair competitive advantage.",
+      "You agree not to: (a) attempt to circumvent the AliScript sandbox or execution environment; (b) submit code designed to harm the platform or other users; (c) exploit bugs or vulnerabilities without reporting them; (d) engage in harassment, hate speech, or abusive behaviour toward other users; (e) create multiple accounts to gain an unfair competitive advantage.",
   },
   {
     title: "6. Competitive Integrity",
@@ -50,7 +50,7 @@ const SECTIONS = [
   {
     title: "9. Termination",
     content:
-      "Logic Arena may suspend or terminate your account at any time for violations of these terms, without prior notice. Upon termination you lose access to your account, scripts, and match history. Sections 4, 8, and 10 survive termination.",
+      "Logic Arena may suspend or delete your account at any time for violations of these terms, without prior notice. Upon termination you lose access to your account, scripts, and match history. Sections 4, 8, and 10 survive termination.",
   },
   {
     title: "10. Limitation of Liability",

@@ -45,21 +45,20 @@ export function SettingsLayout({
         <div className={`${isMobile ? "px-4 pt-4 pb-3" : "max-w-5xl mx-auto pt-16 px-6"}`}>
           <div className="mb-0 border-b border-accent/20 pb-6">
             <h1 className={`text-accent font-black tracking-[0.15em] drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)] mb-2 ${isMobile ? "text-2xl tracking-[0.1em]" : "text-4xl"}`}>
-              OPERATOR SETTINGS
+              SETTINGS
             </h1>
             <h2 className="text-accent/60 text-xs tracking-widest uppercase flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_var(--color-emerald-500)] shrink-0"></span>
-              System Configuration | Neural Parameters
+              Account & Preferences
             </h2>
           </div>
 
           {isGuest && (
             <div className={`mt-6 p-6 border border-dashed border-accent/20 rounded-2xl bg-accent/[0.02] backdrop-blur-sm animate-[fadeIn_0.35s_ease] flex flex-col items-center text-center`}>
               <div className="text-3xl mb-3 opacity-50">🔒</div>
-              <h3 className="text-accent font-black tracking-widest text-[14px] mb-1.5 uppercase">Neural Interface Required</h3>
+              <h3 className="text-accent font-black tracking-widest text-[14px] mb-1.5 uppercase">Account Required</h3>
               <p className="text-accent/40 text-[10px] tracking-[0.12em] max-w-[480px] uppercase leading-relaxed">
-                Settings synchronization and identity management require a verified operator account. 
-                Authentication is mandatory to persist neural configuration data.
+                Sign in or create a free account to save your settings and preferences.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <button
@@ -67,7 +66,7 @@ export function SettingsLayout({
                   onClick={() => router.push("/register")}
                   className="px-6 py-3 bg-accent/10 border border-accent/30 rounded-lg text-[10px] font-black tracking-widest text-accent hover:bg-accent/20 transition-all cursor-pointer shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)]"
                 >
-                  [+] REGISTER NEW NODE
+                  [+] CREATE ACCOUNT
                 </button>
                 <button
                   type="button"

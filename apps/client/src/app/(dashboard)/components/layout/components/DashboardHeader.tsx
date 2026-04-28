@@ -24,9 +24,9 @@ export function DashboardHeader({ username }: DashboardHeaderProps) {
       </div>
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2 px-3 py-1.5 border border-accent/20 bg-accent/5 rounded-md text-[9px] tracking-[0.2em] font-bold text-accent/60 shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.05)] uppercase max-w-[200px]">
-          <span className="shrink-0 text-accent/40">NODE:</span>
+          <span className="shrink-0 text-accent/40">USER:</span>
           <span className="text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.6)] truncate">
-            {username || "GUEST_OPERATOR"}
+            {username || "GUEST"}
           </span>
         </div>
         <ThemeSwitcher variant="minimal" />

@@ -17,10 +17,10 @@ export function EditScriptFooter({ status, formattedDate, onClose, onSave }: Edi
                     <span className="em-meta">LAST MODIFIED: {formattedDate}</span>
                 )}
                 {status === "success" && (
-                    <span className="em-feedback em-feedback--ok">✓ PROTOCOL UPDATED</span>
+                    <span className="em-feedback em-feedback--ok">✓ SCRIPT UPDATED</span>
                 )}
                 {status === "error" && (
-                    <span className="em-feedback em-feedback--err">✗ SYNC FAILED — CHANGES REVERTED</span>
+                    <span className="em-feedback em-feedback--err">✗ SAVE FAILED</span>
                 )}
             </div>
             <div className="em-footer-right">

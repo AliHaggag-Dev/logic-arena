@@ -38,7 +38,7 @@ export const useConsole = (socket: Socket | null, robotId: string) => {
                 appendOutputLine(`[ERR] Unknown sequence: ${command}`);
             }
         } else {
-            appendOutputLine("[ERR] Uplink severed. Socket offline.");
+            appendOutputLine("[ERR] Connection lost. Offline.");
         }
         setCommandInput("");
     };
@@ -46,9 +46,9 @@ export const useConsole = (socket: Socket | null, robotId: string) => {
     const handleDeployBrain = (scriptToDeploy: string = scriptInput) => {
         if (socket) {
             socket.emit("updateLogic", { robotId, scriptContent: scriptToDeploy });
-            appendOutputLine(`[UPLINK] Neural payload injected into ${robotId}...`);
+            appendOutputLine(`[SYS] Uploading logic script to ${robotId}...`);
         } else {
-            appendOutputLine("[ERR] Uplink severed. Socket offline.");
+            appendOutputLine("[ERR] Connection lost. Offline.");
         }
     };
 

@@ -51,7 +51,7 @@ export function CommandReferenceSection({ isMobile }: { isMobile: boolean }) {
   if (isMobile) {
     return (
       <section className="mb-10">
-        <SectionLabel text="COMMAND_REFERENCE" isMobile={true} />
+        <SectionLabel text="COMMAND REFERENCE" isMobile={true} />
 
         {/* Categories Mobile (Scrollable Row) */}
         <div className="flex gap-2 overflow-x-auto docs-scrollbar mt-4 pb-2 -mx-1 px-1">
@@ -109,15 +109,15 @@ export function CommandReferenceSection({ isMobile }: { isMobile: boolean }) {
                   <div className="px-4 pb-4 border-t border-accent/5 animate-in fade-in slide-in-from-top-1 duration-200">
                     <div className="mt-3 space-y-4">
                       <div>
-                        <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1.5">Parameters_</div>
+                        <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1.5">Parameters</div>
                         <code className="text-[10px] text-accent/60 font-mono italic">{cmd.parameters || 'NONE'}</code>
                       </div>
                       <div>
-                        <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1.5">Logic_Mapping_</div>
+                        <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1.5">Description</div>
                         <p className="text-[10px] text-text-primary/70 leading-relaxed font-medium">{cmd.description}</p>
                       </div>
                       <div className="bg-bg-primary/40 rounded-lg p-3 border border-accent/5 shadow-inner">
-                        <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1.5">Syntax_Pattern_</div>
+                        <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1.5">Syntax Example</div>
                         <code className="text-[10px] text-accent font-bold">{cmd.example}</code>
                       </div>
                     </div>
@@ -129,7 +129,7 @@ export function CommandReferenceSection({ isMobile }: { isMobile: boolean }) {
         </div>
         
         <div className="mt-4 text-[9px] text-accent/20 tracking-[0.2em] text-right font-bold">
-          {filteredCommands.length} / {COMMAND_TABLE.length} COMMANDS_LISTED
+          {filteredCommands.length} / {COMMAND_TABLE.length} COMMANDS LISTED
         </div>
       </section>
     );
@@ -137,7 +137,7 @@ export function CommandReferenceSection({ isMobile }: { isMobile: boolean }) {
 
   return (
     <section>
-      <SectionLabel text="COMMAND_REFERENCE" />
+      <SectionLabel text="COMMAND REFERENCE" />
 
       {/* Category filter */}
       <div className="flex gap-2 flex-wrap mt-5 mb-4">

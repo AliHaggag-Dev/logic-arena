@@ -123,7 +123,7 @@ const ChallengeCard = ({
               background: `${challenge.color}0d`,
             }}
           >
-            ▶ LOAD_TO_CORE
+            ▶ LOAD SCRIPT
           </button>
         </div>
       )}
@@ -141,14 +141,14 @@ export const AlgorithmChallenges = ({ onLoadScript, isMobile }: AlgorithmChallen
         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-accent/30" />
         <div className="text-center">
           <div className="text-[9px] tracking-[0.4em] text-accent/60 uppercase font-black mb-1">
-            Core_Logic_Library
+            Logic Library
           </div>
           <h2 className={`${isMobile ? "text-base" : "text-xl"} font-black tracking-[0.15em] text-text-primary/90 uppercase`}>
             Algorithm Challenges
           </h2>
           {!isMobile && (
             <p className="text-[10px] text-text-primary/30 tracking-widest mt-1 uppercase font-bold">
-              Production-ready scripts for neural expansion
+              Ready-to-use scripts for testing
             </p>
           )}
         </div>
@@ -161,10 +161,10 @@ export const AlgorithmChallenges = ({ onLoadScript, isMobile }: AlgorithmChallen
           <span className="text-accent text-lg mt-0.5">⚡</span>
           <div>
             <div className="text-[9px] font-black tracking-[0.2em] text-accent mb-1 uppercase">
-              Efficiency_Protocol
+              Efficiency Rule
             </div>
             <p className="text-[11px] text-text-primary/40 leading-relaxed tracking-wide font-medium">
-              Every AliScript command costs energy. Write <strong className="text-text-primary/60">efficient algorithms</strong> to maximize your SURVIVAL_SCORE.
+              Every AliScript command costs energy. Write <strong className="text-text-primary/60">efficient algorithms</strong> to maximize your score.
             </p>
           </div>
         </div>

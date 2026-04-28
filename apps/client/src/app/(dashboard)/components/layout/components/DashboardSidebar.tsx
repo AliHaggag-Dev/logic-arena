@@ -5,11 +5,11 @@ import NavLink from "../../../../../components/ui/NavLink";
 const SIDEBAR_WIDTH = 220;
 
 const navItems = [
-  { href: "/dashboard", label: "COMMAND_CENTER", icon: "⬡" },
-  { href: "/leaderboard", label: "NEURAL_RANKINGS", icon: "◈" },
+  { href: "/dashboard", label: "DASHBOARD", icon: "⬡" },
+  { href: "/leaderboard", label: "LEADERBOARD", icon: "◈" },
   { href: "/lobby", label: "BATTLE_LOBBY", icon: "▶" },
   { href: "/campaign", label: "CAMPAIGN_MODE", icon: "⚡" },
-  { href: "/profile", label: "OPERATOR_PROFILE", icon: "◉" },
+  { href: "/profile", label: "MY_PROFILE", icon: "◉" },
   { href: "/garage", label: "ROBOT_GARAGE", icon: "⚙" },
   { href: "/docs", label: "ALISCRIPT_DOCS", icon: "◈" },
   { href: "/tournaments", label: "TOURNAMENT_HUB", icon: "⚔" },
@@ -50,7 +50,7 @@ export function DashboardSidebar({ username, onLogout }: DashboardSidebarProps) 
               ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" 
               : "bg-yellow-500 shadow-[0_0_8px_rgba(var(--color-yellow-500),0.6)]"
           }`} />
-          <span className="truncate">{username ? "UPLINK_SECURE" : "ANONYMOUS_UPLINK"}</span>
+          <span className="truncate">{username ? "CONNECTED" : "GUEST MODE"}</span>
         </div>
       </div>
 
@@ -65,7 +65,7 @@ export function DashboardSidebar({ username, onLogout }: DashboardSidebarProps) 
         <div className="my-2 h-px bg-accent/[0.06]" />
         <NavLink
           href="/settings"
-          label="OPERATOR_SETTINGS"
+          label="SETTINGS"
           iconNode={<Settings size={13} strokeWidth={2.5} />}
         />
       </nav>
@@ -77,9 +77,9 @@ export function DashboardSidebar({ username, onLogout }: DashboardSidebarProps) 
             ◉
           </span>
           <div className="overflow-hidden">
-            <div className="text-[9px] text-accent/35 tracking-[0.18em] mb-[2px]">OPERATOR</div>
+            <div className="text-[9px] text-accent/35 tracking-[0.18em] mb-[2px]">PLAYER</div>
             <div className="text-[10px] text-accent/80 font-bold tracking-[0.1em] overflow-hidden text-ellipsis whitespace-nowrap">
-              {username || "GUEST_OPERATOR"}
+              {username || "GUEST"}
             </div>
           </div>
         </div>
@@ -89,7 +89,7 @@ export function DashboardSidebar({ username, onLogout }: DashboardSidebarProps) 
           className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-red-500/5 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/60 rounded-md text-red-500/50 hover:text-red-300 text-[10px] font-bold tracking-[0.2em] font-mono cursor-pointer transition-all duration-200 group"
         >
           <span className="text-[11px] transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">⏻</span>
-          <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">DISCONNECT</span>
+          <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">SIGN OUT</span>
         </button>
 
         <div className="mt-3 text-[8px] text-accent/15 tracking-[0.15em] text-center uppercase">

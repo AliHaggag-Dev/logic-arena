@@ -27,7 +27,7 @@ export function LevelModal({ modal, setModal, reward, router }: LevelModalProps)
               MISSION COMPLETE
             </h2>
             <p className="text-accent/50 text-[9px] sm:text-[10px] tracking-[0.15em] mb-5 sm:mb-6">
-              Enemy unit neutralized.
+              Enemy bot defeated.
             </p>
             <div className="inline-block border border-accent/20 rounded-lg px-6 py-3 bg-accent/5 mb-6 sm:mb-7">
               <span className="text-accent/70 text-[9px] sm:text-[10px] tracking-[0.2em] block mb-1">RANK EARNED</span>
@@ -44,7 +44,7 @@ export function LevelModal({ modal, setModal, reward, router }: LevelModalProps)
           <>
             <div className="text-4xl sm:text-5xl mb-4 sm:mb-5">💀</div>
             <h2 className="text-[16px] sm:text-[18px] font-black tracking-[0.25em] text-red-500 drop-shadow-[0_0_10px_rgba(var(--color-red-500),0.8)] mb-2">
-              UNIT DESTROYED
+              ROBOT DESTROYED
             </h2>
             <p className="text-red-500/50 text-[9px] sm:text-[10px] tracking-[0.15em] mb-6 sm:mb-7">
               Recalibrate your tactics and retry.
