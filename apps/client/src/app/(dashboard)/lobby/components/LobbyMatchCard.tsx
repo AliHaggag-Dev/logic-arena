@@ -45,7 +45,7 @@ export function LobbyMatchCard({ match, index, onJoin, isGuest }: Props) {
           : "bg-accent/5 border-accent/30 text-accent/70"
           }`}
       >
-        {isGuest ? "🔒 LOCKED" : "⚡ JOIN"}
+        {isGuest ? "🔒 LOCKED" : "JOIN"}
       </button>
     </div>
   );
@@ -71,7 +71,7 @@ export function LobbyMatchCard({ match, index, onJoin, isGuest }: Props) {
           disabled={isGuest}
           className="w-full h-[44px] flex items-center justify-center bg-accent/10 border border-accent/40 text-accent font-black tracking-[0.2em] text-[10px] rounded-lg transition-transform active:scale-95 shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isGuest ? "🔒 LOCKED" : "⚡ JOIN MATCH"}
+          {isGuest ? "🔒 LOCKED" : "JOIN MATCH"}
         </button>
       </div>
     </div>

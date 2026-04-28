@@ -1,4 +1,5 @@
 import React from "react";
+import { ArrowLeft } from 'lucide-react';
 import { LevelDetail, DIFF_CONFIG, ModalState } from "../types";
 
 interface LevelMobileLayoutProps {
@@ -21,7 +22,7 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
           onClick={() => router.push("/campaign")}
           className="w-max text-[9px] tracking-[0.25em] text-accent/70 hover:text-accent border border-accent/15 rounded px-2.5 py-1 uppercase"
         >
-          ← BACK TO MAP
+          <span className="flex items-center gap-1.5 justify-center"><ArrowLeft className="w-3 h-3" /> BACK TO MAP</span>
         </button>
         <div className="flex justify-between items-center w-full">
           <div className="flex flex-col">

@@ -102,7 +102,7 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
         {/* ── Efficiency Score card ─────────────────────────────── */}
         <div className="mb-8 w-full max-w-sm border border-cyan-900/40 bg-cyan-950/10 backdrop-blur-sm p-4 rounded-sm">
           <div className="text-[10px] tracking-[0.4em] text-cyan-700 uppercase font-black mb-2 text-center">
-            ⚡ EFFICIENCY_SCORE
+            EFFICIENCY SCORE
           </div>
           {myScore !== null ? (
             <>

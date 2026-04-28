@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Socket } from 'socket.io-client';
+import { Zap, Terminal } from 'lucide-react';
 import { BottomSheet } from './BottomSheet';
 import { CommandConsole } from './CommandConsole';
 
@@ -53,7 +54,7 @@ export function MobileControls({
             ? 'bg-purple-500/90 shadow-[0_0_20px_rgba(168,85,247,0.6),0_0_40px_rgba(168,85,247,0.2)] border border-purple-400/50'
             : 'bg-black/80 border border-purple-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
             }`}>
-            <span className="text-lg">⚡</span>
+            <Zap className="w-5 h-5 text-purple-300" />
           </div>
           <span className={`text-[7px] font-black tracking-[0.25em] uppercase ${activeSheet === 'script' ? 'text-purple-300' : 'text-white/40'}`}>
             CODE
@@ -70,7 +71,7 @@ export function MobileControls({
             ? 'bg-cyan-500/90 shadow-[0_0_20px_rgba(34,211,238,0.6),0_0_40px_rgba(34,211,238,0.2)] border border-cyan-400/50'
             : 'bg-black/80 border border-cyan-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
             }`}>
-            <span className="text-lg">📟</span>
+            <Terminal className="w-5 h-5 text-cyan-300" />
           </div>
           <span className={`text-[7px] font-black tracking-[0.25em] uppercase ${activeSheet === 'controls' ? 'text-cyan-300' : 'text-white/40'}`}>
             HUB

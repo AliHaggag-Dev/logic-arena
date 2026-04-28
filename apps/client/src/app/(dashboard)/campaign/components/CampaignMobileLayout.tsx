@@ -1,4 +1,5 @@
 import React from "react";
+import { Lock, Check, Play, Hexagon } from 'lucide-react';
 import { LevelInfo, DIFF_COLORS } from "../types";
 import { MobileSkeletonNode } from "./CampaignSkeletons";
 
@@ -44,7 +45,7 @@ export function CampaignMobileLayout({ levels, loading, currentLevel, router, is
             Array.from({ length: 5 }).map((_, i) => <MobileSkeletonNode key={i} />)
         ) : levels.length === 0 && isGuest ? (
                 <div className="flex flex-col items-center justify-center p-12 bg-card/20 border-2 border-dashed border-accent/10 rounded-2xl text-center gap-4 w-full">
-                    <div className="text-4xl opacity-30">🔒</div>
+                    <Lock className="w-10 h-10 opacity-30 text-accent" />
                     <div className="flex flex-col gap-1">
                         <h3 className="text-accent font-bold tracking-widest text-xs uppercase">ACCESS RESTRICTED</h3>
                         <p className="text-[9px] text-accent/40 uppercase tracking-widest">Log in to start the campaign</p>
@@ -85,7 +86,7 @@ export function CampaignMobileLayout({ levels, loading, currentLevel, router, is
                       <span className={`font-black text-sm tracking-widest ${(level.unlocked && !lockedByGuest) ? '' : 'text-transparent text-shadow-none'}`}>
                         {level.completed ? "✓" : String(level.id).padStart(2, "0")}
                       </span>
-                      {(!level.unlocked || lockedByGuest) && <span className="absolute text-[15px]">🔒</span>}
+                      {(!level.unlocked || lockedByGuest) && <Lock className="absolute w-4 h-4 text-accent/40" />}
                   </button>
 
                   {/* Info Panel Below */}

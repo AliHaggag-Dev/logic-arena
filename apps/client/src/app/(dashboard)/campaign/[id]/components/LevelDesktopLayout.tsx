@@ -1,4 +1,5 @@
 import React from "react";
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LevelDetail, DIFF_CONFIG, ModalState } from "../types";
 
@@ -22,7 +23,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             onClick={() => router.push("/campaign")}
             className="w-max text-[10px] tracking-[0.25em] text-accent/70 hover:text-accent border border-accent/15 hover:border-accent/40 rounded px-3 py-1 transition-all duration-200 cursor-pointer bg-transparent uppercase"
           >
-            ← BACK TO MAP
+            <span className="flex items-center gap-1.5 justify-center"><ArrowLeft className="w-3 h-3" /> BACK TO MAP</span>
           </button>
           <div>
             <span className="text-[10px] text-accent/70 tracking-[0.3em] font-bold block mb-1 uppercase">
@@ -81,10 +82,10 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
           <div className="border border-accent/10 rounded-xl p-5 bg-transparent">
             <p className="text-[9px] tracking-[0.3em] text-accent/25 mb-3 uppercase">// TACTICS</p>
             <ul className="text-[10px] text-accent/35 tracking-[0.06em] leading-relaxed space-y-1.5 list-none p-0 m-0">
-              <li>→ Use SCAN to detect proximity</li>
-              <li>→ TIME your FIRE commands carefully</li>
-              <li>→ WHILE loops amplify your firepower</li>
-              <li>→ Reposition with MOVE to dodge fire</li>
+              <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> Use SCAN to detect proximity</li>
+              <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> TIME your FIRE commands carefully</li>
+              <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> WHILE loops amplify your firepower</li>
+              <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> Reposition with MOVE to dodge fire</li>
             </ul>
           </div>
         </div>

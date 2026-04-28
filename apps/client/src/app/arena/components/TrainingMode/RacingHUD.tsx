@@ -122,7 +122,7 @@ export const RacingHUD = ({
 
             <div className="flex w-full justify-between gap-6">
               <StatItem label="ELAPSED TIME" value={`${mins}:${secs}`} accent={false} />
-              <StatItem label="ENERGY ⚡" value={energyConsumed} accent={false} />
+              <StatItem label="ENERGY" value={energyConsumed} accent={false} />
               <StatItem label="PENALTIES" value={0} accent />
               <div className="flex flex-col items-center min-w-[64px]">
                 <span className="font-mono text-[8px] tracking-widest mb-1 text-[#eab308]/50">OBJECTIVE</span>

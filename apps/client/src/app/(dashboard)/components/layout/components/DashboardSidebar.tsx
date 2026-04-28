@@ -1,18 +1,18 @@
 import React from "react";
-import { Settings } from "lucide-react";
+import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award } from "lucide-react";
 import NavLink from "../../../../../components/ui/NavLink";
 
 const SIDEBAR_WIDTH = 220;
 
 const navItems = [
-  { href: "/dashboard", label: "DASHBOARD", icon: "⬡" },
-  { href: "/leaderboard", label: "LEADERBOARD", icon: "◈" },
-  { href: "/lobby", label: "BATTLE_LOBBY", icon: "▶" },
-  { href: "/campaign", label: "CAMPAIGN_MODE", icon: "⚡" },
-  { href: "/profile", label: "MY_PROFILE", icon: "◉" },
-  { href: "/garage", label: "ROBOT_GARAGE", icon: "⚙" },
-  { href: "/docs", label: "ALISCRIPT_DOCS", icon: "◈" },
-  { href: "/tournaments", label: "TOURNAMENT_HUB", icon: "⚔" },
+  { href: "/dashboard", label: "DASHBOARD", iconNode: <LayoutDashboard className="w-3.5 h-3.5" /> },
+  { href: "/leaderboard", label: "LEADERBOARD", iconNode: <Trophy className="w-3.5 h-3.5" /> },
+  { href: "/lobby", label: "BATTLE LOBBY", iconNode: <Swords className="w-3.5 h-3.5" /> },
+  { href: "/campaign", label: "CAMPAIGN MODE", iconNode: <Zap className="w-3.5 h-3.5" /> },
+  { href: "/profile", label: "MY PROFILE", iconNode: <User className="w-3.5 h-3.5" /> },
+  { href: "/garage", label: "ROBOT GARAGE", iconNode: <Cpu className="w-3.5 h-3.5" /> },
+  { href: "/docs", label: "ALISCRIPT DOCS", iconNode: <BookOpen className="w-3.5 h-3.5" /> },
+  { href: "/tournaments", label: "TOURNAMENT HUB", iconNode: <Award className="w-3.5 h-3.5" /> },
 ];
 
 interface DashboardSidebarProps {
@@ -60,7 +60,7 @@ export function DashboardSidebar({ username, onLogout }: DashboardSidebarProps) 
           navigation
         </div>
         {navItems.map((item) => (
-          <NavLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
+          <NavLink key={item.href} href={item.href} label={item.label} iconNode={item.iconNode} />
         ))}
         <div className="my-2 h-px bg-accent/[0.06]" />
         <NavLink

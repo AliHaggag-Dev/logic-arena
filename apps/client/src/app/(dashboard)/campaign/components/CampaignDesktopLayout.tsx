@@ -1,4 +1,5 @@
 import React from "react";
+import { Lock, Check, Play, Hexagon } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LevelInfo, DIFF_COLORS } from "../types";
 import { SkeletonNode } from "./CampaignSkeletons";
@@ -58,7 +59,7 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
           ))
           : levels.length === 0 && isGuest ? (
             <div className="text-center py-20 border border-dashed border-accent/20 rounded-2xl bg-accent/[0.02]">
-              <div className="text-4xl mb-4 opacity-50">🔒</div>
+              <Lock className="w-10 h-10 mx-auto mb-4 text-accent/60 opacity-50" />
               <h3 className="text-accent font-black tracking-widest text-lg mb-2 uppercase">Account Required</h3>
               <p className="text-accent/40 text-xs tracking-wide max-w-[400px] mx-auto uppercase">
                 You must log in to access the campaign and track your progress.
@@ -110,8 +111,8 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
                       <span className="text-[10px] tracking-[0.3em] text-accent/70">
                         LEVEL {String(level.id).padStart(2, "0")}
                       </span>
-                      <span className="text-[14px]">
-                        {(!level.unlocked || lockedByGuest) ? "🔒" : level.completed ? "✓" : isCurrent ? "▶" : "◉"}
+                      <span className="text-[14px] flex items-center justify-center">
+                        {(!level.unlocked || lockedByGuest) ? <Lock className="w-3.5 h-3.5 text-accent/30" /> : level.completed ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : isCurrent ? <Play className="w-3.5 h-3.5 text-accent animate-pulse" /> : <Hexagon className="w-3.5 h-3.5 text-accent/50" />}
                       </span>
                     </div>
 

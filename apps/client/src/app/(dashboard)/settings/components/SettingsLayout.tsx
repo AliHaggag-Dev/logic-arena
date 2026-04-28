@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Lock } from "lucide-react";
 import { SectionId, SECTIONS } from "./Shared";
 
 interface SettingsLayoutProps {
@@ -55,7 +55,7 @@ export function SettingsLayout({
 
           {isGuest && (
             <div className={`mt-6 p-6 border border-dashed border-accent/20 rounded-2xl bg-accent/[0.02] backdrop-blur-sm animate-[fadeIn_0.35s_ease] flex flex-col items-center text-center`}>
-              <div className="text-3xl mb-3 opacity-50">🔒</div>
+              <Lock className="w-8 h-8 mb-3 text-accent/60 opacity-50" />
               <h3 className="text-accent font-black tracking-widest text-[14px] mb-1.5 uppercase">Account Required</h3>
               <p className="text-accent/40 text-[10px] tracking-[0.12em] max-w-[480px] uppercase leading-relaxed">
                 Sign in or create a free account to save your settings and preferences.

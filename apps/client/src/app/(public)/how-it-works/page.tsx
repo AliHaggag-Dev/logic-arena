@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: "How It Works — Logic Arena",
@@ -160,7 +161,7 @@ export default function HowItWorksPage() {
                 href="/docs#aliscript"
                 className="group flex items-center justify-center min-w-[200px] h-12 bg-accent/10 border border-accent/40 rounded-lg text-accent text-[11px] font-black tracking-[0.3em] uppercase hover:bg-accent/20 hover:border-accent/80 hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)] transition-all duration-300"
               >
-                READ FULL DOCS <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                READ FULL DOCS <ArrowRight className="ml-2 w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 href="/arena"

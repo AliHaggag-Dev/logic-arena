@@ -1,55 +1,66 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Zap, Hexagon, Circle, Diamond, Target, Shield, Star } from 'lucide-react';
+
+const GLYPH_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  '⬡': Hexagon,
+  '⦾': Circle,
+  '◈': Diamond,
+  '◉': Target,
+  '⬟': Shield,
+  '⬣': Hexagon,
+  '★': Star,
+};
 
 // ─── Energy data (kept in sync with packages/engine/src/energy-manager.ts) ────
 const REGEN_PER_TICK = 3;
-const MAX_ENERGY     = 1000;
+const MAX_ENERGY = 1000;
 
 interface EnergyEntry {
-  command:   string;
-  cost:      number;      // per invocation / per tick
-  unit:      string;      // label next to cost
-  category:  'movement' | 'combat' | 'sensor' | 'cognitive';
-  color:     string;
-  icon:      string;
-  note?:     string;
+  command: string;
+  cost: number;      // per invocation / per tick
+  unit: string;      // label next to cost
+  category: 'movement' | 'combat' | 'sensor' | 'cognitive';
+  color: string;
+  icon: string;
+  note?: string;
 }
 
 const ENTRIES: EnergyEntry[] = [
   // Cognitive — free
-  { command: 'IF / WHILE',   cost: 0,  unit: 'free',    category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Control-flow never costs energy' },
-  { command: 'FUNCTION/CALL',cost: 0,  unit: 'free',    category: 'cognitive', color: '#f59e0b', icon: '⬡' },
-  { command: 'SET',          cost: 0,  unit: 'free',    category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Executes even during STASIS' },
-  { command: 'WAIT',         cost: 0,  unit: 'free',    category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Passively regenerates energy while paused' },
-  { command: 'STOP',         cost: 0,  unit: 'free',    category: 'cognitive', color: '#f59e0b', icon: '⬡' },
+  { command: 'IF / WHILE', cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Control-flow never costs energy' },
+  { command: 'FUNCTION/CALL', cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡' },
+  { command: 'SET', cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Executes even during STASIS' },
+  { command: 'WAIT', cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Passively regenerates energy while paused' },
+  { command: 'STOP', cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡' },
   // Movement
-  { command: 'MOVE',         cost: 1,  unit: '/tick',   category: 'movement', color: '#4ade80', icon: '⦾' },
-  { command: 'BACKUP',       cost: 1,  unit: '/tick',   category: 'movement', color: '#4ade80', icon: '⦾' },
-  { command: 'MOVE_FAST',    cost: 2,  unit: '/tick',   category: 'movement', color: '#4ade80', icon: '⦾', note: '2× speed for 2× the cost' },
-  { command: 'PATHFIND',     cost: 2,  unit: '/tick',   category: 'movement', color: '#4ade80', icon: '⦾', note: 'A* navigation, blocked during STASIS' },
+  { command: 'MOVE', cost: 1, unit: '/tick', category: 'movement', color: '#4ade80', icon: '⦾' },
+  { command: 'BACKUP', cost: 1, unit: '/tick', category: 'movement', color: '#4ade80', icon: '⦾' },
+  { command: 'MOVE_FAST', cost: 2, unit: '/tick', category: 'movement', color: '#4ade80', icon: '⦾', note: '2× speed for 2× the cost' },
+  { command: 'PATHFIND', cost: 2, unit: '/tick', category: 'movement', color: '#4ade80', icon: '⦾', note: 'A* navigation, blocked during STASIS' },
   // Sensor
-  { command: 'SCAN',         cost: 1,  unit: '/call',   category: 'sensor',   color: '#22d3ee', icon: '◈', note: 'Works during STASIS — scan even when immobilised' },
+  { command: 'SCAN', cost: 1, unit: '/call', category: 'sensor', color: '#22d3ee', icon: '◈', note: 'Works during STASIS — scan even when immobilised' },
   // Combat
-  { command: 'FIRE',         cost: 8,  unit: '/shot',   category: 'combat',   color: '#f97316', icon: '◉', note: '25 HP damage on hit' },
-  { command: 'BURST_FIRE',   cost: 15, unit: '/burst',  category: 'combat',   color: '#ef4444', icon: '◉', note: '3 shots × 8 HP = up to 24 HP total damage' },
+  { command: 'FIRE', cost: 8, unit: '/shot', category: 'combat', color: '#f97316', icon: '◉', note: '25 HP damage on hit' },
+  { command: 'BURST_FIRE', cost: 15, unit: '/burst', category: 'combat', color: '#ef4444', icon: '◉', note: '3 shots × 8 HP = up to 24 HP total damage' },
 ];
 
 const CATEGORY_LABELS: Record<EnergyEntry['category'], string> = {
   cognitive: 'COGNITIVE — FREE',
-  sensor:    'SENSORS',
-  movement:  'MOVEMENT',
-  combat:    'COMBAT',
+  sensor: 'SENSORS',
+  movement: 'MOVEMENT',
+  combat: 'COMBAT',
 };
 
 const CATEGORIES: EnergyEntry['category'][] = ['cognitive', 'movement', 'sensor', 'combat'];
 
 // ─── Simulator ─────────────────────────────────────────────────────────────────
 const SIMULATE_CMDS: { label: string; cmds: string[] }[] = [
-  { label: 'SCAN loop',         cmds: ['SCAN', 'MOVE'] },
-  { label: 'PATHFIND + FIRE',   cmds: ['PATHFIND', 'FIRE'] },
-  { label: 'BURST sniper',      cmds: ['SCAN', 'PATHFIND', 'BURST_FIRE'] },
-  { label: 'Pure movement',     cmds: ['MOVE_FAST'] },
+  { label: 'SCAN loop', cmds: ['SCAN', 'MOVE'] },
+  { label: 'PATHFIND + FIRE', cmds: ['PATHFIND', 'FIRE'] },
+  { label: 'BURST sniper', cmds: ['SCAN', 'PATHFIND', 'BURST_FIRE'] },
+  { label: 'Pure movement', cmds: ['MOVE_FAST'] },
 ];
 
 function getCost(cmd: string): number {
@@ -57,9 +68,9 @@ function getCost(cmd: string): number {
 }
 
 export function EnergyCostSection({ isMobile }: { isMobile: boolean }) {
-  const [simIndex, setSimIndex]   = useState(0);
-  const [energy, setEnergy]       = useState(MAX_ENERGY);
-  const [running, setRunning]     = useState(false);
+  const [simIndex, setSimIndex] = useState(0);
+  const [energy, setEnergy] = useState(MAX_ENERGY);
+  const [running, setRunning] = useState(false);
   const [tickCount, setTickCount] = useState(0);
 
   const pct = Math.max(0, Math.min(100, (energy / MAX_ENERGY) * 100));
@@ -67,8 +78,8 @@ export function EnergyCostSection({ isMobile }: { isMobile: boolean }) {
 
   const barColor =
     pct > 60 ? '#4ade80' :
-    pct > 30 ? '#f59e0b' :
-               '#ef4444';
+      pct > 30 ? '#f59e0b' :
+        '#ef4444';
 
   const handleTick = () => {
     const preset = SIMULATE_CMDS[simIndex];
@@ -98,7 +109,7 @@ export function EnergyCostSection({ isMobile }: { isMobile: boolean }) {
       <div className="flex items-center gap-4 mb-8">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#818cf8]/30" />
         <h2 className={`${isMobile ? 'text-base' : 'text-xl'} font-black tracking-[0.15em] text-text-primary uppercase text-center`}>
-          ⚡ Energy System
+          Energy System
           <span className="ml-2 text-[10px] tracking-[0.4em] text-[#818cf8]/80 align-middle">v2.0</span>
         </h2>
         <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#818cf8]/30" />
@@ -139,7 +150,14 @@ export function EnergyCostSection({ isMobile }: { isMobile: boolean }) {
                   >
                     {/* Command name */}
                     <div className="flex items-center gap-2">
-                      <span style={{ color: e.color }} className="text-xs">{e.icon}</span>
+                      {(() => {
+                        const Icon = GLYPH_MAP[e.icon] || Hexagon;
+                        return (
+                          <span style={{ color: e.color }} className="flex items-center justify-center">
+                            <Icon className="w-3.5 h-3.5" />
+                          </span>
+                        );
+                      })()}
                       <code className="text-xs font-black tracking-wider" style={{ color: e.color }}>
                         {e.command}
                       </code>
@@ -189,7 +207,7 @@ export function EnergyCostSection({ isMobile }: { isMobile: boolean }) {
       {/* ── Interactive Drain Simulator ───────────────────────────────────── */}
       <div className="rounded-2xl border border-[#818cf8]/25 bg-card/30 p-5 backdrop-blur-sm">
         <div className="flex items-center gap-3 mb-5">
-          <span className="text-[#818cf8]">⚡</span>
+          <Zap className="w-4 h-4 text-[#818cf8]" />
           <span className="text-xs font-black tracking-[0.2em] uppercase text-[#818cf8]">Drain Simulator</span>
           <span className="ml-auto text-[10px] text-text-secondary/50 font-mono">tick #{tickCount}</span>
         </div>
@@ -219,8 +237,8 @@ export function EnergyCostSection({ isMobile }: { isMobile: boolean }) {
               className="px-3 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all border"
               style={{
                 borderColor: i === simIndex ? '#818cf8' : 'rgba(255,255,255,0.1)',
-                background:  i === simIndex ? 'rgba(129,140,248,0.15)' : 'transparent',
-                color:        i === simIndex ? '#818cf8' : 'var(--text-secondary)',
+                background: i === simIndex ? 'rgba(129,140,248,0.15)' : 'transparent',
+                color: i === simIndex ? '#818cf8' : 'var(--text-secondary)',
               }}
             >
               {p.label}
@@ -263,8 +281,8 @@ export function EnergyCostSection({ isMobile }: { isMobile: boolean }) {
             className="flex-1 py-2.5 rounded-xl font-black text-[11px] tracking-[0.2em] uppercase transition-all border"
             style={{
               borderColor: running ? '#ef4444' : '#818cf8',
-              background:  running ? 'rgba(239,68,68,0.12)' : 'rgba(129,140,248,0.12)',
-              color:        running ? '#ef4444' : '#818cf8',
+              background: running ? 'rgba(239,68,68,0.12)' : 'rgba(129,140,248,0.12)',
+              color: running ? '#ef4444' : '#818cf8',
             }}
           >
             {running ? '⏸ PAUSE' : '▶ SIMULATE'}

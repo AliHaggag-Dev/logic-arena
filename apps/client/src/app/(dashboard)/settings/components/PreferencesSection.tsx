@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Bot, Lock } from 'lucide-react';
 import { SectionHeader, Toggle } from "./Shared";
 
 export function PreferencesSection({ isGuest = false }: { isGuest?: boolean }) {
@@ -45,11 +46,11 @@ export function PreferencesSection({ isGuest = false }: { isGuest?: boolean }) {
                   } ${isGuest ? "opacity-60 grayscale-[0.5] cursor-not-allowed" : "cursor-pointer"}`}
               >
                 {/* Robot icon placeholder */}
-                <div className={`w-10 h-10 rounded-lg mb-3 flex items-center justify-center text-2xl border ${selected ? "border-accent/40 bg-accent/10" : "border-accent/10 bg-bg-primary"}`}>
-                  {isGuest ? "🔒" : "🤖"}
+                <div className={`w-10 h-10 rounded-lg mb-3 flex items-center justify-center border ${selected ? "border-accent/40 bg-accent/10" : "border-accent/10 bg-bg-primary"}`}>
+                  {isGuest ? <Lock className="w-4 h-4 text-accent/60" /> : <Bot className="w-4 h-4 text-accent" />}
                 </div>
                 <div className={`text-[11px] font-black tracking-[0.2em] mb-1 ${selected ? "text-accent" : "text-text-secondary"}`}>
-                  {isGuest ? `[🔒] ${label}` : label}
+                  {label}
                 </div>
                 <div className="text-[9px] text-text-secondary/50 tracking-[0.06em]">{desc}</div>
               </button>

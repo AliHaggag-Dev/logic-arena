@@ -132,7 +132,7 @@ export default function TournamentsPage() {
                     : "bg-accent/10 border border-accent/30 text-accent/70 cursor-pointer"
                   }`}
               >
-                {isGuest ? "🔒 LOGIN TO DEPLOY" : "[+] CREATE_TOURNAMENT"}
+                {isGuest ? "LOGIN TO DEPLOY" : "[+] CREATE TOURNAMENT"}
               </button>
             )}
           </div>

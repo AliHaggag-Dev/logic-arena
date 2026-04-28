@@ -1,12 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Search, Zap, Shield } from 'lucide-react';
 import { ALGORITHM_CHALLENGES, AlgorithmChallenge } from '../constants/docsData';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   BEGINNER: '#22d3ee',
   INTERMEDIATE: '#a855f7',
   ADVANCED: '#f97316',
+};
+
+const BADGE_ICONS: Record<string, React.ReactNode> = {
+  '🔍': <Search className="w-5 h-5 text-cyan-400" />,
+  '⚡': <Zap className="w-5 h-5 text-purple-400" />,
+  '🛡️': <Shield className="w-5 h-5 text-orange-400" />,
 };
 
 interface AlgorithmChallengesProps {
@@ -44,8 +51,8 @@ const ChallengeCard = ({
         className={`w-full flex items-center justify-between ${isMobile ? "px-4 py-4" : "px-5 py-4"} text-left transition-colors hover:bg-text-primary/[0.02]`}
       >
         <div className="flex items-center gap-3">
-          <span className={isMobile ? "text-xl" : "text-2xl"} role="img" aria-label={challenge.title}>
-            {challenge.badge}
+          <span className={`${isMobile ? "text-xl" : "text-2xl"} flex items-center justify-center w-10 h-10 bg-accent/5 border border-accent/15 rounded-xl shadow-[0_0_15px_rgba(var(--accent-rgb),0.05)]`} role="img" aria-label={challenge.title}>
+            {BADGE_ICONS[challenge.badge] || challenge.badge}
           </span>
           <div>
             <div className="flex flex-col gap-1">
@@ -158,7 +165,7 @@ export const AlgorithmChallenges = ({ onLoadScript, isMobile }: AlgorithmChallen
       {/* Info callout */}
       <div className="mb-6 p-4 border border-accent/20 bg-accent/5 rounded-xl shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.02)]">
         <div className="flex items-start gap-3">
-          <span className="text-accent text-lg mt-0.5">⚡</span>
+          <Zap className="w-4 h-4 text-accent mt-1 shrink-0" />
           <div>
             <div className="text-[9px] font-black tracking-[0.2em] text-accent mb-1 uppercase">
               Efficiency Rule

@@ -96,7 +96,7 @@ export function SaveButton({
             : "bg-accent/10 border border-accent/30 text-accent hover:bg-accent/20"
           } ${disabled || isGuest ? "opacity-40" : ""}`}
       >
-        {loading ? "PROCESSING..." : isGuest ? `[🔒] ${label}` : label}
+        {loading ? "PROCESSING..." : label}
       </button>
       {feedback.status === "success" && (
         <span className="text-[10px] text-green-400 tracking-[0.12em] animate-pulse">

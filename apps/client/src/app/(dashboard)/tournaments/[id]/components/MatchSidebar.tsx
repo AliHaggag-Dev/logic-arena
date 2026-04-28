@@ -33,7 +33,7 @@ export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulati
           
           <div className="relative z-10">
             <div className="text-[9px] font-black tracking-[0.35em] text-yellow-500/40 mb-4 flex justify-between items-center uppercase">
-              <span>⚡ YOUR MATCH</span>
+              <span>YOUR MATCH</span>
               <span className="w-2 h-2 rounded-full bg-yellow-500 animate-ping" />
             </div>
             

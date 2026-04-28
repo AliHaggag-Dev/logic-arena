@@ -53,7 +53,7 @@ export default function LobbyPage() {
             : "bg-accent/10 border border-accent/30 text-accent/70"
             }`}
         >
-          {isGuest ? "🔒 LOGIN TO DEPLOY" : "[+] CREATE MATCH"}
+          {isGuest ? "LOGIN TO DEPLOY" : "[+] CREATE MATCH"}
         </button>
       </div>
       <div className="flex flex-col gap-4">
@@ -74,7 +74,7 @@ export default function LobbyPage() {
         <h1 className="m-0 text-2xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-tight">LOBBY</h1>
         <ConnectionStatusBar connectionStatus={connectionStatus} isMobile={true} />
         <button type="button" disabled={isGuest} onClick={handleDeployMatch} className="mt-5 w-full h-[44px] rounded-lg text-[10px] font-black tracking-[0.25em] font-mono transition-transform active:scale-95 bg-accent/10 border border-accent/40 text-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-          {isGuest ? "🔒 LOGIN TO CREATE MATCH" : "[+] CREATE MATCH"}
+          {isGuest ? "LOGIN TO CREATE MATCH" : "[+] CREATE MATCH"}
         </button>
       </div>
       <div className="flex flex-col gap-3 flex-1">

@@ -40,7 +40,7 @@ function ReplayButton({ id, isGuest }: ReplayButtonProps) {
       onMouseEnter={() => !isGuest && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {isGuest ? "🔒 LOCKED" : "▶ REPLAY"}
+      {isGuest ? "LOCKED" : "WATCH REPLAY"}
     </button>
   );
 }
@@ -211,7 +211,7 @@ export function MatchHistoryTable({ loading, history, isMobile, isGuest }: Props
                   disabled={isGuest}
                   className={`w-full h-[44px] flex items-center justify-center border font-bold tracking-[0.2em] text-[10px] rounded-lg transition-transform active:scale-95 shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase ${isGuest ? 'bg-accent/5 border-accent/10 text-accent/20 cursor-not-allowed' : 'bg-accent/10 border-accent/40 text-accent'}`}
                 >
-                  {isGuest ? "🔒 REPLAY LOCKED" : "▶ WATCH REPLAY"}
+                  {isGuest ? "REPLAY LOCKED" : "WATCH REPLAY"}
                 </button>
               </div>
             </div>

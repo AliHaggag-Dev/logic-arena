@@ -2,6 +2,7 @@
 
 import React, { Suspense, useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, Environment } from "@react-three/drei";
 import * as THREE from "three";
@@ -188,9 +189,9 @@ export function RobotCard({ robotId, name, file, scale, color, isMobile, isGuest
         </div>
         <div className="flex items-center gap-2">
           <span className={`${isMobile ? "text-[8px]" : "text-[10px]"} tracking-[0.2em] text-accent/70 group-hover:text-accent font-black transition-colors duration-200 uppercase`}>
-            {isGuest ? "🔒 LOCKED" : "CUSTOMIZE"}
+            {isGuest ? "LOCKED" : "CUSTOMIZE"}
           </span>
-          {!isGuest && <span className="text-accent/30 tracking-tight group-hover:translate-x-1 transition-transform duration-200">→</span>}
+          {!isGuest && <ArrowRight className="w-3.5 h-3.5 text-accent/30 tracking-tight group-hover:translate-x-1 transition-transform duration-200" />}
         </div>
       </div>
     </button>

@@ -85,7 +85,7 @@ export const LeaderboardTable = ({
               <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%]">Points</th>
               <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold">Victories</th>
               <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold text-right">
-                ⚡ Efficiency
+                Efficiency
               </th>
             </tr>
           </thead>
@@ -150,7 +150,7 @@ export const LeaderboardTable = ({
                             disabled={isGuest}
                             className={`text-[10px] tracking-[0.15em] px-3 py-1 rounded border transition-all whitespace-nowrap ${isGuest ? 'border-accent/10 bg-transparent text-accent/20 cursor-not-allowed' : 'border-accent/30 bg-accent/5 hover:bg-accent/15 text-accent/70 hover:text-accent'}`}
                           >
-                            {isGuest ? "🔒 LOGIN TO CHALLENGE" : "⚔ CHALLENGE"}
+                            {isGuest ? "LOGIN TO CHALLENGE" : "CHALLENGE"}
                           </button>
                         )}
                       </div>
@@ -192,24 +192,24 @@ export const LeaderboardTable = ({
             </div>
             {/* Action Bar */}
             <div className="w-full">
-                {isGuest ? (
-                   <button type="button" aria-label="Challenge user" disabled className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent/10 text-accent/20 font-bold tracking-[0.15em] text-[10px] rounded-lg cursor-not-allowed uppercase">
-                    🔒 LOGIN TO CHALLENGE
-                  </button>
-                ) : user.isOnline && user.id !== currentUserId ? (
-                  <button
-                    type="button"
-                    aria-label="Challenge user"
-                    onClick={() => onChallenge(user.id, user.username)}
-                    className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent text-accent font-bold tracking-[0.15em] text-[10px] rounded-lg transition-transform duration-150 active:scale-95 uppercase"
-                  >
-                    ⚔ CHALLENGE 
-                  </button>
-                ) : (
-                  <button type="button" aria-label="Challenge user" disabled className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent/15 text-accent/30 font-bold tracking-[0.15em] text-[10px] rounded-lg cursor-not-allowed uppercase">
-                    OFFLINE / UNAVAILABLE
-                  </button>
-                )}
+              {isGuest ? (
+                <button type="button" aria-label="Challenge user" disabled className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent/10 text-accent/20 font-bold tracking-[0.15em] text-[10px] rounded-lg cursor-not-allowed uppercase">
+                  LOGIN TO CHALLENGE
+                </button>
+              ) : user.isOnline && user.id !== currentUserId ? (
+                <button
+                  type="button"
+                  aria-label="Challenge user"
+                  onClick={() => onChallenge(user.id, user.username)}
+                  className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent text-accent font-bold tracking-[0.15em] text-[10px] rounded-lg transition-transform duration-150 active:scale-95 uppercase"
+                >
+                  ⚔ CHALLENGE
+                </button>
+              ) : (
+                <button type="button" aria-label="Challenge user" disabled className="w-full h-[44px] flex items-center justify-center bg-transparent border border-accent/15 text-accent/30 font-bold tracking-[0.15em] text-[10px] rounded-lg cursor-not-allowed uppercase">
+                  OFFLINE / UNAVAILABLE
+                </button>
+              )}
             </div>
           </div>
         ))

@@ -1,6 +1,17 @@
 "use client";
 
 import React from "react";
+import { Hexagon, Circle, Diamond, Target, Shield, Star } from 'lucide-react';
+
+const GLYPH_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  '⬡': Hexagon,
+  '⦾': Circle,
+  '◈': Diamond,
+  '◉': Target,
+  '⬟': Shield,
+  '⬣': Hexagon,
+  '★': Star,
+};
 
 interface Tier {
   label: string;
@@ -10,12 +21,12 @@ interface Tier {
 }
 
 const TIERS: Tier[] = [
-  { label: "GHOST",      minRank: 0,   color: "#6b7280", glyph: "◈" },
-  { label: "ROOKIE",     minRank: 10,  color: "#22d3ee", glyph: "⬡" },
-  { label: "SYNAPTIC",   minRank: 50,  color: "#4ade80", glyph: "⬟" },
-  { label: "OVERDRIVE",  minRank: 100, color: "#f97316", glyph: "⬣" },
-  { label: "APEX",       minRank: 200, color: "#a855f7", glyph: "★" },
-  { label: "LEGENDARY",  minRank: 500, color: "#facc15", glyph: "⬡" },
+  { label: "GHOST", minRank: 0, color: "#6b7280", glyph: "◈" },
+  { label: "ROOKIE", minRank: 10, color: "#22d3ee", glyph: "⬡" },
+  { label: "SYNAPTIC", minRank: 50, color: "#4ade80", glyph: "⬟" },
+  { label: "OVERDRIVE", minRank: 100, color: "#f97316", glyph: "⬣" },
+  { label: "APEX", minRank: 200, color: "#a855f7", glyph: "★" },
+  { label: "LEGENDARY", minRank: 500, color: "#facc15", glyph: "⬡" },
 ];
 
 function getTier(rank: number): Tier {
@@ -44,7 +55,10 @@ export function OperatorBadge({ rank }: Props) {
         textShadow: `0 0 8px color-mix(in srgb, ${tier.color} 60%, transparent)`,
       }}
     >
-      <span style={{ fontSize: 13 }}>{tier.glyph}</span>
+      {(() => {
+        const Icon = GLYPH_MAP[tier.glyph] || Hexagon;
+        return <Icon className="w-3.5 h-3.5" />;
+      })()}
       {tier.label}
     </div>
   );

@@ -138,7 +138,7 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin, 
               }`}
           >
             <span className="relative z-10">
-              {isGuest ? "[🔒] JOIN" : joining === t.id ? "SYNCING..." : "▶ JOIN"}
+              {isGuest ? "JOIN" : joining === t.id ? "SYNCING..." : "JOIN"}
             </span>
           </button>
         )}
@@ -151,7 +151,7 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin, 
             : "bg-accent/5 border-accent/10 text-accent/50"
             }`}
         >
-          <span className="relative z-10">◈ VIEW TOURNAMENT</span>
+          <span className="relative z-10">VIEW TOURNAMENT</span>
         </button>
       </div>
     </div>

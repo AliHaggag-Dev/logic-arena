@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Lightbulb, Compass, ChevronDown } from 'lucide-react';
 import { ROTATION_SYSTEM_GUIDE, RotationExample } from '../constants/docsData';
 import { SectionLabel } from './SectionLabel';
 
@@ -41,9 +42,7 @@ const ExampleCard = ({
         className={`w-full flex items-center justify-between ${isMobile ? "px-4 py-4" : "px-5 py-4"} text-left transition-colors hover:bg-amber-500/[0.02]`}
       >
         <div className="flex items-center gap-3">
-          <span className={isMobile ? "text-lg" : "text-xl"} role="img" aria-label="Example">
-            💡
-          </span>
+          <Lightbulb className="w-4.5 h-4.5 text-amber-500 shrink-0 mt-0.5" />
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold tracking-widest text-amber-500/60 uppercase">
@@ -61,14 +60,9 @@ const ExampleCard = ({
             </p>
           </div>
         </div>
-        <span
-          className="text-[10px] font-bold tracking-widest transition-transform duration-300 opacity-30 text-amber-500"
-          style={{
-            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-          }}
-        >
-          ▼
-        </span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 transition-transform duration-300 opacity-30 text-amber-500 ${isExpanded ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {/* Expandable body */}
@@ -124,7 +118,7 @@ export const RotationSystemSection = ({ onLoadScript, isMobile }: RotationSystem
       <div className="flex items-center gap-4 mb-8">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#f59e0b]/30" />
         <h2 className={`${isMobile ? "text-base" : "text-xl"} font-black tracking-[0.15em] text-text-primary uppercase text-center`}>
-          <span className="text-[#f59e0b]">◎</span> Rotation System
+          <span className="flex items-center gap-2"><Compass className="w-5 h-5 text-[#f59e0b] shrink-0" /> Rotation System</span>
           <span className="ml-2 text-[10px] tracking-[0.4em] text-[#f59e0b]/80 align-middle">v2.0</span>
         </h2>
         <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#f59e0b]/30" />

@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
+import { Settings, Bot, BookOpen } from 'lucide-react';
 import { ArenaControls } from '../ArenaControls';
 import { BotSelector } from './BotSelector';
 import { NeuralHandbook } from './NeuralHandbook';
@@ -24,9 +25,9 @@ export const MobileHubSheet: React.FC<MobileHubSheetProps> = ({
     output, isLogsOpen, setIsLogsOpen, availableRobots, robotId, onRobotChange, onInsertAndSwitch
 }) => {
     const tabs = [
-        { id: 'controls' as const, label: 'CONTROLS', icon: '⚙' },
-        { id: 'bots' as const, label: 'BOTS', icon: '🤖' },
-        { id: 'handbook' as const, label: 'HANDBOOK', icon: '📖' },
+        { id: 'controls' as const, label: 'CONTROLS', icon: <Settings className="w-3.5 h-3.5" /> },
+        { id: 'bots' as const, label: 'BOTS', icon: <Bot className="w-3.5 h-3.5" /> },
+        { id: 'handbook' as const, label: 'HANDBOOK', icon: <BookOpen className="w-3.5 h-3.5" /> },
     ];
 
     return (
@@ -44,7 +45,7 @@ export const MobileHubSheet: React.FC<MobileHubSheetProps> = ({
                             : 'text-cyan-700 hover:text-cyan-500 border border-transparent'
                             }`}
                     >
-                        <span className="text-xs">{tab.icon}</span>
+                        {tab.icon}
                         {tab.label}
                     </button>
                 ))}

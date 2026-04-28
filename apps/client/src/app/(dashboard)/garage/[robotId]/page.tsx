@@ -217,7 +217,7 @@ export default function RobotDetailPage() {
                     }}
                   >
                     {!isGuest && <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />}
-                    {isGuest ? "🔒 CONFIGURATION LOCKED" : (saving ? "SAVING..." : "SAVE CHANGES")}
+                    {isGuest ? "CONFIGURATION LOCKED" : (saving ? "SAVING..." : "SAVE CHANGES")}
                   </button>
                   {isGuest && (
                     <p className="text-[8px] text-accent/30 tracking-widest mt-2 uppercase text-center">
@@ -238,7 +238,7 @@ export default function RobotDetailPage() {
               disabled={saving || isGuest}
               className={`w-full py-4 rounded-xl border tracking-[0.3em] text-[11px] font-black transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(var(--accent-rgb),0.15)] active:scale-[0.96] ${isGuest ? 'bg-accent/5 border-accent/10 text-accent/30' : 'bg-accent/20 border-accent/40 text-accent'}`}
             >
-              {isGuest ? "🔒 LOCKED" : (saving ? "SAVING..." : "SAVE CHANGES")}
+              {isGuest ? "LOCKED" : (saving ? "SAVING..." : "SAVE CHANGES")}
             </button>
           </div>
         )}

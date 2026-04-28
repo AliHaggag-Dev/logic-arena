@@ -159,7 +159,7 @@ export const TrainingHUD = ({
               <StatItem label="SHOTS" value={shotsFired} accent={false} />
               <StatItem label="ACCURACY" value={`${accuracy}%`} accent={false} />
               <StatItem label="DAMAGE" value={damage} accent={false} />
-              <StatItem label="ENERGY ⚡" value={energyConsumed} accent={false} />
+              <StatItem label="ENERGY" value={energyConsumed} accent={false} />
               <StatItem label="KILLS" value={dummiesDestroyed} accent />
             </div>
 

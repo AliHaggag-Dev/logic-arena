@@ -54,7 +54,7 @@ export const ProtocolForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onS
                                     className="w-full py-3 bg-accent/10 border border-accent/20 rounded-xl text-accent text-xs font-bold tracking-[0.2em] uppercase active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {isGuest ? (
-                                        <>🔒 LOGIN REQUIRED</>
+                                        <>LOGIN REQUIRED</>
                                     ) : isLoading ? (
                                         "CREATING..."
                                     ) : (
@@ -98,7 +98,7 @@ export const ProtocolForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onS
                     className="w-full py-3 mt-1 sm:mt-2 bg-accent/10 border border-accent/40 text-accent font-bold text-[10px] sm:text-xs hover:bg-accent/20 hover:border-accent hover:text-text-primary transition-all rounded-lg uppercase tracking-[0.15em] shadow-[0_0_15px_rgba(var(--accent-rgb),0)] hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {isGuest ? (
-                        <>🔒 LOGIN REQUIRED</>
+                        <>LOGIN REQUIRED</>
                     ) : isLoading ? (
                         "CREATING..."
                     ) : (
