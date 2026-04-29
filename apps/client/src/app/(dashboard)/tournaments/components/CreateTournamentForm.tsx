@@ -27,6 +27,7 @@ export function CreateTournamentForm({ onClose, onCreate, creating, isMobile }: 
           <span>TOURNAMENT NAME</span>
           {isMobile && (
             <button
+              type="button"
               onClick={onClose}
               className="text-red-500/40 hover:text-red-500 transition-colors p-1"
             >
@@ -41,9 +42,9 @@ export function CreateTournamentForm({ onClose, onCreate, creating, isMobile }: 
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             placeholder="Enter tournament name..."
-            className={`w-full ${isMobile ? "py-4 text-[13px]" : "py-3 text-[12px]"} px-4 bg-black/40 border border-accent/20 rounded-lg text-accent font-mono tracking-[0.1em] outline-none focus:border-accent/60 focus:bg-black/60 transition-all placeholder:opacity-60`}
+            className={`w-full ${isMobile ? "py-4 text-[13px]" : "py-3 text-[12px]"} px-4 bg-accent/5 border border-accent/20 rounded-lg text-accent font-mono tracking-[0.1em] outline-none focus:border-accent/60 focus:bg-accent/10 transition-all placeholder:opacity-60`}
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-accent/10 pointer-events-none">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-accent/30 pointer-events-none">
             ONLINE
           </div>
         </div>
@@ -66,6 +67,7 @@ export function CreateTournamentForm({ onClose, onCreate, creating, isMobile }: 
 
         {!isMobile && (
           <button
+            type="button"
             onClick={onClose}
             className="ml-2 px-4 py-3 bg-red-500/5 border border-red-500/20 rounded-lg text-red-500/40 text-[11px] font-bold tracking-[0.15em] font-mono cursor-pointer transition-all duration-200 hover:bg-red-500/10 hover:text-red-500"
           >

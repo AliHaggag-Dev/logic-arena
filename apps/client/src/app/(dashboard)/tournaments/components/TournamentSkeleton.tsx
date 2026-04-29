@@ -2,7 +2,7 @@ import React from "react";
 
 export function TournamentSkeleton() {
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
       {[1, 2, 3].map((i) => (
         <div 
           key={i} 

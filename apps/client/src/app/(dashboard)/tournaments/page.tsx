@@ -28,7 +28,10 @@ export default function TournamentsPage() {
   const fetchTournaments = useCallback(async () => {
     try {
       const res = await apiClient.get("/tournaments");
-      setTournaments(res.data);
+      // FIX 13: deep-compare to avoid flicker on unchanged poll results
+      setTournaments((prev) =>
+        JSON.stringify(prev) === JSON.stringify(res.data) ? prev : res.data
+      );
     } catch (err: unknown) {
       const axiosError = err as { response?: { status?: number } };
       if (axiosError.response?.status === 401) {
@@ -88,12 +91,6 @@ export default function TournamentsPage() {
 
   return (
     <>
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
       <div className="min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden">
         <div
           className="fixed inset-0 pointer-events-none z-0"

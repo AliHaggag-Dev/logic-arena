@@ -1,11 +1,21 @@
-import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
+import { RedisService } from '../../common/redis.service';
 import { TournamentsQueryService } from './tournaments-query.service';
+
+const LIST_CACHE_KEY = 'tournaments:list';
+const tournamentKey = (id: string) => `tournament:${id}`;
 
 @Injectable()
 export class TournamentsCommandService {
   constructor(
     private prisma: PrismaService,
+    private redis: RedisService,
     private queryService: TournamentsQueryService,
   ) {}
 
@@ -18,6 +28,8 @@ export class TournamentsCommandService {
       },
       include: { participants: true, matches: true },
     });
+    // Bust the list cache so new tournament appears immediately
+    await this.redis.del(LIST_CACHE_KEY);
     return tournament;
   }
 
@@ -40,6 +52,9 @@ export class TournamentsCommandService {
       data: { participants: { connect: { id: userId } } },
       include: { participants: true, matches: true },
     });
+
+    // Invalidate both caches
+    await this.redis.del(tournamentKey(id), LIST_CACHE_KEY);
     return updated;
   }
 
@@ -57,64 +72,54 @@ export class TournamentsCommandService {
 
     const count = tournament.participants.length;
     if (count !== 4 && count !== 8 && count !== 2)
-      throw new BadRequestException('Need exactly 4 or 8 participants to start');
+      throw new BadRequestException('Need exactly 2, 4 or 8 participants to start');
 
-    // Shuffle participants — use null-safe access for every slot
+    // Shuffle participants
     const shuffled = [...tournament.participants].sort(() => Math.random() - 0.5);
     const p = (i: number): string | null => shuffled[i]?.id ?? null;
 
+    // Build all match rows up front, then insert in one batch
+    type MatchCreateInput = {
+      tournamentId: string;
+      round: number;
+      matchIndex: number;
+      player1Id?: string | null;
+      player2Id?: string | null;
+      status: string;
+    };
+    const matchData: MatchCreateInput[] = [];
+
     if (count >= 8) {
-      // ── 8-player bracket: 4 quarters → 2 semis → 1 final ──
+      // ── 8-player: 4 quarters → 2 semis → 1 final ──
       for (let i = 0; i < 4; i++) {
-        await this.prisma.tournamentMatch.create({
-          data: {
-            tournamentId: id,
-            round: 1,
-            matchIndex: i,
-            player1Id: p(i * 2),
-            player2Id: p(i * 2 + 1),
-            status: 'PENDING',
-          },
+        matchData.push({
+          tournamentId: id, round: 1, matchIndex: i,
+          player1Id: p(i * 2), player2Id: p(i * 2 + 1), status: 'PENDING',
         });
       }
       for (let i = 0; i < 2; i++) {
-        await this.prisma.tournamentMatch.create({
-          data: { tournamentId: id, round: 2, matchIndex: i, status: 'PENDING' },
-        });
+        matchData.push({ tournamentId: id, round: 2, matchIndex: i, status: 'PENDING' });
       }
-      await this.prisma.tournamentMatch.create({
-        data: { tournamentId: id, round: 3, matchIndex: 0, status: 'PENDING' },
-      });
+      matchData.push({ tournamentId: id, round: 3, matchIndex: 0, status: 'PENDING' });
     } else if (count >= 4) {
-      // ── 4-player bracket: 2 semis → 1 final ──
+      // ── 4-player: 2 semis → 1 final ──
       for (let i = 0; i < 2; i++) {
-        await this.prisma.tournamentMatch.create({
-          data: {
-            tournamentId: id,
-            round: 1,
-            matchIndex: i,
-            player1Id: p(i * 2),
-            player2Id: p(i * 2 + 1),
-            status: 'PENDING',
-          },
+        matchData.push({
+          tournamentId: id, round: 1, matchIndex: i,
+          player1Id: p(i * 2), player2Id: p(i * 2 + 1), status: 'PENDING',
         });
       }
-      await this.prisma.tournamentMatch.create({
-        data: { tournamentId: id, round: 2, matchIndex: 0, status: 'PENDING' },
-      });
+      matchData.push({ tournamentId: id, round: 2, matchIndex: 0, status: 'PENDING' });
     } else {
-      // ── 2-player bracket: single final match ──
-      await this.prisma.tournamentMatch.create({
-        data: {
-          tournamentId: id,
-          round: 1,
-          matchIndex: 0,
-          player1Id: p(0),
-          player2Id: p(1),
-          status: 'PENDING',
-        },
+      // ── 2-player: single final ──
+      matchData.push({
+        tournamentId: id, round: 1, matchIndex: 0,
+        player1Id: p(0), player2Id: p(1), status: 'PENDING',
       });
     }
+
+    // FIX 11: batch create instead of sequential awaits
+    await this.prisma.tournamentMatch.createMany({ data: matchData });
 
     const updated = await this.prisma.tournament.update({
       where: { id },
@@ -125,10 +130,17 @@ export class TournamentsCommandService {
       },
     });
 
+    // Invalidate both caches
+    await this.redis.del(tournamentKey(id), LIST_CACHE_KEY);
     return updated;
   }
 
-  async completeMatch(id: string, matchId: string, winnerId: string) {
+  async completeMatch(
+    id: string,
+    matchId: string,
+    winnerId: string,
+    requesterId: string,
+  ) {
     const match = await this.prisma.tournamentMatch.findUnique({
       where: { id: matchId },
     });
@@ -137,6 +149,14 @@ export class TournamentsCommandService {
       throw new BadRequestException('Match does not belong to this tournament');
     if (match.status === 'COMPLETED')
       throw new BadRequestException('Match already completed');
+
+    // FIX 1: requester must be a participant in this specific match
+    if (match.player1Id !== requesterId && match.player2Id !== requesterId)
+      throw new ForbiddenException('You are not a participant in this match');
+
+    // FIX 1: winnerId must be one of the two match participants
+    if (winnerId !== match.player1Id && winnerId !== match.player2Id)
+      throw new BadRequestException('Winner must be a participant in this match');
 
     // Mark match complete
     await this.prisma.tournamentMatch.update({
@@ -160,11 +180,7 @@ export class TournamentsCommandService {
       const slot = match.matchIndex % 2 === 0 ? 'player1Id' : 'player2Id';
 
       const nextMatch = await this.prisma.tournamentMatch.findFirst({
-        where: {
-          tournamentId: id,
-          round: nextRound,
-          matchIndex: nextMatchIndex,
-        },
+        where: { tournamentId: id, round: nextRound, matchIndex: nextMatchIndex },
       });
 
       if (nextMatch) {
@@ -192,7 +208,9 @@ export class TournamentsCommandService {
       });
     }
 
-    // Return updated tournament via QueryService
+    // Invalidate both caches
+    await this.redis.del(tournamentKey(id), LIST_CACHE_KEY);
+
     return this.queryService.findOne(id);
   }
 }

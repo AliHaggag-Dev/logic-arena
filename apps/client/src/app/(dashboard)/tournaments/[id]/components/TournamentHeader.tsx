@@ -8,9 +8,10 @@ interface Props {
   isMobile?: boolean;
   isGuest?: boolean;
   onShowAuth: () => void;
+  startError?: string | null;
 }
 
-export function TournamentHeader({ tournament, userId, onStart, isMobile, isGuest, onShowAuth }: Props) {
+export function TournamentHeader({ tournament, userId, onStart, isMobile, isGuest, onShowAuth, startError }: Props) {
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
 
   const isCreator = userId === tournament.creatorId;
@@ -48,29 +49,36 @@ export function TournamentHeader({ tournament, userId, onStart, isMobile, isGues
       </div>
 
       {isCreator && tournament.status === "WAITING" && (
-        <button
-          onClick={isGuest ? undefined : onStart}
-          disabled={isGuest}
-          onMouseEnter={() => !isGuest && setHoveredBtn("start")}
-          onMouseLeave={() => setHoveredBtn(null)}
-          className={`${isMobile ? "w-full py-4" : "px-8 py-3"} rounded-lg text-[11px] font-black tracking-[0.25em] font-mono transition-all duration-200 border relative overflow-hidden group ${isGuest 
-              ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-500/20 cursor-not-allowed opacity-50"
-              : hoveredBtn === "start"
-                ? "bg-emerald-500/20 border-emerald-500/70 text-emerald-500 drop-shadow-[0_0_12px_rgba(var(--color-emerald-500),0.5)] cursor-pointer"
-                : "bg-emerald-500/10 border-emerald-500/30 text-emerald-500/70 cursor-pointer"
-            }`}
-        >
-          <span className="relative z-10 flex items-center justify-center gap-2">
-            {isGuest ? (
-              <>
-                <span className="text-[12px]">🔒</span>
-                <span>LOGIN TO START</span>
-              </>
-            ) : (
-              "▶ START_TOURNAMENT_SEQUENCE"
-            )}
-          </span>
-        </button>
+        <div className={`flex flex-col items-end gap-2 ${isMobile ? "w-full mt-2" : ""}`}>
+          <button
+            onClick={isGuest ? onShowAuth : onStart}
+            disabled={isGuest}
+            onMouseEnter={() => !isGuest && setHoveredBtn("start")}
+            onMouseLeave={() => setHoveredBtn(null)}
+            className={`${isMobile ? "w-full py-4" : "px-8 py-3"} rounded-lg text-[11px] font-black tracking-[0.25em] font-mono transition-all duration-200 border relative overflow-hidden group ${isGuest 
+                ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-500/20 cursor-not-allowed opacity-50"
+                : hoveredBtn === "start"
+                  ? "bg-emerald-500/20 border-emerald-500/70 text-emerald-500 drop-shadow-[0_0_12px_rgba(var(--color-emerald-500),0.5)] cursor-pointer"
+                  : "bg-emerald-500/10 border-emerald-500/30 text-emerald-500/70 cursor-pointer"
+              }`}
+          >
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              {isGuest ? (
+                <>
+                  <span className="text-[12px]">🔒</span>
+                  <span>LOGIN TO START</span>
+                </>
+              ) : (
+                "▶ START_TOURNAMENT_SEQUENCE"
+              )}
+            </span>
+          </button>
+          {startError && (
+            <div className={`text-[10px] text-red-500/80 font-mono tracking-widest uppercase font-bold animate-[fadeIn_0.2s_ease-out] ${isMobile ? 'text-center w-full mt-1' : 'mr-1'}`}>
+              [ERR] {startError}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

@@ -12,6 +12,17 @@ import { AuthGuard } from '../../common/auth.guard';
 import { TournamentsCommandService } from './tournaments-command.service';
 import { TournamentsQueryService } from './tournaments-query.service';
 
+interface JwtPayload {
+  sub: string;
+  username: string;
+  iat: number;
+  exp: number;
+}
+
+interface RequestWithUser {
+  user: JwtPayload;
+}
+
 @SkipThrottle({ auth: true })
 @Controller('tournaments')
 export class TournamentsController {
@@ -23,21 +34,21 @@ export class TournamentsController {
   /* ────────────────────── CREATE ────────────────────── */
   @Post('create')
   @UseGuards(AuthGuard)
-  async create(@Body() body: { name: string }, @Req() req: any) {
+  async create(@Body() body: { name: string }, @Req() req: RequestWithUser) {
     return this.commandService.create(body.name, req.user.sub);
   }
 
   /* ────────────────────── JOIN ──────────────────────── */
   @Post(':id/join')
   @UseGuards(AuthGuard)
-  async join(@Param('id') id: string, @Req() req: any) {
+  async join(@Param('id') id: string, @Req() req: RequestWithUser) {
     return this.commandService.join(id, req.user.sub);
   }
 
   /* ────────────────────── START ─────────────────────── */
   @Post(':id/start')
   @UseGuards(AuthGuard)
-  async start(@Param('id') id: string, @Req() req: any) {
+  async start(@Param('id') id: string, @Req() req: RequestWithUser) {
     return this.commandService.start(id, req.user.sub);
   }
 
@@ -60,7 +71,8 @@ export class TournamentsController {
     @Param('id') id: string,
     @Param('matchId') matchId: string,
     @Body() body: { winnerId: string },
+    @Req() req: RequestWithUser,
   ) {
-    return this.commandService.completeMatch(id, matchId, body.winnerId);
+    return this.commandService.completeMatch(id, matchId, body.winnerId, req.user.sub);
   }
 }

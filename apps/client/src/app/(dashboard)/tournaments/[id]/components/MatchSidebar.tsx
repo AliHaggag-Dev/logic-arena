@@ -4,6 +4,7 @@ import { Tournament, TMatch, Player } from "../types";
 const ROUND_LABELS: Record<number, Record<number, string>> = {
   3: { 1: "QUARTER FINALS", 2: "SEMI FINALS", 3: "GRAND FINAL" },
   2: { 1: "SEMI FINALS", 2: "GRAND FINAL" },
+  1: { 1: "GRAND FINAL" },
 };
 
 interface Props {
@@ -21,8 +22,14 @@ interface Props {
 export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulating, onSimulateWin, isMobile, isGuest, onShowAuth }: Props) {
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
 
-  const totalRounds = tournament.participants.length === 8 || tournament.matches.some((m) => m.round === 3) ? 3 : 2;
-  const roundLabels = ROUND_LABELS[totalRounds] || ROUND_LABELS[2];
+  // FIX 4: Correct totalRounds covering 1/2/3-round brackets
+  const totalRounds =
+    tournament.participants.length >= 8 || tournament.matches.some((m) => m.round === 3)
+      ? 3
+      : tournament.participants.length >= 4
+        ? 2
+        : 1;
+  const roundLabels = ROUND_LABELS[totalRounds] ?? ROUND_LABELS[2];
 
   return (
     <div className={`${isMobile ? "w-full" : "w-[300px]"} shrink-0 animate-[fadeIn_0.5s_ease]`}>
@@ -43,7 +50,7 @@ export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulati
                         VS_{myOpponent.username.toUpperCase()}
                     </div>
                     <div className="text-[8px] text-yellow-500/30 tracking-[0.2em] mt-1 font-bold">
-                        PHASE: {roundLabels[myMatch.round] || `PHASE_${myMatch.round}`}
+                        PHASE: {roundLabels[myMatch.round] ?? `PHASE_${myMatch.round}`}
                     </div>
                 </div>
                 <div className="text-[10px] text-yellow-500/20 font-black tracking-tighter italic">
@@ -52,7 +59,8 @@ export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulati
             </div>
 
             <button
-                onClick={isGuest ? undefined : () => onSimulateWin(myMatch.id)}
+                type="button"
+                onClick={isGuest ? onShowAuth : () => onSimulateWin(myMatch.id)}
                 disabled={isGuest || simulating === myMatch.id}
                 onMouseEnter={() => !isGuest && setHoveredBtn("sim")}
                 onMouseLeave={() => setHoveredBtn(null)}
@@ -96,15 +104,18 @@ export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulati
 
             <div className="flex flex-col gap-2">
             {tournament.participants.map((p) => {
-                const isEliminated =
-                tournament.status !== "WAITING" &&
-                tournament.matches.some(
-                    (m) =>
-                    m.status === "COMPLETED" &&
-                    (m.player1Id === p.id || m.player2Id === p.id) &&
-                    m.winnerId !== p.id
-                );
                 const isChampion = tournament.winnerId === p.id;
+
+                // FIX 5: Short-circuit eliminated when player is the champion
+                const isEliminated =
+                  !isChampion &&
+                  tournament.status !== "WAITING" &&
+                  tournament.matches.some(
+                    (m) =>
+                      m.status === "COMPLETED" &&
+                      (m.player1Id === p.id || m.player2Id === p.id) &&
+                      m.winnerId !== p.id
+                  );
 
                 return (
                 <div

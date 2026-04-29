@@ -436,3 +436,17 @@ html, body {
 
 .mobile-zen-sheet .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.2); }
 .mobile-zen-sheet .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.5); }
+
+/* ─────────────────────────────────────────────────────────
+ *  SHARED KEYFRAMES — referenced via animate-[name_duration_easing]
+ * ───────────────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(var(--color-yellow-500), 0.2); }
+  50%       { border-color: rgba(var(--color-yellow-500), 0.6); }
+}

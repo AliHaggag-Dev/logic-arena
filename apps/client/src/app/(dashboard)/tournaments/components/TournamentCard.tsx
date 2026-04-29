@@ -1,21 +1,14 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Player } from "../[id]/types";
 
-export interface Participant {
-  id: string;
-  username: string;
-}
-export interface Creator {
-  id: string;
-  username: string;
-}
 export interface Tournament {
   id: string;
   name: string;
   status: string;
   creatorId: string;
-  creator: Creator;
-  participants: Participant[];
+  creator: Player;
+  participants: Player[];
   winnerId: string | null;
   createdAt: string;
 }
@@ -55,7 +48,7 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin, 
   const router = useRouter();
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
 
-  const s = STATUS_STYLES[t.status] || STATUS_STYLES.WAITING;
+  const s = STATUS_STYLES[t.status] ?? STATUS_STYLES.WAITING;
   const isJoined = t.participants.some((p) => p.id === userId);
   const canJoin = t.status === "WAITING" && !isJoined && t.participants.length < 8;
 
@@ -124,25 +117,28 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin, 
       <div className={`flex gap-2 mt-auto ${isMobile ? "pt-2" : "pt-3"} border-t border-accent/5`}>
         {canJoin && (
           <button
+            type="button"
             onClick={() => onJoin(t.id)}
-            disabled={joining === t.id}
+            // FIX 8: properly disabled for guests AND while a join is in progress
+            disabled={!!isGuest || joining === t.id}
             onMouseEnter={() => setHoveredBtn("join")}
             onMouseLeave={() => setHoveredBtn(null)}
             className={`flex-1 px-4 py-3 rounded-lg text-[10px] font-black tracking-[0.25em] font-mono transition-all duration-200 border relative overflow-hidden group active:scale-[0.95] cursor-pointer ${
               joining === t.id ? 'opacity-50 cursor-wait' : ''
               } ${isGuest
-                ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-500/40"
+                ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-500/40 cursor-not-allowed"
                 : hoveredBtn === "join"
                   ? "bg-yellow-500/15 border-yellow-500/60 text-yellow-500 shadow-[0_0_15px_rgba(var(--color-yellow-500),0.15)]"
                   : "bg-yellow-500/5 border-yellow-500/20 text-yellow-500/60"
               }`}
           >
             <span className="relative z-10">
-              {isGuest ? "JOIN" : joining === t.id ? "SYNCING..." : "JOIN"}
+              {joining === t.id ? "SYNCING..." : "JOIN"}
             </span>
           </button>
         )}
         <button
+          type="button"
           onClick={() => router.push(`/tournaments/${t.id}`)}
           onMouseEnter={() => setHoveredBtn("view")}
           onMouseLeave={() => setHoveredBtn(null)}
