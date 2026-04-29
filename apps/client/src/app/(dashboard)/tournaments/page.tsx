@@ -3,7 +3,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { apiClient } from "../../../lib/api-client";
 import { TournamentSkeleton } from "./components/TournamentSkeleton";
-import { TournamentCard, Tournament } from "./components/TournamentCard";
+import { TournamentCard } from "./components/TournamentCard";
+import { Tournament } from "./types";
 import { CreateTournamentForm } from "./components/CreateTournamentForm";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { AuthModal } from "../../../components/AuthModal";

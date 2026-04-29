@@ -1,17 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Player } from "../[id]/types";
-
-export interface Tournament {
-  id: string;
-  name: string;
-  status: string;
-  creatorId: string;
-  creator: Player;
-  participants: Player[];
-  winnerId: string | null;
-  createdAt: string;
-}
+import { Player, Tournament } from "../types";
 
 const STATUS_STYLES: Record<string, { color: string; bg: string; border: string; glow: string }> = {
   WAITING: {
@@ -126,7 +115,7 @@ export function TournamentCard({ tournament: t, index, userId, joining, onJoin, 
             className={`flex-1 px-4 py-3 rounded-lg text-[10px] font-black tracking-[0.25em] font-mono transition-all duration-200 border relative overflow-hidden group active:scale-[0.95] cursor-pointer ${
               joining === t.id ? 'opacity-50 cursor-wait' : ''
               } ${isGuest
-                ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-500/40 cursor-not-allowed"
+                ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-500/40 cursor-not-allowed!"
                 : hoveredBtn === "join"
                   ? "bg-yellow-500/15 border-yellow-500/60 text-yellow-500 shadow-[0_0_15px_rgba(var(--color-yellow-500),0.15)]"
                   : "bg-yellow-500/5 border-yellow-500/20 text-yellow-500/60"

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Tournament, TMatch } from "../types";
+import { Tournament, TMatch } from "../../types";
 
 const ROUND_LABELS: Record<number, Record<number, string>> = {
   3: { 1: "QUARTER FINALS", 2: "SEMI FINALS", 3: "GRAND FINAL" },

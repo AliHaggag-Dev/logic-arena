@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Tournament } from "../types";
+import { Tournament } from "../../types";
 
 interface Props {
   tournament: Tournament;
