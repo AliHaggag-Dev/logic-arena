@@ -14,7 +14,7 @@ export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript:
             style={{ border: `1px solid ${tactic.color}33` }}
           >
             <div className="absolute top-0 left-0 w-1 h-full opacity-50" style={{ backgroundColor: tactic.color }} />
-            
+
             <div className="text-[11px] font-black tracking-[0.2em] mb-2 uppercase" style={{ color: tactic.color }}>
               {tactic.title}
             </div>
@@ -25,14 +25,15 @@ export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript:
               {tactic.code}
             </div>
             <button
+              type="button"
               onClick={() => onLoadScript(tactic.code)}
-              className="mt-4 w-full py-3 bg-transparent text-[9px] font-bold tracking-[0.2em] uppercase cursor-pointer rounded-xl transition-all hover:bg-white/5 border border-white/10 active:scale-[0.98]"
+              className="mt-4 w-full py-3 bg-transparent text-[9px] font-bold tracking-[0.2em] uppercase cursor-pointer rounded-xl transition-all hover:bg-white/5 hover:opacity-90 border border-white/10 active:scale-[0.98]"
               style={{
                 borderColor: `${tactic.color}33`,
                 color: tactic.color,
               }}
             >
-              LOAD SCRIPT
+              ▶ LOAD_TO_CORE
             </button>
           </div>
         ))}

@@ -1,0 +1,37 @@
+/* ── AliScript Docs — shared utility classes ───────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.3), 0 0 24px rgba(var(--accent-rgb), 0.1); }
+  50%      { box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.6), 0 0 48px rgba(var(--accent-rgb), 0.2); }
+}
+
+.docs-textarea {
+  resize: vertical;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  padding: 16px;
+  width: 100%;
+  min-height: 200px;
+  transition: border-color 0.2s;
+  letter-spacing: 0.05em;
+}
+
+.docs-textarea:focus {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.08), 0 0 20px rgba(var(--accent-rgb), 0.1);
+}
+
+.docs-scrollbar::-webkit-scrollbar        { width: 4px; }
+.docs-scrollbar::-webkit-scrollbar-track  { background: transparent; }
+.docs-scrollbar::-webkit-scrollbar-thumb  { background: rgba(var(--accent-rgb), 0.2); border-radius: 2px; }
+
+.cmd-row:hover   { background-color: rgba(var(--accent-rgb), 0.03); }
+
+.quick-card                { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.quick-card:hover          { transform: translateY(-3px); }

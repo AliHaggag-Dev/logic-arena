@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { SectionLabel } from "./SectionLabel";
 
 interface InteractivePlaygroundProps {
@@ -10,8 +10,6 @@ interface InteractivePlaygroundProps {
 }
 
 export function InteractivePlayground({ script, setScript, parsed, onParse, isMobile }: InteractivePlaygroundProps) {
-  const [parseBtnHovered, setParseBtnHovered] = useState(false);
-
   return (
     <section className={isMobile ? "mb-10" : "mb-[60px]"}>
       <SectionLabel text="LIVE EDITOR" isMobile={isMobile} />
@@ -32,16 +30,13 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
             onChange={(e) => setScript(e.target.value)}
             spellCheck={false}
             id="aliscript-editor"
+            aria-label="AliScript editor"
           />
           <button
+            type="button"
             id="parse-script-btn"
-            onMouseEnter={() => setParseBtnHovered(true)}
-            onMouseLeave={() => setParseBtnHovered(false)}
             onClick={onParse}
-            className={`mt-3 w-full ${isMobile ? "py-4 text-[11px]" : "py-3 px-6 text-[10px]"} rounded-xl font-black tracking-[0.28em] font-mono transition-all duration-200 ${parseBtnHovered || isMobile
-              ? "bg-accent/20 text-accent border-accent/50 drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.4)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.1),inset_0_0_20px_rgba(var(--accent-rgb),0.05)]"
-              : "bg-accent/10 border border-accent/20 text-accent/70"
-              } active:scale-[0.98] transition-transform`}
+            className={`mt-3 w-full ${isMobile ? "py-4 text-[11px]" : "py-3 px-6 text-[10px]"} rounded-xl font-black tracking-[0.28em] font-mono bg-accent/10 border border-accent/20 text-accent/70 hover:bg-accent/20 hover:text-accent hover:border-accent/50 hover:drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.4)] transition-all duration-200 active:scale-[0.98]`}
           >
             ▶ RUN PARSER
           </button>
@@ -57,7 +52,7 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
           <div className={`docs-scrollbar overflow-y-auto bg-card/70 border border-accent/10 rounded-xl p-4 flex flex-col gap-2 ${isMobile ? "min-h-[140px] max-h-[250px]" : "min-h-[200px] max-h-[360px]"}`}>
             {parsed.length === 0 ? (
               <div className="flex-1 flex items-center justify-center text-accent/20 text-[10px] tracking-[0.2em] text-center p-8 uppercase font-bold">
-                Waiting for script...
+                Waiting for script…
               </div>
             ) : (
               parsed.map((cmd, idx) => (
@@ -79,7 +74,7 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
 
           {parsed.length > 0 && (
             <div className="mt-2.5 text-[9px] text-accent/20 tracking-[0.15em] text-right font-bold uppercase">
-              {parsed.length} INSTRUCTION{parsed.length !== 1 ? "S" : ""} LOADED
+              {parsed.length} LINE{parsed.length !== 1 ? "S" : ""} PARSED
             </div>
           )}
         </div>

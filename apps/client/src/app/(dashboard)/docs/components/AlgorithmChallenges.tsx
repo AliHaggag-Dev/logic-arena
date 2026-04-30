@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Zap, Shield } from 'lucide-react';
+import { Search, Zap, Shield, ChevronDown } from 'lucide-react';
 import { ALGORITHM_CHALLENGES, AlgorithmChallenge } from '../constants/docsData';
+import { SectionLabel } from './SectionLabel';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  BEGINNER: '#22d3ee',
+  BEGINNER:     '#22d3ee',
   INTERMEDIATE: '#a855f7',
-  ADVANCED: '#f97316',
+  ADVANCED:     '#f97316',
 };
 
 const BADGE_ICONS: Record<string, React.ReactNode> = {
   '🔍': <Search className="w-5 h-5 text-cyan-400" />,
-  '⚡': <Zap className="w-5 h-5 text-purple-400" />,
+  '⚡': <Zap    className="w-5 h-5 text-purple-400" />,
   '🛡️': <Shield className="w-5 h-5 text-orange-400" />,
 };
 
@@ -38,55 +39,54 @@ const ChallengeCard = ({
 
   return (
     <div
-      className={`border bg-card/60 backdrop-blur-sm transition-all duration-300 rounded-xl overflow-hidden ${isExpanded ? "ring-1 ring-accent/20" : ""}`}
+      className={`border bg-card/60 backdrop-blur-sm transition-all duration-300 rounded-xl overflow-hidden ${isExpanded ? 'ring-1 ring-accent/20' : ''}`}
       style={{
         borderColor: isExpanded ? `${challenge.color}66` : 'rgba(var(--accent-rgb),0.12)',
-        boxShadow: isExpanded ? `0 0 20px ${challenge.color}22` : 'none',
+        boxShadow:   isExpanded ? `0 0 20px ${challenge.color}22` : 'none',
       }}
     >
       {/* Header */}
       <button
         type="button"
         onClick={onToggle}
-        className={`w-full flex items-center justify-between ${isMobile ? "px-4 py-4" : "px-5 py-4"} text-left transition-colors hover:bg-text-primary/[0.02]`}
+        className={`w-full flex items-center justify-between ${isMobile ? 'px-4 py-4' : 'px-5 py-4'} text-left transition-colors hover:bg-text-primary/[0.02]`}
       >
         <div className="flex items-center gap-3">
-          <span className={`${isMobile ? "text-xl" : "text-2xl"} flex items-center justify-center w-10 h-10 bg-accent/5 border border-accent/15 rounded-xl shadow-[0_0_15px_rgba(var(--accent-rgb),0.05)]`} role="img" aria-label={challenge.title}>
-            {BADGE_ICONS[challenge.badge] || challenge.badge}
+          <span
+            className={`${isMobile ? 'text-xl' : 'text-2xl'} flex items-center justify-center w-10 h-10 bg-accent/5 border border-accent/15 rounded-xl`}
+            role="img"
+            aria-label={challenge.title}
+          >
+            {BADGE_ICONS[challenge.badge] ?? challenge.badge}
           </span>
-          <div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <h3
-                  className={`${isMobile ? "text-[11px]" : "text-sm"} font-black tracking-[0.1em] uppercase`}
-                  style={{ color: challenge.color }}
-                >
-                  {challenge.title}
-                </h3>
-                <span
-                  className="text-[8px] font-bold tracking-[0.2em] px-1.5 py-0.5 border rounded-sm"
-                  style={{ color: diffColor, borderColor: `${diffColor}44`, background: `${diffColor}0d` }}
-                >
-                  {challenge.difficulty}
-                </span>
-              </div>
-              <p className="text-[9px] text-text-primary/40 tracking-wider font-bold uppercase">{challenge.concept}</p>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <h3
+                className={`${isMobile ? 'text-[11px]' : 'text-sm'} font-black tracking-[0.1em] uppercase`}
+                style={{ color: challenge.color }}
+              >
+                {challenge.title}
+              </h3>
+              <span
+                className="text-[8px] font-bold tracking-[0.2em] px-1.5 py-0.5 border rounded-sm"
+                style={{ color: diffColor, borderColor: `${diffColor}44`, background: `${diffColor}0d` }}
+              >
+                {challenge.difficulty}
+              </span>
             </div>
+            <p className="text-[9px] text-text-primary/40 tracking-wider font-bold uppercase">
+              {challenge.concept}
+            </p>
           </div>
         </div>
-        <span
-          className="text-[10px] font-bold tracking-widest transition-transform duration-300 opacity-30"
-          style={{
-            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-          }}
-        >
-          ▼
-        </span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 transition-transform duration-300 opacity-30 text-accent ${isExpanded ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {/* Expandable body */}
       {isExpanded && (
-        <div className={`${isMobile ? "px-4" : "px-5"} pb-5 border-t border-text-primary/5 animate-in fade-in slide-in-from-top-1 duration-200`}>
+        <div className={`${isMobile ? 'px-4' : 'px-5'} pb-5 border-t border-text-primary/5 animate-in fade-in slide-in-from-top-1 duration-200`}>
           <p className="text-[11px] text-text-primary/50 mt-4 mb-4 leading-relaxed tracking-wide font-medium">
             {challenge.description}
           </p>
@@ -98,39 +98,34 @@ const ChallengeCard = ({
               style={{ background: `linear-gradient(135deg, ${challenge.color}, transparent)` }}
             />
             <pre
-              className={`text-[10px] leading-relaxed p-4 rounded-lg overflow-x-auto font-mono bg-card/60 backdrop-blur-md docs-scrollbar border border-accent/10 ${isMobile ? "max-h-[200px]" : ""}`}
-              style={{
-                color: 'var(--accent)',
-              }}
+              className={`text-[10px] leading-relaxed p-4 rounded-lg overflow-x-auto font-mono bg-card/60 backdrop-blur-md docs-scrollbar border border-accent/10 ${isMobile ? 'max-h-[220px]' : ''}`}
+              style={{ color: 'var(--accent)' }}
             >
-              {challenge.code
-                .split('\n')
-                .map((line, i) => {
-                  // Highlight comments in dim text-primary, keywords in color
-                  const isComment = line.trimStart().startsWith('//');
-                  return (
-                    <div key={i}>
-                      <span style={{ color: isComment ? 'rgba(var(--accent-rgb), 0.3)' : undefined }}>
-                        {line}
-                      </span>
-                    </div>
-                  );
-                })}
+              {challenge.code.split('\n').map((line, i) => {
+                const isComment = line.trimStart().startsWith('//');
+                return (
+                  <div key={i}>
+                    <span style={{ color: isComment ? 'rgba(var(--accent-rgb), 0.3)' : undefined }}>
+                      {line}
+                    </span>
+                  </div>
+                );
+              })}
             </pre>
           </div>
 
-          {/* Load button */}
+          {/* Load button — unified label */}
           <button
             type="button"
             onClick={() => onLoadScript(challenge.code)}
-            className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.2)] active:scale-[0.98]"
+            className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] hover:opacity-90"
             style={{
-              color: challenge.color,
+              color:       challenge.color,
               borderColor: `${challenge.color}44`,
-              background: `${challenge.color}0d`,
+              background:  `${challenge.color}0d`,
             }}
           >
-            ▶ LOAD SCRIPT
+            ▶ LOAD_TO_CORE
           </button>
         </div>
       )}
@@ -142,28 +137,11 @@ export const AlgorithmChallenges = ({ onLoadScript, isMobile }: AlgorithmChallen
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
   return (
-    <section className={isMobile ? "mb-10" : "mb-16"}>
-      {/* Section header */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-accent/30" />
-        <div className="text-center">
-          <div className="text-[9px] tracking-[0.4em] text-accent/60 uppercase font-black mb-1">
-            Logic Library
-          </div>
-          <h2 className={`${isMobile ? "text-base" : "text-xl"} font-black tracking-[0.15em] text-text-primary/90 uppercase`}>
-            Algorithm Challenges
-          </h2>
-          {!isMobile && (
-            <p className="text-[10px] text-text-primary/30 tracking-widest mt-1 uppercase font-bold">
-              Ready-to-use scripts for testing
-            </p>
-          )}
-        </div>
-        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-accent/30" />
-      </div>
+    <section className={isMobile ? 'mb-10' : 'mb-16'}>
+      <SectionLabel text="ALGORITHM CHALLENGES" isMobile={isMobile} />
 
       {/* Info callout */}
-      <div className="mb-6 p-4 border border-accent/20 bg-accent/5 rounded-xl shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.02)]">
+      <div className="mt-5 mb-5 p-4 border border-accent/20 bg-accent/5 rounded-xl">
         <div className="flex items-start gap-3">
           <Zap className="w-4 h-4 text-accent mt-1 shrink-0" />
           <div>
@@ -171,7 +149,7 @@ export const AlgorithmChallenges = ({ onLoadScript, isMobile }: AlgorithmChallen
               Efficiency Rule
             </div>
             <p className="text-[11px] text-text-primary/40 leading-relaxed tracking-wide font-medium">
-              Every AliScript command costs energy. Write <strong className="text-text-primary/60">efficient algorithms</strong> to maximize your score.
+              Every AliScript command costs energy. Write <strong className="text-text-primary/60">efficient algorithms</strong> to maximize your Efficiency Score.
             </p>
           </div>
         </div>

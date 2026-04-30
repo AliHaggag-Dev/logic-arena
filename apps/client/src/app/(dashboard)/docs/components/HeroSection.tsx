@@ -4,12 +4,12 @@ export function HeroSection({ isMobile }: { isMobile: boolean }) {
   return (
     <div className={`border-b border-accent/10 ${isMobile ? "pb-6 mb-8" : "pb-9 mb-[52px]"} text-center`}>
       <h1 className={`${isMobile ? "text-3xl" : "text-[clamp(32px,6vw,56px)]"} font-black tracking-[0.22em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.9)] mb-4 leading-none`}>
-        <p className="text-[10px] tracking-[0.4em] text-accent/30 mb-3 uppercase drop-shadow-none">
+        <span className="block text-[10px] tracking-[0.4em] text-accent/30 mb-3 uppercase drop-shadow-none font-normal">
           LANGUAGE REFERENCE
-        </p>
+        </span>
         ALISCRIPT
         <span className="text-[0.38em] text-accent/35 tracking-[0.3em] ml-4 align-super">
-          v2.0
+          v2.3
         </span>
       </h1>
 
@@ -23,9 +23,9 @@ export function HeroSection({ isMobile }: { isMobile: boolean }) {
       {/* Status badges */}
       <div className={`flex justify-center ${isMobile ? "gap-2" : "gap-4"} mt-6 flex-wrap`}>
         {[
-          { label: "SECTIONS", value: "10" },
-          { label: "LOGIC TYPES", value: "6" },
-          { label: "CORE", value: "v2.0" },
+          { label: "COMMANDS", value: "13" },
+          { label: "IDENTIFIERS", value: "20" },
+          { label: "CORE", value: "v2.3" },
         ].map(({ label, value }) => (
           <div
             key={label}
