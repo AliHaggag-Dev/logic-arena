@@ -12,8 +12,8 @@ export interface CombatStats {
   efficiency: number;  // damage dealt per energy consumed (0-100)
   aggression: number;  // offensive pressure: shots fired, damage dealt (0-100)
   defense:    number;  // survival: health remaining, time alive (0-100)
-  precision:  number;  // hit accuracy: hits / shots (0-100)
-  speed:      number;  // match pace: commands / second (0-100)
+  precision:  number;  // targeting efficiency: damage dealt / energy consumed (0-100)
+  speed:      number;  // match pace: energy commands / second (0-100)
 }
 
 export interface UserProfile {
@@ -36,7 +36,7 @@ export interface UserProfile {
 
 export interface MatchSummary {
   id: string;
-  date: Date;
+  date: Date;   // Prisma DateTime; serialised to ISO string by Axios on the client
   type: string;
   opponent: string;
   result: 'WIN' | 'LOSS';

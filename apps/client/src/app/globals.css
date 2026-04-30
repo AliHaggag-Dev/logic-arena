@@ -446,6 +446,11 @@ html, body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 @keyframes pulse-border {
   0%, 100% { border-color: rgba(var(--color-yellow-500), 0.2); }
   50%       { border-color: rgba(var(--color-yellow-500), 0.6); }

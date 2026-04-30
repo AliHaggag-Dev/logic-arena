@@ -64,7 +64,7 @@ function computeCombatStats(
 
 /**
  * Merge new CombatStats into historical stats using an exponential
- * weighted average (30% new, 70% history) so stats evolve smoothly.
+ * weighted average (35% new, 65% history) so stats evolve smoothly.
  */
 function mergeStats(
   existing: CombatStats | null,

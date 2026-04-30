@@ -3,29 +3,33 @@
 import React, { useEffect, useRef, useState } from "react";
 
 interface Props {
-  value: number;       // 0-100
-  size?: number;
+  value:        number;   // 0-100
+  size?:        number;
   strokeWidth?: number;
-  color?: string;
-  label: string;
-  sublabel: string;
+  color?:       string;
+  label:        string;
+  sublabel:     string;
 }
+
+const DURATION = 1000;
 
 export function StatRing({
   value,
-  size = 90,
+  size        = 90,
   strokeWidth = 7,
-  color = "var(--accent)",
+  color       = "var(--accent)",
   label,
   sublabel,
 }: Props) {
-  const [animated, setAnimated] = useState(0);
-  const rafRef   = useRef<number | null>(null);
-  const startRef = useRef<number | null>(null);
-  const DURATION = 1000;
+  // Animate FROM the currently displayed value rather than always from 0 (P3).
+  // This prevents the jarring reset-to-zero on stats refresh.
+  const [animated, setAnimated]     = useState(0);
+  const rafRef                      = useRef<number | null>(null);
+  const startRef                    = useRef<number | null>(null);
+  const animatedRef                 = useRef(0); // tracks latest animated value for next animation start
 
   useEffect(() => {
-    const from = 0;
+    const from = animatedRef.current;
     const to   = value;
     startRef.current = null;
 
@@ -33,16 +37,20 @@ export function StatRing({
       if (!startRef.current) startRef.current = ts;
       const t    = Math.min((ts - startRef.current) / DURATION, 1);
       const ease = 1 - Math.pow(1 - t, 3);
-      setAnimated(from + (to - from) * ease);
+      const next = from + (to - from) * ease;
+      animatedRef.current = next;
+      setAnimated(next);
       if (t < 1) rafRef.current = requestAnimationFrame(animate);
     };
+
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(animate);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [value]);
 
-  const r           = (size - strokeWidth * 2) / 2;
+  const r            = (size - strokeWidth * 2) / 2;
   const circumference = 2 * Math.PI * r;
-  const offset      = circumference - (animated / 100) * circumference;
+  const offset       = circumference - (animated / 100) * circumference;
 
   return (
     <div
@@ -69,20 +77,13 @@ export function StatRing({
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
-            style={{
-              filter: `drop-shadow(0 0 5px ${color})`,
-              transition: "stroke-dashoffset 0.05s linear",
-            }}
+            style={{ filter: `drop-shadow(0 0 5px ${color})` }}
           />
         </svg>
-        {/* Center value */}
+        {/* Centre value */}
         <div
           className="absolute inset-0 flex items-center justify-center font-black font-mono"
-          style={{
-            fontSize: 18,
-            color,
-            textShadow: `0 0 10px ${color}`,
-          }}
+          style={{ fontSize: 18, color, textShadow: `0 0 10px ${color}` }}
         >
           {Math.round(animated)}
         </div>
