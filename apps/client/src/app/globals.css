@@ -21,6 +21,14 @@
   --sem-warning-rgb: 245, 158, 11;
   --sem-info:        #38bdf8;
   --sem-info-rgb:    56, 189, 248;
+  /* Rank medal tokens */
+  --rank-gold:   #FFD700;
+  --rank-silver: #C0C0C0;
+  --rank-bronze: #CD7F32;
+  /* Efficiency tier tokens */
+  --eff-optimal:  var(--accent);
+  --eff-moderate: #fb923c;
+  --eff-low:      #f87171;
 }
 
 /* ── VIOLET SOVEREIGN — Premium light, deep violet authority ── */
@@ -53,6 +61,14 @@
   --sem-warning-rgb: 217, 119, 6;
   --sem-info:        #4f46e5;
   --sem-info-rgb:    79, 70, 229;
+  /* Rank medal tokens — same universally, override if needed */
+  --rank-gold:   #FFD700;
+  --rank-silver: #C0C0C0;
+  --rank-bronze: #CD7F32;
+  /* Efficiency tier tokens */
+  --eff-optimal:  var(--accent);
+  --eff-moderate: #d97706;
+  --eff-low:      #dc2626;
 }
 
 /* ── OBSIDIAN EMBER — Volcanic dark, liquid gold fire ── */
@@ -85,6 +101,14 @@
   --sem-warning-rgb: 251, 191, 36;
   --sem-info:        #d97706;   /* amber-info: accent-family, distinct from success */
   --sem-info-rgb:    217, 119, 6;
+  /* Rank medal tokens */
+  --rank-gold:   #FFD700;
+  --rank-silver: #C0C0C0;
+  --rank-bronze: #CD7F32;
+  /* Efficiency tier tokens */
+  --eff-optimal:  var(--accent);
+  --eff-moderate: #fb923c;
+  --eff-low:      #f87171;
 }
 
 @theme inline {

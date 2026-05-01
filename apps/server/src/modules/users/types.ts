@@ -47,3 +47,19 @@ export interface UserLoadout {
   selectedRobotId: string | null;
   selectedColor: string | null;
 }
+
+/** Shape returned by GET /users/leaderboard */
+export interface LeaderboardEntry {
+  id: string;
+  username: string;
+  rank: number;
+  isOnline: boolean;
+  _count: { wonMatches: number };
+}
+
+/** Maximum number of players returned by the leaderboard endpoint */
+export const LEADERBOARD_LIMIT = 10;
+
+/** Redis TTL for the leaderboard snapshot, in seconds */
+export const LEADERBOARD_TTL = 20;
+

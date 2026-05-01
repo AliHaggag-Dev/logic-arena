@@ -17,11 +17,18 @@ import { RedisService }  from '../../common/redis.service';
 import { AuthGuard }     from '../../common/auth.guard';
 import { UsersQueryService }  from './users-query.service';
 import { UsersCommandService }  from './users-command.service';
+import {
+  LeaderboardEntry,
+  LEADERBOARD_LIMIT,
+  LEADERBOARD_TTL,
+} from './types';
 
 /** Typed request shape produced by AuthGuard JWT strategy */
 interface AuthenticatedRequest {
   user: { sub: string };
 }
+
+const LEADERBOARD_CACHE_KEY = 'leaderboard:snapshot';
 
 @SkipThrottle({ auth: true })
 @Controller('users')
@@ -33,12 +40,17 @@ export class UsersController {
     private readonly redis:         RedisService,
   ) {}
 
-  // ── Leaderboard (public, live online status — no cache) ──────────────────
+  // ── Leaderboard (public, short-lived Redis cache) ─────────────────────────
   @Get('leaderboard')
-  async getLeaderboard() {
+  async getLeaderboard(): Promise<LeaderboardEntry[]> {
+    // 1. Serve from cache if available
+    const cached = await this.redis.get<LeaderboardEntry[]>(LEADERBOARD_CACHE_KEY);
+    if (cached) return cached;
+
+    // 2. Fetch top-N users ordered by rank desc, then by won matches desc as tiebreaker
     const users = await this.prisma.user.findMany({
-      orderBy: { rank: 'desc' },
-      take:    10,
+      orderBy: [{ rank: 'desc' }, { wonMatches: { _count: 'desc' } }],
+      take:    LEADERBOARD_LIMIT,
       select:  {
         id:       true,
         username: true,
@@ -47,15 +59,23 @@ export class UsersController {
       },
     });
 
-    const usersWithStatus = await Promise.all(
-      users.map(async (user) => {
-        const online = await this.redis.get(`user:online:${user.id}`);
-        return { ...user, isOnline: !!online };
-      }),
-    );
+    // 3. Batch all online-presence checks into a single MGET round-trip
+    const presenceKeys = users.map((u) => `user:online:${u.id}`);
+    const presenceValues: (string | null)[] = presenceKeys.length > 0
+      ? await this.redis.getClient().mget(...presenceKeys)
+      : [];
 
-    return usersWithStatus;
+    const result: LeaderboardEntry[] = users.map((user, i) => ({
+      ...user,
+      isOnline: presenceValues[i] !== null && presenceValues[i] !== undefined,
+    }));
+
+    // 4. Cache the assembled result for LEADERBOARD_TTL seconds
+    await this.redis.set(LEADERBOARD_CACHE_KEY, result, LEADERBOARD_TTL);
+
+    return result;
   }
+
 
   // ── My Profile (auth-gated, Redis-first via service) ─────────────────────
   @UseGuards(AuthGuard)
