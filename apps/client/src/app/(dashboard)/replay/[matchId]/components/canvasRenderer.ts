@@ -1,18 +1,9 @@
 import { Snapshot } from "../types";
 
-export const CANVAS_W = 420;
-export const CANVAS_H = 315; // 420 * (600/800)
-const ARENA_W = 800;
-const ARENA_H = 600;
+export const CANVAS_W = 800;
+export const CANVAS_H = 600;
 const MAX_HEALTH = 100;
 const HEALTH_LERP = 0.08;
-
-function scaleX(x: number) {
-  return (x / ARENA_W) * CANVAS_W;
-}
-function scaleY(y: number) {
-  return (y / ARENA_H) * CANVAS_H;
-}
 
 const ROBOT_COLORS = [
   "#00ffff",
@@ -40,6 +31,8 @@ function lerpAngle(a: number, b: number, t: number): number {
   return a + diff * t;
 }
 
+const TWO_PI = Math.PI * 2;
+
 export function drawFrame(
   ctx: CanvasRenderingContext2D,
   prevSnap: Snapshot | undefined,
@@ -50,124 +43,126 @@ export function drawFrame(
   const W = CANVAS_W;
   const H = CANVAS_H;
 
+  // Background
   ctx.fillStyle = "#030712";
   ctx.fillRect(0, 0, W, H);
 
+  // Grid
   ctx.strokeStyle = "rgba(8,145,178,0.12)";
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
   for (let i = 0; i <= 10; i++) {
-    ctx.beginPath();
     ctx.moveTo((i / 10) * W, 0);
     ctx.lineTo((i / 10) * W, H);
-    ctx.stroke();
-    ctx.beginPath();
     ctx.moveTo(0, (i / 10) * H);
     ctx.lineTo(W, (i / 10) * H);
-    ctx.stroke();
   }
+  ctx.stroke();
 
+  // Border
   ctx.strokeStyle = "rgba(var(--accent-rgb),0.18)";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 4;
   ctx.strokeRect(2, 2, W - 4, H - 4);
 
   const snap = currSnap ?? prevSnap;
   if (!snap) {
     ctx.fillStyle = "rgba(var(--accent-rgb),0.15)";
     ctx.beginPath();
-    ctx.arc(W / 2, H / 2, 16, 0, Math.PI * 2);
+    ctx.arc(W / 2, H / 2, 32, 0, TWO_PI);
     ctx.fill();
     return;
   }
 
-  snap.projectiles?.forEach((curr) => {
-    if (!curr.position) return;
-
-    let rx: number;
-    let ry: number;
-
-    if (curr.velocity) {
-      rx = scaleX(curr.position.x + curr.velocity.x * t);
-      ry = scaleY(curr.position.y + curr.velocity.y * t);
-    } else {
-      const prev = prevSnap?.projectiles?.find(
-        (p) => p.id && curr.id ? p.id === curr.id : p.ownerId === curr.ownerId
-      );
-      if (prev?.position) {
-        rx = lerp(scaleX(prev.position.x), scaleX(curr.position.x), t);
-        ry = lerp(scaleY(prev.position.y), scaleY(curr.position.y), t);
-      } else {
-        rx = scaleX(curr.position.x);
-        ry = scaleY(curr.position.y);
-      }
-    }
-
+  // Draw Projectiles (Batched)
+  if (snap.projectiles?.length) {
     ctx.beginPath();
-    ctx.arc(rx, ry, 3, 0, Math.PI * 2);
+    snap.projectiles.forEach((curr) => {
+      if (!curr.position) return;
+      let rx: number, ry: number;
+
+      if (curr.velocity) {
+        rx = curr.position.x + curr.velocity.x * t;
+        ry = curr.position.y + curr.velocity.y * t;
+      } else {
+        const prev = prevSnap?.projectiles?.find(
+          (p) => (p.id && curr.id ? p.id === curr.id : p.ownerId === curr.ownerId)
+        );
+        if (prev?.position) {
+          rx = lerp(prev.position.x, curr.position.x, t);
+          ry = lerp(prev.position.y, curr.position.y, t);
+        } else {
+          rx = curr.position.x;
+          ry = curr.position.y;
+        }
+      }
+      ctx.moveTo(rx, ry);
+      ctx.arc(rx, ry, 5, 0, TWO_PI);
+    });
     ctx.fillStyle = "#22d3ee";
     ctx.shadowColor = "#22d3ee";
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 12;
     ctx.fill();
     ctx.shadowBlur = 0;
-  });
+  }
 
+  // Draw Robots
   snap.robots?.forEach((curr, idx) => {
     if (!curr.position) return;
 
     const prev = prevSnap?.robots?.find((r) => r.id === curr.id);
 
-    const rx = prev
-      ? lerp(scaleX(prev.position.x), scaleX(curr.position.x), t)
-      : scaleX(curr.position.x);
-    const ry = prev
-      ? lerp(scaleY(prev.position.y), scaleY(curr.position.y), t)
-      : scaleY(curr.position.y);
-    const rotation =
-      prev?.rotation !== undefined && curr.rotation !== undefined
-        ? lerpAngle(prev.rotation, curr.rotation, t)
-        : curr.rotation;
+    const rx = prev ? lerp(prev.position.x, curr.position.x, t) : curr.position.x;
+    const ry = prev ? lerp(prev.position.y, curr.position.y, t) : curr.position.y;
+    const rotation = prev?.rotation !== undefined && curr.rotation !== undefined
+      ? lerpAngle(prev.rotation, curr.rotation, t)
+      : curr.rotation;
 
     const color = curr.color || getColorForId(idx);
-    const radius = 12;
+    const radius = 24;
 
     const targetHealth = Math.max(0, curr.health);
     const prevSmoothed = smoothedHealth.get(curr.id) ?? targetHealth;
     const newSmoothed = lerp(prevSmoothed, targetHealth, HEALTH_LERP);
     smoothedHealth.set(curr.id, newSmoothed);
 
+    // Health Ring
     if (newSmoothed > 0) {
       const fraction = Math.max(0, Math.min(1, newSmoothed / MAX_HEALTH));
       const startAngle = -Math.PI / 2;
-      const endAngle = startAngle + fraction * Math.PI * 2;
+      const endAngle = startAngle + fraction * TWO_PI;
       ctx.beginPath();
-      ctx.arc(rx, ry, radius + 4, startAngle, endAngle);
+      ctx.arc(rx, ry, radius + 8, startAngle, endAngle);
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 4;
       ctx.shadowColor = color;
-      ctx.shadowBlur = 8;
+      ctx.shadowBlur = 12;
       ctx.stroke();
       ctx.shadowBlur = 0;
     }
 
+    // Body
     ctx.beginPath();
-    ctx.arc(rx, ry, radius, 0, Math.PI * 2);
+    ctx.arc(rx, ry, radius, 0, TWO_PI);
     ctx.fillStyle = `${color}30`;
     ctx.fill();
     ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 3;
     ctx.stroke();
 
+    // Direction indicator
     if (rotation !== undefined) {
-      const dotX = rx + Math.cos(rotation) * (radius - 3);
-      const dotY = ry + Math.sin(rotation) * (radius - 3);
+      const dotX = rx + Math.cos(rotation) * (radius - 6);
+      const dotY = ry + Math.sin(rotation) * (radius - 6);
       ctx.beginPath();
-      ctx.arc(dotX, dotY, 2.5, 0, Math.PI * 2);
+      ctx.arc(dotX, dotY, 4, 0, TWO_PI);
       ctx.fillStyle = color;
       ctx.fill();
     }
 
+    // ID Text
     const shortId = curr.id.startsWith("bot") ? "BOT" : curr.id.slice(0, 5);
     ctx.fillStyle = color;
-    ctx.font = "bold 7px monospace";
+    ctx.font = "bold 14px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(shortId, rx, ry);

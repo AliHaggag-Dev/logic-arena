@@ -1,43 +1,23 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { Snapshot } from "../types";
-import { drawFrame, CANVAS_W, CANVAS_H } from "./canvasRenderer";
+import React, { forwardRef } from "react";
+import { CANVAS_W, CANVAS_H } from "./canvasRenderer";
 
-export { CANVAS_W, CANVAS_H };
-
-interface Props {
-  prevSnapshot?: Snapshot;
-  currSnapshot?: Snapshot;
-  lerpT?: number;
-}
-
-export function ReplayCanvas({ prevSnapshot, currSnapshot, lerpT = 0 }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const smoothedHealthRef = useRef<Map<string, number>>(new Map());
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    drawFrame(
-      ctx,
-      prevSnapshot,
-      currSnapshot,
-      lerpT,
-      smoothedHealthRef.current
-    );
-  }, [prevSnapshot, currSnapshot, lerpT]);
-
+export const ReplayCanvas = forwardRef<HTMLCanvasElement>((props, ref) => {
   return (
-    <div className="relative w-full max-w-[420px] rounded-[10px] overflow-hidden border border-accent/20 shadow-[0_0_40px_rgba(var(--accent-rgb),0.06),0_0_0_1px_rgba(var(--accent-rgb),0.05)]">
+    <div className="relative w-full max-w-[800px] rounded-[14px] overflow-hidden border border-accent/20 shadow-[0_0_40px_rgba(var(--accent-rgb),0.06),0_0_0_1px_rgba(var(--accent-rgb),0.05)] bg-[#030712]">
+      {/* 
+        We render the canvas at a high internal resolution (800x600) 
+        and use CSS to scale it responsively to its container.
+      */}
       <canvas
-        ref={canvasRef}
+        ref={ref}
         width={CANVAS_W}
         height={CANVAS_H}
         className="w-full h-auto block"
+        style={{ aspectRatio: `${CANVAS_W}/${CANVAS_H}` }}
       />
+      
       {/* Corner accents */}
       {[
         { top: 0, left: 0, borderTop: true, borderLeft: true },
@@ -53,21 +33,17 @@ export function ReplayCanvas({ prevSnapshot, currSnapshot, lerpT = 0 }: Props) {
             bottom: pos.bottom !== undefined ? 0 : undefined,
             left: pos.left !== undefined ? 0 : undefined,
             right: pos.right !== undefined ? 0 : undefined,
-            borderTop: pos.borderTop
-              ? "2px solid rgba(var(--accent-rgb),0.5)"
-              : "none",
-            borderBottom: pos.borderBottom
-              ? "2px solid rgba(var(--accent-rgb),0.5)"
-              : "none",
-            borderLeft: pos.borderLeft
-              ? "2px solid rgba(var(--accent-rgb),0.5)"
-              : "none",
-            borderRight: pos.borderRight
-              ? "2px solid rgba(var(--accent-rgb),0.5)"
-              : "none",
+            borderTop: pos.borderTop ? "2px solid rgba(var(--accent-rgb),0.5)" : "none",
+            borderBottom: pos.borderBottom ? "2px solid rgba(var(--accent-rgb),0.5)" : "none",
+            borderLeft: pos.borderLeft ? "2px solid rgba(var(--accent-rgb),0.5)" : "none",
+            borderRight: pos.borderRight ? "2px solid rgba(var(--accent-rgb),0.5)" : "none",
           }}
         />
       ))}
     </div>
   );
-}
+});
+
+ReplayCanvas.displayName = "ReplayCanvas";
+
+export { CANVAS_W };
