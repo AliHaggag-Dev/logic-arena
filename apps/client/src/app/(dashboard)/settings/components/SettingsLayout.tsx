@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Lock, User, Shield, Palette, Settings, Bell } from "lucide-react";
+import { ChevronDown, Lock, User, Shield, Palette, Settings, Bell, LucideIcon } from "lucide-react";
 import { SectionId, SECTIONS } from "./Shared";
 
 interface SettingsLayoutProps {
@@ -13,7 +13,7 @@ interface SettingsLayoutProps {
   renderSection: (id: SectionId) => React.ReactNode;
 }
 
-const SECTION_ICONS: Record<SectionId, React.ElementType> = {
+const SECTION_ICONS: Record<SectionId, LucideIcon> = {
   identity: User,
   security: Shield,
   appearance: Palette,
