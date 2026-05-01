@@ -15,8 +15,7 @@ interface Props {
   isGuest?: boolean;
 }
 
-export function LobbyMatchCard({ match, index, onJoin, isGuest }: Props) {
-  const [hoveredBtn, setHoveredBtn] = useState(false);
+export const LobbyMatchCard = React.memo(function LobbyMatchCard({ match, index, onJoin, isGuest }: Props) {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const DesktopCard = (
@@ -37,13 +36,8 @@ export function LobbyMatchCard({ match, index, onJoin, isGuest }: Props) {
         type="button"
         aria-label="Join match"
         onClick={() => onJoin(match.matchId)}
-        onMouseEnter={() => !isGuest && setHoveredBtn(true)}
-        onMouseLeave={() => setHoveredBtn(false)}
         disabled={isGuest}
-        className={`px-8 py-2.5 rounded-md text-[10px] font-black tracking-[0.18em] font-mono transition-all duration-200 border disabled:opacity-50 disabled:cursor-not-allowed ${hoveredBtn && !isGuest
-          ? "bg-accent/20 border-accent/70 text-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)]"
-          : "bg-accent/5 border-accent/30 text-accent/70"
-          }`}
+        className="px-8 py-2.5 rounded-md text-[10px] font-black tracking-[0.18em] font-mono transition-all duration-200 border disabled:opacity-50 disabled:cursor-not-allowed bg-accent/5 border-accent/30 text-accent/70 hover:bg-accent/20 hover:border-accent/70 hover:text-accent hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)]"
       >
         {isGuest ? "🔒 LOCKED" : "JOIN"}
       </button>
@@ -59,9 +53,11 @@ export function LobbyMatchCard({ match, index, onJoin, isGuest }: Props) {
         <h3 className="text-[14px] font-black tracking-[0.14em] text-accent">
           {match.hostName}
         </h3>
-        <p className="text-[9px] text-accent/70 tracking-[0.15em] uppercase">
-          ID: {match.matchId.slice(0, 8)}... <span className="opacity-50 mx-1">|</span> {new Date(match.createdAt).toLocaleTimeString()}
-        </p>
+        <div className="flex items-center gap-1 text-[9px] text-accent/70 tracking-[0.15em] uppercase w-full">
+          <span>ID: </span>
+          <span className="truncate flex-1 max-w-[80px]">{match.matchId}</span>
+          <span className="opacity-50 mx-1">|</span> {new Date(match.createdAt).toLocaleTimeString()}
+        </div>
       </div>
       <div className="w-full mt-1 border-t border-accent/10 pt-3 pb-3">
         <button
@@ -78,4 +74,4 @@ export function LobbyMatchCard({ match, index, onJoin, isGuest }: Props) {
   );
 
   return isMobile ? MobileCard : DesktopCard;
-}
+});

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -7,13 +8,11 @@ interface Props {
 
 export function NoScriptModal({ onClose }: Props) {
   const router = useRouter();
-  const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-card/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease]">
       <div className="w-full max-w-md bg-bg-primary border border-red-500/30 rounded-xl p-6 shadow-[0_0_40px_rgba(var(--color-red-500),0.15)] flex flex-col items-center text-center">
-        <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/40 flex items-center justify-center mb-4 text-red-500 text-xl pb-1 shadow-[0_0_15px_rgba(var(--color-red-500),0.2)]">
-          !
+        <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/40 flex items-center justify-center mb-4 pb-1 shadow-[0_0_15px_rgba(var(--color-red-500),0.2)]">
+          <AlertTriangle className="w-6 h-6 text-red-500 mx-auto" />
         </div>
         <h3 className="text-[14px] font-black tracking-[0.2em] text-red-500 mb-2 uppercase drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.4)]">
           No Script Selected
@@ -24,25 +23,17 @@ export function NoScriptModal({ onClose }: Props) {
 
         <div className="flex gap-3 w-full">
           <button
+            type="button"
             onClick={onClose}
-            onMouseEnter={() => setHoveredBtn("close")}
-            onMouseLeave={() => setHoveredBtn(null)}
-            className={`flex-1 py-3 rounded-md text-[10px] font-bold tracking-[0.2em] font-mono transition-all duration-200 border ${hoveredBtn === "close"
-                ? "bg-text-primary/10 text-text-primary border-text-primary/30"
-                : "bg-text-primary/5 text-text-secondary border-text-primary/10"
-              }`}
+            className="flex-1 py-3 rounded-md text-[10px] font-bold tracking-[0.2em] font-mono transition-all duration-200 border bg-text-primary/5 text-text-secondary border-text-primary/10 hover:bg-text-primary/10 hover:text-text-primary hover:border-text-primary/30"
           >
             DISMISS
           </button>
 
           <button
+            type="button"
             onClick={() => router.push("/dashboard")}
-            onMouseEnter={() => setHoveredBtn("dash")}
-            onMouseLeave={() => setHoveredBtn(null)}
-            className={`flex-[1.5] py-3 rounded-md text-[10px] font-black tracking-[0.2em] font-mono transition-all duration-200 border ${hoveredBtn === "dash"
-                ? "bg-accent/20 text-accent border-accent/70 shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)]"
-                : "bg-accent/10 text-accent/70 border-accent/30"
-              }`}
+            className="flex-[1.5] py-3 rounded-md text-[10px] font-black tracking-[0.2em] font-mono transition-all duration-200 border bg-accent/10 text-accent/70 border-accent/30 hover:bg-accent/20 hover:text-accent hover:border-accent/70 hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)]"
           >
             [←] DASHBOARD
           </button>

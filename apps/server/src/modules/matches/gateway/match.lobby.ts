@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import { PrismaService } from '../../../common/prisma.service';
+import { RedisService } from '../../../common/redis.service';
 import { MatchState } from './match.state';
 import { AuthenticatedSocket } from './types';
 import { MatchEngine } from '../match.engine';
@@ -10,6 +11,7 @@ export class MatchLobbyManager {
     private state: MatchState,
     private server: Server,
     private prisma: PrismaService,
+    private redis: RedisService,
   ) { }
 
   async handleJoinMatch(
@@ -137,6 +139,24 @@ export class MatchLobbyManager {
     data: { scriptId: string },
   ) {
     if (!client.userId) return;
+
+    // Check if user already has an active WAITING match
+    for (const match of this.state.lobbyMatches.values()) {
+      if (match.hostId === client.userId) {
+        client.emit('createMatchError', { message: 'You already have an active match in the lobby.' });
+        return;
+      }
+    }
+
+    // Rate limiting: max 3 matches per minute per userId
+    const rateLimitKey = `lobby:create:${client.userId}`;
+    const currentCount = await this.redis.incr(rateLimitKey, 60);
+
+    if (currentCount > 3) {
+      client.emit('createMatchError', { message: 'Rate limit exceeded. Please wait before creating another match.' });
+      return;
+    }
+
     const user = await this.prisma.user.findUnique({ where: { id: client.userId } });
     const matchId = crypto.randomUUID();
 

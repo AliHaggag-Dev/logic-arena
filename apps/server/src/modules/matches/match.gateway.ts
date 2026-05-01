@@ -42,7 +42,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   onModuleInit() {
     // Initialize the separated managers
-    this.lobbyManager = new MatchLobbyManager(this.state, this.server, this.prisma);
+    this.lobbyManager = new MatchLobbyManager(this.state, this.server, this.prisma, this.redisService);
     this.socialManager = new MatchSocialManager(this.server, this.prisma, this.redisService);
     this.loopManager = new MatchLoopManager(this.state, this.server, this.prisma);
 
@@ -85,16 +85,24 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Clean up lobby if they hosted one
-    let lobbyChanged = false;
-    for (const [id, lobby] of this.state.lobbyMatches.entries()) {
-      if (lobby.hostId === client.userId) {
-        this.state.lobbyMatches.delete(id);
-        lobbyChanged = true;
+    // We delay this by 2 seconds. If they navigated to the arena, they will reconnect
+    // and `isOnline` will be true again, preventing the lobby match from disappearing.
+    setTimeout(async () => {
+      if (!client.userId) return;
+      const isOnline = await this.redisService.get(`user:online:${client.userId}`);
+      if (!isOnline) {
+        let lobbyChanged = false;
+        for (const [id, lobby] of this.state.lobbyMatches.entries()) {
+          if (lobby.hostId === client.userId) {
+            this.state.lobbyMatches.delete(id);
+            lobbyChanged = true;
+          }
+        }
+        if (lobbyChanged) {
+          this.server.emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
+        }
       }
-    }
-    if (lobbyChanged) {
-      this.server.emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
-    }
+    }, 2000);
 
     // Clean up match if no players are left
     if (client.matchId && this.state.matches.has(client.matchId)) {
@@ -107,6 +115,11 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (match) {
           match.stop();
           this.state.cleanupMatch(matchId);
+          
+          if (this.state.lobbyMatches.has(matchId)) {
+            this.state.lobbyMatches.delete(matchId);
+            this.server.emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
+          }
         }
       }
     }

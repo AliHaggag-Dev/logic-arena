@@ -17,6 +17,7 @@ export function ErrorPanel({ onRetry }: Props) {
         </p>
       </div>
       <button
+        type="button"
         onClick={onRetry}
         className="px-6 py-2.5 rounded-md text-[10px] font-black tracking-[0.25em] font-mono cursor-pointer transition-all duration-200 bg-red-500/10 border border-red-500/30 text-red-500/80 hover:bg-red-500/20 hover:border-red-500/60 hover:text-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]"
       >

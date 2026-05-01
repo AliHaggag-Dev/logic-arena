@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { LobbyMatch } from "../components/LobbyMatchCard";
@@ -23,8 +23,33 @@ export function useLobbySocket(): UseLobbySocketReturn {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
   const [retryKey, setRetryKey] = useState(0);
 
-  const socket = useMemo(() => {
-    if (typeof window === "undefined") return io(SOCKET_URL, { autoConnect: false });
+  const socketRef = useRef<Socket | null>(null);
+  
+  if (!socketRef.current && typeof window !== "undefined") {
+    socketRef.current = io(SOCKET_URL, {
+      autoConnect: false,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+    });
+  }
+
+  const scriptIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    scriptIdRef.current = localStorage.getItem("selectedScriptId");
+    
+    const handleStorage = () => {
+      scriptIdRef.current = localStorage.getItem("selectedScriptId");
+    };
+    
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
 
     const token =
       localStorage.getItem("token") ||
@@ -32,25 +57,16 @@ export function useLobbySocket(): UseLobbySocketReturn {
       null;
 
     if (!token) {
-      // Token not yet available — surface an error immediately instead of
-      // firing a doomed handshake that the server will reject.
       setConnectionStatus("error");
-      return io(SOCKET_URL, { autoConnect: false });
+      return;
     }
 
-    return io(SOCKET_URL, {
-      autoConnect: false,
-      auth: { token },
-      reconnectionAttempts: 5,
-      reconnectionDelay: 2000,
-    });
-  }, [retryKey]);
+    socket.auth = { token };
 
-  useEffect(() => {
-    const storedScriptId = localStorage.getItem("selectedScriptId");
-
-    socket.connect();
     setConnectionStatus("connecting");
+    if (!socket.connected) {
+      socket.connect();
+    }
 
     const onConnect = () => {
       console.log("Connected to lobby socket");
@@ -72,8 +88,8 @@ export function useLobbySocket(): UseLobbySocketReturn {
     };
 
     const onMatchCreated = (data: { matchId: string }) => {
-      if (storedScriptId) {
-        router.push(`/arena?scriptId=${storedScriptId}&matchId=${data.matchId}`);
+      if (scriptIdRef.current) {
+        router.push(`/arena?scriptId=${scriptIdRef.current}&matchId=${data.matchId}`);
       }
     };
 
@@ -89,9 +105,15 @@ export function useLobbySocket(): UseLobbySocketReturn {
       socket.off("lobbyList", onLobbyList);
       socket.off("lobbyUpdated", onLobbyUpdated);
       socket.off("matchCreated", onMatchCreated);
-      socket.disconnect();
     };
-  }, [socket, router]);
+  }, [retryKey, router]);
 
-  return { matches, connectionStatus, retryKey, setRetryKey, socket };
+  useEffect(() => {
+    const socket = socketRef.current;
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, []);
+
+  return { matches, connectionStatus, retryKey, setRetryKey, socket: socketRef.current as Socket };
 }

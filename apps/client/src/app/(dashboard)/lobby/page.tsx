@@ -14,7 +14,6 @@ import { useMediaQuery } from "../../../hooks/useMediaQuery";
 export default function LobbyPage() {
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [hoveredBtn, setHoveredBtn] = useState(false);
   const [showScriptWarning, setShowScriptWarning] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
 
@@ -38,20 +37,18 @@ export default function LobbyPage() {
       <div className="border-b border-accent/10 pb-7 mb-10 flex justify-between items-end flex-wrap gap-5">
         <div>
           <p className="text-[10px] tracking-[0.4em] text-accent/30 mb-2.5 uppercase">// LIVE</p>
-          <h1 className="m-0 text-[clamp(24px,5vw,40px)] font-black tracking-[0.2em] text-accent" style={{ textShadow: "0 0 12px rgba(var(--accent-rgb),0.7), 0 0 30px rgba(var(--accent-rgb),0.3)" }}>
+          <h1 className="m-0 text-[clamp(24px,5vw,40px)] font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)]">
             MULTIPLAYER_LOBBY
           </h1>
           <ConnectionStatusBar connectionStatus={connectionStatus} isMobile={false} />
         </div>
         <button
+          type="button"
           onClick={handleDeployMatch}
-          onMouseEnter={() => setHoveredBtn(true)}
-          onMouseLeave={() => setHoveredBtn(false)}
           disabled={isGuest}
-          className={`px-7 py-3 rounded-md text-[10px] font-black tracking-[0.25em] font-mono transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${hoveredBtn && !isGuest
-            ? "bg-accent/20 border border-accent/70 text-accent shadow-[0_0_20px_rgba(var(--accent-rgb),0.2)]"
-            : "bg-accent/10 border border-accent/30 text-accent/70"
-            }`}
+          className={`px-7 py-3 rounded-md text-[10px] font-black tracking-[0.25em] font-mono transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed 
+          bg-accent/10 border border-accent/30 text-accent/70 hover:bg-accent/20 hover:border-accent/70 hover:text-accent hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.2)]
+          ${isGuest ? 'text-accent/40 cursor-not-allowed' : 'cursor-pointer'}`}
         >
           {isGuest ? "LOGIN TO DEPLOY" : "[+] CREATE MATCH"}
         </button>
@@ -82,7 +79,8 @@ export default function LobbyPage() {
           <div key={i} className="h-[100px] rounded-xl border border-accent/10 bg-accent/5 animate-[shimmer_1.5s_infinite]" />
         )) : connectionStatus === "error" ? <ErrorPanel onRetry={() => setRetryKey((k) => k + 1)} /> : matches.length === 0 ? (
           <div className="text-center p-8 text-accent/30 text-[10px] tracking-[0.2em] border border-accent/10 rounded-xl bg-accent/5 uppercase">
-            No active matches.<br />Deploy a new match to begin.
+            NO ACTIVE MATCHES FOUND.<br />
+            <span className="text-[9px] text-accent/20 mt-2 block">Create a new match to challenge other players.</span>
           </div>
         ) : matches.map((match, idx) => <LobbyMatchCard key={match.matchId} match={match} index={idx} onJoin={handleJoinMatch} isGuest={isGuest} />)}
       </div>
@@ -91,10 +89,6 @@ export default function LobbyPage() {
 
   return (
     <>
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-      `}</style>
       <div className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile ? "pb-[calc(80px+env(safe-area-inset-bottom))]" : "pb-12"}`}>
         <div className="fixed inset-0 pointer-events-none z-0" style={{ backgroundImage: "linear-gradient(rgba(var(--accent-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.06) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
         {isMobile ? MobileLayout : DesktopLayout}
