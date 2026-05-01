@@ -1,7 +1,8 @@
 import React from "react";
-import { Lock, Check, Play, Hexagon } from 'lucide-react';
+import { Lock, Check, Play, Hexagon, Trophy } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { LevelInfo, DIFF_COLORS } from "../types";
+import { LevelInfo } from "../types";
+import { DIFFICULTY_CONFIG } from "../constants/difficulty.constants";
 import { SkeletonNode } from "./CampaignSkeletons";
 
 interface CampaignDesktopLayoutProps {
@@ -12,7 +13,10 @@ interface CampaignDesktopLayoutProps {
   isGuest?: boolean;
 }
 
+export const CAMPAIGN_LEVEL_COUNT = 10;
+
 export function CampaignDesktopLayout({ levels, loading, currentLevel, router, isGuest }: CampaignDesktopLayoutProps) {
+  const completedCount = React.useMemo(() => levels.filter((l) => l.completed).length, [levels]);
   return (
     <div className="max-w-[860px] mx-auto px-6 pt-16 pb-[120px] drop-shadow-xl relative z-10 animate-[fadeIn_0.35s_ease]">
       {/* Header */}
@@ -31,11 +35,11 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
             <div className="flex-1 h-[3px] bg-accent/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-accent rounded-full transition-all duration-700"
-                style={{ width: `${(levels.filter((l) => l.completed).length / 10) * 100}%`, boxShadow: "0 0 8px rgba(var(--accent-rgb),0.6)" }}
+                style={{ width: `${(completedCount / CAMPAIGN_LEVEL_COUNT) * 100}%`, boxShadow: "0 0 8px rgba(var(--accent-rgb),0.6)" }}
               />
             </div>
             <span className="text-[10px] tracking-[0.1em] text-accent/60 font-bold">
-              {levels.filter((l) => l.completed).length}/10
+              {completedCount}/{CAMPAIGN_LEVEL_COUNT}
             </span>
           </div>
         )}
@@ -44,13 +48,13 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
       {/* Level Map */}
       <div className="flex flex-col gap-0">
         {loading
-          ? Array.from({ length: 10 }).map((_, i) => (
+          ? Array.from({ length: CAMPAIGN_LEVEL_COUNT }).map((_, i) => (
             <div
               key={i}
               className={`flex mb-10 justify-center ${i % 2 === 0 ? "justify-start" : "justify-end"} relative`}
             >
-              {i < 9 && (
-                <div className={`absolute -translate-x-1/2 translate-x-0 ${i % 2 === 0 ? "left-[135px]" : "left-auto right-[135px]"} bottom-0 translate-y-full w-[1px] h-10 z-0 bg-accent/10`} />
+              {i < CAMPAIGN_LEVEL_COUNT - 1 && (
+                <div className={`absolute -translate-x-1/2 translate-x-0 ${i % 2 === 0 ? "left-[140px]" : "left-auto right-[140px]"} bottom-0 translate-y-full w-[1px] h-10 z-0 bg-accent/10`} />
               )}
               <div className="relative z-10 w-auto flex justify-center">
                 <SkeletonNode />
@@ -68,16 +72,14 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
           ) : levels.map((level, idx) => {
             const isLeft = idx % 2 === 0;
             const isCurrent = !isGuest && currentLevel?.id === level.id;
-            const dc = DIFF_COLORS[level.difficulty];
-            const lockedByGuest = isGuest;
-
+            const dc = DIFFICULTY_CONFIG[level.difficulty];
             return (
               <div key={level.id} className="relative">
                 {idx < levels.length - 1 && (
                   <div
-                    className={`absolute -translate-x-1/2 translate-x-0 ${isLeft ? "left-[135px]" : "left-auto right-[135px]"} bottom-0 translate-y-full w-[1px] h-10 z-0`}
+                    className={`absolute -translate-x-1/2 translate-x-0 ${isLeft ? "left-[140px]" : "left-auto right-[140px]"} bottom-0 translate-y-full w-[1px] h-10 z-0`}
                     style={{
-                      background: level.unlocked && !lockedByGuest
+                      background: level.unlocked && !isGuest
                         ? "linear-gradient(to bottom, rgba(var(--accent-rgb),0.6), rgba(var(--accent-rgb),0.15))"
                         : "rgba(var(--accent-rgb),0.15)",
                     }}
@@ -86,16 +88,17 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
 
                 <div className={`flex mb-10 justify-center ${isLeft ? "justify-start" : "justify-end"} relative z-10`}>
                   <button
-                    disabled={!level.unlocked || lockedByGuest}
-                    onClick={() => level.unlocked && !lockedByGuest && router.push(`/campaign/${level.id}`)}
-                    className={`level-node w-[280px] max-w-none text-left p-5 rounded-xl border font-mono relative ${level.unlocked && !lockedByGuest
+                    type="button"
+                    disabled={!level.unlocked || isGuest}
+                    onClick={() => level.unlocked && !isGuest && router.push(`/campaign/${level.id}`)}
+                    className={`level-node w-[280px] max-w-none text-left p-5 rounded-xl border font-mono relative ${level.unlocked && !isGuest
                       ? "cursor-pointer"
                       : "cursor-not-allowed opacity-50 backdrop-blur-sm"
                       } ${isCurrent
                         ? "bg-accent/10 border-accent/60"
                         : level.completed
                           ? "bg-accent/[0.04] border-accent/20"
-                          : level.unlocked && !lockedByGuest
+                          : level.unlocked && !isGuest
                             ? "bg-bg-primary border-accent/25 hover:bg-accent/[0.06] hover:border-accent/50"
                             : "bg-bg-primary border-accent/10"
                       }`}
@@ -112,16 +115,17 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
                         LEVEL {String(level.id).padStart(2, "0")}
                       </span>
                       <span className="text-[14px] flex items-center justify-center">
-                        {(!level.unlocked || lockedByGuest) ? <Lock className="w-3.5 h-3.5 text-accent/30" /> : level.completed ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : isCurrent ? <Play className="w-3.5 h-3.5 text-accent animate-pulse" /> : <Hexagon className="w-3.5 h-3.5 text-accent/50" />}
+                        {(!level.unlocked || isGuest) ? <Lock className="w-3.5 h-3.5 text-accent/30" /> : level.completed ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : isCurrent ? <Play className="w-3.5 h-3.5 text-accent animate-pulse" /> : <Hexagon className="w-3.5 h-3.5 text-accent/50" />}
                       </span>
                     </div>
 
                     <div
                       className={`text-[13px] font-black tracking-[0.18em] mb-2 leading-tight ${level.completed ? "text-accent/50" : "text-accent"
                         }`}
-                      style={level.unlocked && !level.completed && !lockedByGuest ? { textShadow: "0 0 8px rgba(var(--accent-rgb),0.5)" } : {}}
+                      style={level.unlocked && !level.completed && !isGuest ? { textShadow: "0 0 8px rgba(var(--accent-rgb),0.5)" } : {}}
                     >
                       {level.name}
+                      {level.completed && <span className="block text-[8px] text-accent/30 mt-1 uppercase tracking-[0.2em] font-bold">REPLAY (NO REWARD)</span>}
                     </div>
 
                     <p className="text-[10px] text-accent/35 tracking-[0.08em] mb-3 leading-relaxed">
@@ -149,9 +153,9 @@ export function CampaignDesktopLayout({ levels, loading, currentLevel, router, i
           })}
       </div>
 
-      {!loading && !isGuest && levels.length > 0 && levels.every((l) => l.completed) && (
+      {!loading && !isGuest && levels.length > 0 && completedCount === CAMPAIGN_LEVEL_COUNT && (
         <div className="mt-6 text-center p-8 border border-accent/20 rounded-xl bg-accent/5">
-          <div className="text-3xl mb-3">🏆</div>
+          <Trophy className="w-12 h-12 text-yellow-400 mx-auto" />
           <p className="text-accent font-black tracking-[0.2em] text-[13px]">CAMPAIGN COMPLETE</p>
           <p className="text-accent/70 text-[10px] mt-1 tracking-[0.1em]">All enemy bots defeated.</p>
         </div>

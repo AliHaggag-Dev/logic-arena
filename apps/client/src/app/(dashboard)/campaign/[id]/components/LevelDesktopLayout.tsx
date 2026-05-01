@@ -1,7 +1,8 @@
 import React from "react";
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Swords, Loader2 } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { LevelDetail, DIFF_CONFIG, ModalState } from "../types";
+import { LevelDetail, ModalState } from "../types";
+import { DIFFICULTY_CONFIG } from "../../constants/difficulty.constants";
 
 interface LevelDesktopLayoutProps {
   level: LevelDetail;
@@ -9,17 +10,18 @@ interface LevelDesktopLayoutProps {
   setScript: (s: string) => void;
   modal: ModalState;
   handleFight: () => void;
-  router: any;
+  router: AppRouterInstance;
 }
 
 export function LevelDesktopLayout({ level, script, setScript, modal, handleFight, router }: LevelDesktopLayoutProps) {
-  const dc = DIFF_CONFIG[level.difficulty];
+  const dc = DIFFICULTY_CONFIG[level.difficulty];
 
   return (
     <div className="max-w-[1100px] mx-auto px-6 pt-10 pb-[120px] relative z-10 animate-[fadeIn_0.35s_ease]">
       <div className="flex flex-row items-end justify-between gap-4 mb-10 pb-6 border-b border-accent/20">
         <div className="flex flex-col gap-4">
           <button
+            type="button"
             onClick={() => router.push("/campaign")}
             className="w-max text-[10px] tracking-[0.25em] text-accent/70 hover:text-accent border border-accent/15 hover:border-accent/40 rounded px-3 py-1 transition-all duration-200 cursor-pointer bg-transparent uppercase"
           >
@@ -102,6 +104,8 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
           </div>
 
           <textarea
+            aria-label="AliScript code editor"
+            id="script-editor"
             value={script}
             onChange={(e) => setScript(e.target.value)}
             placeholder={"// Write your AliScript here\n// Example:\nSET x = SCAN\nIF x > 0\n  FIRE\nELSE\n  MOVE RIGHT\nEND"}
@@ -111,16 +115,25 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
           />
 
           <button
+            type="button"
             onClick={handleFight}
             disabled={!script.trim() || modal === "loading"}
-            className={`w-full py-4 rounded-xl text-[11px] font-black tracking-[0.3em] font-mono cursor-pointer transition-all duration-200 border ${modal === "loading"
+            className={`w-full py-4 rounded-xl text-[11px] font-black tracking-[0.3em] font-mono flex items-center justify-center gap-2 transition-all duration-200 border ${modal === "loading"
               ? "bg-accent/5 border-accent/20 text-accent/70 cursor-not-allowed"
               : !script.trim()
-                ? "bg-accent/5 border-accent/15 text-accent/25 cursor-not-allowed"
-                : "bg-accent/10 border-accent/40 text-accent hover:bg-accent/20 hover:border-accent/70 hover:drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.5)]"
+                ? "bg-accent/5 border-accent/15 text-accent/25 cursor-default"
+                : "bg-accent/10 border-accent/40 text-accent cursor-pointer hover:bg-accent/20 hover:border-accent/70 hover:drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.5)]"
               }`}
           >
-            {modal === "loading" ? "⟳ INITIALIZING COMBAT..." : "▶ DEPLOY & FIGHT"}
+            {modal === "loading" ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> INITIALIZING COMBAT...
+              </>
+            ) : (
+              <>
+                <Swords className="w-4 h-4" /> DEPLOY & FIGHT
+              </>
+            )}
           </button>
         </div>
       </div>

@@ -32,7 +32,19 @@ export class CooldownManager {
     }
 
     shouldEmitAction(robotId: string, actionCommand: string): boolean {
-        return actionCommand !== this.lastExecutedAction.get(robotId);
+        const lastAction = this.lastExecutedAction.get(robotId);
+        if (actionCommand !== lastAction) {
+            return true;
+        }
+        
+        // If the action is identical, still emit it periodically (e.g. every 1000ms)
+        // so the UI shows a "heartbeat" and the user knows the script isn't frozen.
+        const lastEmit = this.lastLogicEmitTime.get(robotId) ?? 0;
+        if (Date.now() - lastEmit >= 1000) {
+            return true;
+        }
+        
+        return false;
     }
 
     shouldEmitQuery(robotId: string, queryName: string): boolean {

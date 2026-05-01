@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { CAMPAIGN_LEVELS } from './campaign.data';
 
+export const CAMPAIGN_LEVEL_COUNT = 10;
+
+/** sentinel value meaning "all levels cleared" */
+const CAMPAIGN_COMPLETE_SENTINEL = CAMPAIGN_LEVEL_COUNT + 1;
+
 @Injectable()
 export class CampaignService {
   constructor(private readonly prisma: PrismaService) {}
@@ -21,6 +26,9 @@ export class CampaignService {
   }
 
   async getLevel(userId: string, levelId: number) {
+    if (!Number.isInteger(levelId) || levelId < 1 || levelId > CAMPAIGN_LEVEL_COUNT) {
+      throw new Error('LEVEL_NOT_FOUND');
+    }
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const currentLevel = user?.currentLevel ?? 1;
     if (levelId > currentLevel) throw new Error('LEVEL_LOCKED');
@@ -36,7 +44,9 @@ export class CampaignService {
     const level = CAMPAIGN_LEVELS.find((l) => l.id === levelId);
     if (!level) throw new Error('LEVEL_NOT_FOUND');
 
-    const nextLevel = Math.min(levelId + 1, 10);
+    // Advance to sentinel (CAMPAIGN_LEVEL_COUNT + 1) when the last level is beaten
+    // so getLevels can mark every level as completed:true (id < sentinel is always true)
+    const nextLevel = Math.min(levelId + 1, CAMPAIGN_COMPLETE_SENTINEL);
     await this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -47,7 +57,14 @@ export class CampaignService {
     return { nextLevel, rewardRank: level.rewardRank };
   }
 
-  getEnemyScript(levelId: number): string {
+  /** Returns the enemy script only if the user has unlocked that level. */
+  async getEnemyScriptSecure(userId: string, levelId: number): Promise<string> {
+    if (!Number.isInteger(levelId) || levelId < 1 || levelId > CAMPAIGN_LEVEL_COUNT) {
+      throw new Error('LEVEL_NOT_FOUND');
+    }
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const currentLevel = user?.currentLevel ?? 1;
+    if (levelId > currentLevel) throw new Error('LEVEL_LOCKED');
     const level = CAMPAIGN_LEVELS.find((l) => l.id === levelId);
     if (!level) throw new Error('LEVEL_NOT_FOUND');
     return level.enemyScript;
