@@ -192,12 +192,16 @@ export const ScriptCard = React.memo(({
                     <h3 className="text-lg font-bold text-accent tracking-wider group-hover:text-accent transition-colors wrap-break-word">
                         {script.title}
                     </h3>
-                    <div className="flex flex-wrap gap-4 text-[10px] text-text-secondary tracking-widest font-bold">
+                    <div className="flex flex-wrap gap-4 text-[10px] text-text-secondary tracking-widest font-bold mb-1">
                         <span>V.{script.version}</span>
                         <span className="hidden sm:inline">|</span>
                         <span>INIT: {mounted ? new Date(script.createdAt).toLocaleDateString() : ""}</span>
                     </div>
                 </div>
+                
+                {/* Separator Line */}
+                <div className="w-full h-px bg-accent/20 mt-3 group-hover:bg-accent/20 transition-colors" />
+                
                 {getActionRow()}
             </div>
         </>

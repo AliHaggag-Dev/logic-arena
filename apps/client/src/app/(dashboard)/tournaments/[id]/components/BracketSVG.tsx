@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Tournament, TMatch } from "../../types";
+import { Trophy } from "lucide-react";
 
 const ROUND_LABELS: Record<number, Record<number, string>> = {
   3: { 1: "QUARTER FINALS", 2: "SEMI FINALS", 3: "GRAND FINAL" },
@@ -227,7 +228,7 @@ export function BracketSVG({ tournament, userId, isMobile }: Props) {
                           {m.player1 ? m.player1.username : "TBD"}
                         </span>
                       </div>
-                      {m.winnerId === m.player1Id && <span className="text-[12px] animate-pulse [text-shadow:0_0_5px_rgba(var(--color-emerald-500),0.5)] shrink-0">🏆</span>}
+                      {m.winnerId === m.player1Id && <Trophy size={14} className="text-emerald-500 animate-pulse drop-shadow-[0_0_5px_rgba(16,185,129,0.5)] shrink-0" />}
                       {m.player1Id === userId && m.winnerId !== m.player1Id && <span className="text-[8px] bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 border border-yellow-500/20">YOU</span>}
                     </div>
 
@@ -247,7 +248,7 @@ export function BracketSVG({ tournament, userId, isMobile }: Props) {
                           {m.player2 ? m.player2.username : "TBD"}
                         </span>
                       </div>
-                      {m.winnerId === m.player2Id && <span className="text-[12px] animate-pulse [text-shadow:0_0_5px_rgba(var(--color-emerald-500),0.5)] shrink-0">🏆</span>}
+                      {m.winnerId === m.player2Id && <Trophy size={14} className="text-emerald-500 animate-pulse drop-shadow-[0_0_5px_rgba(16,185,129,0.5)] shrink-0" />}
                       {m.player2Id === userId && m.winnerId !== m.player2Id && <span className="text-[8px] bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 rounded font-black tracking-widest shrink-0 border border-yellow-500/20">YOU</span>}
                     </div>
                   </div>
@@ -284,8 +285,9 @@ export function BracketSVG({ tournament, userId, isMobile }: Props) {
                   <div className="text-[8px] font-black tracking-[0.3em] text-emerald-500/60 uppercase mb-1.5 relative z-10">
                     CHAMPION
                   </div>
-                  <div className="text-[11px] md:text-[13px] font-black tracking-[0.15em] text-emerald-400 uppercase truncate w-full text-center [text-shadow:0_0_10px_rgba(var(--color-emerald-500),0.8)] relative z-10">
-                    🏆 {winner?.username ?? "UNKNOWN"}
+                  <div className="text-[11px] md:text-[13px] font-black tracking-[0.15em] text-emerald-400 uppercase truncate w-full flex items-center justify-center gap-2 [text-shadow:0_0_10px_rgba(var(--color-emerald-500),0.8)] relative z-10">
+                    <Trophy size={16} className="text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0" />
+                    <span>{winner?.username ?? "UNKNOWN"}</span>
                   </div>
                 </div>
               </div>

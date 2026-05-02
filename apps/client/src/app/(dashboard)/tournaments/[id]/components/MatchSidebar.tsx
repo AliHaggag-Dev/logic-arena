@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Tournament, TMatch, Player } from "../../types";
+import { Trophy } from "lucide-react";
 
 const ROUND_LABELS: Record<number, Record<number, string>> = {
   3: { 1: "QUARTER FINALS", 2: "SEMI FINALS", 3: "GRAND FINAL" },
@@ -133,7 +134,7 @@ export function MatchSidebar({ tournament, userId, myMatch, myOpponent, simulati
                     >
                     {p.username}
                     </span>
-                    {isChampion && <span className="text-[14px] drop-shadow-[0_0_8px_rgba(var(--color-emerald-500),0.5)]">🏆</span>}
+                    {isChampion && <Trophy size={14} className="text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0" />}
                     {isEliminated && !isChampion && (
                     <span className="text-[8px] text-red-500/30 tracking-[0.25em] font-black uppercase">
                         ELIMINATED
