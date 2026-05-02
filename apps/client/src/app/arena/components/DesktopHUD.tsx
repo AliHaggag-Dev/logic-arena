@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { CommandConsole } from './CommandConsole';
 import { TacticalRadar } from './TacticalRadar';
+import { RefreshCw, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import { RobotState, ProjectileState } from '../types';
 
 interface DesktopHUDProps {
@@ -102,44 +103,50 @@ export function DesktopHUD({
           </h2>
         </div>
 
-        <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-3 bg-black/80 backdrop-blur-xl border-l-4 border-cyan-500 p-4 rounded-r shadow-[10px_10px_30px_rgba(0,0,0,0.9)]">
-          <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-cyan-500/50 to-transparent" />
-          <div className="absolute bottom-0 left-0 w-full h-px bg-linear-to-r from-cyan-500/50 to-transparent" />
+        <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-2 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 p-2 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.8),inset_0_0_15px_rgba(34,211,238,0.05)]">
           {!isPvP && displayMode !== 'TRAINING_SOLO' && (
-            <button
-              type="button"
-              onClick={handleResetGame}
-              className="group relative border border-red-900 bg-red-950/30 text-red-500 text-[10px] font-black px-6 py-2.5 transition-all hover:bg-red-900/50 hover:border-red-500 hover:text-white tracking-[0.2em] overflow-hidden shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
-            >
-              <span className="relative z-10">[ RESPAWN ]</span>
-              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-red-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleResetGame}
+                className="group relative flex items-center gap-2 border border-red-500/30 bg-red-950/40 text-red-400 text-[10px] font-black px-4 py-2 rounded-lg transition-all hover:bg-red-500/20 hover:border-red-500 hover:text-red-300 tracking-[0.15em] overflow-hidden shadow-[inset_0_0_10px_rgba(239,68,68,0.1)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+              >
+                <RefreshCw size={13} className="group-hover:rotate-180 transition-transform duration-500" />
+                <span className="relative z-10 mt-[1px]">RESPAWN</span>
+                <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-red-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+              </button>
+              <div className="h-6 w-px bg-cyan-500/20 mx-1" />
+            </>
           )}
+
           <button
             type="button"
             onClick={() => setFogEnabled((prev: boolean) => !prev)}
-            className={`group relative border text-[10px] font-black px-6 py-2.5 transition-all tracking-[0.2em] overflow-hidden ${fogEnabled
-              ? 'border-cyan-500 bg-cyan-900/40 text-cyan-300 hover:bg-cyan-500/40 hover:text-white shadow-[0_0_15px_rgba(34,211,238,0.2)] hover:shadow-[0_0_20px_rgba(34,211,238,0.6)]'
-              : 'border-white/20 bg-white/5 text-white/50 hover:bg-white/10 hover:border-white/40'
+            className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${fogEnabled
+              ? 'border-cyan-500/50 bg-cyan-900/40 text-cyan-300 hover:bg-cyan-500/30 hover:border-cyan-400 hover:text-cyan-200 shadow-[inset_0_0_10px_rgba(34,211,238,0.2)] hover:shadow-[0_0_15px_rgba(34,211,238,0.4)]'
+              : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
               }`}
           >
-            <span className="relative z-10">[ FOG_SYSTEM: {fogEnabled ? 'ONLINE' : 'OFFLINE'} ]</span>
+            {fogEnabled ? <Eye size={13} className="group-hover:scale-110 transition-transform" /> : <EyeOff size={13} className="opacity-50 group-hover:scale-110 transition-transform" />}
+            <span className="relative z-10 mt-[1px]">FOG: {fogEnabled ? 'ON' : 'OFF'}</span>
             {fogEnabled && (
-              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-cyan-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-cyan-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
             )}
           </button>
+
           <button
             type="button"
             onClick={handleToggleLockVision}
-            className={`group relative border text-[10px] font-black px-6 py-2.5 transition-all tracking-[0.2em] overflow-hidden ${lockVision
-              ? 'border-amber-500 bg-amber-900/40 text-amber-300 hover:bg-amber-500/40 hover:text-white shadow-[0_0_15px_rgba(245,158,11,0.2)] hover:shadow-[0_0_20px_rgba(245,158,11,0.6)]'
-              : 'border-white/20 bg-white/5 text-white/50 hover:bg-white/10 hover:border-white/40'
+            className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${lockVision
+              ? 'border-amber-500/50 bg-amber-900/40 text-amber-300 hover:bg-amber-500/30 hover:border-amber-400 hover:text-amber-200 shadow-[inset_0_0_10px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+              : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
               }`}
             title="Link scanner (FOV) to body rotation. When ON, the scanner follows the robot body."
           >
-            <span className="relative z-10">[ LOCK_VISION: {lockVision ? 'LINKED' : 'FREE'} ]</span>
+            {lockVision ? <Lock size={13} className="group-hover:scale-110 transition-transform" /> : <Unlock size={13} className="opacity-50 group-hover:scale-110 transition-transform" />}
+            <span className="relative z-10 mt-[1px]">LOCK: {lockVision ? 'ON' : 'OFF'}</span>
             {lockVision && (
-              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-amber-500/30 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-amber-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
             )}
           </button>
         </div>
