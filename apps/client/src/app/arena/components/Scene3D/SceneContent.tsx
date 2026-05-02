@@ -43,6 +43,7 @@ export const SceneContent = (props: Scene3DComponentProps) => {
         firedTracer={props.firedTracer}
         speechBubble={props.speechBubble}
         fogEnabled={props.fogEnabled}
+        soundFx={props.soundFx}
         localRobotFile={props.localRobotFile}
         localRobotColor={props.localRobotColor}
         displayMode={props.displayMode}

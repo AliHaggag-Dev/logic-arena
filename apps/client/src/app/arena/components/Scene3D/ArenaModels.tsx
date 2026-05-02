@@ -33,6 +33,7 @@ export const ArenaModels = ({
   firedTracer = null,
   speechBubble = null,
   fogEnabled = true,
+  soundFx = true,
   localRobotFile,
   localRobotColor,
   displayMode,
@@ -42,6 +43,7 @@ export const ArenaModels = ({
   firedTracer?: FiredTracer | null;
   speechBubble?: SpeechBubbleState | null;
   fogEnabled?: boolean;
+  soundFx?: boolean;
   localRobotFile?: string;
   localRobotColor?: string;
   displayMode?: string;
@@ -83,7 +85,7 @@ export const ArenaModels = ({
   const robots = gameStateRef.current?.robots ?? [];
   const projectiles = gameStateRef.current?.projectiles ?? [];
 
-  const { hitBursts, setHitBursts, hitFlashMap, isSpotted } = useSceneAnimation(robots, firedTracer);
+  const { hitBursts, setHitBursts, hitFlashMap, isSpotted } = useSceneAnimation(robots, firedTracer, soundFx);
 
   const boundaryPoints = useMemo(
     () => new Float32Array([-10, 0, -7.5, 10, 0, -7.5, 10, 0, 7.5, -10, 0, 7.5]),
