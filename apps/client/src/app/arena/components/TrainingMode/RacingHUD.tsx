@@ -70,7 +70,7 @@ export const RacingHUD = ({
       <div
         className={`absolute z-50 pointer-events-none ${isMobile
           ? "top-3 left-3" // mobile: top-left square widget
-          : "top-72 right-8" // desktop: right side, directly below tactical radar
+          : "top-[272px] right-8" // desktop: right side, exactly 16px below the tactical radar
           }`}
       >
         {isMobile ? (
@@ -107,7 +107,7 @@ export const RacingHUD = ({
           </div>
         ) : (
           // DESKTOP: Sleek Horizontal Panel
-          <div className="bg-[#020813]/85 backdrop-blur-md border border-[#eab308]/25 rounded-xl px-5 py-3 shadow-[0_0_24px_rgba(234,179,8,0.08)]">
+          <div className="w-72 bg-[#020813]/85 backdrop-blur-md border border-[#eab308]/25 rounded-xl px-4 py-3 shadow-[0_0_24px_rgba(234,179,8,0.08)]">
             <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-[#eab308]/15">
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#eab308] animate-pulse shadow-[0_0_6px_#eab308]" />
@@ -120,13 +120,13 @@ export const RacingHUD = ({
               </div>
             </div>
 
-            <div className="flex w-full justify-between gap-6">
-              <StatItem label="ELAPSED TIME" value={`${mins}:${secs}`} accent={false} />
+            <div className="flex w-full justify-between items-end gap-1">
+              <StatItem label="TIME" value={`${mins}:${secs}`} accent={false} />
               <StatItem label="ENERGY" value={energyConsumed} accent={false} />
-              <StatItem label="PENALTIES" value={0} accent />
-              <div className="flex flex-col items-center min-w-[64px]">
-                <span className="font-mono text-[8px] tracking-widest mb-1 text-[#eab308]/50">OBJECTIVE</span>
-                <span className="font-mono font-bold text-sm text-[#00ff00]">FINISH LINE</span>
+              <StatItem label="FAULTS" value={0} accent />
+              <div className="flex flex-col items-center min-w-[56px]">
+                <span className="font-mono text-[7px] tracking-widest mb-1 text-[#eab308]/50">OBJECTIVE</span>
+                <span className="font-mono font-bold text-xs text-[#00ff00]">FINISH</span>
               </div>
             </div>
           </div>
