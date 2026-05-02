@@ -113,6 +113,7 @@ export interface Scene3DComponentProps {
   speechBubble?:   SpeechBubbleState | null;
   fogEnabled?:     boolean;
   soundFx?:        boolean;
+  graphicsQuality?: string;
   /** GLB file path for the local player's robot ("/robot.glb" | "/robot2.glb") */
   localRobotFile?: string;
   /** Hex color saved in the local player's loadout — used to identify their robot in the scene */

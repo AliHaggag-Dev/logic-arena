@@ -45,6 +45,7 @@ const ArenaPageContent = () => {
   const [localRobotFile, setLocalRobotFile] = useState('/robot.glb');
   const [localRobotColor, setLocalRobotColor] = useState('#22d3ee');
   const [soundFx, setSoundFx] = useState(true);
+  const [graphicsQuality, setGraphicsQuality] = useState('medium');
 
   const {
     socket, gameStateRef, obstaclesRef, uiState,
@@ -71,10 +72,11 @@ const ArenaPageContent = () => {
       setLocalRobotFile(file);
       if (res.data.selectedColor) setLocalRobotColor(res.data.selectedColor);
 
-      // 2. Arena preferences — sync soundFx from DB
+      // 2. Arena preferences — sync soundFx and graphicsQuality from DB
       const prefs = res.data.arenaPreferences;
       if (prefs) {
         setSoundFx(prefs.soundFx !== false);
+        if (prefs.graphicsQuality) setGraphicsQuality(prefs.graphicsQuality);
         // If no robot was already selected via URL/garage, honour arenaPreferences.defaultRobot
         if (!res.data.selectedRobotId && prefs.defaultRobot) {
           setLocalRobotFile(ROBOT_FILES[prefs.defaultRobot] ?? '/robot.glb');
@@ -231,6 +233,7 @@ const ArenaPageContent = () => {
           speechBubble={speechBubble ?? null}
           fogEnabled={fogEnabled}
           soundFx={soundFx}
+          graphicsQuality={graphicsQuality}
           localRobotFile={localRobotFile}
           localRobotColor={localRobotColor}
           displayMode={displayMode}

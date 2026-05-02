@@ -9,7 +9,7 @@ import { Scene3DComponentProps } from "../../types/scene.types";
  */
 export const Scene3D = memo((props: Scene3DComponentProps) => {
   return (
-    <SceneCanvas>
+    <SceneCanvas graphicsQuality={props.graphicsQuality}>
       <SceneContent {...props} />
     </SceneCanvas>
   );
