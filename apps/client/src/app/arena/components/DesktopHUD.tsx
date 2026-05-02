@@ -80,27 +80,26 @@ export function DesktopHUD({
       </button>
 
       <div className={`absolute inset-0 z-30 pointer-events-none transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isLeftPanelOpen ? 'translate-x-0' : '-translate-x-[120%]'}`}>
-        <div className="absolute top-6 left-8 pointer-events-none">
-          <h1 className="text-4xl font-black tracking-tighter text-cyan-400 italic leading-none drop-shadow-[0_0_20px_rgba(34,211,238,0.6)]">
-            LOGIC ARENA
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className={`w-2 h-2 rounded-full animate-pulse ${displayMode === 'RACING' ? 'bg-yellow-500 shadow-[0_0_8px_#eab308]' :
-              displayMode === 'TRAINING_SOLO' ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' :
+        <div className="absolute top-6 left-8 pointer-events-none flex flex-col gap-1">
+          <div className="flex items-end gap-6">
+            <h1 className="text-4xl font-black tracking-tighter text-cyan-400 italic leading-none drop-shadow-[0_0_20px_rgba(34,211,238,0.6)]">
+              LOGIC ARENA
+            </h1>
+            <h2 className="text-sm font-bold text-white/40 tracking-[0.4em] uppercase italic mb-0.5">
+              // ARENA: {scriptTitle}
+            </h2>
+          </div>
+          <div className="flex items-center gap-2 ml-1 mt-0.5">
+            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${displayMode === 'RACING' ? 'bg-yellow-400 shadow-[0_0_8px_#facc15]' :
+              displayMode === 'TRAINING_SOLO' ? 'bg-green-400 shadow-[0_0_8px_#4ade80]' :
                 'bg-red-500 shadow-[0_0_8px_#ef4444]'
               }`} />
-            <p className={`text-[10px] tracking-[0.2em] font-bold ${displayMode === 'RACING' ? 'text-yellow-700' :
-              displayMode === 'TRAINING_SOLO' ? 'text-green-700' : 'text-red-700'
+            <p className={`text-[10px] tracking-[0.25em] font-bold ${displayMode === 'RACING' ? 'text-yellow-400/80' :
+              displayMode === 'TRAINING_SOLO' ? 'text-green-400/80' : 'text-red-400/80'
               }`}>
               v2.0.0 {displayMode === 'RACING' ? '[RACING OVAL]' : displayMode === 'TRAINING_SOLO' ? '[TRAINING SOLO]' : '[COMBAT ARENA]'}
             </p>
           </div>
-        </div>
-
-        <div className="absolute top-6 left-112.5 pointer-events-none flex opacity-40">
-          <h2 className="text-xl font-bold text-red-500/80 tracking-[0.5em] uppercase italic">
-            Arena: {scriptTitle}
-          </h2>
         </div>
 
         <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-2 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 p-2 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.8),inset_0_0_15px_rgba(34,211,238,0.05)]">
