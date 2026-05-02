@@ -1694,3 +1694,241 @@ in sequence.
   Theuserprofile tracks real combat stats across matches. Ghost
   matches are dead. The arena is ready for: **Fog of War, multiplayer
   stress testing, and University Competition launch.**
+
+## [2.6.0] - The Platform Polish & Intelligence Expansion - 2026-05-03
+
+Shipped a sweeping platform-wide quality pass — a legendary theme system overhaul with two rebuilt visual identities, a comprehensive architecture and performance audit across every major dashboard page, a new sci-fi floating system hub replacing the mobile nav, full SEO infrastructure, and deep backend wiring for arena preferences and notification settings.
+
+---
+
+## New Features
+
+### Legendary Theme System Overhaul — Violet Sovereign & Obsidian Ember
+
+* Demolished and rebuilt both non-cyberpunk themes from scratch.
+* **Violet Sovereign** (light) replaces the previous washed-out light theme with a prestigious deep violet accent (`#5b21b6`) on a cool slate-white base (`#f0f2fa`) — all neon glows suppressed via `filter:none` and `text-shadow:none`.
+* **Obsidian Ember** (desert) reborn as volcanic luxury — near-black base (`#0e0a04`), liquid gold accent (`#f59e0b`), amber glow system.
+* Cyberpunk theme untouched — remains king.
+* Upgraded global font to **Space Grotesk** (300–700 weights) replacing the default — geometric, premium SaaS tier, paired with **Geist Mono** for all terminal/code elements.
+* Added a 3-tier button opacity ladder per theme for unmistakable inactive/hover/active states.
+* Introduced semantic color token system (`--sem-success`, `--sem-danger`, `--sem-warning`, `--sem-info`) wired into Tailwind `@theme inline` — cascades automatically across all 70+ existing files with zero component changes.
+* Desert-only CSS opacity remapper via `:is()` selector boosts 196+ accent utility classes by 2–2.5× to prevent invisible-on-dark rendering.
+
+### Sci-Fi Floating System Hub (Mobile Nav)
+
+* Replaced the static 5th item in `MobileNav` with a dynamic **SYSTEM** hub toggle.
+* Opens a floating staggered radial menu branching to Profile, Garage, Tournaments, and Settings with cubic-bezier glassmorphic animations.
+* Fixed accessibility warnings in `MobileHeader` by adding explicit `type="button"` to all interactive elements.
+
+### Arena Preferences & Notification Settings — Full Backend Wiring
+
+* Added `arenaPreferences` and `notificationSettings` JSON columns to the `User` model in `schema.prisma`.
+* Full typed interfaces, default constants, and Redis cache helpers added to backend.
+* `GET /users/profile` returns both fields with backward-compatible defaults.
+* Added `PUT /users/preferences` and `PUT /users/notifications` endpoints to `UsersController`.
+* Frontend `PreferencesSection` and `NotificationsSection` replaced localStorage-only init with `GET /users/profile` on mount, optimistic UI updates (state changes instantly, API fires 800ms debounced), `lastSaved` ref snapshot for accurate rollback on failure, and `animate-pulse` skeleton loaders during fetch.
+* Added music toggle (previously missing from UI).
+* Both sections use identical architecture: profile-loaded initial state, debounced PUT, rollback with error feedback.
+
+### Graphics Quality Selection & Arena Integration
+
+* Added 3-column segmented button layout (`LOW / MEDIUM / HIGH`) to `PreferencesSection` tied into the debounced API update cycle.
+* Arena reads `graphicsQuality` from DB and threads it into `SceneCanvas` to dynamically toggle antialiasing, DPR scaling, and background star rendering for low-end devices.
+
+### Sound FX & Default Robot Sync from DB
+
+* Extended arena profile fetch to read `arenaPreferences.soundFx` and `arenaPreferences.defaultRobot`.
+* `soundFx` state threaded through the full prop chain: `Scene3D → SceneContent → ArenaModels`.
+* `useGameSounds` now accepts an `enabled` flag — returns NOOP play functions when false.
+* Added `soundFx` to `Scene3DComponentProps` type.
+
+### Comprehensive SEO Infrastructure
+
+* Expanded root layout metadata with Open Graph, Twitter Cards, keywords, and explicit Googlebot indexing instructions.
+* Added `sitemap.ts` to dynamically generate `sitemap.xml` with proper route priorities.
+* Added `robots.ts` to generate `robots.txt` — prevents crawlers from indexing private routes (`/api`, `/dashboard`, `/arena`) while pointing to the sitemap.
+
+### PWA Icon Update
+
+* Updated metadata in `layout.tsx` to use `logic-arena.webp` for favicon and apple-touch-icon.
+* Replaced PNG icon arrays in `manifest.json` with the new `.webp` logo.
+* Removed default `favicon.ico` to prevent cache overrides.
+
+---
+
+## Architecture & Performance Audits
+
+### Dashboard — Full Architecture Overhaul
+
+* Dismantled 340-line monolithic page into a unified responsive Tailwind DOM tree (deleted separate Desktop/Mobile layouts).
+* Extracted data fetching into `useScripts` custom hook.
+* Deleted `EditScriptModalStyles.tsx` — fully migrated to standard Tailwind.
+* Eliminated JS-based `isMobile` prop pattern across `ScriptCard`, `ProtocolForm`, `CustomSelect`, and `Skeletons` in favor of native CSS media queries.
+* Redesigned script card action buttons into a premium iOS-style glassmorphic **Action Pill** with backdrop-blur, seamless 1px dividers, radial hover glows, and custom floating tooltips.
+* Fixed hydration mismatch on timestamps by wrapping `toLocaleDateString` in a mounted state check.
+* Added granular client-side error surfacing for rate limit and content limit warnings in editor footer.
+* Replaced `scripts.service.ts` unsafe `any` with strictly typed update payload interface.
+* Implemented `next/dynamic` lazy loading for `EditScriptModal`.
+* Wrapped `ScriptCard`, `EditScriptHeader`, and `EditScriptFooter` in `React.memo`.
+
+### Leaderboard — Full Architecture Overhaul
+
+* Dismantled 400-line `LeaderboardTable` into `DesktopTable`, `MobileList`, and reusable UI micro-components.
+* Extracted hex colors to semantic CSS variables (`--rank-gold`, `--eff-optimal`).
+* Replaced emojis with Lucide icons (`Crown`, `Swords`).
+* Added **YOU** badge and row highlighting for current user.
+* Fixed 5-column alignment bug.
+* Implemented Redis `MGET` pipeline to batch online presence checks (1 round-trip instead of N).
+* Added 20-second Redis caching layer to `/users/leaderboard`.
+* Added deterministic secondary DB sort (`wonMatches`) as tie-breaker.
+* Gated client polling with `document.visibilityState`.
+
+### Lobby — Full Audit (Security, Stability, UX, Performance)
+
+* Added Redis atomic rate limiting (`redis.incr`) on `createMatch` — max 3 matches per minute.
+* Added active match check to prevent concurrent waiting matches.
+* Fixed ghost lobby navigation bug with 2-second grace period in `handleDisconnect`.
+* Cleanup for abandoned lobby matches when host leaves before opponent joins.
+* Added `10s DEPLOY_TIMEOUT_MS` guard in `useDeployMatch`.
+* Unified empty lobby state across mobile and desktop.
+* Fixed socket recreation anti-pattern — migrated `useMemo` to `useRef` in `useLobbySocket`.
+* Wrapped `LobbyMatchCard` in `React.memo`.
+* Stripped all `useState` hover trackers — migrated to pure CSS `:hover`.
+* Fixed stale closure in `useLobbySocket` via `scriptIdRef`.
+* Moved inline keyframes to `globals.css`.
+* Added `type="button"` to all buttons.
+
+### Campaign — Full Audit (Security, Progression, UX, Performance)
+
+* Added Redis completion token (60s TTL) requirement for `completeLevel` — prevents completion without winning.
+* Enforced `levelId <= user.currentLevel` on `createCampaignMatch` — blocks locked level access via direct HTTP.
+* Eliminated all `any` types in `MatchesController` and `CampaignController`.
+* Fixed off-by-one with `CAMPAIGN_COMPLETE_SENTINEL = 11`. Level 10 now correctly shows `completed: true`.
+* Added draw state (mutual destruction + `Swords` icon).
+* Replaced emojis with Lucide `Skull` and `Trophy` icons.
+* Added `useMemo` on `completedCount` and `currentLevel`.
+* Added `403 ACCESS DENIED` branded error page.
+* Added `generateMetadata` in `[id]/layout.tsx`.
+* Added `[id]` loading skeleton.
+* Migrated `CAMPAIGN_LEVELS` to `levels.constants.ts` for static generation.
+
+### Profile — Full Architecture & Performance Overhaul
+
+* Extracted `MatchHistoryTable` monolith into atomic components (`DesktopRow`, `MobileCard`, `EmptyState`, `SkeletonRow`, `ReplayButton`).
+* Extracted generic shared components (`HexAvatar`, `OperatorBadge`, `ResultBadge`, `SectionHeader`, `Shimmer`, `StatCard`, `StatRing`) into `components/ui/`.
+* Extracted `RadarChart` into `components/charts/`.
+* Extracted layout blocks (`HeroSection`, `StatCardsSection`, `AnalyticsSection`, `MatchHistorySection`) into `components/sections/`.
+* Replaced OS emojis in `RadarChart` with Lucide icons (`Zap`, `Flame`, `Shield`, `Target`, `Wind`).
+* Fixed `StatCard` background appearing solid black in Light Mode via `color-mix`.
+* Added `useId()` in `RadarChart` for stable SVG IDs.
+* Migrated `StatCard` hover to pure CSS `color-mix` transitions.
+* Memoized `RadarChart` geometry based on `size` prop.
+
+### Garage — Full Audit (3D Models, Performance, Scale, Color Sync)
+
+* Created `robots.constants.ts` as single source of truth with separate `cardScale` and detail-page scale per robot.
+* Created `useRobotColorTint` shared hook with material disposal.
+* Created `garage.css` for all keyframes.
+* Extracted `Toast.tsx` and `RobotSpecs.tsx`.
+* Restored real GLB 3D models in `RobotCard`.
+* Fixed `UNIT-01` card scale `1.0→2.5` and `UNIT-02` `1.4→1.2`.
+* Added `frameloop="demand"` on all Canvas instances.
+* Auto-rotate gated by `isHoveredRef`.
+* Added `useGLTF.preload()` at module level.
+* Added `SkeletonUtils.clone()` per component to prevent material disposal race conditions.
+* Fixed color not applying until camera interaction by adding `invalidate()` in `useEffect([color])`.
+* Fixed robot turning black on rapid color switching.
+* Fixed `GuestSphere` dead code.
+* Fixed guest race condition with synchronous localStorage init.
+* Fixed `handleSave` stale closure.
+* Added Redis cache for `GET /users/profile` (TTL 30s) with invalidation on `PATCH`.
+
+### Tournaments — Enterprise Architecture Overhaul + Full Audit
+
+* Created `tournaments/types.ts` as single source of truth.
+* Extracted `useTournamentDetail` custom hook.
+* Reduced `[id]/page.tsx` from 240+ lines to orchestration shell.
+* Fixed `totalRounds` calculation for 2/4/8-player brackets.
+* Fixed `isEliminated` short-circuit when `isChampion` is true.
+* Changed detail page poll from 3s to 10s.
+* Replaced flat SVG rects with `foreignObject` glassmorphism cards.
+* Added champion badge with emerald glow.
+* Replaced N+1 (21 DB calls) `findOne` with single batch `findMany` + Map lookup.
+* Added cache-aside in `findAll` and `findOne` — Redis keys `tournaments:list` + `tournament:{id}`. All writes invalidate both cache keys.
+* Replaced sequential `await` loop in `start()` with `prisma.tournamentMatch.createMany()`.
+* Added `ForbiddenException` and `BadRequestException` to `completeMatch` — prevents bracket rigging.
+* Added `startError` state surfacing exact API rejection message.
+
+### Replay — Ultra-Professional Overhaul
+
+* Decoupled RAF loop from React state — `lerpT` tracked via `useRef`, zero re-renders at 60fps.
+* Direct canvas injection via `forwardRef` — bypasses React reconciliation cycle entirely.
+* React state updates throttled to 2/sec for scrubber only.
+* Batched canvas draw calls for projectiles into single path.
+* Removed hardcoded `420×315` canvas dimensions — renders at `800×600`, scales fluidly.
+* Deleted `ReplayViewerDesktopLayout` and `ReplayViewerMobileLayout` — replaced with single responsive tree.
+* Eliminated all DRY violations.
+* Fixed `router: any` and `catch (e: any)` types.
+* Replaced inline `textShadow` with Tailwind `drop-shadow`.
+* Added `"use client"` directives across all interactive replay components.
+* Fixed Legend container color — `bg-card/40` with `backdrop-blur-md`.
+
+### Docs — Full AliScript Content Accuracy & Performance Pass
+
+* Fixed 6 wrong energy costs in `EnergyCostSection`.
+* Fixed `MAX_ENERGY` `1000→100`.
+* Removed false `WAIT` regen claim.
+* Fixed `SCAN` docs — blocked during `STASIS`.
+* Fixed all 3 algorithm challenge scripts using `SCAN` inside `IF IN_STASIS`.
+* Fixed `SAMPLE_SCRIPT` threshold `MY_ENERGY > 200 → > 60`.
+* Added `AND`/`OR` operators to `COMMAND_TABLE` and `QUICK_REF`.
+* Added `target_vx`/`target_vy` to `IDENTIFIER_TABLE`.
+* Added `FIRE`/`BURST_FIRE` damage values.
+* Marked `spotted` as legacy alias.
+* Updated all `v2.0` badges to `v2.3`.
+* Split `EnergyCostSection` 301 lines into `EnergyCostTable` and `EnergyDrainSimulator`.
+* Extracted `IdentifierReferenceSection` into dedicated file.
+* Fixed `useEffect` missing deps in `EnergyDrainSimulator`.
+* Added `useMemo` to `filteredCommands` and `categories`.
+
+---
+
+## Technical Scars & Resolutions
+
+### 🩹 "The Guest Operator Blackout" — Auth Modal Obstructionism
+
+**Issue:** Unauthenticated users encountered obstructive auth modals on every page, blocking any meaningful interaction with the platform before creating an account. The Dashboard, Profile, Settings, and Arena all assumed a logged-in session and crashed or redirected aggressively on guest visits.
+
+**Resolution:** Overhauled all four pages into a **Passive-Locked** guest architecture — non-interactive UI gates replace modal interruptions. Implemented server-side WebSocket guest identity (`guest_xxx`) for stable arena play. Deployed virtual script fallbacks for guest operators. Fixed the 3D `SkinnedMesh` vertex explosion glitch using `SkeletonUtils` cloning. Synchronized root redirect to `/login` with an intentional `[ Continue_as_Guest ]` bypass. Cleaned 40+ files to eliminate all redundant auth prompts.
+
+---
+
+### 🩹 "The Lucide Icon Type Crash" — Production Build Failure
+
+**Issue:** A loose `React.ElementType` type in `SettingsLayout` caused a `'string is not assignable to never'` TypeScript crash during Next.js production build, blocking deployment.
+
+**Resolution:** Replaced with the strict `LucideIcon` type, resolving the type inference failure and restoring clean production builds.
+
+---
+
+### 🩹 "The Keyboard Emoji Inconsistency" — Cross-Platform Rendering
+
+**Issue:** Platform-dependent keyboard emojis rendered differently across Windows, macOS, and Android — breaking the cyberpunk aesthetic on non-Apple devices and producing inconsistent visual weight across UI surfaces.
+
+**Resolution:** Replaced all keyboard emojis with consistent Lucide React icons across all client modules, ensuring pixel-identical rendering on every platform and OS.
+
+---
+
+### 🩹 "The Jargon Wall" — Overly Technical UI Copy
+
+**Issue:** Several UI labels, tooltips, and status messages used internal engineering terminology that confused non-technical users without adding gameplay value.
+
+**Resolution:** Executed a full readability pass across all client modules — replaced technical jargon with human-readable copy while preserving the cyberpunk tone and aesthetic.
+
+---
+
+## Current Status
+
+Logic Arena is now a fully polished, theme-aware, SEO-indexed platform with deep backend wiring for user preferences, a legendary visual identity across all three themes, and a comprehensive architecture audit covering every major dashboard page. Every module is clean, typed, and within line limits.
+
+**Ready for:** Fog of War, multiplayer stress testing, and University Competition launch.
