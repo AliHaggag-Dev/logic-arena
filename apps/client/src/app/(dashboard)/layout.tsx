@@ -1,9 +1,7 @@
 "use client";
 
 import React from "react";
-import dynamic from "next/dynamic";
 import { SocketContext } from "../../context/SocketContext";
-import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { useDashboardAuth } from "./components/layout/hooks/useDashboardAuth";
 import { useChallengeSystem } from "./components/layout/hooks/useChallengeSystem";
 import { DashboardSidebar } from "./components/layout/components/DashboardSidebar";
@@ -12,13 +10,9 @@ import { ChallengeModal } from "./components/layout/components/ChallengeModal";
 import { ToastNotification } from "./components/layout/components/ToastNotification";
 import { PWAInstallPrompt } from "../../components/PWAInstallPrompt";
 
-const MobileNav = dynamic(() => import("../../components/MobileNav").then((mod) => mod.MobileNav), { ssr: false });
-const MobileHeader = dynamic(() => import("../../components/MobileHeader").then((mod) => mod.MobileHeader), { ssr: false });
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { username, handleLogout } = useDashboardAuth();
   const { incomingChallenge, setIncoming, toast, sendChallenge, acceptChallenge } = useChallengeSystem();
-  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
     <SocketContext.Provider value={{ sendChallenge }}>
@@ -34,18 +28,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       `}</style>
 
       <div className="flex min-h-screen bg-bg-primary font-mono selection:bg-accent/30">
-        {isMobile && <MobileHeader />}
+        <div className="hidden md:block shrink-0">
+          <DashboardSidebar username={username} onLogout={handleLogout} />
+        </div>
 
-        {!isMobile && <DashboardSidebar username={username} onLogout={handleLogout} />}
-
-        <main className={`flex-1 flex flex-col overflow-x-clip bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent ${isMobile ? "pt-12 pb-[calc(80px+env(safe-area-inset-bottom))] max-w-[100vw]" : ""}`}>
-          {!isMobile && <DashboardHeader username={username} />}
+        <main className="flex-1 flex flex-col overflow-x-clip bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent pt-12 md:pt-0 pb-[calc(80px+env(safe-area-inset-bottom))] md:pb-0 max-w-[100vw] md:max-w-none">
+          <div className="hidden md:block">
+            <DashboardHeader username={username} />
+          </div>
           {children}
         </main>
 
-        {isMobile && <MobileNav />}
-
-        <ToastNotification toast={toast} isMobile={isMobile} />
+        <ToastNotification toast={toast} isMobile={false} />
 
         {/* PWA install prompt — appears after 30s or immediately on /dashboard */}
         <PWAInstallPrompt />

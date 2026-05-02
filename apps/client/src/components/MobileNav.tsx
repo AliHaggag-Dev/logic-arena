@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useMediaQuery } from "../hooks/useMediaQuery";
 import { User, Settings, Wrench, Hexagon, X, Trophy } from "lucide-react";
 
 const mainNavItems = [
@@ -54,7 +53,6 @@ const arcOffsets = ["mr-2", "mr-6", "mr-12", "mr-20"];
 
 export function MobileNav() {
   const pathname = usePathname() || "";
-  const isMobile = useMediaQuery("(max-width: 768px)");
   const [isHubOpen, setIsHubOpen] = useState(false);
 
   useEffect(() => {
@@ -64,12 +62,12 @@ export function MobileNav() {
   const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email"];
   const isAuthPage = authRoutes.some(route => pathname.startsWith(route));
 
-  if (!isMobile || isAuthPage) return null;
+  if (isAuthPage) return null;
 
   const isHubActive = subNavItems.some(item => pathname === item.href);
 
   return (
-    <>
+    <div className="md:hidden block">
       {/* Sci-Fi Backdrop */}
       {isHubOpen && (
         <div
@@ -165,6 +163,6 @@ export function MobileNav() {
           </button>
         </nav>
       </div>
-    </>
+    </div>
   );
 }

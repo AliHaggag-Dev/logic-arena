@@ -3,12 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ThemeSwitcher } from "./ui/ThemeSwitcher";
-import { useMediaQuery } from "../hooks/useMediaQuery";
 
 export function MobileHeader() {
   const pathname = usePathname() || "";
   const router = useRouter();
-  const isMobile = useMediaQuery("(max-width: 768px)");
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -28,8 +26,7 @@ export function MobileHeader() {
   ];
   const isStaticPage = staticRoutes.some(route => pathname.startsWith(route)) || pathname === "/";
 
-  // Render on mobile everywhere, but also render on desktop for auth & static pages
-  if (!isMobile && !isAuthPage && !isStaticPage) return null;
+  const visibilityClass = (isAuthPage || isStaticPage) ? "flex" : "flex md:hidden";
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -112,7 +109,7 @@ export function MobileHeader() {
   }
 
   return (
-    <header className="mobile-header-safe w-full flex items-center justify-between px-4 border-b border-accent/8 bg-bg-primary z-40 fixed top-0 left-0 right-0 min-h-14">
+    <header className={`mobile-header-safe w-full ${visibilityClass} items-center justify-between px-4 border-b border-accent/8 bg-bg-primary z-40 fixed top-0 left-0 right-0 min-h-14`}>
       <h1
         onClick={() => router.push("/dashboard")}
         className="m-0 text-[13px] font-black tracking-[0.2em] text-accent leading-none [text-shadow:0_0_8px_rgba(var(--accent-rgb),0.8)] cursor-pointer hover:opacity-90 transition-opacity"
