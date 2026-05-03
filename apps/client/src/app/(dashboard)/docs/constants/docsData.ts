@@ -67,6 +67,9 @@ export const IDENTIFIER_TABLE: IdentifierDoc[] = [
   { name: 'NEAREST_VISIBLE_X', type: 'number', category: 'FOV', description: 'X coordinate of the nearest visible enemy. Returns own X if none visible.' },
   { name: 'NEAREST_VISIBLE_Y', type: 'number', category: 'FOV', description: 'Y coordinate of the nearest visible enemy. Returns own Y if none visible.' },
   { name: 'FOV_ANGLE', type: 'number', category: 'FOV', description: 'Current FOV cone angle in degrees (default 120°).' },
+  { name: 'CAN_SEE_OBSTACLE', type: 'boolean', category: 'FOV', description: 'True if one or more obstacles (walls, lava, traps) are within the current FOV cone.' },
+  { name: 'NEAREST_OBSTACLE_TYPE', type: 'string', category: 'FOV', description: 'Returns "SOLID" (wall), "TRAP" (slow), "LAVA" (damage), "FINISH_LINE", or "NONE" depending on the nearest visible obstacle.' },
+  { name: 'NEAREST_OBSTACLE_DISTANCE', type: 'number', category: 'FOV', description: 'Distance to the nearest visible obstacle. Returns Infinity if none in FOV.' },
   // Scan memory
   { name: 'scanned_distance', type: 'number', category: 'Scan', description: 'Distance to nearest visible enemy as of last SCAN call. Only updates when SCAN executes (SCAN is blocked during STASIS).' },
   { name: 'scanned_angle', type: 'number', category: 'Scan', description: 'Angle toward nearest visible enemy as of last SCAN call. Only updates when SCAN executes.' },
@@ -93,6 +96,8 @@ export const QUERY_TABLE: QueryDoc[] = [
   { command: 'GET_ROTATION()', description: 'Prints body facing angle in radians.', returns: 'number', example: 'GET_ROTATION()' },
   { command: 'GET_FOV_DIR()', description: 'Prints scanner facing angle in radians.', returns: 'number', example: 'GET_FOV_DIR()' },
   { command: 'GET_VISIBLE_COUNT()', description: 'Prints number of enemies currently in FOV.', returns: 'number', example: 'GET_VISIBLE_COUNT()' },
+  { command: 'GET_OBSTACLE_TYPE()', description: 'Prints type of nearest visible obstacle ("SOLID", "TRAP", "LAVA", "FINISH_LINE", "NONE").', returns: 'string', example: 'GET_OBSTACLE_TYPE()' },
+  { command: 'GET_OBSTACLE_DISTANCE()', description: 'Prints distance to the nearest visible obstacle.', returns: 'number | "Infinity"', example: 'GET_OBSTACLE_DISTANCE()' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -228,7 +233,7 @@ END`,
 
 export const QUICK_REF = [
   { title: 'CONTROL FLOW', icon: '⬡', color: '#f59e0b', commands: ['IF...ELSE', 'WHILE...DO', 'FUNCTION', 'CALL', 'END'] },
-  { title: 'SENSORS / FOV', icon: '◈', color: '#06b6d4', commands: ['SCAN (blocked in STASIS)', 'WAIT', 'CAN_SEE_ENEMY', 'NEAREST_VISIBLE_X/Y', 'FOV_ANGLE'] },
+  { title: 'SENSORS / FOV', icon: '◈', color: '#06b6d4', commands: ['SCAN (blocked in STASIS)', 'WAIT', 'CAN_SEE_ENEMY', 'NEAREST_VISIBLE_X/Y', 'CAN_SEE_OBSTACLE'] },
   { title: 'MOVEMENT & VISION', icon: '⦾', color: '#4ade80', commands: ['rotation / angle / rot', 'fovDirection (Eye)', 'lockVision (Link)', 'SET rotation = 1.57', 'PATHFIND'] },
   { title: 'ENERGY', icon: '⚡', color: '#a855f7', commands: ['MY_ENERGY (0–100)', 'ENERGY_PCT', 'IN_STASIS', 'Regen: +3/tick in STASIS only'] },
   { title: 'INTELLIGENCE', icon: '◉', color: '#6366f1', commands: ['SET var = val', 'Math (+,-,*,/,%)', 'NOT / AND / OR', 'TRUE / FALSE'] },

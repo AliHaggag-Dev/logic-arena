@@ -28,6 +28,8 @@ export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     { label: 'GET_ROTATION()', detail: 'query', hint: 'Print body facing angle' },
     { label: 'GET_FOV_DIR()', detail: 'query', hint: 'Print scanner facing angle' },
     { label: 'GET_VISIBLE_COUNT()', detail: 'query', hint: 'Print # enemies in FOV' },
+    { label: 'GET_OBSTACLE_TYPE()', detail: 'query', hint: 'Print type of nearest obstacle' },
+    { label: 'GET_OBSTACLE_DISTANCE()', detail: 'query', hint: 'Print distance to nearest obstacle' },
     // Identifiers (readable)
     { label: 'rotation', detail: 'identifier', hint: 'Body facing angle (radians). Writable.' },
     { label: 'angle', detail: 'identifier', hint: 'Alias for rotation' },
@@ -44,6 +46,9 @@ export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     { label: 'spotted', detail: 'identifier', hint: 'Alias for CAN_SEE_ENEMY' },
     { label: 'NEAREST_VISIBLE_X', detail: 'identifier', hint: 'X of nearest visible enemy' },
     { label: 'NEAREST_VISIBLE_Y', detail: 'identifier', hint: 'Y of nearest visible enemy' },
+    { label: 'CAN_SEE_OBSTACLE', detail: 'identifier', hint: 'True if obstacle is in FOV cone' },
+    { label: 'NEAREST_OBSTACLE_TYPE', detail: 'identifier', hint: 'Type of nearest obstacle ("SOLID", "TRAP", etc)' },
+    { label: 'NEAREST_OBSTACLE_DISTANCE', detail: 'identifier', hint: 'Distance to nearest visible obstacle' },
 ];
 
 export const DETAIL_COLORS: Record<string, string> = {

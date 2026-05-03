@@ -266,6 +266,42 @@ export class BlockExecutor {
             case 'GET_VISIBLE_COUNT':
               result = robot.visibleEntities?.robots.filter(r => r.health > 0 && r.id !== robotId).length ?? 0;
               break;
+            case 'GET_OBSTACLE_TYPE': {
+              const obstacles = robot.visibleEntities?.obstacles || [];
+              if (obstacles.length === 0) {
+                result = 'NONE';
+              } else {
+                let nearest = obstacles[0];
+                let minDist = Infinity;
+                for (const obs of obstacles) {
+                  const dx = obs.position.x - robot.position.x;
+                  const dy = obs.position.y - robot.position.y;
+                  const dist = dx * dx + dy * dy;
+                  if (dist < minDist) {
+                    minDist = dist;
+                    nearest = obs;
+                  }
+                }
+                result = nearest.type;
+              }
+              break;
+            }
+            case 'GET_OBSTACLE_DISTANCE': {
+              const obstacles = robot.visibleEntities?.obstacles || [];
+              if (obstacles.length === 0) {
+                result = 'Infinity';
+              } else {
+                let minDist = Infinity;
+                for (const obs of obstacles) {
+                  const dx = obs.position.x - robot.position.x;
+                  const dy = obs.position.y - robot.position.y;
+                  const dist = Math.sqrt(dx * dx + dy * dy);
+                  if (dist < minDist) minDist = dist;
+                }
+                result = Math.round(minDist);
+              }
+              break;
+            }
           }
 
           this.actionExecutor.emitQuery(robotId, query, result);

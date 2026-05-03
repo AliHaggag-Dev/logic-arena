@@ -19,6 +19,9 @@ const RESERVED_IDENTIFIERS = new Set([
   'FOV_ANGLE',
   'NEAREST_VISIBLE_X',
   'NEAREST_VISIBLE_Y',
+  'CAN_SEE_OBSTACLE',
+  'NEAREST_OBSTACLE_TYPE',
+  'NEAREST_OBSTACLE_DISTANCE',
   'distance',
   'health',
   'rotation',
@@ -98,8 +101,19 @@ export function resolveIdentifier(
 
   // 3. Legacy / physics-derived identifiers.
   const nearestVisible = getNearestVisible(robot);
+  const nearestObstacle = getNearestVisibleObstacle(robot);
 
   switch (name) {
+    case 'CAN_SEE_OBSTACLE':
+      return nearestObstacle !== null;
+    case 'NEAREST_OBSTACLE_TYPE':
+      return nearestObstacle ? nearestObstacle.type : 'NONE';
+    case 'NEAREST_OBSTACLE_DISTANCE': {
+      if (!nearestObstacle) return Infinity;
+      const dx = robot.position.x - nearestObstacle.position.x;
+      const dy = robot.position.y - nearestObstacle.position.y;
+      return Math.hypot(dx, dy);
+    }
     case 'distance': {
       if (!nearestVisible) return Infinity;
       const dx = robot.position.x - nearestVisible.position.x;
@@ -126,6 +140,24 @@ export function resolveIdentifier(
 
 function getNearestVisible(robot: Robot): Robot | null {
   const visible = robot.visibleEntities?.robots ?? [];
+  if (visible.length === 0) return null;
+
+  let nearest = visible[0];
+  let nearestDst = Infinity;
+  for (const candidate of visible) {
+    const dx = candidate.position.x - robot.position.x;
+    const dy = candidate.position.y - robot.position.y;
+    const dst = dx * dx + dy * dy;
+    if (dst < nearestDst) {
+      nearestDst = dst;
+      nearest = candidate;
+    }
+  }
+  return nearest;
+}
+
+function getNearestVisibleObstacle(robot: Robot) {
+  const visible = robot.visibleEntities?.obstacles ?? [];
   if (visible.length === 0) return null;
 
   let nearest = visible[0];

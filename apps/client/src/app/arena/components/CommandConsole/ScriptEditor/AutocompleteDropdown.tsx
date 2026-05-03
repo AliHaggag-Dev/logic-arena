@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Suggestion, CaretPosition } from './types';
 import { DETAIL_COLORS } from './constants';
 
@@ -10,19 +10,30 @@ interface AutocompleteDropdownProps {
 }
 
 export const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({ suggestions, activeIdx, caretXY, onAccept }) => {
+    const listRef = useRef<HTMLDivElement>(null);
+    const activeItemRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (activeItemRef.current && listRef.current) {
+            activeItemRef.current.scrollIntoView({ block: 'nearest' });
+        }
+    }, [activeIdx]);
+
     if (suggestions.length === 0) return null;
 
     return (
         <div
-            className="absolute z-50 font-mono text-[11px] bg-black/95 border border-cyan-700/60 rounded-lg shadow-[0_8px_40px_rgba(0,0,0,0.9),0_0_20px_rgba(34,211,238,0.1)] overflow-hidden backdrop-blur-md min-w-70"
-            style={{ bottom: caretXY.bottom, left: caretXY.left }}
+            className="absolute z-50 font-mono text-[11px] bg-black/95 border border-cyan-700/60 rounded-lg shadow-[0_8px_40px_rgba(0,0,0,0.9),0_0_20px_rgba(34,211,238,0.1)] overflow-hidden backdrop-blur-md min-w-70 flex flex-col"
+            style={{ bottom: caretXY.bottom, left: caretXY.left, maxHeight: '250px' }}
         >
-            <div className="px-3 py-1.5 border-b border-cyan-900/40 flex items-center gap-2">
+            <div className="px-3 py-1.5 border-b border-cyan-900/40 flex items-center gap-2 shrink-0">
                 <span className="text-cyan-600/60 text-[10px] tracking-widest uppercase">ALISCRIPT INTELLISENSE</span>
             </div>
+            <div ref={listRef} className="overflow-y-auto flex-1 custom-scrollbar">
             {suggestions.map((s, i) => (
                 <button
                     key={s.label}
+                    ref={i === activeIdx ? activeItemRef : null}
                     type="button"
                     onMouseDown={() => onAccept(s)}
                     className={`w-full flex items-center gap-3 px-3 py-1.5 text-left transition-colors ${i === activeIdx ? 'bg-cyan-950/80 text-white' : 'text-cyan-300 hover:bg-cyan-950/40'}`}
@@ -37,7 +48,8 @@ export const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({ sugg
                     <span className="ml-auto text-[10px] text-cyan-600/60 truncate">{s.hint}</span>
                 </button>
             ))}
-            <div className="px-3 py-1 border-t border-cyan-900/30 text-[10px] text-cyan-700/50 flex gap-3">
+            </div>
+            <div className="px-3 py-1 border-t border-cyan-900/30 text-[10px] text-cyan-700/50 flex gap-3 shrink-0 bg-black/95">
                 <span>↑↓ Navigate</span><span>Tab / Enter Accept</span><span>Esc Dismiss</span>
             </div>
         </div>

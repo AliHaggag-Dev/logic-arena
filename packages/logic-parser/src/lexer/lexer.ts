@@ -9,7 +9,9 @@ const QUERY_FUNCTIONS = [
     "GET_POSITION",
     "GET_ROTATION",
     "GET_FOV_DIR",
-    "GET_VISIBLE_COUNT"
+    "GET_VISIBLE_COUNT",
+    "GET_OBSTACLE_DISTANCE",
+    "GET_OBSTACLE_TYPE"
 ];
 
 export class Lexer {

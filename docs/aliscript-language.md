@@ -59,6 +59,9 @@ Constants: `TRUE`, `FALSE`
 - `VISIBLE_ENEMY_COUNT`: Number of enemies currently within the FOV cone.
 - `NEAREST_VISIBLE_X` / `NEAREST_VISIBLE_Y`: Coordinates of the nearest visible enemy (own position if none).
 - `FOV_ANGLE`: Current FOV cone angle in degrees (default 120°).
+- `CAN_SEE_OBSTACLE`: TRUE if one or more obstacles (walls, lava, traps) are within the current FOV cone.
+- `NEAREST_OBSTACLE_TYPE`: String returning `"SOLID"` (wall), `"TRAP"` (slow), `"LAVA"` (damage), `"FINISH_LINE"`, or `"NONE"` depending on the nearest visible obstacle.
+- `NEAREST_OBSTACLE_DISTANCE`: Distance to the nearest visible obstacle (`Infinity` if none).
 
 #### Read-Only — Scan Memory (populated by `SCAN`)
 - `scanned_distance`: Distance to nearest visible enemy as of the last `SCAN` call.

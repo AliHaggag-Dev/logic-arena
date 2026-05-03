@@ -30,7 +30,7 @@ export const useAutocomplete = (
             const filtered = AUTOCOMPLETE_SUGGESTIONS.filter(s =>
                 s.label.toLowerCase().startsWith(word.toLowerCase()) && s.label.toLowerCase() !== word.toLowerCase()
             );
-            setSuggestions(filtered.slice(0, 8));
+            setSuggestions(filtered);
             setActiveIdx(0);
 
             const ta = e.target;
