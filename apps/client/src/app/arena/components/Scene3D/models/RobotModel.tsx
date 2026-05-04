@@ -243,16 +243,22 @@ const RobotModelInner = memo(({
 });
 RobotModelInner.displayName = 'RobotModelInner';
 
-/* ── GLTF wrappers ─────────────────────────────────────────────────────── */
+/* ── GLTF wrappers ──────────────────────────────────────────────────────────────── */
 
 const ROBOT_FILES: Record<string, string> = {
-  'unit-01': '/robot.glb',
-  'unit-02': '/robot2.glb',
+  'unit-01':         '/robots/robot.glb',
+  'unit-02':         '/robots/robot2.glb',
+  'chassis-unit-01': '/robots/robot.glb',
+  'chassis-unit-02': '/robots/robot2.glb',
+  'chassis-wraith':  '/robots/bunny.glb',
+  'chassis-titan':   '/robots/armored-robot.glb',
 };
 
 const ROBOT_SCALES: Record<string, number> = {
-  '/robot.glb': 2,
-  '/robot2.glb': 0.8,
+  '/robots/robot.glb':          2,
+  '/robots/robot2.glb':         0.8,
+  '/robots/bunny.glb':          1.5,
+  '/robots/armored-robot.glb':  1.7,
 };
 
 const BotModel = memo((props: RobotModelProps & { file: string }) => {
@@ -262,8 +268,9 @@ const BotModel = memo((props: RobotModelProps & { file: string }) => {
 });
 BotModel.displayName = 'BotModel';
 
+// Only chassis-phantom still uses the procedural primitive (no real .glb yet)
 const PRIMITIVE_CHASSIS_IDS = new Set([
-  'chassis-phantom', 'chassis-wraith', 'chassis-titan',
+  'chassis-phantom',
 ]);
 
 const PrimitiveBotModel = memo((props: RobotModelProps & { chassisId: string }) => {
@@ -277,7 +284,7 @@ const PrimitiveBotModel = memo((props: RobotModelProps & { chassisId: string }) 
 PrimitiveBotModel.displayName = 'PrimitiveBotModel';
 
 export const RobotModel = memo((props: RobotModelProps) => {
-  const file = props.modelFile ?? '/robot.glb';
+  const file = props.modelFile ?? '/robots/robot.glb';
 
   if (PRIMITIVE_CHASSIS_IDS.has(file)) {
     return <PrimitiveBotModel {...props} chassisId={file} />;
@@ -288,5 +295,7 @@ export const RobotModel = memo((props: RobotModelProps) => {
 RobotModel.displayName = 'RobotModel';
 
 
-useGLTF.preload('/robot.glb');
-useGLTF.preload('/robot2.glb');
+useGLTF.preload('/robots/robot.glb');
+useGLTF.preload('/robots/robot2.glb');
+useGLTF.preload('/robots/bunny.glb');
+useGLTF.preload('/robots/armored-robot.glb');

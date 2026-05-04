@@ -19,13 +19,21 @@ function RobotMesh({ chassisId, paintColor, tracerColor }: RobotMeshProps) {
 
   const isUnit01 = chassisId === 'chassis-unit-01';
   const isUnit02 = chassisId === 'chassis-unit-02';
+  const isWraith = chassisId === 'chassis-wraith';
+  const isTitan = chassisId === 'chassis-titan';
 
-  // Load both GLTF models
-  const unit01GLTF = useGLTF("/robot.glb");
-  const unit02GLTF = useGLTF("/robot2.glb");
+  // Load all GLTF models
+  const unit01GLTF = useGLTF("/robots/robot.glb");
+  const unit02GLTF = useGLTF("/robots/robot2.glb");
+  const wraithGLTF = useGLTF("/robots/bunny.glb");
+  const titanGLTF = useGLTF("/robots/armored-robot.glb");
 
   // Determine which, if any, is active
-  const activeScene = isUnit01 ? unit01GLTF.scene : isUnit02 ? unit02GLTF.scene : null;
+  const activeScene = isUnit01 ? unit01GLTF.scene
+    : isUnit02 ? unit02GLTF.scene
+      : isWraith ? wraithGLTF.scene
+        : isTitan ? titanGLTF.scene
+          : null;
 
   // Apply color tint to the loaded GLTF model
   useRobotColorTint(activeScene, paintColor);
@@ -36,8 +44,9 @@ function RobotMesh({ chassisId, paintColor, tracerColor }: RobotMeshProps) {
     }
   });
 
-  const isTitan = chassisId.includes('titan');
-  const isWraith = chassisId.includes('wraith');
+  // Used for any fallback primitive logic, though now only phantom uses it
+  const isTitanPrimitive = chassisId.includes('titan') && !activeScene;
+  const isWraithPrimitive = chassisId.includes('wraith') && !activeScene;
 
   // Fallback for primitive models when paint is DEFAULT
   const safePaintColor = paintColor === 'DEFAULT' ? '#888888' : paintColor;
@@ -45,12 +54,16 @@ function RobotMesh({ chassisId, paintColor, tracerColor }: RobotMeshProps) {
   return (
     <group ref={groupRef} position={[0, 0.3, 0]}>
       {activeScene ? (
-        <primitive object={activeScene} position={[0, -0.85, 0]} scale={isUnit01 ? 1.6 : 0.7} />
+        <primitive
+          object={activeScene}
+          position={[0, isTitan ? 0 : -0.85, 0]}
+          scale={isUnit01 ? 1.6 : isUnit02 ? 0.7 : isWraith ? 1.5 : isTitan ? 1.7 : 1.2}
+        />
       ) : (
         <>
           {/* ── Chassis Body ── */}
           <mesh position={[0, 0, 0]} castShadow>
-            <boxGeometry args={isTitan ? [1.3, 0.8, 0.75] : isWraith ? [0.9, 0.6, 0.55] : [1.1, 0.7, 0.65]} />
+            <boxGeometry args={isTitanPrimitive ? [1.3, 0.8, 0.75] : isWraithPrimitive ? [0.9, 0.6, 0.55] : [1.1, 0.7, 0.65]} />
             <meshStandardMaterial
               color={safePaintColor}
               metalness={0.85}
@@ -61,19 +74,19 @@ function RobotMesh({ chassisId, paintColor, tracerColor }: RobotMeshProps) {
           </mesh>
 
           {/* ── Shoulder Pads ── */}
-          {!isWraith && (
+          {!isWraithPrimitive && (
             <>
-              <mesh position={isTitan ? [-0.85, 0.15, 0] : [-0.72, 0.12, 0]} castShadow>
-                <boxGeometry args={isTitan ? [0.35, 0.5, 0.6] : [0.28, 0.42, 0.55]} />
+              <mesh position={isTitanPrimitive ? [-0.85, 0.15, 0] : [-0.72, 0.12, 0]} castShadow>
+                <boxGeometry args={isTitanPrimitive ? [0.35, 0.5, 0.6] : [0.28, 0.42, 0.55]} />
                 <meshStandardMaterial color={safePaintColor} metalness={0.9} roughness={0.1} emissive={safePaintColor} emissiveIntensity={0.15} />
               </mesh>
-              <mesh position={isTitan ? [0.85, 0.15, 0] : [0.72, 0.12, 0]} castShadow>
-                <boxGeometry args={isTitan ? [0.35, 0.5, 0.6] : [0.28, 0.42, 0.55]} />
+              <mesh position={isTitanPrimitive ? [0.85, 0.15, 0] : [0.72, 0.12, 0]} castShadow>
+                <boxGeometry args={isTitanPrimitive ? [0.35, 0.5, 0.6] : [0.28, 0.42, 0.55]} />
                 <meshStandardMaterial color={safePaintColor} metalness={0.9} roughness={0.1} emissive={safePaintColor} emissiveIntensity={0.15} />
               </mesh>
             </>
           )}
-          {isTitan && (
+          {isTitanPrimitive && (
             <>
               <mesh position={[-1.0, 0.05, 0]} castShadow>
                 <boxGeometry args={[0.2, 0.4, 0.5]} />
@@ -87,14 +100,14 @@ function RobotMesh({ chassisId, paintColor, tracerColor }: RobotMeshProps) {
           )}
 
           {/* ── Head ── */}
-          <mesh position={isTitan ? [0, 0.72, 0] : isWraith ? [0, 0.55, 0.05] : [0, 0.62, 0]} castShadow>
-            <boxGeometry args={isTitan ? [0.65, 0.5, 0.55] : isWraith ? [0.45, 0.35, 0.6] : [0.55, 0.45, 0.5]} />
+          <mesh position={isTitanPrimitive ? [0, 0.72, 0] : isWraithPrimitive ? [0, 0.55, 0.05] : [0, 0.62, 0]} castShadow>
+            <boxGeometry args={isTitanPrimitive ? [0.65, 0.5, 0.55] : isWraithPrimitive ? [0.45, 0.35, 0.6] : [0.55, 0.45, 0.5]} />
             <meshStandardMaterial color={paintColor} metalness={0.8} roughness={0.2} emissive={paintColor} emissiveIntensity={0.2} />
           </mesh>
 
           {/* ── Visor (glowing eye strip) ── */}
-          <mesh position={isTitan ? [0, 0.73, 0.29] : isWraith ? [0, 0.56, 0.36] : [0, 0.63, 0.27]}>
-            <boxGeometry args={isTitan ? [0.45, 0.12, 0.02] : isWraith ? [0.3, 0.06, 0.02] : [0.38, 0.1, 0.02]} />
+          <mesh position={isTitanPrimitive ? [0, 0.73, 0.29] : isWraithPrimitive ? [0, 0.56, 0.36] : [0, 0.63, 0.27]}>
+            <boxGeometry args={isTitanPrimitive ? [0.45, 0.12, 0.02] : isWraithPrimitive ? [0.3, 0.06, 0.02] : [0.38, 0.1, 0.02]} />
             <meshStandardMaterial
               color="#ffffff"
               emissive={paintColor}
@@ -104,34 +117,34 @@ function RobotMesh({ chassisId, paintColor, tracerColor }: RobotMeshProps) {
           </mesh>
 
           {/* ── Turret Base ── */}
-          <mesh position={isTitan ? [0, 0.45, 0.4] : isWraith ? [0, 0.32, 0.3] : [0, 0.38, 0.36]} castShadow>
-            <cylinderGeometry args={isTitan ? [0.18, 0.22, 0.2] : isWraith ? [0.1, 0.14, 0.15] : [0.14, 0.18, 0.18, 8]} />
+          <mesh position={isTitanPrimitive ? [0, 0.45, 0.4] : isWraithPrimitive ? [0, 0.32, 0.3] : [0, 0.38, 0.36]} castShadow>
+            <cylinderGeometry args={isTitanPrimitive ? [0.18, 0.22, 0.2] : isWraithPrimitive ? [0.1, 0.14, 0.15] : [0.14, 0.18, 0.18, 8]} />
             <meshStandardMaterial color={paintColor} metalness={0.95} roughness={0.05} emissive={paintColor} emissiveIntensity={0.3} />
           </mesh>
 
           {/* ── Cannon Barrel ── */}
-          <mesh position={isTitan ? [0, 0.45, 0.75] : isWraith ? [0, 0.32, 0.6] : [0, 0.38, 0.7]} castShadow rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={isTitan ? [0.07, 0.09, 0.85, 8] : isWraith ? [0.04, 0.05, 0.6, 8] : [0.055, 0.07, 0.72, 8]} />
+          <mesh position={isTitanPrimitive ? [0, 0.45, 0.75] : isWraithPrimitive ? [0, 0.32, 0.6] : [0, 0.38, 0.7]} castShadow rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={isTitanPrimitive ? [0.07, 0.09, 0.85, 8] : isWraithPrimitive ? [0.04, 0.05, 0.6, 8] : [0.055, 0.07, 0.72, 8]} />
             <meshStandardMaterial color={paintColor} metalness={1} roughness={0.05} emissive={paintColor} emissiveIntensity={0.5} />
           </mesh>
 
           {/* ── Legs ── */}
-          <mesh position={isTitan ? [-0.35, -0.6, 0] : isWraith ? [-0.2, -0.45, 0] : [-0.27, -0.52, 0]} castShadow>
-            <boxGeometry args={isTitan ? [0.35, 0.55, 0.45] : isWraith ? [0.2, 0.35, 0.3] : [0.28, 0.45, 0.38]} />
+          <mesh position={isTitanPrimitive ? [-0.35, -0.6, 0] : isWraithPrimitive ? [-0.2, -0.45, 0] : [-0.27, -0.52, 0]} castShadow>
+            <boxGeometry args={isTitanPrimitive ? [0.35, 0.55, 0.45] : isWraithPrimitive ? [0.2, 0.35, 0.3] : [0.28, 0.45, 0.38]} />
             <meshStandardMaterial color={paintColor} metalness={0.8} roughness={0.2} emissive={paintColor} emissiveIntensity={0.1} />
           </mesh>
-          <mesh position={isTitan ? [0.35, -0.6, 0] : isWraith ? [0.2, -0.45, 0] : [0.27, -0.52, 0]} castShadow>
-            <boxGeometry args={isTitan ? [0.35, 0.55, 0.45] : isWraith ? [0.2, 0.35, 0.3] : [0.28, 0.45, 0.38]} />
+          <mesh position={isTitanPrimitive ? [0.35, -0.6, 0] : isWraithPrimitive ? [0.2, -0.45, 0] : [0.27, -0.52, 0]} castShadow>
+            <boxGeometry args={isTitanPrimitive ? [0.35, 0.55, 0.45] : isWraithPrimitive ? [0.2, 0.35, 0.3] : [0.28, 0.45, 0.38]} />
             <meshStandardMaterial color={paintColor} metalness={0.8} roughness={0.2} emissive={paintColor} emissiveIntensity={0.1} />
           </mesh>
 
           {/* ── Feet ── */}
-          <mesh position={isTitan ? [-0.35, -0.92, 0.08] : isWraith ? [-0.2, -0.67, 0.05] : [-0.27, -0.79, 0.06]} castShadow>
-            <boxGeometry args={isTitan ? [0.42, 0.18, 0.6] : isWraith ? [0.25, 0.1, 0.4] : [0.33, 0.14, 0.5]} />
+          <mesh position={isTitanPrimitive ? [-0.35, -0.92, 0.08] : isWraithPrimitive ? [-0.2, -0.67, 0.05] : [-0.27, -0.79, 0.06]} castShadow>
+            <boxGeometry args={isTitanPrimitive ? [0.42, 0.18, 0.6] : isWraithPrimitive ? [0.25, 0.1, 0.4] : [0.33, 0.14, 0.5]} />
             <meshStandardMaterial color={paintColor} metalness={0.9} roughness={0.1} emissive={paintColor} emissiveIntensity={0.08} />
           </mesh>
-          <mesh position={isTitan ? [0.35, -0.92, 0.08] : isWraith ? [0.2, -0.67, 0.05] : [0.27, -0.79, 0.06]} castShadow>
-            <boxGeometry args={isTitan ? [0.42, 0.18, 0.6] : isWraith ? [0.25, 0.1, 0.4] : [0.33, 0.14, 0.5]} />
+          <mesh position={isTitanPrimitive ? [0.35, -0.92, 0.08] : isWraithPrimitive ? [0.2, -0.67, 0.05] : [0.27, -0.79, 0.06]} castShadow>
+            <boxGeometry args={isTitanPrimitive ? [0.42, 0.18, 0.6] : isWraithPrimitive ? [0.25, 0.1, 0.4] : [0.33, 0.14, 0.5]} />
             <meshStandardMaterial color={paintColor} metalness={0.9} roughness={0.1} emissive={paintColor} emissiveIntensity={0.08} />
           </mesh>
         </>

@@ -36,23 +36,23 @@ export const MARKET_ITEMS: MarketItem[] = [
   },
   {
     id: "chassis-wraith",
-    name: "WRAITH MK-II",
+    name: "BUNNY BUNDLE",
     category: "chassis",
     price: 800,
     color: "#a855f7",
     glowColor: "#a855f7",
     rarity: "RARE",
-    description: "Ghost-protocol stealth chassis. Reduced radar signature.",
+    description: "Free Fire crossover bundle. Jump pad efficiency +15%.",
   },
   {
     id: "chassis-titan",
-    name: "TITAN OMEGA",
+    name: "ARMORED MECH",
     category: "chassis",
     price: 1800,
     color: "#f59e0b",
     glowColor: "#f59e0b",
     rarity: "LEGENDARY",
-    description: "Apex predator. Reinforced alloy hull with overclocked servos.",
+    description: "Military-grade armored mech. Extreme durability and mass.",
   },
 
   // ── NEON PAINTS ────────────────────────────────────────────────

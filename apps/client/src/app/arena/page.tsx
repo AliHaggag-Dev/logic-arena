@@ -25,8 +25,12 @@ interface RobotScript {
 }
 
 const ROBOT_FILES: Record<string, string> = {
-  'unit-01': '/robot.glb',
-  'unit-02': '/robot2.glb',
+  'unit-01':         '/robots/robot.glb',
+  'unit-02':         '/robots/robot2.glb',
+  'chassis-unit-01': '/robots/robot.glb',
+  'chassis-unit-02': '/robots/robot2.glb',
+  'chassis-wraith':  '/robots/bunny.glb',
+  'chassis-titan':   '/robots/armored-robot.glb',
 };
 
 const ArenaPageContent = () => {
@@ -42,7 +46,7 @@ const ArenaPageContent = () => {
   const [script, setScript] = useState<RobotScript | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [localRobotFile, setLocalRobotFile] = useState('/robot.glb');
+  const [localRobotFile, setLocalRobotFile] = useState('/robots/robot.glb');
   const [localRobotColor, setLocalRobotColor] = useState('#22d3ee');
   const [soundFx, setSoundFx] = useState(true);
   const [graphicsQuality, setGraphicsQuality] = useState('medium');
@@ -68,7 +72,7 @@ const ArenaPageContent = () => {
   useEffect(() => {
     apiClient.get('/users/profile').then((res) => {
       // 1. Visual robot model & color from Garage loadout
-      const file = ROBOT_FILES[res.data.selectedRobotId] ?? '/robot.glb';
+      const file = ROBOT_FILES[res.data.selectedRobotId] ?? '/robots/robot.glb';
       setLocalRobotFile(file);
       if (res.data.selectedColor) setLocalRobotColor(res.data.selectedColor);
 
@@ -79,7 +83,7 @@ const ArenaPageContent = () => {
         if (prefs.graphicsQuality) setGraphicsQuality(prefs.graphicsQuality);
         // If no robot was already selected via URL/garage, honour arenaPreferences.defaultRobot
         if (!res.data.selectedRobotId && prefs.defaultRobot) {
-          setLocalRobotFile(ROBOT_FILES[prefs.defaultRobot] ?? '/robot.glb');
+          setLocalRobotFile(ROBOT_FILES[prefs.defaultRobot] ?? '/robots/robot.glb');
         }
       }
     }).catch(() => { });

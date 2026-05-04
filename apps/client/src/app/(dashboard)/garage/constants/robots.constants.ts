@@ -14,7 +14,7 @@ export const ROBOTS: RobotConfig[] = [
   {
     id: "unit-01",
     name: "UNIT-01",
-    file: "/robot.glb",
+    file: "/robots/robot.glb",
     scale: 2.5,
     cardScale: 2.5,
     description: "Balanced offense and defense.",
@@ -23,7 +23,7 @@ export const ROBOTS: RobotConfig[] = [
   {
     id: "unit-02",
     name: "UNIT-02",
-    file: "/robot2.glb",
+    file: "/robots/robot2.glb",
     scale: 1.4,
     cardScale: 1.2,
     description: "High mobility, reduced armor.",
@@ -38,7 +38,7 @@ export const ROBOTS_MAP: Record<string, RobotConfig> = Object.fromEntries(
 export const GUEST_ROBOT: RobotConfig = {
   id: "guest-unit",
   name: "GUEST UNIT",
-  file: "/robot.glb",
+  file: "/robots/robot.glb",
   scale: 2.5,
   cardScale: 2.5,
   description: "Register to unlock full access.",

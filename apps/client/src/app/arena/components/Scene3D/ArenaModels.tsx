@@ -23,10 +23,12 @@ const toSceneX = (x: number) => (x / 40) - 10;
 const toSceneZ = (y: number) => (y / 40) - 7.5;
 
 const ROBOT_FILES: Record<string, string> = {
-  'unit-01':         '/robot.glb',
-  'unit-02':         '/robot2.glb',
-  'chassis-unit-01': '/robot.glb',
-  'chassis-unit-02': '/robot2.glb',
+  'unit-01':         '/robots/robot.glb',
+  'unit-02':         '/robots/robot2.glb',
+  'chassis-unit-01': '/robots/robot.glb',
+  'chassis-unit-02': '/robots/robot2.glb',
+  'chassis-wraith':  '/robots/bunny.glb',
+  'chassis-titan':   '/robots/armored-robot.glb',
 };
 
 export const ArenaModels = ({
@@ -168,7 +170,7 @@ export const ArenaModels = ({
                       fovDirection={robot.fovDirection}
                       hideHealthBar={displayMode === 'TRAINING_SOLO'}
                       modelFile={
-                        robot.model ? (ROBOT_FILES[robot.model] ?? robot.model) : '/robot.glb'
+                        robot.model ? (ROBOT_FILES[robot.model] ?? robot.model) : '/robots/robot.glb'
                       }
                       speechBubble={speechBubble?.robotId === robot.id ? speechBubble.message : null}
                     />
