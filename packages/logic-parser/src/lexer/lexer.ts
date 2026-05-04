@@ -14,6 +14,13 @@ const QUERY_FUNCTIONS = [
     "GET_OBSTACLE_TYPE"
 ];
 
+/** Built-in math/utility functions that return values inside expressions. */
+const BUILTIN_FUNCTIONS = new Set([
+    "ABS", "SQRT", "POW", "SIN", "COS", "TAN",
+    "ATAN2", "MIN", "MAX", "FLOOR", "CEIL", "ROUND",
+    "LENGTH", "PUSH", "POP", "RANDOM", "LOG",
+]);
+
 export class Lexer {
     private input: string;
     private position: number = 0;
@@ -39,9 +46,21 @@ export class Lexer {
         }
     }
 
+    private skipComments(): void {
+        while (this.char === '/' && this.peekChar() === '/') {
+            // Skip until end of line or end of input
+            while (this.char !== null) {
+                const c: string = this.char;
+                if (c === '\n' || c === '\r') break;
+                this.readChar();
+            }
+            this.skipWhitespace();
+        }
+    }
+
     private readIdentifier(): string {
         let start = this.position - 1;
-        while (this.char !== null && /[a-zA-Z_]/.test(this.char)) {
+        while (this.char !== null && /[a-zA-Z_0-9]/.test(this.char)) {
             this.readChar();
         }
         return this.input.slice(start, this.position - 1);
@@ -75,6 +94,10 @@ export class Lexer {
     }
 
     public nextToken(): Token {
+        this.skipWhitespace();
+
+        // Skip single-line comments
+        this.skipComments();
         this.skipWhitespace();
 
         let token: Token;
@@ -134,6 +157,12 @@ export class Lexer {
             case ')':
                 token = { type: TokenType.RPAREN, value: ")" };
                 break;
+            case '[':
+                token = { type: TokenType.LBRACKET, value: "[" };
+                break;
+            case ']':
+                token = { type: TokenType.RBRACKET, value: "]" };
+                break;
             case ',':
                 token = { type: TokenType.COMMA, value: "," };
                 break;
@@ -143,11 +172,15 @@ export class Lexer {
             default:
                 if (/[a-zA-Z_]/.test(this.char)) {
                     const value = this.readIdentifier();
+                    const upper = value.toUpperCase();
                     if (isKeyword(value)) {
-                        return { type: TokenType.KEYWORD, value: value.toUpperCase() };
+                        return { type: TokenType.KEYWORD, value: upper };
                     }
-                    if (QUERY_FUNCTIONS.includes(value.toUpperCase())) {
-                        return { type: TokenType.QUERY_CALL, value: value.toUpperCase() };
+                    if (QUERY_FUNCTIONS.includes(upper)) {
+                        return { type: TokenType.QUERY_CALL, value: upper };
+                    }
+                    if (BUILTIN_FUNCTIONS.has(upper)) {
+                        return { type: TokenType.IDENTIFIER, value: upper };
                     }
                     return { type: TokenType.IDENTIFIER, value };
                 } else if (/[0-9]/.test(this.char)) {

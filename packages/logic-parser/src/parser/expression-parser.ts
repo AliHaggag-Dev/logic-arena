@@ -1,15 +1,33 @@
 import { 
     TokenType, NodeType, Expression, 
     BinaryExpression, UnaryExpression, BooleanLiteral,
-    Identifier, NumberLiteral, StringLiteral, ActionExpression 
+    Identifier, NumberLiteral, StringLiteral,
+    FunctionCallExpression, ArrayLiteral, IndexExpression
 } from "../types";
 import type { Parser } from "./parser";
+
+/** Built-in functions recognized as expression-level calls. */
+const BUILTIN_FN_NAMES = new Set([
+    "ABS", "SQRT", "POW", "SIN", "COS", "TAN",
+    "ATAN2", "MIN", "MAX", "FLOOR", "CEIL", "ROUND",
+    "LENGTH", "PUSH", "POP", "RANDOM", "LOG",
+]);
+
+/** Helper to check peekToken type without TS narrowing side-effects. */
+function peekIs(parser: Parser, type: TokenType): boolean {
+    return (parser.peekToken.type as TokenType) === type;
+}
+
+/** Helper to check currentToken type without TS narrowing side-effects. */
+function curIs(parser: Parser, type: TokenType): boolean {
+    return (parser.currentToken.type as TokenType) === type;
+}
 
 export class ExpressionParser {
     constructor(private parser: Parser) {}
 
     // Precedence tower (low → high):
-    //   OR → AND → comparison → binary (+−*/%) → unary(NOT/−) → primary
+    //   OR → AND → comparison → binary (+−*/%) → unary(NOT/−) → postfix → primary
     public parseExpression(): Expression | null {
         return this.parseOrExpression();
     }
@@ -20,7 +38,7 @@ export class ExpressionParser {
         if (!left) return null;
 
         while (
-            this.parser.peekToken.type === TokenType.KEYWORD &&
+            peekIs(this.parser, TokenType.KEYWORD) &&
             this.parser.peekToken.value === "OR"
         ) {
             this.parser.nextToken(); // consume OR keyword
@@ -44,7 +62,7 @@ export class ExpressionParser {
         if (!left) return null;
 
         while (
-            this.parser.peekToken.type === TokenType.KEYWORD &&
+            peekIs(this.parser, TokenType.KEYWORD) &&
             this.parser.peekToken.value === "AND"
         ) {
             this.parser.nextToken(); // consume AND keyword
@@ -69,7 +87,7 @@ export class ExpressionParser {
 
         const COMPARISON_OPS = ["<", ">", "==", "!=", "<=", ">="];
         if (
-            this.parser.peekToken.type === TokenType.OPERATOR &&
+            peekIs(this.parser, TokenType.OPERATOR) &&
             COMPARISON_OPS.includes(this.parser.peekToken.value)
         ) {
             this.parser.nextToken();
@@ -96,7 +114,7 @@ export class ExpressionParser {
         if (!left) return null;
 
         while (
-            this.parser.peekToken.type === TokenType.OPERATOR &&
+            peekIs(this.parser, TokenType.OPERATOR) &&
             ["+", "-"].includes(this.parser.peekToken.value)
         ) {
             this.parser.nextToken();
@@ -123,7 +141,7 @@ export class ExpressionParser {
         if (!left) return null;
 
         while (
-            this.parser.peekToken.type === TokenType.OPERATOR &&
+            peekIs(this.parser, TokenType.OPERATOR) &&
             ["*", "/", "%"].includes(this.parser.peekToken.value)
         ) {
             this.parser.nextToken();
@@ -146,54 +164,156 @@ export class ExpressionParser {
 
     // ── Unary: NOT  − ───────────────────────────────────────────────────────
     private parseUnaryExpression(): Expression | null {
-        if (this.parser.currentToken.type === TokenType.KEYWORD && this.parser.currentToken.value === "NOT") {
+        if (curIs(this.parser, TokenType.KEYWORD) && this.parser.currentToken.value === "NOT") {
             this.parser.nextToken();
             const argument = this.parseUnaryExpression();
             if (!argument) return null;
             return { type: NodeType.UnaryExpression, operator: "NOT", argument } as UnaryExpression;
         }
 
-        if (this.parser.currentToken.type === TokenType.OPERATOR && this.parser.currentToken.value === "-") {
+        if (curIs(this.parser, TokenType.OPERATOR) && this.parser.currentToken.value === "-") {
             this.parser.nextToken();
             const argument = this.parseUnaryExpression();
             if (!argument) return null;
             return { type: NodeType.UnaryExpression, operator: "-", argument } as UnaryExpression;
         }
 
-        return this.parsePrimary();
+        return this.parsePostfix();
     }
 
-    // ── Primary: literals, identifiers, grouped expressions ─────────────────
+    // ── Postfix: array indexing  arr[0] ─────────────────────────────────────
+    private parsePostfix(): Expression | null {
+        let expr = this.parsePrimary();
+        if (!expr) return null;
+
+        // Handle arr[index] access
+        while (peekIs(this.parser, TokenType.LBRACKET)) {
+            this.parser.nextToken(); // consume '['
+            this.parser.nextToken(); // move to index expression
+            const index = this.parseOrExpression();
+            if (!index) return null;
+            // expect ']'
+            if (peekIs(this.parser, TokenType.RBRACKET)) {
+                this.parser.nextToken(); // consume ']'
+            }
+            expr = {
+                type: NodeType.IndexExpression,
+                object: expr,
+                index,
+            } as IndexExpression;
+        }
+
+        return expr;
+    }
+
+    // ── Primary: literals, identifiers, grouped expressions, fn calls, arrays
     private parsePrimary(): Expression | null {
         const { currentToken } = this.parser;
 
         // Grouped expression: ( expr )
-        if (currentToken.type === TokenType.LPAREN) {
+        if (curIs(this.parser, TokenType.LPAREN)) {
             this.parser.nextToken(); // consume '('
             const inner = this.parseOrExpression(); // full precedence inside parens
             if (!inner) return null;
             // expect ')' as the next token
-            if (this.parser.peekToken.type === TokenType.RPAREN) {
+            if (peekIs(this.parser, TokenType.RPAREN)) {
                 this.parser.nextToken(); // consume ')'
             }
             return inner;
         }
 
-        if (currentToken.type === TokenType.KEYWORD && currentToken.value === "TRUE") {
+        // Array literal: [ expr, expr, ... ]
+        if (curIs(this.parser, TokenType.LBRACKET)) {
+            return this.parseArrayLiteral();
+        }
+
+        if (curIs(this.parser, TokenType.KEYWORD) && currentToken.value === "TRUE") {
             return { type: NodeType.BooleanLiteral, value: true } as BooleanLiteral;
         }
-        if (currentToken.type === TokenType.KEYWORD && currentToken.value === "FALSE") {
+        if (curIs(this.parser, TokenType.KEYWORD) && currentToken.value === "FALSE") {
             return { type: NodeType.BooleanLiteral, value: false } as BooleanLiteral;
         }
-        if (currentToken.type === TokenType.IDENTIFIER) {
-            return { type: NodeType.Identifier, value: currentToken.value };
+
+        // Identifier — could be a built-in function call like ABS(x) or a plain variable
+        if (curIs(this.parser, TokenType.IDENTIFIER)) {
+            const name = currentToken.value;
+
+            // Check if this is a built-in function call: NAME(args...)
+            if (BUILTIN_FN_NAMES.has(name.toUpperCase()) && peekIs(this.parser, TokenType.LPAREN)) {
+                return this.parseFunctionCallExpression(name.toUpperCase());
+            }
+
+            return { type: NodeType.Identifier, value: name };
         }
-        if (currentToken.type === TokenType.NUMBER) {
+        if (curIs(this.parser, TokenType.NUMBER)) {
             return { type: NodeType.NumberLiteral, value: parseFloat(currentToken.value) };
         }
-        if (currentToken.type === TokenType.STRING) {
+        if (curIs(this.parser, TokenType.STRING)) {
             return { type: NodeType.StringLiteral, value: currentToken.value };
         }
         return null;
+    }
+
+    // ── Built-in function call: ABS(expr), POW(a, b) ────────────────────────
+    private parseFunctionCallExpression(name: string): FunctionCallExpression | null {
+        this.parser.nextToken(); // consume '('
+        const args: Expression[] = [];
+
+        // Handle empty args: FN()
+        if (peekIs(this.parser, TokenType.RPAREN)) {
+            this.parser.nextToken(); // consume ')'
+            return { type: NodeType.FunctionCallExpression, name, args };
+        }
+
+        // Parse first argument
+        this.parser.nextToken(); // move to first arg
+        const firstArg = this.parseOrExpression();
+        if (firstArg) args.push(firstArg);
+
+        // Parse comma-separated additional args
+        while (peekIs(this.parser, TokenType.COMMA)) {
+            this.parser.nextToken(); // consume ','
+            this.parser.nextToken(); // move to next arg
+            const arg = this.parseOrExpression();
+            if (arg) args.push(arg);
+        }
+
+        // expect ')'
+        if (peekIs(this.parser, TokenType.RPAREN)) {
+            this.parser.nextToken(); // consume ')'
+        }
+
+        return { type: NodeType.FunctionCallExpression, name, args };
+    }
+
+    // ── Array literal: [1, 2, 3] or [] ──────────────────────────────────────
+    private parseArrayLiteral(): ArrayLiteral | null {
+        const elements: Expression[] = [];
+
+        // Handle empty array: []
+        if (peekIs(this.parser, TokenType.RBRACKET)) {
+            this.parser.nextToken(); // consume ']'
+            return { type: NodeType.ArrayLiteral, elements };
+        }
+
+        // Parse first element
+        this.parser.nextToken(); // move to first element
+        const firstEl = this.parseOrExpression();
+        if (firstEl) elements.push(firstEl);
+
+        // Parse comma-separated additional elements
+        while (peekIs(this.parser, TokenType.COMMA)) {
+            this.parser.nextToken(); // consume ','
+            this.parser.nextToken(); // move to next element
+            const el = this.parseOrExpression();
+            if (el) elements.push(el);
+        }
+
+        // expect ']'
+        if (peekIs(this.parser, TokenType.RBRACKET)) {
+            this.parser.nextToken(); // consume ']'
+        }
+
+        return { type: NodeType.ArrayLiteral, elements };
     }
 }

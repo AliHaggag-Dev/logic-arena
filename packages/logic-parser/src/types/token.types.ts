@@ -10,6 +10,8 @@ export enum TokenType {
   COLON = "COLON",
   LPAREN = "LPAREN",
   RPAREN = "RPAREN",
+  LBRACKET = "LBRACKET",
+  RBRACKET = "RBRACKET",
   QUERY_CALL = "QUERY_CALL",
 }
 

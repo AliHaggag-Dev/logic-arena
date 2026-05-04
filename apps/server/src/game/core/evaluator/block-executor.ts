@@ -4,6 +4,7 @@ import {
   NodeType,
   IfStatement,
   WhileStatement,
+  ForStatement,
   AssignmentStatement,
   ActionStatement,
   CallStatement,
@@ -12,6 +13,9 @@ import {
   FunctionDeclaration,
   ActionExpression,
   QueryStatement,
+  BreakStatement,
+  ContinueStatement,
+  ReturnStatement,
 } from '../../../../../../packages/logic-parser/src';
 import { ActionExecutor } from '../executor';
 import { ExpressionEvaluator } from './expression-facade';
@@ -22,12 +26,16 @@ const ALLOWED_NODE_TYPES = new Set<string>([
   NodeType.AssignmentStatement,
   NodeType.IfStatement,
   NodeType.WhileStatement,
+  NodeType.ForStatement,
   NodeType.ActionStatement,
   NodeType.CallStatement,
   NodeType.WaitStatement,
   NodeType.ScanStatement,
   NodeType.FunctionDeclaration,
   NodeType.QueryStatement,
+  NodeType.BreakStatement,
+  NodeType.ContinueStatement,
+  NodeType.ReturnStatement,
 ]);
 
 // ── Sandbox: allowed action command strings ─────────────────────────────────
@@ -49,6 +57,17 @@ const STASIS_BLOCKED_ACTION_CMDS = new Set([
   'MOVE', 'MOVE_FAST', 'BACKUP', 'PATHFIND', 'FIRE', 'BURST_FIRE',
 ]);
 
+/** Sentinel symbols for loop control flow signals. */
+const BREAK_SIGNAL = Symbol('BREAK');
+const CONTINUE_SIGNAL = Symbol('CONTINUE');
+const RETURN_SIGNAL = Symbol('RETURN');
+
+/** Result of executing a block — carries control flow signals up the stack. */
+interface BlockResult {
+  signal?: typeof BREAK_SIGNAL | typeof CONTINUE_SIGNAL | typeof RETURN_SIGNAL;
+  returnValue?: unknown;
+}
+
 export class BlockExecutor {
   constructor(
     private gameLoop: GameLoop,
@@ -63,16 +82,17 @@ export class BlockExecutor {
     statements: Statement[],
     memory: Record<string, unknown>,
     tickStart: number,
-  ): void {
+    dispatchedActions: Set<string> = new Set(),
+  ): BlockResult {
     // Script execution continues during STASIS so users can branch on IN_STASIS.
     // Movement/combat commands are blocked at the action level below.
     // The physics layer (robot-updater.ts) enforces velocity=0 and no position updates.
 
     for (const stmt of statements) {
-      if (robot.health <= 0) return;
+      if (robot.health <= 0) return {};
       if (Date.now() - tickStart > CONSTANTS.MAX_TICK_DURATION_MS) {
         console.warn(`SANDBOX: tick timeout for robot ${robotId}`);
-        return;
+        return {};
       }
 
       // ── Whitelist gate — skip unknown node types silently ────────────────
@@ -84,6 +104,26 @@ export class BlockExecutor {
       }
 
       switch (stmt.type) {
+        // ── BREAK ─────────────────────────────────────────────────────────
+        case NodeType.BreakStatement:
+          return { signal: BREAK_SIGNAL };
+
+        // ── CONTINUE ──────────────────────────────────────────────────────
+        case NodeType.ContinueStatement:
+          return { signal: CONTINUE_SIGNAL };
+
+        // ── RETURN ────────────────────────────────────────────────────────
+        case NodeType.ReturnStatement: {
+          const retStmt = stmt as ReturnStatement;
+          let returnValue: unknown;
+          if (retStmt.value) {
+            returnValue = this.expressionEvaluator.evaluateExpression(
+              robot, retStmt.value, memory, () => this.gameLoop.getRobots(),
+            );
+          }
+          return { signal: RETURN_SIGNAL, returnValue };
+        }
+
         // SET executes normally when the robot is active
         case NodeType.AssignmentStatement: {
           const assign = stmt as AssignmentStatement;
@@ -93,6 +133,22 @@ export class BlockExecutor {
             memory,
             () => this.gameLoop.getRobots(),
           );
+
+          // Handle indexed assignment: SET arr[i] = value
+          if (assign.index) {
+            const idx = this.expressionEvaluator.evaluateExpression(
+              robot, assign.index, memory, () => this.gameLoop.getRobots(),
+            );
+            const arr = memory[assign.name.value];
+            if (Array.isArray(arr) && typeof idx === 'number') {
+              const i = Math.floor(idx);
+              if (i >= 0 && i < arr.length) {
+                arr[i] = val;
+              }
+            }
+            break;
+          }
+
           memory[assign.name.value] = val;
 
           const ROTATION_ALIASES = ['rotation', 'angle', 'rot'];
@@ -135,23 +191,14 @@ export class BlockExecutor {
             memory,
             () => this.gameLoop.getRobots(),
           );
-          if (cond) {
-            this.executeBlock(
-              robotId,
-              robot,
-              ifStmt.consequence,
-              memory,
-              tickStart,
-            );
-          } else if (ifStmt.alternate) {
-            this.executeBlock(
-              robotId,
-              robot,
-              ifStmt.alternate,
-              memory,
-              tickStart,
-            );
-          }
+          const result = cond
+            ? this.executeBlock(robotId, robot, ifStmt.consequence, memory, tickStart, dispatchedActions)
+            : ifStmt.alternate
+              ? this.executeBlock(robotId, robot, ifStmt.alternate, memory, tickStart, dispatchedActions)
+              : {};
+          
+          // Propagate control flow signals (BREAK, CONTINUE, RETURN) up through IF
+          if (result.signal) return result;
           break;
         }
 
@@ -168,14 +215,52 @@ export class BlockExecutor {
               () => this.gameLoop.getRobots(),
             );
             if (!cond) break;
-            this.executeBlock(
-              robotId,
-              robot,
-              whileStmt.body,
-              memory,
-              tickStart,
+            const result = this.executeBlock(
+              robotId, robot, whileStmt.body, memory, tickStart, dispatchedActions,
             );
+            if (result.signal === BREAK_SIGNAL) break;
+            if (result.signal === RETURN_SIGNAL) return result;
+            // CONTINUE_SIGNAL — just continue to next iteration
             iters++;
+          }
+          break;
+        }
+
+        // FOR i = start TO end DO ... END
+        case NodeType.ForStatement: {
+          const forStmt = stmt as ForStatement;
+          const startVal = this.expressionEvaluator.evaluateExpression(
+            robot, forStmt.start, memory, () => this.gameLoop.getRobots(),
+          );
+          const endVal = this.expressionEvaluator.evaluateExpression(
+            robot, forStmt.end, memory, () => this.gameLoop.getRobots(),
+          );
+
+          if (typeof startVal !== 'number' || typeof endVal !== 'number') break;
+
+          const varName = forStmt.variable.value;
+          // Cap iterations to prevent infinite loops
+          const maxIter = Math.min(Math.abs(endVal - startVal), CONSTANTS.MAX_WHILE_ITERS * 10);
+          let iterCount = 0;
+
+          if (startVal <= endVal) {
+            for (let i = startVal; i <= endVal && iterCount < maxIter; i++, iterCount++) {
+              memory[varName] = i;
+              const result = this.executeBlock(
+                robotId, robot, forStmt.body, memory, tickStart, dispatchedActions,
+              );
+              if (result.signal === BREAK_SIGNAL) break;
+              if (result.signal === RETURN_SIGNAL) return result;
+            }
+          } else {
+            for (let i = startVal; i >= endVal && iterCount < maxIter; i--, iterCount++) {
+              memory[varName] = i;
+              const result = this.executeBlock(
+                robotId, robot, forStmt.body, memory, tickStart, dispatchedActions,
+              );
+              if (result.signal === BREAK_SIGNAL) break;
+              if (result.signal === RETURN_SIGNAL) return result;
+            }
           }
           break;
         }
@@ -192,17 +277,56 @@ export class BlockExecutor {
           // Skip movement and combat commands during STASIS.
           // STOP and WAIT are always allowed (they don't move the robot).
           if (robot.inStasis && STASIS_BLOCKED_ACTION_CMDS.has(cmd)) break;
-          this.executeActionIfOffCooldown(robotId, action, memory);
+          
+          if (!dispatchedActions.has(cmd)) {
+            dispatchedActions.add(cmd);
+            this.executeActionIfOffCooldown(robotId, action, memory);
+          }
           break;
         }
 
+        // CALL with optional arguments — supports parameterized functions
         case NodeType.CallStatement: {
-          const funcName = (stmt as CallStatement).functionName.value;
+          const callStmt = stmt as CallStatement;
+          const funcName = callStmt.functionName.value;
           const funcMap = this.functions.get(robotId);
           if (funcMap) {
             const func = funcMap.get(funcName);
-            if (func)
-              this.executeBlock(robotId, robot, func.body, memory, tickStart);
+            if (func) {
+              // Create a scoped memory for function execution
+              const scopedMemory = { ...memory };
+
+              // Bind arguments to parameter names
+              if (func.params && callStmt.args) {
+                for (let i = 0; i < func.params.length; i++) {
+                  const paramName = func.params[i].value;
+                  const argValue = i < callStmt.args.length
+                    ? this.expressionEvaluator.evaluateExpression(
+                        robot, callStmt.args[i], memory, () => this.gameLoop.getRobots(),
+                      )
+                    : undefined;
+                  scopedMemory[paramName] = argValue;
+                }
+              }
+
+              const result = this.executeBlock(
+                robotId, robot, func.body, scopedMemory, tickStart, dispatchedActions,
+              );
+
+              // Copy back non-parameter variables (side effects like SET x = ...)
+              // but DO NOT copy parameter names back (they are local-scoped)
+              const paramNames = new Set(func.params?.map(p => p.value) ?? []);
+              for (const key of Object.keys(scopedMemory)) {
+                if (!paramNames.has(key)) {
+                  memory[key] = scopedMemory[key];
+                }
+              }
+
+              // If function returned a value, store it in __return for the caller
+              if (result.signal === RETURN_SIGNAL) {
+                memory['__return'] = result.returnValue;
+              }
+            }
           }
           break;
         }
@@ -210,16 +334,19 @@ export class BlockExecutor {
         case NodeType.WaitStatement: {
           const ticks = (stmt as WaitStatement).ticks.value;
           memory['___waitTicks'] = ticks;
-          return; // Stop current block execution
+          return {}; // Stop current block execution
         }
 
         case NodeType.ScanStatement: {
           if (robot.inStasis) break;
-          this.actionExecutor.executeAction(
-            robotId,
-            stmt as ScanStatement,
-            memory,
-          );
+          if (!dispatchedActions.has('SCAN')) {
+            dispatchedActions.add('SCAN');
+            this.actionExecutor.executeAction(
+              robotId,
+              stmt as ScanStatement,
+              memory,
+            );
+          }
           break;
         }
 
@@ -309,6 +436,7 @@ export class BlockExecutor {
         }
       }
     }
+    return {};
   }
 
   private executeActionIfOffCooldown(

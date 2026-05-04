@@ -72,22 +72,17 @@ export class EnergyManager {
     if (robot.totalDamageDealt === undefined)    robot.totalDamageDealt = 0;
   }
 
-  /**
-   * Apply passive energy regeneration for one physics frame.
-   * Regen only occurs when the robot is in STASIS (+3/tick).
-   * Active robots do not regenerate energy, even when idle.
-   */
   regen(robot: Robot): void {
     if (!robot.isAlive) return;
+    // STASIS regen is fast (3 per tick). Active idle regen is slow (0.5 per tick).
+    const regenAmount = robot.inStasis ? 3 : 0.5;
 
-    // Reset flag for next tick (even though active regen is removed)
-    robot.executedCommandThisTick = false;
-
-    if (robot.inStasis) {
+    // Regenerate if in STASIS or if the robot was completely idle this tick
+    if (robot.inStasis || !robot.executedCommandThisTick) {
       const max = robot.maxEnergy ?? DEFAULT_MAX_ENERGY;
-      robot.energy = Math.min(max, (robot.energy ?? 0) + 3);
+      robot.energy = Math.min(max, (robot.energy ?? 0) + regenAmount);
       
-      if (robot.energy >= STASIS_EXIT_THRESHOLD) {
+      if (robot.inStasis && robot.energy >= STASIS_EXIT_THRESHOLD) {
         robot.inStasis = false;
       }
     }

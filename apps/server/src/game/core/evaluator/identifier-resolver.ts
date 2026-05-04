@@ -17,6 +17,8 @@ const RESERVED_IDENTIFIERS = new Set([
   'CAN_SEE_ENEMY',
   'VISIBLE_ENEMY_COUNT',
   'FOV_ANGLE',
+  'POSITION_X',
+  'POSITION_Y',
   'NEAREST_VISIBLE_X',
   'NEAREST_VISIBLE_Y',
   'CAN_SEE_OBSTACLE',
@@ -71,6 +73,10 @@ export function resolveIdentifier(
       return visibleRobots.length;
     case 'FOV_ANGLE':
       return robot.fov?.angle ?? 120;
+    case 'POSITION_X':
+      return robot.position.x;
+    case 'POSITION_Y':
+      return robot.position.y;
 
     case 'NEAREST_VISIBLE_X':
     case 'NEAREST_VISIBLE_Y': {

@@ -1,13 +1,15 @@
 export const KEYWORDS = new Set([
   "IF", "THEN", "ELSE", "END",
   "WHILE", "DO", 
-  "FUNCTION", "CALL",
+  "FOR", "TO",
+  "FUNCTION", "CALL", "RETURN",
   "FIRE", "BURST_FIRE",
   "MOVE", "MOVE_FAST", "STOP", "BACKUP",
   "PATHFIND", "SET",
   "NOT", "AND", "OR",
   "TRUE", "FALSE",
-  "WAIT", "SCAN"
+  "WAIT", "SCAN",
+  "BREAK", "CONTINUE"
 ]);
 
 export function isKeyword(value: string): boolean {

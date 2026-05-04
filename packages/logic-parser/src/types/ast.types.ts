@@ -2,6 +2,7 @@ export enum NodeType {
   Program = "Program",
   IfStatement = "IfStatement",
   WhileStatement = "WhileStatement",
+  ForStatement = "ForStatement",
   FunctionDeclaration = "FunctionDeclaration",
   CallStatement = "CallStatement",
   WaitStatement = "WaitStatement",
@@ -17,6 +18,12 @@ export enum NodeType {
   BinaryExpression = "BinaryExpression",
   UnaryExpression = "UnaryExpression",
   QueryStatement = "QueryStatement",
+  FunctionCallExpression = "FunctionCallExpression",
+  ArrayLiteral = "ArrayLiteral",
+  IndexExpression = "IndexExpression",
+  BreakStatement = "BreakStatement",
+  ContinueStatement = "ContinueStatement",
+  ReturnStatement = "ReturnStatement",
 }
 
 export interface BaseNode {
@@ -33,7 +40,10 @@ export type Expression =
   | BinaryExpression 
   | UnaryExpression 
   | ComparisonExpression 
-  | ActionExpression;
+  | ActionExpression
+  | FunctionCallExpression
+  | ArrayLiteral
+  | IndexExpression;
 
 export interface Program extends Statement {
   type: NodeType.Program;
@@ -53,15 +63,25 @@ export interface WhileStatement extends Statement {
   body: Statement[];
 }
 
+export interface ForStatement extends Statement {
+  type: NodeType.ForStatement;
+  variable: Identifier;
+  start: Expression;
+  end: Expression;
+  body: Statement[];
+}
+
 export interface FunctionDeclaration extends Statement {
   type: NodeType.FunctionDeclaration;
   name: Identifier;
+  params?: Identifier[];
   body: Statement[];
 }
 
 export interface CallStatement extends Statement {
   type: NodeType.CallStatement;
   functionName: Identifier;
+  args?: Expression[];
 }
 
 export interface WaitStatement extends Statement {
@@ -82,11 +102,25 @@ export interface AssignmentStatement extends Statement {
   type: NodeType.AssignmentStatement;
   name: Identifier;
   value: Expression;
+  index?: Expression;
 }
 
 export interface ActionStatement extends Statement {
   type: NodeType.ActionStatement;
   consequence: ActionExpression;
+}
+
+export interface BreakStatement extends Statement {
+  type: NodeType.BreakStatement;
+}
+
+export interface ContinueStatement extends Statement {
+  type: NodeType.ContinueStatement;
+}
+
+export interface ReturnStatement extends Statement {
+  type: NodeType.ReturnStatement;
+  value?: Expression;
 }
 
 export interface ComparisonExpression extends BaseNode {
@@ -113,6 +147,23 @@ export interface UnaryExpression extends BaseNode {
   type: NodeType.UnaryExpression;
   operator: string;
   argument: Expression;
+}
+
+export interface FunctionCallExpression extends BaseNode {
+  type: NodeType.FunctionCallExpression;
+  name: string;
+  args: Expression[];
+}
+
+export interface ArrayLiteral extends BaseNode {
+  type: NodeType.ArrayLiteral;
+  elements: Expression[];
+}
+
+export interface IndexExpression extends BaseNode {
+  type: NodeType.IndexExpression;
+  object: Expression;
+  index: Expression;
 }
 
 export interface Identifier extends BaseNode {

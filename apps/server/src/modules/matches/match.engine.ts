@@ -70,6 +70,8 @@ export class MatchEngine {
   private tick(): void {
     this.gameLoop.getRobots().forEach(robot => {
       if (!robot.isAlive) return;
+      // Clear flag so logic executor can set it if an action is performed
+      robot.executedCommandThisTick = false;
       this.deps.logicEvaluator.evaluate(robot.id);
     });
   }
