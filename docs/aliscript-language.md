@@ -13,10 +13,12 @@
 4. [Read-Only Identifiers](#read-only-identifiers)
 5. [Math Standard Library](#math-standard-library)
 6. [Arrays](#arrays)
-7. [Advanced Sensors ⭐ NEW](#advanced-sensors--new)
-8. [Status Query Functions](#status-query-functions)
-9. [Energy System](#energy-system)
-10. [Battle Tactics Examples](#battle-tactics-examples)
+7. [Dictionaries & Hash Maps ⭐ NEW](#dictionaries--hash-maps--new)
+8. [Advanced Tactics: Game Loop Architecture](#advanced-tactics-game-loop-architecture)
+9. [Advanced Sensors](#advanced-sensors)
+10. [Status Query Functions](#status-query-functions)
+11. [Energy System](#energy-system)
+12. [Battle Tactics Examples](#battle-tactics-examples)
 
 ---
 
@@ -233,7 +235,76 @@ END
 
 ---
 
-## Advanced Sensors ⭐ NEW
+## Dictionaries & Hash Maps ⭐ NEW
+
+AliScript supports object literals (Dictionaries) allowing you to store key-value pairs and build complex state machines.
+
+### Declaration & Access
+
+```aliascript
+// Declare an object literal
+SET state = { mode: "HUNT", target_id: 4 }
+
+// Read via dot notation
+SET current_mode = state.mode
+
+// Read via bracket notation (dynamic indexing)
+SET current_mode = state["mode"]
+
+// Mutating assignment
+SET state.mode = "EVADE"
+SET state["target_id"] = 12
+```
+
+### Dictionary Operation Reference
+
+| Operation | Returns | Description |
+| :--- | :---: | :--- |
+| `SET obj = { key: "val" }` | `object` | Declare an object literal. Keys can be identifiers or strings. |
+| `obj.key` | `value` | Access or modify via dot notation. |
+| `obj["key"]` | `value` | Access or modify via bracket notation. |
+| `SET obj.key = val` | `—` | Update a property on an existing object. |
+
+---
+
+## Advanced Tactics: Game Loop Architecture
+
+AliScript runs from top to bottom **every single tick** (10 times a second). This means variables initialized at the top of your script will reset every fraction of a second.
+
+To build an advanced state machine that persists across ticks, you don't need a `WHILE TRUE DO` loop. Instead, use an initialization flag (`IF NOT initialized THEN`) to preserve your State Dictionary.
+
+### The Dictionary State Machine
+
+```aliascript
+// 1. Initialize State ONCE
+IF NOT initialized THEN
+  SET state = { mode: "SCAN", target_id: 0 }
+  SET initialized = TRUE
+END
+
+// 2. Evaluate current state every tick
+IF state.mode == "SCAN" THEN
+  IF CAN_SEE_ENEMY THEN
+    SET state.mode = "ENGAGE"
+  ELSE
+    SCAN
+    SET rotation = rotation + 0.1
+    MOVE
+  END
+END
+
+IF state.mode == "ENGAGE" THEN
+  IF CAN_SEE_ENEMY THEN
+    FIRE
+  ELSE
+    SET state.mode = "SCAN"
+  END
+END
+```
+
+---
+
+## Advanced Sensors
 
 > Phase 1 introduces two new **expression-level sensor functions** that return rich data structures,
 > turning your AliScript into a true algorithmic battleground.

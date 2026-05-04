@@ -149,6 +149,24 @@ export const ARRAY_OPS_TABLE: ArrayOpDoc[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Dictionary / State Operations
+// ---------------------------------------------------------------------------
+
+export interface DictionaryOpDoc {
+  signature: string;
+  description: string;
+  returns: string;
+  example: string;
+}
+
+export const DICTIONARY_OPS_TABLE: DictionaryOpDoc[] = [
+  { signature: 'SET obj = { key: "val" }', description: 'Declare an object literal (Dictionary). Keys can be identifiers or strings.', returns: 'object', example: 'SET state = { mode: "HUNT", target_id: 4 }' },
+  { signature: 'obj.key', description: 'Dot notation to access or modify a property. Key must be an identifier.', returns: 'value', example: 'SET m = state.mode' },
+  { signature: 'obj["key"]', description: 'Bracket notation to access or modify a property. Key can be any expression resolving to a string.', returns: 'value', example: 'SET state["mode"] = "EVADE"' },
+  { signature: 'SET obj.key = val', description: 'Mutating assignment. Update a property on an existing object.', returns: '—', example: 'SET state.mode = "ATTACK"' },
+];
+
+// ---------------------------------------------------------------------------
 // Advanced Sensor Functions (Phase 1)
 // ---------------------------------------------------------------------------
 
@@ -391,6 +409,43 @@ WHILE TRUE DO
   END
 END`,
   },
+  {
+    title: 'The Dictionary State Machine',
+    badge: '🧠',
+    description: 'AliScript natively executes your code top-to-bottom every tick (10 times a second). You don\'t need an infinite WHILE TRUE DO loop! Use an initialization flag to preserve state across ticks using the new Dictionary syntax.',
+    difficulty: 'ADVANCED',
+    concept: 'State Machines / Game Loop Architecture',
+    color: '#f43f5e',
+    code:
+      `// ── The Dictionary State Machine ───────────────
+// Scripts run 10 times a second automatically.
+// Initialize your state dictionary ONCE at the top.
+
+IF NOT initialized THEN
+  SET state = { mode: "SCAN", target_id: 0 }
+  SET initialized = TRUE
+END
+
+// Main Game Loop Logic (Executes every tick)
+IF state.mode == "SCAN" THEN
+  IF CAN_SEE_ENEMY THEN
+    SET state.mode = "ENGAGE"
+  ELSE
+    SCAN
+    SET rotation = rotation + 0.1
+    MOVE
+  END
+END
+
+IF state.mode == "ENGAGE" THEN
+  IF CAN_SEE_ENEMY THEN
+    FIRE
+  ELSE
+    // Target lost, return to scanning
+    SET state.mode = "SCAN"
+  END
+END`,
+  },
 ];
 
 
@@ -404,6 +459,7 @@ export const QUICK_REF = [
   { title: 'STATUS QUERIES', icon: '📊', color: '#06b6d4', commands: ['GET_HEALTH()', 'GET_ENERGY()', 'GET_POSITION()', 'GET_DISTANCE()'] },
   { title: 'MATH STDLIB', icon: '∑', color: '#f97316', commands: ['ABS(x)', 'SQRT(x)', 'ATAN2(y, x)', 'SIN / COS', 'POW / MIN / MAX', 'FLOOR / CEIL / ROUND'] },
   { title: 'ARRAYS', icon: '[]', color: '#818cf8', commands: ['SET arr = [1, 2, 3]', 'arr[index]', 'LENGTH(arr)', 'PUSH(arr, val)', 'POP(arr)'] },
+  { title: 'DICTIONARIES / STATE', icon: '{}', color: '#f43f5e', commands: ['SET obj = { k: "v" }', 'obj.key', 'obj["key"]', 'SET obj.key = val'] },
   { title: 'ADVANCED SENSORS', icon: '📡', color: '#ec4899', commands: ['GET_ALL_VISIBLE_ENEMIES()', 'Returns [dist, x, y, hp][]', 'RAYCAST(angle)', 'Returns dist to first hit'] },
 ];
 

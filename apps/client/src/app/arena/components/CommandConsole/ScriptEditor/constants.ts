@@ -72,6 +72,10 @@ export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     // Advanced Sensors (Phase 1)
     { label: 'GET_ALL_VISIBLE_ENEMIES()', detail: 'sensor', hint: 'Returns Array of snapshots: each is [dist, x, y, health]. Unsorted — implement your own sort!' },
     { label: 'RAYCAST(angle)', detail: 'sensor', hint: 'Fire invisible laser at relative angle (radians). Returns distance to first hit: wall, SOLID obstacle, or robot.' },
+    // Dictionaries (Phase 2)
+    { label: '{}', detail: 'dictionary', hint: 'Object Literal for State Machines. e.g. { mode: "HUNT" }' },
+    { label: 'obj.key', detail: 'dictionary', hint: 'Dot notation property access / mutation' },
+    { label: 'obj["key"]', detail: 'dictionary', hint: 'Bracket notation dynamic indexing' },
 ];
 
 export const DETAIL_COLORS: Record<string, string> = {
@@ -83,4 +87,5 @@ export const DETAIL_COLORS: Record<string, string> = {
     math:       '#f97316',
     array:      '#818cf8',
     sensor:     '#ec4899',
+    dictionary: '#f43f5e',
 };
