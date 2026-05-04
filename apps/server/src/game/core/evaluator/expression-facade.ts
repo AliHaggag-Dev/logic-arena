@@ -1,4 +1,4 @@
-import { Robot } from '@logic-arena/engine';
+import { Robot, Obstacle, performRaycast } from '@logic-arena/engine';
 import {
   Expression, NodeType, Identifier, NumberLiteral, StringLiteral,
   FunctionCallExpression, ArrayLiteral, IndexExpression,
@@ -9,14 +9,23 @@ import { evaluateBinary, evaluateUnary, evaluateComparison } from './operator-ha
 /** Maximum depth for recursive expression evaluation to prevent stack overflow. */
 const MAX_EVAL_DEPTH = 64;
 
+/**
+ * Snapshot of one visible enemy, encoded as a flat number array so it is
+ * accessible from AliScript's index operator without any object/property syntax.
+ *
+ * Layout: [distance, positionX, positionY, health]
+ */
+type EnemySnapshot = [number, number, number, number];
+
 export class ExpressionEvaluator {
   evaluateCondition(
     robot: Robot,
     expression: Expression,
     memory: Record<string, unknown>,
     getRobots: () => Robot[],
+    getObstacles: () => Obstacle[],
   ): boolean {
-    const value = this.evaluateExpression(robot, expression, memory, getRobots);
+    const value = this.evaluateExpression(robot, expression, memory, getRobots, getObstacles);
     return typeof value === 'boolean' ? value : Boolean(value);
   }
 
@@ -25,6 +34,7 @@ export class ExpressionEvaluator {
     expression: Expression,
     memory: Record<string, unknown>,
     getRobots: () => Robot[],
+    getObstacles: () => Obstacle[],
     depth: number = 0,
   ): unknown {
     if (depth > MAX_EVAL_DEPTH) return undefined;
@@ -39,44 +49,44 @@ export class ExpressionEvaluator {
         return resolveIdentifier(robot, expression as Identifier | NumberLiteral | StringLiteral, memory);
 
       case NodeType.BinaryExpression: {
-        const left = this.evaluateExpression(robot, expression.left, memory, getRobots, depth + 1);
-        const right = this.evaluateExpression(robot, expression.right, memory, getRobots, depth + 1);
+        const left = this.evaluateExpression(robot, expression.left, memory, getRobots, getObstacles, depth + 1);
+        const right = this.evaluateExpression(robot, expression.right, memory, getRobots, getObstacles, depth + 1);
         return evaluateBinary(left, right, expression.operator);
       }
 
       case NodeType.UnaryExpression: {
-        const arg = this.evaluateExpression(robot, expression.argument, memory, getRobots, depth + 1);
+        const arg = this.evaluateExpression(robot, expression.argument, memory, getRobots, getObstacles, depth + 1);
         return evaluateUnary(arg, expression.operator);
       }
 
       case NodeType.ComparisonExpression: {
-        const lv = this.evaluateExpression(robot, expression.left, memory, getRobots, depth + 1);
-        const rv = this.evaluateExpression(robot, expression.right, memory, getRobots, depth + 1);
+        const lv = this.evaluateExpression(robot, expression.left, memory, getRobots, getObstacles, depth + 1);
+        const rv = this.evaluateExpression(robot, expression.right, memory, getRobots, getObstacles, depth + 1);
         return evaluateComparison(lv, rv, expression.operator);
       }
 
-      // ── Built-in function calls: ABS(x), SQRT(x), ATAN2(y, x), etc. ────
+      // ── Built-in function calls: ABS(x), GET_ALL_VISIBLE_ENEMIES(), etc. ──
       case NodeType.FunctionCallExpression: {
         const fnCall = expression as FunctionCallExpression;
         const evaluatedArgs = fnCall.args.map(
-          a => this.evaluateExpression(robot, a, memory, getRobots, depth + 1),
+          a => this.evaluateExpression(robot, a, memory, getRobots, getObstacles, depth + 1),
         );
-        return this.evaluateBuiltinFunction(fnCall.name, evaluatedArgs, memory);
+        return this.evaluateBuiltinFunction(fnCall.name, evaluatedArgs, memory, robot, getRobots, getObstacles);
       }
 
       // ── Array literal: [1, 2, 3] ──────────────────────────────────────────
       case NodeType.ArrayLiteral: {
         const arrLit = expression as ArrayLiteral;
         return arrLit.elements.map(
-          el => this.evaluateExpression(robot, el, memory, getRobots, depth + 1),
+          el => this.evaluateExpression(robot, el, memory, getRobots, getObstacles, depth + 1),
         );
       }
 
       // ── Index access: arr[0] ──────────────────────────────────────────────
       case NodeType.IndexExpression: {
         const idxExpr = expression as IndexExpression;
-        const obj = this.evaluateExpression(robot, idxExpr.object, memory, getRobots, depth + 1);
-        const idx = this.evaluateExpression(robot, idxExpr.index, memory, getRobots, depth + 1);
+        const obj = this.evaluateExpression(robot, idxExpr.object, memory, getRobots, getObstacles, depth + 1);
+        const idx = this.evaluateExpression(robot, idxExpr.index, memory, getRobots, getObstacles, depth + 1);
         if (Array.isArray(obj) && typeof idx === 'number') {
           const i = Math.floor(idx);
           if (i >= 0 && i < obj.length) return obj[i];
@@ -90,11 +100,14 @@ export class ExpressionEvaluator {
     }
   }
 
-  // ── Built-in math & utility function dispatcher ──────────────────────────
+  // ── Built-in math, utility, and sensor function dispatcher ───────────────
   private evaluateBuiltinFunction(
     name: string,
     args: unknown[],
     memory: Record<string, unknown>,
+    robot: Robot,
+    getRobots: () => Robot[],
+    getObstacles: () => Obstacle[],
   ): unknown {
     const a = args[0] as number;
     const b = args[1] as number;
@@ -145,6 +158,81 @@ export class ExpressionEvaluator {
           return a.pop();
         }
         return undefined;
+      }
+
+      // ── Phase 1: Advanced Sensory Arrays ──────────────────────────────
+
+      /**
+       * GET_ALL_VISIBLE_ENEMIES()
+       *
+       * Returns an array of EnemySnapshot sub-arrays for every alive enemy
+       * currently inside this robot's FOV cone.
+       *
+       * Each element is: [distance, positionX, positionY, health]
+       *
+       * Enemies are returned in UNSORTED order — the player must implement
+       * their own sort (e.g. quicksort by distance or by health) in AliScript.
+       *
+       * AliScript usage:
+       *   SET enemies = GET_ALL_VISIBLE_ENEMIES()
+       *   SET count   = LENGTH(enemies)
+       *   SET closest = enemies[0]        // [dist, x, y, health]
+       *   SET d       = closest[0]        // distance
+       */
+      case 'GET_ALL_VISIBLE_ENEMIES': {
+        const visibleEnemies = robot.visibleEntities?.robots ?? [];
+        const snapshots: EnemySnapshot[] = [];
+
+        for (const enemy of visibleEnemies) {
+          if (!enemy.isAlive) continue;
+          const edx = enemy.position.x - robot.position.x;
+          const edy = enemy.position.y - robot.position.y;
+          const distance = Math.round(Math.hypot(edx, edy));
+          snapshots.push([
+            distance,
+            Math.round(enemy.position.x),
+            Math.round(enemy.position.y),
+            Math.round(enemy.health),
+          ]);
+        }
+
+        return snapshots;
+      }
+
+      /**
+       * RAYCAST(angle)
+       *
+       * Fires an invisible physics ray from the robot's current position in
+       * the direction (robot.rotation + angle), where `angle` is a relative
+       * offset in radians (positive = clockwise, negative = counter-clockwise).
+       *
+       * Returns the distance in arena units to the first solid hit:
+       *   - Arena boundary wall
+       *   - Any SOLID obstacle
+       *   - Any alive robot (enemy OR friendly — true LOS check)
+       *
+       * TRAP and LAVA zones are transparent — bullets pass through them.
+       *
+       * AliScript usage:
+       *   SET frontDist = RAYCAST(0)         // straight ahead
+       *   SET leftDist  = RAYCAST(-0.785)    // 45° to the left
+       *   SET rightDist = RAYCAST(0.785)     // 45° to the right
+       */
+      case 'RAYCAST': {
+        const relativeAngle = typeof a === 'number' ? a : 0;
+        const absoluteDirection = robot.rotation + relativeAngle;
+        const fovRange = robot.fov?.range ?? 300;
+
+        return Math.round(
+          performRaycast(
+            robot.position,
+            absoluteDirection,
+            getObstacles(),
+            getRobots(),
+            robot.id,
+            fovRange,
+          ),
+        );
       }
 
       default:

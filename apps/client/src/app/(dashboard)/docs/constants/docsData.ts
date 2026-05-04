@@ -101,6 +101,126 @@ export const QUERY_TABLE: QueryDoc[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Math Standard Library
+// ---------------------------------------------------------------------------
+
+export interface MathFunctionDoc {
+  signature: string;
+  description: string;
+  returns: string;
+  example: string;
+}
+
+export const MATH_STDLIB_TABLE: MathFunctionDoc[] = [
+  { signature: 'ABS(x)', description: 'Absolute value. Strips the sign from a number.', returns: 'number', example: 'SET d = ABS(x2 - x1)' },
+  { signature: 'SQRT(x)', description: 'Square root of x. Negative inputs are clamped to 0.', returns: 'number', example: 'SET dist = SQRT(dx * dx + dy * dy)' },
+  { signature: 'POW(base, exp)', description: 'Raise base to the power of exp.', returns: 'number', example: 'SET sq = POW(side, 2)' },
+  { signature: 'SIN(x)', description: 'Sine of x in radians.', returns: 'number', example: 'SET vy = SIN(rotation)' },
+  { signature: 'COS(x)', description: 'Cosine of x in radians.', returns: 'number', example: 'SET vx = COS(rotation)' },
+  { signature: 'TAN(x)', description: 'Tangent of x in radians.', returns: 'number', example: 'SET slope = TAN(angle)' },
+  { signature: 'ATAN2(y, x)', description: 'Angle in radians from the origin to the point (x, y). The gold-standard function for aiming — converts a direction vector to an angle.', returns: 'number (radians)', example: 'SET aim = ATAN2(ey - POSITION_Y, ex - POSITION_X)' },
+  { signature: 'MIN(a, b)', description: 'Returns the smaller of two values.', returns: 'number', example: 'SET safe = MIN(distance, 200)' },
+  { signature: 'MAX(a, b)', description: 'Returns the larger of two values.', returns: 'number', example: 'SET e = MAX(MY_ENERGY, 0)' },
+  { signature: 'FLOOR(x)', description: 'Rounds x down to the nearest integer.', returns: 'integer', example: 'SET i = FLOOR(LENGTH(arr) / 2)' },
+  { signature: 'CEIL(x)', description: 'Rounds x up to the nearest integer.', returns: 'integer', example: 'SET pages = CEIL(count / 10)' },
+  { signature: 'ROUND(x)', description: 'Rounds x to the nearest integer.', returns: 'integer', example: 'SET hp = ROUND(health)' },
+  { signature: 'LOG(x)', description: 'Natural logarithm of x. x must be greater than 0.', returns: 'number', example: 'SET lg = LOG(MY_ENERGY)' },
+  { signature: 'RANDOM()', description: 'Random floating-point number in [0.0, 1.0). Useful for stochastic movement to avoid predictable patterns.', returns: 'number', example: 'SET noise = RANDOM() * 0.4 - 0.2' },
+];
+
+// ---------------------------------------------------------------------------
+// Array Operations
+// ---------------------------------------------------------------------------
+
+export interface ArrayOpDoc {
+  signature: string;
+  description: string;
+  returns: string;
+  example: string;
+}
+
+export const ARRAY_OPS_TABLE: ArrayOpDoc[] = [
+  { signature: 'SET arr = [v0, v1, v2]', description: 'Declare an array literal with initial values. Elements can be any expression.', returns: 'array', example: 'SET angles = [0, 0.785, 1.57, -0.785]' },
+  { signature: 'arr[index]', description: 'Read the value at zero-based index. Returns undefined if out of bounds.', returns: 'value', example: 'SET a = angles[0]' },
+  { signature: 'SET arr[index] = val', description: 'Write a value at zero-based index. Index must be within current array bounds.', returns: '—', example: 'SET scores[i] = ROUND(dist)' },
+  { signature: 'LENGTH(arr)', description: 'Returns the number of elements in the array. Works on strings too (returns character count).', returns: 'number', example: 'SET n = LENGTH(enemies)' },
+  { signature: 'PUSH(arr, value)', description: 'Appends value to the end of the array. Returns the new array length.', returns: 'number', example: 'PUSH(queue, NEAREST_VISIBLE_X)' },
+  { signature: 'POP(arr)', description: 'Removes and returns the last element of the array. Returns undefined if empty.', returns: 'value', example: 'SET last = POP(queue)' },
+];
+
+// ---------------------------------------------------------------------------
+// Advanced Sensor Functions (Phase 1)
+// ---------------------------------------------------------------------------
+
+export interface SensorFunctionDoc {
+  signature: string;
+  category: string;
+  description: string;
+  returns: string;
+  returnDetail: string;
+  example: string;
+  note: string;
+}
+
+export const SENSOR_FUNCTIONS_TABLE: SensorFunctionDoc[] = [
+  {
+    signature: 'GET_ALL_VISIBLE_ENEMIES()',
+    category: 'Vision Array',
+    description: 'Returns an Array of enemy snapshots for every alive enemy currently inside this robot\'s FOV cone. Each snapshot is a 4-element sub-array. Enemies are intentionally returned UNSORTED — players are expected to implement their own sorting algorithm (bubble sort, quicksort, etc.) to find their priority target.',
+    returns: 'Array of [distance, x, y, health]',
+    returnDetail: 'enemies[i][0] = distance  •  enemies[i][1] = position X  •  enemies[i][2] = position Y  •  enemies[i][3] = health (0–100)',
+    example:
+      `SET enemies = GET_ALL_VISIBLE_ENEMIES()
+SET count = LENGTH(enemies)
+// Find the weakest target (manual min-search)
+SET i = 1
+SET weakest = enemies[0]
+WHILE i < count DO
+  SET candidate = enemies[i]
+  IF candidate[3] < weakest[3] THEN
+    SET weakest = candidate
+  END
+  SET i = i + 1
+END
+// Aim and fire
+SET aim = ATAN2(weakest[2] - POSITION_Y, weakest[1] - POSITION_X)
+SET rotation = aim
+FIRE`,
+    note: 'Returns an empty array [] when no enemies are in FOV. Always check LENGTH() before indexing.',
+  },
+  {
+    signature: 'RAYCAST(angle)',
+    category: 'Line of Sight',
+    description: 'Fires an invisible physics ray from the robot\'s current position in the direction (robot.rotation + angle), where angle is a relative radian offset. Returns the distance in arena units to the first solid obstacle encountered. Checks: arena boundary walls → SOLID obstacles → any alive robot (enemy OR friendly). TRAP and LAVA zones are transparent.',
+    returns: 'number (distance in arena units)',
+    returnDetail: 'Range: 1 to FOV range (default 300). Returns the FOV range value when nothing is hit within sensor range.',
+    example:
+      `// Obstacle avoidance with 3-ray sonar
+SET front = RAYCAST(0)
+SET left  = RAYCAST(-0.785)
+SET right = RAYCAST(0.785)
+IF front < 60 THEN
+  IF left > right THEN
+    SET rotation = rotation - 0.3
+  ELSE
+    SET rotation = rotation + 0.3
+  END
+ELSE
+  // Clear path — check Line-of-Sight before firing
+  IF CAN_SEE_ENEMY THEN
+    SET losCheck = RAYCAST(ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X) - rotation)
+    IF losCheck > distance THEN
+      FIRE
+    END
+  END
+END
+MOVE`,
+    note: 'angle is relative to robot.rotation. RAYCAST(0) fires straight ahead. RAYCAST(-1.57) fires 90° left. Use ATAN2 to compute an absolute angle then subtract rotation to get the relative offset.',
+  },
+];
+
+
+// ---------------------------------------------------------------------------
 // Algorithm Challenges
 // ---------------------------------------------------------------------------
 
@@ -225,21 +345,68 @@ WHILE TRUE DO
   END
 END`,
   },
+  {
+    title: 'Sensor Array Targeting',
+    badge: '📡',
+    description: 'Use GET_ALL_VISIBLE_ENEMIES() to gather all targets as a data structure, then write a minimum-health search in AliScript to always fire at the weakest enemy. The ultimate test of your algorithm skills.',
+    difficulty: 'ADVANCED',
+    concept: 'Array Processing / Min-Search / RAYCAST LOS',
+    color: '#ec4899',
+    code:
+      `// ── Sensor Array Targeting ─────────────────────
+// Phase 1 Advanced: gather ALL visible enemies,
+// find the weakest via a manual min-search loop,
+// verify Line-of-Sight with RAYCAST, then fire.
+
+FUNCTION findWeakest
+  SET enemies = GET_ALL_VISIBLE_ENEMIES()
+  SET n = LENGTH(enemies)
+  IF n == 0 THEN RETURN END
+  SET best = enemies[0]
+  SET i = 1
+  WHILE i < n DO
+    SET e = enemies[i]
+    IF e[3] < best[3] THEN
+      SET best = e
+    END
+    SET i = i + 1
+  END
+  // Compute relative angle to target for LOS check
+  SET tx = best[1]
+  SET ty = best[2]
+  SET absAngle = ATAN2(ty - POSITION_Y, tx - POSITION_X)
+  SET relAngle = absAngle - rotation
+  SET los = RAYCAST(relAngle)
+  IF los >= best[0] THEN
+    SET rotation = absAngle
+    FIRE
+  END
+END
+
+WHILE TRUE DO
+  CALL findWeakest
+  IF NOT CAN_SEE_ENEMY THEN
+    SCAN
+    MOVE
+  END
+END`,
+  },
 ];
 
-// ---------------------------------------------------------------------------
-// Quick Reference cards
-// ---------------------------------------------------------------------------
 
 export const QUICK_REF = [
-  { title: 'CONTROL FLOW', icon: '⬡', color: '#f59e0b', commands: ['IF...ELSE', 'WHILE...DO', 'FUNCTION', 'CALL', 'END'] },
+  { title: 'CONTROL FLOW', icon: '⬡', color: '#f59e0b', commands: ['IF...ELSE', 'WHILE...DO', 'FOR...TO', 'FUNCTION', 'CALL', 'END'] },
   { title: 'SENSORS / FOV', icon: '◈', color: '#06b6d4', commands: ['SCAN (blocked in STASIS)', 'WAIT', 'CAN_SEE_ENEMY', 'NEAREST_VISIBLE_X/Y', 'CAN_SEE_OBSTACLE'] },
   { title: 'MOVEMENT & VISION', icon: '⦾', color: '#4ade80', commands: ['rotation / angle / rot', 'fovDirection (Eye)', 'lockVision (Link)', 'SET rotation = 1.57', 'PATHFIND'] },
   { title: 'ENERGY', icon: '⚡', color: '#a855f7', commands: ['MY_ENERGY (0–100)', 'ENERGY_PCT', 'IN_STASIS', 'Regen: +3/tick in STASIS only'] },
   { title: 'INTELLIGENCE', icon: '◉', color: '#6366f1', commands: ['SET var = val', 'Math (+,-,*,/,%)', 'NOT / AND / OR', 'TRUE / FALSE'] },
   { title: 'ROTATION SYSTEM', icon: '◎', color: '#f59e0b', commands: ['rotation = body', 'fovDirection = eyes', 'lockVision = link', 'SET lockVision = TRUE', 'Auto-disables on SET'] },
   { title: 'STATUS QUERIES', icon: '📊', color: '#06b6d4', commands: ['GET_HEALTH()', 'GET_ENERGY()', 'GET_POSITION()', 'GET_DISTANCE()'] },
+  { title: 'MATH STDLIB', icon: '∑', color: '#f97316', commands: ['ABS(x)', 'SQRT(x)', 'ATAN2(y, x)', 'SIN / COS', 'POW / MIN / MAX', 'FLOOR / CEIL / ROUND'] },
+  { title: 'ARRAYS', icon: '[]', color: '#818cf8', commands: ['SET arr = [1, 2, 3]', 'arr[index]', 'LENGTH(arr)', 'PUSH(arr, val)', 'POP(arr)'] },
+  { title: 'ADVANCED SENSORS', icon: '📡', color: '#ec4899', commands: ['GET_ALL_VISIBLE_ENEMIES()', 'Returns [dist, x, y, hp][]', 'RAYCAST(angle)', 'Returns dist to first hit'] },
 ];
+
 
 // ---------------------------------------------------------------------------
 // Sample script shown in the interactive playground
@@ -273,21 +440,27 @@ END`;
 
 export const CATEGORY_COLORS: Record<string, string> = {
   'Control Flow': '#f59e0b',
-  Movement:       '#4ade80',
-  Vision:         '#22d3ee',
-  Sensors:        '#06b6d4',
-  Attack:         '#f97316',
-  Tactics:        '#eab308',
+  Movement: '#4ade80',
+  Vision: '#22d3ee',
+  Sensors: '#06b6d4',
+  Attack: '#f97316',
+  Tactics: '#eab308',
   'Advanced Combat': '#ef4444',
-  Evasion:        '#10b981',
-  Intelligence:   '#a855f7',
-  Energy:         '#818cf8',
-  FOV:            '#22d3ee',
-  Scan:           '#67e8f9',
-  Self:           '#94a3b8',
-  Combat:         '#f87171',
-  flag:           '#4ade80',
+  Evasion: '#10b981',
+  Intelligence: '#a855f7',
+  Energy: '#818cf8',
+  FOV: '#22d3ee',
+  Scan: '#67e8f9',
+  Self: '#94a3b8',
+  Combat: '#f87171',
+  flag: '#4ade80',
+  Math: '#f97316',
+  Arrays: '#818cf8',
+  'Advanced Sensors': '#ec4899',
+  'Vision Array': '#ec4899',
+  'Line of Sight': '#f43f5e',
 };
+
 
 // ---------------------------------------------------------------------------
 // Battle Tactics presets
@@ -355,11 +528,11 @@ export const ROTATION_SYSTEM_GUIDE: RotationSystemGuide = {
     }
   ],
   angleReference: [
-    { value: '0',     direction: '→', label: 'Right (East)' },
-    { value: '1.57',  direction: '↓', label: 'Down (South)' },
-    { value: '3.14',  direction: '←', label: 'Left (West)' },
+    { value: '0', direction: '→', label: 'Right (East)' },
+    { value: '1.57', direction: '↓', label: 'Down (South)' },
+    { value: '3.14', direction: '←', label: 'Left (West)' },
     { value: '-1.57', direction: '↑', label: 'Up (North)' },
-    { value: '4.71',  direction: '↑', label: 'Up (North) alt' },
+    { value: '4.71', direction: '↑', label: 'Up (North) alt' },
   ],
   examples: [
     {
@@ -428,12 +601,12 @@ END`,
     }
   ],
   conflictRules: [
-    { scenario: 'lockVision ON + SET rotation = X',    outcome: 'lockVision disables. Body turns to X. Scanner stays at last position.' },
+    { scenario: 'lockVision ON + SET rotation = X', outcome: 'lockVision disables. Body turns to X. Scanner stays at last position.' },
     { scenario: 'lockVision ON + SET fovDirection = X', outcome: 'lockVision disables. Scanner turns to X. Body stays unchanged.' },
-    { scenario: 'lockVision ON + MOVE',                outcome: 'Body rotates from physics. Scanner follows (lockVision still ON).' },
-    { scenario: 'lockVision ON + SCAN',                outcome: 'Scanner rotates +15°. Next tick lockVision re-syncs scanner to body.' },
-    { scenario: 'lockVision OFF + MOVE',               outcome: 'Body rotates from physics. Scanner frozen at last position.' },
-    { scenario: 'lockVision OFF + SET rotation = X',   outcome: 'Body turns to X. Scanner completely unaffected.' },
+    { scenario: 'lockVision ON + MOVE', outcome: 'Body rotates from physics. Scanner follows (lockVision still ON).' },
+    { scenario: 'lockVision ON + SCAN', outcome: 'Scanner rotates +15°. Next tick lockVision re-syncs scanner to body.' },
+    { scenario: 'lockVision OFF + MOVE', outcome: 'Body rotates from physics. Scanner frozen at last position.' },
+    { scenario: 'lockVision OFF + SET rotation = X', outcome: 'Body turns to X. Scanner completely unaffected.' },
     { scenario: 'lockVision OFF + SET fovDirection = X', outcome: 'Scanner turns to X. Body completely unaffected.' },
   ]
 };

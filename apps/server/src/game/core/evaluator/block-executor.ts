@@ -118,7 +118,9 @@ export class BlockExecutor {
           let returnValue: unknown;
           if (retStmt.value) {
             returnValue = this.expressionEvaluator.evaluateExpression(
-              robot, retStmt.value, memory, () => this.gameLoop.getRobots(),
+              robot, retStmt.value, memory,
+              () => this.gameLoop.getRobots(),
+              () => this.gameLoop.getGameState().obstacles,
             );
           }
           return { signal: RETURN_SIGNAL, returnValue };
@@ -132,12 +134,15 @@ export class BlockExecutor {
             assign.value,
             memory,
             () => this.gameLoop.getRobots(),
+            () => this.gameLoop.getGameState().obstacles,
           );
 
           // Handle indexed assignment: SET arr[i] = value
           if (assign.index) {
             const idx = this.expressionEvaluator.evaluateExpression(
-              robot, assign.index, memory, () => this.gameLoop.getRobots(),
+              robot, assign.index, memory,
+              () => this.gameLoop.getRobots(),
+              () => this.gameLoop.getGameState().obstacles,
             );
             const arr = memory[assign.name.value];
             if (Array.isArray(arr) && typeof idx === 'number') {
@@ -190,6 +195,7 @@ export class BlockExecutor {
             ifStmt.condition,
             memory,
             () => this.gameLoop.getRobots(),
+            () => this.gameLoop.getGameState().obstacles,
           );
           const result = cond
             ? this.executeBlock(robotId, robot, ifStmt.consequence, memory, tickStart, dispatchedActions)
@@ -213,6 +219,7 @@ export class BlockExecutor {
               whileStmt.condition,
               memory,
               () => this.gameLoop.getRobots(),
+              () => this.gameLoop.getGameState().obstacles,
             );
             if (!cond) break;
             const result = this.executeBlock(
@@ -230,10 +237,14 @@ export class BlockExecutor {
         case NodeType.ForStatement: {
           const forStmt = stmt as ForStatement;
           const startVal = this.expressionEvaluator.evaluateExpression(
-            robot, forStmt.start, memory, () => this.gameLoop.getRobots(),
+            robot, forStmt.start, memory,
+            () => this.gameLoop.getRobots(),
+            () => this.gameLoop.getGameState().obstacles,
           );
           const endVal = this.expressionEvaluator.evaluateExpression(
-            robot, forStmt.end, memory, () => this.gameLoop.getRobots(),
+            robot, forStmt.end, memory,
+            () => this.gameLoop.getRobots(),
+            () => this.gameLoop.getGameState().obstacles,
           );
 
           if (typeof startVal !== 'number' || typeof endVal !== 'number') break;
@@ -302,7 +313,9 @@ export class BlockExecutor {
                   const paramName = func.params[i].value;
                   const argValue = i < callStmt.args.length
                     ? this.expressionEvaluator.evaluateExpression(
-                        robot, callStmt.args[i], memory, () => this.gameLoop.getRobots(),
+                        robot, callStmt.args[i], memory,
+                        () => this.gameLoop.getRobots(),
+                        () => this.gameLoop.getGameState().obstacles,
                       )
                     : undefined;
                   scopedMemory[paramName] = argValue;

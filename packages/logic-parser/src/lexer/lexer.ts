@@ -19,6 +19,8 @@ const BUILTIN_FUNCTIONS = new Set([
     "ABS", "SQRT", "POW", "SIN", "COS", "TAN",
     "ATAN2", "MIN", "MAX", "FLOOR", "CEIL", "ROUND",
     "LENGTH", "PUSH", "POP", "RANDOM", "LOG",
+    // ── Phase 1: Advanced Sensory Arrays ──────────────────────────────────
+    "GET_ALL_VISIBLE_ENEMIES", "RAYCAST",
 ]);
 
 export class Lexer {

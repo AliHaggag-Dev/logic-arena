@@ -11,6 +11,8 @@ const BUILTIN_FN_NAMES = new Set([
     "ABS", "SQRT", "POW", "SIN", "COS", "TAN",
     "ATAN2", "MIN", "MAX", "FLOOR", "CEIL", "ROUND",
     "LENGTH", "PUSH", "POP", "RANDOM", "LOG",
+    // ── Phase 1: Advanced Sensory Arrays ──────────────────────────────────
+    "GET_ALL_VISIBLE_ENEMIES", "RAYCAST",
 ]);
 
 /** Helper to check peekToken type without TS narrowing side-effects. */

@@ -49,12 +49,38 @@ export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     { label: 'CAN_SEE_OBSTACLE', detail: 'identifier', hint: 'True if obstacle is in FOV cone' },
     { label: 'NEAREST_OBSTACLE_TYPE', detail: 'identifier', hint: 'Type of nearest obstacle ("SOLID", "TRAP", etc)' },
     { label: 'NEAREST_OBSTACLE_DISTANCE', detail: 'identifier', hint: 'Distance to nearest visible obstacle' },
+    { label: 'VISIBLE_ENEMY_COUNT', detail: 'identifier', hint: 'Number of enemies currently in FOV cone' },
+    // Math Standard Library
+    { label: 'ABS(x)', detail: 'math', hint: 'Absolute value of x' },
+    { label: 'SQRT(x)', detail: 'math', hint: 'Square root of x (clamps negatives to 0)' },
+    { label: 'POW(base, exp)', detail: 'math', hint: 'Raise base to the power of exp' },
+    { label: 'SIN(x)', detail: 'math', hint: 'Sine of x (radians)' },
+    { label: 'COS(x)', detail: 'math', hint: 'Cosine of x (radians)' },
+    { label: 'TAN(x)', detail: 'math', hint: 'Tangent of x (radians)' },
+    { label: 'ATAN2(y, x)', detail: 'math', hint: 'Angle in radians from origin to point (x, y). Use for aiming.' },
+    { label: 'MIN(a, b)', detail: 'math', hint: 'Smaller of two values' },
+    { label: 'MAX(a, b)', detail: 'math', hint: 'Larger of two values' },
+    { label: 'FLOOR(x)', detail: 'math', hint: 'Round x down to nearest integer' },
+    { label: 'CEIL(x)', detail: 'math', hint: 'Round x up to nearest integer' },
+    { label: 'ROUND(x)', detail: 'math', hint: 'Round x to nearest integer' },
+    { label: 'LOG(x)', detail: 'math', hint: 'Natural logarithm of x (x must be > 0)' },
+    { label: 'RANDOM()', detail: 'math', hint: 'Random float between 0.0 and 1.0' },
+    // Array Operations
+    { label: 'LENGTH(arr)', detail: 'array', hint: 'Number of elements in array (or characters in string)' },
+    { label: 'PUSH(arr, value)', detail: 'array', hint: 'Append value to end of array. Returns new length.' },
+    { label: 'POP(arr)', detail: 'array', hint: 'Remove and return last element of array' },
+    // Advanced Sensors (Phase 1)
+    { label: 'GET_ALL_VISIBLE_ENEMIES()', detail: 'sensor', hint: 'Returns Array of snapshots: each is [dist, x, y, health]. Unsorted — implement your own sort!' },
+    { label: 'RAYCAST(angle)', detail: 'sensor', hint: 'Fire invisible laser at relative angle (radians). Returns distance to first hit: wall, SOLID obstacle, or robot.' },
 ];
 
 export const DETAIL_COLORS: Record<string, string> = {
-    command: '#22d3ee',
-    control: '#f59e0b',
+    command:    '#22d3ee',
+    control:    '#f59e0b',
     identifier: '#a855f7',
-    flag: '#4ade80',
-    query: '#06b6d4',
+    flag:       '#4ade80',
+    query:      '#06b6d4',
+    math:       '#f97316',
+    array:      '#818cf8',
+    sensor:     '#ec4899',
 };
