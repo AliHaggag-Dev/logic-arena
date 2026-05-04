@@ -1932,3 +1932,62 @@ Shipped a sweeping platform-wide quality pass — a legendary theme system overh
 Logic Arena is now a fully polished, theme-aware, SEO-indexed platform with deep backend wiring for user preferences, a legendary visual identity across all three themes, and a comprehensive architecture audit covering every major dashboard page. Every module is clean, typed, and within line limits.
 
 **Ready for:** Fog of War, multiplayer stress testing, and University Competition launch.
+
+## [2.7.0] - AliScript v2.4 — Deterministic Execution & Swarm Intelligence - 2026-05-04
+
+Shipped a complete overhaul of the AliScript execution model — replacing hardware-dependent timing limits with a deterministic instruction quota system, introducing a full Swarm Intelligence API for inter-robot communication, hardening the energy economy to survive loop-heavy scripts, and upgrading the entire documentation and IDE experience to match.
+
+---
+
+### New Features
+
+* **Deterministic TLE Quota System (AliScript v2.4):**
+  Replaced the hardware-dependent `MAX_TICK_DURATION_MS` timestamp gate with a strict, platform-agnostic `MAX_OPERATIONS_PER_TICK` instruction quota (2,000 ops). A reference-passed `opsCounter` object threads through the block executor and tracks AST evaluations globally across all recursive `IF`, `WHILE`, and `FOR` branches. When the quota is exceeded, the engine fires a `[FATAL] TLE` error directly into the player's in-game terminal and halts execution immediately. Players can no longer bypass the limit by running on faster hardware — the quota is identical for every operator on every machine, enforcing true competitive fairness.
+
+* **Big O Education System:**
+  Overhauled the in-game UI documentation (`docsData.ts`), GitHub Markdown (`aliscript-language.md`), and Script Editor autocomplete (`constants.ts`) to formally teach Big O notation as a first-class gameplay mechanic. New documentation sections detail O(N) optimizations required to survive the 2,000-op quota, with annotated examples showing the difference between O(1) sensor reads and O(N) scanning loops. Players are now incentivized to write algorithmically efficient scripts — not just correct ones.
+
+* **Swarm Intelligence API — `BROADCAST` & `RECEIVE`:**
+  Added `BROADCAST(data)` and `RECEIVE()` to the AliScript language, enabling secure inter-robot communication between teammates. Payloads are deep-copied at the `expression-facade` layer before injection into the receiver's memory sandbox, guaranteeing full isolation — a compromised teammate script cannot corrupt the sender's state. Updated the Lexer and Parser to correctly tokenize and evaluate the new Swarm functions. Expanded UI documentation (`docsData.ts`), GitHub Markdown, and Script Editor autocomplete with a dedicated Swarm API section styled in `#34d399` emerald.
+
+* **Dictionary & State Machine Architecture:**
+  Added Dictionary (Hash Map) support to AliScript, allowing players to build complex single-variable state machines instead of managing dozens of independent variables. Extended the Lexer and AST with `LBRACE` (`{`), `RBRACE` (`}`), and `DOT` (`.`) tokens alongside `ObjectLiteral` and `MemberExpression` AST nodes. The expression parser now natively handles chained property access (`state.items[0].x`). `IndexExpression` evaluation falls back gracefully from Array index mapping to Object string key lookup (`obj['key']`). The Block Executor's mutation handler supports both Dot Notation (`SET obj.prop = val`) and Bracket Notation (`SET obj['key'] = val`). Added the `Dictionary State Machine` advanced algorithmic challenge to the UI documentation, teaching players single-tick game loop architecture. Expanded Script Editor Intellisense with a `dictionary` autocomplete category (`#f43f5e`) covering `{}`, `obj.key`, and `obj['key']` snippets.
+
+* **Advanced Sensory Arrays (Phase 1):**
+  Implemented `GET_ALL_VISIBLE_ENEMIES()`, which returns a full array of enemy snapshots sortable by any player-defined criteria, and `RAYCAST(angle)`, a DDA-based physics laser for real-time obstacle and wall mapping. Both sensors integrate obstacle data into the AST expression evaluator, allowing robots to mathematically model their physical environment. Updated Script Editor Intellisense with 28 new color-coded autocomplete entries covering the full Math Standard Library, Array functions, and Phase 1 sensors. Expanded UI documentation and `aliscript-language.md` with professional API tables, predictive aiming guides, and a full Bubble Sort example in AliScript.
+
+* **Math Standard Library & Physics Fixes:**
+  Extended the AliScript standard library with `SQRT`, `POW`, `ATAN2`, `SIN`, `COS`, `PUSH`, `POP`, and related math and array builtins to enable trigonometric calculations and advanced target tracking. Exposed `POSITION_X` and `POSITION_Y` in `identifier-resolver.ts` so robots can access their absolute global coordinates for custom pathing math.
+
+* **Lucide Icon System in Documentation UI:**
+  Upgraded the UI Documentation renderer to display premium `lucide-react` vector icons instead of plain-text emojis across all `QUICK_REF` cards and Algorithm Challenge entries. Full TypeScript type safety enforced across all icon references.
+
+---
+
+### Technical Scars and Resolutions
+
+* **Issue — "The Hardware Lottery" (Timestamp-Based TLE):**
+  The original `MAX_TICK_DURATION_MS` execution limit measured wall-clock milliseconds to detect infinite loops. This meant the same AliScript would pass on a fast gaming PC and fail on a low-end laptop — or vice versa, with players on slower machines hitting the limit during legitimate complex scripts. The system was fundamentally non-deterministic and impossible to document accurately: "your script might run fine" is not a spec.
+
+  **Resolution:** Ripped out all timestamp-based logic. Replaced with an `opsCounter` object passed by reference into `executeBlock()` and incremented on every AST node evaluation. The counter is reset at the start of each tick. Hitting 2,000 ops triggers the TLE pipeline regardless of wall time. Identical quota on every machine — from a Raspberry Pi to a threadripper workstation.
+
+* **Issue — "The Loop Energy Drain" (WHILE Burning Passive Regen):**
+  A `WHILE TRUE DO` loop executing inside a single tick would dispatch redundant action calls on every iteration — each iteration incrementing energy costs as if it were a new command. A script with a tight scanning loop would burn through the entire energy bar in a single tick before the regen system could fire, instantly triggering STASIS. Players writing any loop-based logic were effectively penalized by the energy system for using the language correctly.
+
+  **Resolution:** Implemented intra-tick action deduplication in `block-executor.ts`. Tracks the last dispatched action per robot per tick via a `lastDispatchedThisTick` map. If the same action command is dispatched more than once within a single tick, subsequent calls are short-circuited before hitting the energy manager. Energy is only deducted once per unique action per tick regardless of loop iteration count. Paired with the new passive regen rate: active robots regenerate `0.5 energy/tick`, STASIS fast-charges at `3.0 energy/tick`.
+
+* **Issue — "The Physics Race Condition" (60FPS Loop vs 10FPS Logic):**
+  The `executedCommandThisTick` flag — used to prevent the 60FPS physics loop from double-executing logic — was not being synchronized correctly between the physics update cycle and the logic evaluator. The flag would reset mid-frame, causing the physics loop to re-execute pending commands and producing ghost charging ticks where STASIS energy regen fired multiple times per real tick.
+
+  **Resolution:** Synchronized `executedCommandThisTick` as an atomic flag reset at the start of each physics frame boundary. The 60FPS loop now reads the flag before dispatching and the logic evaluator sets it only after confirmed execution — eliminating the race window. Infinite background charging eliminated.
+
+* **Issue — "The Swarm Sandbox Breach" (Shared Payload Reference):**
+  The first implementation of `BROADCAST` passed the payload object directly into the receiver robot's memory without copying it. Since JavaScript objects are passed by reference, a receiver script modifying the received payload would mutate the original sender's data structure — breaking the isolation guarantee and allowing one robot's script to corrupt another's runtime state.
+
+  **Resolution:** Implemented deep-copy serialization in `expression-facade.ts` using structured clone before injecting any payload into the receiver's memory sandbox. Sender object graphs are fully detached at broadcast time. Receiver mutations are invisible to the sender. The Swarm API is now cryptographically equivalent to a message-passing system with no shared memory.
+
+---
+
+### Current Status
+
+* Logic Arena's scripting engine is now deterministic, fair, and algorithmically educational. The 2,000-op quota enforces Big O thinking at the gameplay level. The Swarm API unlocks coordinated multi-robot tactics. Dictionary state machines replace spaghetti variable lists. The energy economy survives loop-heavy scripts without punishing players for using control flow. Ready for: **Fog of War, University Competition launch, and multiplayer stress testing.**
