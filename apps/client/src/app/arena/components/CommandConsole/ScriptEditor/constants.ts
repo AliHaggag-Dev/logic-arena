@@ -76,6 +76,9 @@ export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     { label: '{}', detail: 'dictionary', hint: 'Object Literal for State Machines. e.g. { mode: "HUNT" }' },
     { label: 'obj.key', detail: 'dictionary', hint: 'Dot notation property access / mutation' },
     { label: 'obj["key"]', detail: 'dictionary', hint: 'Bracket notation dynamic indexing' },
+    // Swarm Intelligence (Phase 3)
+    { label: 'BROADCAST(data)', detail: 'swarm', hint: 'Send dictionary/array/string to all alive teammates. Returns recipient count.' },
+    { label: 'RECEIVE()', detail: 'swarm', hint: 'Returns Array of all messages received since last tick. Clears inbox after read.' },
 ];
 
 export const DETAIL_COLORS: Record<string, string> = {
@@ -88,4 +91,5 @@ export const DETAIL_COLORS: Record<string, string> = {
     array:      '#818cf8',
     sensor:     '#ec4899',
     dictionary: '#f43f5e',
+    swarm:      '#34d399',
 };

@@ -259,6 +259,77 @@ export class ExpressionEvaluator {
         );
       }
 
+      // ── Phase 3: Swarm Intelligence (Inter-Robot Communication) ─────────
+
+      /**
+       * BROADCAST(data)
+       *
+       * Sends a deep-copy of `data` (any value: dictionary, array, string,
+       * or number) to the ___INBOX queue of every alive teammate.
+       *
+       * SECURITY: The payload is JSON-serialised then parsed before being
+       * placed into each ally's memory. This hard-severs the object reference
+       * chain, guaranteeing one robot cannot mutate another robot's data
+       * structures through a shared pointer — a classic sandbox memory leak.
+       *
+       * Returns the number of teammates that received the message (0 if
+       * no data was provided or no alive allies exist).
+       *
+       * AliScript usage:
+       *   SET count = BROADCAST({ mode: "ATTACK", targetX: 200 })
+       *   SET count = BROADCAST("REGROUP")
+       */
+      case 'BROADCAST': {
+        const payload = args[0];
+        if (payload === undefined) return 0;
+
+        const allRobots = getRobots();
+        const INBOX_KEY = '___INBOX';
+        let broadcastCount = 0;
+
+        for (const ally of allRobots) {
+          if (ally.team !== robot.team || !ally.isAlive) continue;
+          // Deep-copy the payload to sever all object references before
+          // placing it into the ally's memory sandbox.
+          const safePayload: unknown = JSON.parse(JSON.stringify(payload));
+          const allyMemory = ally.memory as Record<string, unknown>;
+          if (!Array.isArray(allyMemory[INBOX_KEY])) {
+            allyMemory[INBOX_KEY] = [];
+          }
+          (allyMemory[INBOX_KEY] as unknown[]).push(safePayload);
+          broadcastCount++;
+        }
+
+        return broadcastCount;
+      }
+
+      /**
+       * RECEIVE()
+       *
+       * Atomically drains this robot's ___INBOX and returns the full array
+       * of messages received since the last RECEIVE() call.
+       *
+       * The inbox is cleared immediately on read, so each message is
+       * delivered exactly once (fire-and-forget semantics). Calling
+       * RECEIVE() when the inbox is empty returns [].
+       *
+       * AliScript usage:
+       *   SET messages = RECEIVE()
+       *   SET count = LENGTH(messages)
+       *   IF count > 0 THEN
+       *     SET msg = messages[0]
+       *   END
+       */
+      case 'RECEIVE': {
+        const INBOX_KEY = '___INBOX';
+        const inbox = memory[INBOX_KEY];
+        if (!Array.isArray(inbox) || inbox.length === 0) return [];
+        // Shallow-copy the inbox then clear it so each message is read once.
+        const drained: unknown[] = inbox.slice();
+        memory[INBOX_KEY] = [];
+        return drained;
+      }
+
       default:
         return undefined;
     }

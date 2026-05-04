@@ -16,9 +16,10 @@
 7. [Dictionaries & Hash Maps ⭐ NEW](#dictionaries--hash-maps--new)
 8. [Advanced Tactics: Game Loop Architecture](#advanced-tactics-game-loop-architecture)
 9. [Advanced Sensors](#advanced-sensors)
-10. [Status Query Functions](#status-query-functions)
-11. [Energy System](#energy-system)
-12. [Battle Tactics Examples](#battle-tactics-examples)
+10. [Swarm Intelligence ⭐ NEW](#swarm-intelligence--new)
+11. [Status Query Functions](#status-query-functions)
+12. [Energy System](#energy-system)
+13. [Battle Tactics Examples](#battle-tactics-examples)
 
 ---
 
@@ -409,6 +410,55 @@ IF CAN_SEE_ENEMY THEN
   END
 END
 ```
+
+---
+
+## Swarm Intelligence ⭐ NEW
+
+AliScript natively supports Inter-Robot Communication via a secure, zero-latency mesh network. Use the `BROADCAST` and `RECEIVE` functions to coordinate your team.
+
+### `BROADCAST(data)`
+
+**Returns:** `number` (Count of teammates that successfully received the message)
+
+Sends a deep-copy of `data` (dictionary, array, string, or number) to the inbox of every alive teammate.
+The payload is safely copied to prevent cross-robot memory aliasing.
+
+```aliascript
+// Broadcast a target to all allies
+IF CAN_SEE_ENEMY THEN
+  SET count = BROADCAST({ type: "TARGET", x: NEAREST_VISIBLE_X, y: NEAREST_VISIBLE_Y })
+END
+```
+
+> **Note:** Returns `0` if no data is provided or no alive teammates exist.
+
+---
+
+### `RECEIVE()`
+
+**Returns:** `Array` of received messages
+
+Atomically drains this robot's inbox and returns the full array of messages received since the last `RECEIVE()` call. The inbox is cleared immediately after reading.
+
+```aliascript
+// Process all incoming messages
+SET msgs = RECEIVE()
+SET len = LENGTH(msgs)
+
+IF len > 0 THEN
+  // Get the most recent message (last in array)
+  SET latest = msgs[len - 1]
+  
+  IF latest.type == "TARGET" THEN
+    // Move to broadcasted target
+    SET rotation = ATAN2(latest.y - POSITION_Y, latest.x - POSITION_X)
+    MOVE
+  END
+END
+```
+
+> **Note:** Calling `RECEIVE()` when the inbox is empty returns `[]`. Messages are delivered exactly once.
 
 ---
 

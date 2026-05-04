@@ -14,6 +14,8 @@ const BUILTIN_FN_NAMES = new Set([
     "LENGTH", "PUSH", "POP", "RANDOM", "LOG",
     // ── Phase 1: Advanced Sensory Arrays ──────────────────────────────────
     "GET_ALL_VISIBLE_ENEMIES", "RAYCAST",
+    // ── Phase 3: Swarm Intelligence (Inter-Robot Communication) ───────────
+    "BROADCAST", "RECEIVE",
 ]);
 
 /** Helper to check peekToken type without TS narrowing side-effects. */

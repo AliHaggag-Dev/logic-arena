@@ -1,17 +1,6 @@
 import React from "react";
-import { Hexagon, Eye, Move, Zap, Brain, RotateCw, BarChart3 } from 'lucide-react';
 import { SectionLabel } from "./SectionLabel";
 import { QUICK_REF } from "../constants/docsData";
-
-const REF_ICONS: Record<string, React.ReactNode> = {
-  '⬡': <Hexagon className="w-4 h-4" />,
-  '◈': <Eye className="w-4 h-4" />,
-  '⦾': <Move className="w-4 h-4" />,
-  '⚡': <Zap className="w-4 h-4" />,
-  '◉': <Brain className="w-4 h-4" />,
-  '◎': <RotateCw className="w-4 h-4" />,
-  '📊': <BarChart3 className="w-4 h-4" />,
-};
 
 export function QuickReferenceSection({ isMobile }: { isMobile: boolean }) {
   return (
@@ -36,7 +25,7 @@ export function QuickReferenceSection({ isMobile }: { isMobile: boolean }) {
                 className={`${isMobile ? "text-base" : "text-lg"} flex items-center justify-center w-7 h-7 rounded-md shadow-[0_0_15px_rgba(var(--accent-rgb),0.05)]`}
                 style={{ color: card.color, border: `1px solid ${card.color}44`, background: `${card.color}10` }}
               >
-                {REF_ICONS[card.icon] || card.icon}
+                <card.icon className="w-4 h-4" />
               </span>
               <span
                 className="text-[10px] font-black tracking-[0.28em]"

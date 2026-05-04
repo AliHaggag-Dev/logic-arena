@@ -1,3 +1,10 @@
+import { 
+  Hexagon, Eye, Move, Zap, Brain, RotateCw, BarChart3, 
+  Calculator, Brackets, Braces, Radar, RadioReceiver,
+  Search, Shield
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
 export interface CommandDoc {
   command: string;
   category: string;
@@ -239,12 +246,63 @@ MOVE`,
 
 
 // ---------------------------------------------------------------------------
+// Phase 3: Swarm Intelligence (Inter-Robot Communication)
+// ---------------------------------------------------------------------------
+
+export interface SwarmFunctionDoc {
+  signature: string;
+  category: string;
+  description: string;
+  returns: string;
+  returnDetail: string;
+  example: string;
+  note: string;
+}
+
+export const SWARM_FUNCTIONS_TABLE: SwarmFunctionDoc[] = [
+  {
+    signature: 'BROADCAST(data)',
+    category: 'Swarm Comm',
+    description: 'Sends a deep-copy of `data` (dictionary, array, string, or number) to the inbox of every alive teammate. Safely prevents cross-sandbox memory leaks by copying the payload.',
+    returns: 'number',
+    returnDetail: 'Returns the count of teammates that successfully received the message.',
+    example:
+      `// Broadcast a target to all allies
+IF CAN_SEE_ENEMY THEN
+  SET count = BROADCAST({ type: "TARGET", x: NEAREST_VISIBLE_X, y: NEAREST_VISIBLE_Y })
+END`,
+    note: 'Returns 0 if no data is provided or no alive teammates exist.',
+  },
+  {
+    signature: 'RECEIVE()',
+    category: 'Swarm Comm',
+    description: 'Atomically drains this robot\'s inbox and returns the full array of messages received since the last RECEIVE() call. The inbox is cleared immediately after reading.',
+    returns: 'Array of payloads',
+    returnDetail: 'Each element in the array is a message payload sent via BROADCAST().',
+    example:
+      `// Process all incoming messages
+SET msgs = RECEIVE()
+SET len = LENGTH(msgs)
+IF len > 0 THEN
+  // Get the most recent message
+  SET latest = msgs[len - 1]
+  IF latest.type == "TARGET" THEN
+    // Move to target
+    SET rotation = ATAN2(latest.y - POSITION_Y, latest.x - POSITION_X)
+    MOVE
+  END
+END`,
+    note: 'Calling RECEIVE() when the inbox is empty returns []. Messages are delivered exactly once.',
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Algorithm Challenges
 // ---------------------------------------------------------------------------
 
 export interface AlgorithmChallenge {
   title: string;
-  badge: string;
+  badge: LucideIcon;
   description: string;
   difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
   concept: string;
@@ -255,7 +313,7 @@ export interface AlgorithmChallenge {
 export const ALGORITHM_CHALLENGES: AlgorithmChallenge[] = [
   {
     title: 'Spiral Search Pattern',
-    badge: '🔍',
+    badge: Search,
     description: 'Continuously rotate the FOV with SCAN until an enemy enters vision, then engage. Classic search algorithm applied to robot combat.',
     difficulty: 'BEGINNER',
     concept: 'FOV Sweep / Detection Loop',
@@ -283,7 +341,7 @@ END`,
   },
   {
     title: 'Energy-Efficient Sniper',
-    badge: '⚡',
+    badge: Zap,
     description: 'Only fire when energy is sufficient and the enemy is visible. Waits during STASIS for energy to recover. Maximises the Efficiency Score metric.',
     difficulty: 'INTERMEDIATE',
     concept: 'Resource-Aware Decision Making',
@@ -320,7 +378,7 @@ END`,
   },
   {
     title: 'Defensive Regeneration Loop',
-    badge: '🛡️',
+    badge: Shield,
     description: 'Detect STASIS entry, back away from the last known enemy position, and wait for energy to recover before re-engaging.',
     difficulty: 'ADVANCED',
     concept: 'State Machine / Stasis Recovery',
@@ -365,7 +423,7 @@ END`,
   },
   {
     title: 'Sensor Array Targeting',
-    badge: '📡',
+    badge: Radar,
     description: 'Use GET_ALL_VISIBLE_ENEMIES() to gather all targets as a data structure, then write a minimum-health search in AliScript to always fire at the weakest enemy. The ultimate test of your algorithm skills.',
     difficulty: 'ADVANCED',
     concept: 'Array Processing / Min-Search / RAYCAST LOS',
@@ -411,7 +469,7 @@ END`,
   },
   {
     title: 'The Dictionary State Machine',
-    badge: '🧠',
+    badge: Brain,
     description: 'AliScript natively executes your code top-to-bottom every tick (10 times a second). You don\'t need an infinite WHILE TRUE DO loop! Use an initialization flag to preserve state across ticks using the new Dictionary syntax.',
     difficulty: 'ADVANCED',
     concept: 'State Machines / Game Loop Architecture',
@@ -449,18 +507,26 @@ END`,
 ];
 
 
-export const QUICK_REF = [
-  { title: 'CONTROL FLOW', icon: '⬡', color: '#f59e0b', commands: ['IF...ELSE', 'WHILE...DO', 'FOR...TO', 'FUNCTION', 'CALL', 'END'] },
-  { title: 'SENSORS / FOV', icon: '◈', color: '#06b6d4', commands: ['SCAN (blocked in STASIS)', 'WAIT', 'CAN_SEE_ENEMY', 'NEAREST_VISIBLE_X/Y', 'CAN_SEE_OBSTACLE'] },
-  { title: 'MOVEMENT & VISION', icon: '⦾', color: '#4ade80', commands: ['rotation / angle / rot', 'fovDirection (Eye)', 'lockVision (Link)', 'SET rotation = 1.57', 'PATHFIND'] },
-  { title: 'ENERGY', icon: '⚡', color: '#a855f7', commands: ['MY_ENERGY (0–100)', 'ENERGY_PCT', 'IN_STASIS', 'Regen: +3/tick in STASIS only'] },
-  { title: 'INTELLIGENCE', icon: '◉', color: '#6366f1', commands: ['SET var = val', 'Math (+,-,*,/,%)', 'NOT / AND / OR', 'TRUE / FALSE'] },
-  { title: 'ROTATION SYSTEM', icon: '◎', color: '#f59e0b', commands: ['rotation = body', 'fovDirection = eyes', 'lockVision = link', 'SET lockVision = TRUE', 'Auto-disables on SET'] },
-  { title: 'STATUS QUERIES', icon: '📊', color: '#06b6d4', commands: ['GET_HEALTH()', 'GET_ENERGY()', 'GET_POSITION()', 'GET_DISTANCE()'] },
-  { title: 'MATH STDLIB', icon: '∑', color: '#f97316', commands: ['ABS(x)', 'SQRT(x)', 'ATAN2(y, x)', 'SIN / COS', 'POW / MIN / MAX', 'FLOOR / CEIL / ROUND'] },
-  { title: 'ARRAYS', icon: '[]', color: '#818cf8', commands: ['SET arr = [1, 2, 3]', 'arr[index]', 'LENGTH(arr)', 'PUSH(arr, val)', 'POP(arr)'] },
-  { title: 'DICTIONARIES / STATE', icon: '{}', color: '#f43f5e', commands: ['SET obj = { k: "v" }', 'obj.key', 'obj["key"]', 'SET obj.key = val'] },
-  { title: 'ADVANCED SENSORS', icon: '📡', color: '#ec4899', commands: ['GET_ALL_VISIBLE_ENEMIES()', 'Returns [dist, x, y, hp][]', 'RAYCAST(angle)', 'Returns dist to first hit'] },
+export interface QuickRefDoc {
+  title: string;
+  icon: LucideIcon;
+  color: string;
+  commands: string[];
+}
+
+export const QUICK_REF: QuickRefDoc[] = [
+  { title: 'CONTROL FLOW', icon: Hexagon, color: '#f59e0b', commands: ['IF...ELSE', 'WHILE...DO', 'FOR...TO', 'FUNCTION', 'CALL', 'END'] },
+  { title: 'SENSORS / FOV', icon: Eye, color: '#06b6d4', commands: ['SCAN (blocked in STASIS)', 'WAIT', 'CAN_SEE_ENEMY', 'NEAREST_VISIBLE_X/Y', 'CAN_SEE_OBSTACLE'] },
+  { title: 'MOVEMENT & VISION', icon: Move, color: '#4ade80', commands: ['rotation / angle / rot', 'fovDirection (Eye)', 'lockVision (Link)', 'SET rotation = 1.57', 'PATHFIND'] },
+  { title: 'ENERGY', icon: Zap, color: '#a855f7', commands: ['MY_ENERGY (0–100)', 'ENERGY_PCT', 'IN_STASIS', 'Regen: +3/tick in STASIS only'] },
+  { title: 'INTELLIGENCE', icon: Brain, color: '#6366f1', commands: ['SET var = val', 'Math (+,-,*,/,%)', 'NOT / AND / OR', 'TRUE / FALSE'] },
+  { title: 'ROTATION SYSTEM', icon: RotateCw, color: '#f59e0b', commands: ['rotation = body', 'fovDirection = eyes', 'lockVision = link', 'SET lockVision = TRUE', 'Auto-disables on SET'] },
+  { title: 'STATUS QUERIES', icon: BarChart3, color: '#06b6d4', commands: ['GET_HEALTH()', 'GET_ENERGY()', 'GET_POSITION()', 'GET_DISTANCE()'] },
+  { title: 'MATH STDLIB', icon: Calculator, color: '#f97316', commands: ['ABS(x)', 'SQRT(x)', 'ATAN2(y, x)', 'SIN / COS', 'POW / MIN / MAX', 'FLOOR / CEIL / ROUND'] },
+  { title: 'ARRAYS', icon: Brackets, color: '#818cf8', commands: ['SET arr = [1, 2, 3]', 'arr[index]', 'LENGTH(arr)', 'PUSH(arr, val)', 'POP(arr)'] },
+  { title: 'DICTIONARIES / STATE', icon: Braces, color: '#f43f5e', commands: ['SET obj = { k: "v" }', 'obj.key', 'obj["key"]', 'SET obj.key = val'] },
+  { title: 'ADVANCED SENSORS', icon: Radar, color: '#ec4899', commands: ['GET_ALL_VISIBLE_ENEMIES()', 'Returns [dist, x, y, hp][]', 'RAYCAST(angle)', 'Returns dist to first hit'] },
+  { title: 'SWARM INTELLIGENCE', icon: RadioReceiver, color: '#34d399', commands: ['BROADCAST(data)', 'Returns recipient count', 'RECEIVE()', 'Returns Array of messages'] },
 ];
 
 
@@ -515,6 +581,8 @@ export const CATEGORY_COLORS: Record<string, string> = {
   'Advanced Sensors': '#ec4899',
   'Vision Array': '#ec4899',
   'Line of Sight': '#f43f5e',
+  'Swarm Comm': '#34d399',
+  Swarm: '#34d399',
 };
 
 

@@ -21,6 +21,8 @@ const BUILTIN_FUNCTIONS = new Set([
     "LENGTH", "PUSH", "POP", "RANDOM", "LOG",
     // ── Phase 1: Advanced Sensory Arrays ──────────────────────────────────
     "GET_ALL_VISIBLE_ENEMIES", "RAYCAST",
+    // ── Phase 3: Swarm Intelligence (Inter-Robot Communication) ───────────
+    "BROADCAST", "RECEIVE",
 ]);
 
 export class Lexer {

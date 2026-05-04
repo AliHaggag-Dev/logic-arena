@@ -11,12 +11,6 @@ const DIFFICULTY_COLORS: Record<string, string> = {
   ADVANCED:     '#f97316',
 };
 
-const BADGE_ICONS: Record<string, React.ReactNode> = {
-  '🔍': <Search className="w-5 h-5 text-cyan-400" />,
-  '⚡': <Zap    className="w-5 h-5 text-purple-400" />,
-  '🛡️': <Shield className="w-5 h-5 text-orange-400" />,
-};
-
 interface AlgorithmChallengesProps {
   onLoadScript: (code: string) => void;
   isMobile: boolean;
@@ -57,7 +51,7 @@ const ChallengeCard = ({
             role="img"
             aria-label={challenge.title}
           >
-            {BADGE_ICONS[challenge.badge] ?? challenge.badge}
+            <challenge.badge className="w-5 h-5 opacity-80" style={{ color: challenge.color }} />
           </span>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
