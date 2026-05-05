@@ -1,5 +1,1 @@
-import { CampaignLevel } from './types/campaign.types';
-
-export interface LevelInfo extends CampaignLevel {
-  completed: boolean;
-}
+export type { ApiLevelInfo, ApiTabInfo } from './types/campaign.types';

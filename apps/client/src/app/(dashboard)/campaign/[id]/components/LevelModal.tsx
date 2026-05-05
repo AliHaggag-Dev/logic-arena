@@ -37,7 +37,7 @@ export function LevelModal({ modal, setModal, reward, router }: LevelModalProps)
               Enemy bot defeated.
             </p>
             <div className="inline-block border border-accent/20 rounded-lg px-6 py-3 bg-accent/5 mb-6 sm:mb-7">
-              <span className="text-accent/70 text-[9px] sm:text-[10px] tracking-[0.2em] block mb-1">RANK EARNED</span>
+              <span className="text-accent/70 text-[9px] sm:text-[10px] tracking-[0.2em] block mb-1">POINTS EARNED</span>
               <span className="text-accent font-black text-[20px] sm:text-[22px] drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.7)]">+{reward}</span>
             </div>
             <button

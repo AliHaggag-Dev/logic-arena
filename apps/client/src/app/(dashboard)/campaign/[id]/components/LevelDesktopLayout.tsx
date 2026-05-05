@@ -29,10 +29,10 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
           </button>
           <div>
             <span className="text-[10px] text-accent/70 tracking-[0.3em] font-bold block mb-1 uppercase">
-              LEVEL {String(level.id).padStart(2, "0")}
+              ORDER {String(level.order).padStart(2, "0")}
             </span>
             <h1 className="m-0 text-3xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-none uppercase">
-              {level.name}
+              {level.title}
             </h1>
           </div>
         </div>
@@ -66,7 +66,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center text-[10px]">
                 <span className="text-accent/70 tracking-[0.15em]">DESIGNATION</span>
-                <span className="font-bold text-red-500/80 tracking-[0.12em]">{level.name}</span>
+                <span className="font-bold text-red-500/80 tracking-[0.12em]">{level.title}</span>
               </div>
               <div className="h-[1px] bg-red-500/10" />
               <div className="flex justify-between items-center text-[10px]">
@@ -76,7 +76,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
               <div className="h-[1px] bg-red-500/10" />
               <div className="flex justify-between items-center text-[10px]">
                 <span className="text-accent/70 tracking-[0.15em]">REWARD</span>
-                <span className="font-bold text-accent/70 tracking-[0.12em]">+{level.rewardRank} RANK</span>
+                <span className="font-bold text-accent/70 tracking-[0.12em]">+{level.pointsReward} PTS</span>
               </div>
             </div>
           </div>

@@ -30,10 +30,10 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
         <div className="flex justify-between items-center w-full">
           <div className="flex flex-col">
             <span className="text-[9px] text-accent/70 tracking-[0.3em] font-bold block mb-0.5 uppercase">
-              LEVEL {String(level.id).padStart(2, "0")}
+              ORDER {String(level.order).padStart(2, "0")}
             </span>
             <h1 className="m-0 text-xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-[1.1] uppercase max-w-[200px]">
-              {level.name}
+              {level.title}
             </h1>
           </div>
           <span
@@ -58,12 +58,12 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center text-[10px]">
               <span className="text-accent/70 tracking-[0.15em]">INTEL</span>
-              <span className="font-bold text-red-500/80 tracking-[0.12em]">{level.name}</span>
+              <span className="font-bold text-red-500/80 tracking-[0.12em]">{level.title}</span>
             </div>
             <div className="h-[1px] bg-red-500/10" />
             <div className="flex justify-between items-center text-[10px]">
               <span className="text-accent/70 tracking-[0.15em]">REWARD</span>
-              <span className="font-bold text-accent/70 tracking-[0.12em]">+{level.rewardRank} PTS</span>
+              <span className="font-bold text-accent/70 tracking-[0.12em]">+{level.pointsReward} PTS</span>
             </div>
           </div>
         </div>

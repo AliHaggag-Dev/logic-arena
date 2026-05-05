@@ -3,7 +3,12 @@ import {
   UseGuards, NotFoundException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
-import { CampaignService, CAMPAIGN_LEVEL_COUNT } from './campaign.service';
+import {
+  CampaignService,
+  ERR_LEVEL_LOCKED,
+  ERR_LEVEL_NOT_FOUND,
+  ERR_USER_NOT_FOUND,
+} from './campaign.service';
 import { AuthGuard } from '../../common/auth.guard';
 import { RedisService } from '../../common/redis.service';
 
@@ -15,7 +20,7 @@ interface CompleteLevelDto {
   completionToken: string;
 }
 
-function completionTokenKey(userId: string, levelId: number): string {
+function completionTokenKey(userId: string, levelId: string): string {
   return `campaign:token:${userId}:${levelId}`;
 }
 
@@ -28,37 +33,44 @@ export class CampaignController {
     private readonly redis: RedisService,
   ) {}
 
-  @Get('levels')
-  getLevels(@Req() req: RequestWithUser) {
-    return this.campaignService.getLevels(req.user.sub);
+  /** Returns all tabs with per-level unlock/completion state for the authenticated user. */
+  @Get('tabs')
+  getTabsWithLevels(@Req() req: RequestWithUser) {
+    return this.campaignService.getTabsWithLevels(req.user.sub);
   }
 
+  /** Legacy flat list — preserved for backward compatibility with the old campaign page. */
+  @Get('levels')
+  async getLevels(@Req() req: RequestWithUser) {
+    const tabs = await this.campaignService.getTabsWithLevels(req.user.sub);
+    return tabs.flatMap((t) => t.levels);
+  }
+
+  /** Get a single level's details (no enemy script). Returns 403 if locked. */
   @Get('levels/:id')
   async getLevel(@Req() req: RequestWithUser, @Param('id') id: string) {
-    const levelId = parseInt(id, 10);
-    if (isNaN(levelId) || levelId < 1 || levelId > CAMPAIGN_LEVEL_COUNT) {
-      throw new NotFoundException('Level not found');
-    }
+    if (!id?.trim()) throw new NotFoundException('Level not found');
     try {
-      return await this.campaignService.getLevel(req.user.sub, levelId);
+      return await this.campaignService.getLevel(req.user.sub, id);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
-      if (msg === 'LEVEL_LOCKED')    throw new ForbiddenException('Level is locked');
-      if (msg === 'LEVEL_NOT_FOUND') throw new NotFoundException('Level not found');
+      if (msg === ERR_LEVEL_LOCKED)    throw new ForbiddenException('Level is locked');
+      if (msg === ERR_LEVEL_NOT_FOUND) throw new NotFoundException('Level not found');
       throw e;
     }
   }
 
+  /**
+   * Called by the client after a verified win to record completion and award points.
+   * Requires a single-use completionToken issued by the campaign fight endpoint.
+   */
   @Post('levels/:id/complete')
   async completeLevel(
     @Req() req: RequestWithUser,
     @Param('id') id: string,
     @Body() body: CompleteLevelDto,
   ) {
-    const levelId = parseInt(id, 10);
-    if (isNaN(levelId) || levelId < 1 || levelId > CAMPAIGN_LEVEL_COUNT) {
-      throw new BadRequestException('Invalid level id');
-    }
+    if (!id?.trim()) throw new BadRequestException('Invalid level id');
 
     const userId = req.user.sub;
     const { completionToken } = body;
@@ -67,8 +79,8 @@ export class CampaignController {
       throw new ForbiddenException('Missing completion token');
     }
 
-    // Verify the single-use token stored by the fight endpoint
-    const tokenKey   = completionTokenKey(userId, levelId);
+    // ── Verify single-use Redis token issued by the fight endpoint ──
+    const tokenKey    = completionTokenKey(userId, id);
     const storedToken = await this.redis.get<string>(tokenKey);
 
     if (!storedToken || storedToken !== completionToken) {
@@ -79,11 +91,12 @@ export class CampaignController {
     await this.redis.del(tokenKey);
 
     try {
-      return await this.campaignService.completeLevel(userId, levelId);
+      return await this.campaignService.completeLevel(userId, id);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
-      if (msg === 'INVALID_LEVEL')   throw new BadRequestException('Not your current level');
-      if (msg === 'USER_NOT_FOUND')  throw new NotFoundException('User not found');
+      if (msg === ERR_LEVEL_LOCKED)    throw new ForbiddenException('Level is locked — cannot claim reward');
+      if (msg === ERR_LEVEL_NOT_FOUND) throw new NotFoundException('Level not found');
+      if (msg === ERR_USER_NOT_FOUND)  throw new NotFoundException('User not found');
       throw e;
     }
   }

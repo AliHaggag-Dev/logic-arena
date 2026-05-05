@@ -4,7 +4,11 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '../../common/auth.guard';
-import { CampaignService, CAMPAIGN_LEVEL_COUNT } from '../campaign/campaign.service';
+import {
+  CampaignService,
+  ERR_LEVEL_LOCKED,
+  ERR_LEVEL_NOT_FOUND,
+} from '../campaign/campaign.service';
 import { RedisService } from '../../common/redis.service';
 import { MatchEngine } from './match.engine';
 import { Robot } from '@logic-arena/engine';
@@ -12,7 +16,7 @@ import { PrismaService } from '../../common/prisma.service';
 import { BLACK_MARKET_ITEMS } from '../users/black-market.constants';
 
 interface CampaignFightDto {
-  levelId: number;
+  levelId: string;
   userScript: string;
 }
 
@@ -28,14 +32,12 @@ interface CampaignFightResult {
 }
 
 /** Named constants for campaign fight configuration */
-const ENGINE_TICK_MS = 100;
-const WIN_POLL_MS    = 150;
-const MAX_TICKS      = 300; // ~30s cap
-
-/** Redis TTL for single-use completion tokens (60 seconds) */
+const ENGINE_TICK_MS           = 100;
+const WIN_POLL_MS              = 150;
+const MAX_TICKS                = 300; // ~30 s cap
 const COMPLETION_TOKEN_TTL_SEC = 60;
 
-function completionTokenKey(userId: string, levelId: number): string {
+function completionTokenKey(userId: string, levelId: string): string {
   return `campaign:token:${userId}:${levelId}`;
 }
 
@@ -58,66 +60,60 @@ export class MatchesController {
     const { levelId, userScript } = body;
     const userId = req.user.sub;
 
-    // ── Input validation ───────────────────────────────────────────────
-    const parsedLevelId = Number(levelId);
-    if (
-      !Number.isInteger(parsedLevelId) ||
-      parsedLevelId < 1 ||
-      parsedLevelId > CAMPAIGN_LEVEL_COUNT
-    ) {
-      throw new BadRequestException('levelId must be an integer between 1 and 10');
+    // ── Input validation ─────────────────────────────────────────────────────
+    if (!levelId?.trim()) {
+      throw new BadRequestException('levelId is required');
     }
     if (!userScript?.trim()) {
       throw new BadRequestException('userScript is required');
     }
 
-    // ── Level-lock enforcement ─────────────────────────────────────────
+    // ── Level-lock enforcement (403 on locked / 404 on unknown) ─────────────
     let enemyScript: string;
     try {
-      enemyScript = await this.campaignService.getEnemyScriptSecure(userId, parsedLevelId);
+      enemyScript = await this.campaignService.getEnemyScriptSecure(userId, levelId);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
-      if (msg === 'LEVEL_LOCKED')    throw new ForbiddenException('Level is locked');
-      if (msg === 'LEVEL_NOT_FOUND') throw new NotFoundException('Level not found');
+      if (msg === ERR_LEVEL_LOCKED)    throw new ForbiddenException('Level is locked');
+      if (msg === ERR_LEVEL_NOT_FOUND) throw new NotFoundException('Level not found');
       throw e;
     }
 
-    // ── Load User Loadout ──────────────────────────────────────────────
+    // ── Load user loadout ────────────────────────────────────────────────────
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where:  { id: userId },
       select: { equippedChassis: true, equippedPaint: true, equippedTracer: true },
     });
 
-    let userColor = '#22d3ee';
+    let userColor       = '#22d3ee';
     let userTracerColor = '#22d3ee';
-    let userModel = 'unit-01';
+    let userModel       = 'unit-01';
 
     if (user) {
       userModel = user.equippedChassis || 'chassis-phantom';
-      const paint = BLACK_MARKET_ITEMS.find(i => i.id === user.equippedPaint);
-      if (paint?.color) userColor = paint.color;
-      const tracer = BLACK_MARKET_ITEMS.find(i => i.id === user.equippedTracer);
+      const paint  = BLACK_MARKET_ITEMS.find((i) => i.id === user.equippedPaint);
+      if (paint?.color)  userColor       = paint.color;
+      const tracer = BLACK_MARKET_ITEMS.find((i) => i.id === user.equippedTracer);
       if (tracer?.color) userTracerColor = tracer.color;
     }
 
-    // ── Run the match ──────────────────────────────────────────────────
+    // ── Run the match ────────────────────────────────────────────────────────
     const matchId = `campaign-${crypto.randomUUID()}`;
 
     const engine = new MatchEngine(matchId, [
-      { id: userId,  script: userScript,  color: userColor, model: userModel, tracerColor: userTracerColor },
-      { id: 'bot-2', script: enemyScript, color: '#ef4444', model: 'unit-02', tracerColor: '#ef4444' },
+      { id: userId,  script: userScript,  color: userColor,   model: userModel,  tracerColor: userTracerColor },
+      { id: 'bot-2', script: enemyScript, color: '#ef4444',   model: 'unit-02',  tracerColor: '#ef4444'       },
     ]);
 
     const startMs = Date.now();
     return new Promise<CampaignFightResult>((resolve) => {
       engine.start(ENGINE_TICK_MS);
-
       let tick = 0;
 
       const check = setInterval(() => {
         tick++;
-        const state = engine.getState();
-        const robots = state.robots as Robot[];
+        const state      = engine.getState();
+        const robots     = state.robots as Robot[];
         const aliveRobots = robots.filter((r) => r.health > 0);
 
         const isOver   = robots.length > 0 && aliveRobots.length <= 1;
@@ -130,17 +126,15 @@ export class MatchesController {
           const userBot  = robots.find((r) => r.id === userId);
           const botAlive = (userBot?.health ?? 0) > 0;
 
-          // Draw: both bots dead simultaneously
           const draw = !botAlive && aliveRobots.length === 0;
           const won  = botAlive && aliveRobots.length === 1;
 
-          // Generate a single-use completion token on win
           let completionToken: string | null = null;
           const storeToken = async () => {
             if (won) {
               completionToken = crypto.randomUUID();
               await this.redis.set(
-                completionTokenKey(userId, parsedLevelId),
+                completionTokenKey(userId, levelId),
                 completionToken,
                 COMPLETION_TOKEN_TTL_SEC,
               );
@@ -153,8 +147,11 @@ export class MatchesController {
             });
           };
           storeToken().catch(() => {
-            // Redis unavailable — resolve without token (completeLevel will reject)
-            resolve({ won, draw, durationSeconds: Math.floor((Date.now() - startMs) / 1000), completionToken: null });
+            resolve({
+              won, draw,
+              durationSeconds: Math.floor((Date.now() - startMs) / 1000),
+              completionToken: null,
+            });
           });
         }
       }, WIN_POLL_MS);

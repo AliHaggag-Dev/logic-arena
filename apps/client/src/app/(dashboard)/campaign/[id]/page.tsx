@@ -12,7 +12,7 @@ import { LevelModal } from "./components/LevelModal";
 export default function CampaignLevelPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
-  const levelId = parseInt(id, 10);
+  const levelId = id;
 
   const [level, setLevel] = useState<LevelDetail | null>(null);
   const [fetching, setFetching] = useState(true);
@@ -22,7 +22,7 @@ export default function CampaignLevelPage() {
   const [reward, setReward] = useState<number>(0);
 
   useEffect(() => {
-    if (isNaN(levelId)) {
+    if (!levelId) {
       setError("Invalid level ID.");
       setFetching(false);
       return;
@@ -57,7 +57,7 @@ export default function CampaignLevelPage() {
             completionToken: fightRes.data.completionToken 
           }); 
         } catch { }
-        setReward(level?.rewardRank ?? 0);
+        setReward(level?.pointsReward ?? 0);
         setModal("victory");
       } else if (fightRes.data.draw) {
         setModal("draw");
