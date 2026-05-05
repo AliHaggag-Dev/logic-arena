@@ -29,6 +29,20 @@
   --eff-optimal:  var(--accent);
   --eff-moderate: #fb923c;
   --eff-low:      #f87171;
+
+  /* ── Docs Syntax Variables (Cyberpunk) ── */
+  --docs-orange: #f59e0b;
+  --docs-green: #4ade80;
+  --docs-cyan: #22d3ee;
+  --docs-cyan-dark: #06b6d4;
+  --docs-yellow: #eab308;
+  --docs-red: #ef4444;
+  --docs-emerald: #10b981;
+  --docs-purple: #a855f7;
+  --docs-indigo: #818cf8;
+  --docs-slate: #94a3b8;
+  --docs-pink: #ec4899;
+  --docs-rose: #f43f5e;
 }
 
 /* ── VIOLET SOVEREIGN — Premium light, deep violet authority ── */
@@ -69,6 +83,20 @@
   --eff-optimal:  var(--accent);
   --eff-moderate: #d97706;
   --eff-low:      #dc2626;
+
+  /* ── Docs Syntax Variables (Light) ── */
+  --docs-orange: #b45309;
+  --docs-green: #15803d;
+  --docs-cyan: #0369a1;
+  --docs-cyan-dark: #0f766e;
+  --docs-yellow: #a16207;
+  --docs-red: #b91c1c;
+  --docs-emerald: #047857;
+  --docs-purple: #6b21a8;
+  --docs-indigo: #4338ca;
+  --docs-slate: #334155;
+  --docs-pink: #be185d;
+  --docs-rose: #be123c;
 }
 
 /* ── OBSIDIAN EMBER — Volcanic dark, liquid gold fire ── */
@@ -109,6 +137,20 @@
   --eff-optimal:  var(--accent);
   --eff-moderate: #fb923c;
   --eff-low:      #f87171;
+
+  /* ── Docs Syntax Variables (Desert) ── */
+  --docs-orange: #fbbf24;
+  --docs-green: #84cc16;
+  --docs-cyan: #67e8f9;
+  --docs-cyan-dark: #22d3ee;
+  --docs-yellow: #fcd34d;
+  --docs-red: #f87171;
+  --docs-emerald: #34d399;
+  --docs-purple: #c084fc;
+  --docs-indigo: #a5b4fc;
+  --docs-slate: #cbd5e1;
+  --docs-pink: #f472b6;
+  --docs-rose: #fb7185;
 }
 
 @theme inline {

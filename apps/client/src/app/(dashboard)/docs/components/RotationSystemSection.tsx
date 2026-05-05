@@ -31,8 +31,8 @@ const ExampleCard = ({
     <div
       className={`border bg-card/60 backdrop-blur-sm transition-all duration-300 rounded-xl overflow-hidden ${isExpanded ? 'ring-1 ring-amber-500/20' : ''}`}
       style={{
-        borderColor: isExpanded ? `${color}66` : 'rgba(245, 158, 11, 0.12)',
-        boxShadow:   isExpanded ? `0 0 20px ${color}22` : 'none',
+        borderColor: isExpanded ? `color-mix(in srgb, ${color} 40%, transparent)` : 'rgba(245, 158, 11, 0.12)',
+        boxShadow:   isExpanded ? `0 0 20px color-mix(in srgb, ${color} 13%, transparent)` : 'none',
       }}
     >
       {/* Header */}
@@ -97,7 +97,7 @@ const ExampleCard = ({
           <button
             type="button"
             onClick={() => onLoadScript(example.code)}
-            className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] text-amber-500 hover:bg-amber-500/10 hover:opacity-90 border-amber-500/40 bg-amber-500/5"
+            className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] text-amber-500 hover:bg-amber-500/15 hover:opacity-90 border-amber-500/40 bg-amber-500/5 cursor-pointer"
           >
             ▶ LOAD_TO_CORE
           </button>

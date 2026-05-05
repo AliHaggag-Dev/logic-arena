@@ -17,7 +17,8 @@ export interface CommandDoc {
 export const COMMAND_TABLE: CommandDoc[] = [
   // --- Control Flow ---
   { command: 'IF...THEN...ELSE...END', category: 'Control Flow', parameters: 'condition', description: 'Branching logic with optional else clause. Must be closed with END.', example: 'IF health < 50 THEN BACKUP ELSE FIRE END', energyCost: 'Free' },
-  { command: 'WHILE...DO...END', category: 'Control Flow', parameters: 'condition', description: 'Looping logic. Executes block while condition is true. Auto-capped at 10 iter/tick.', example: 'WHILE spotted DO FIRE WAIT 1 END', energyCost: 'Free' },
+  { command: 'FOR...TO...DO...END', category: 'Control Flow', parameters: 'assignment, limit', description: 'Deterministic looping logic. Executes a block a fixed number of times. Crucial for writing O(N) linear array traversals that stay within TLE limits.', example: 'FOR i = 0 TO LENGTH(enemies) DO SET current = enemies[i] END', energyCost: 'Free' },
+  { command: 'WHILE...DO...END', category: 'Control Flow', parameters: 'condition', description: 'Looping logic. Executes block while condition is true. Auto-capped at 10 iter/tick. WARNING: Nested WHILE loops can easily trigger TLE crashes (O(N²)).', example: 'WHILE spotted DO FIRE WAIT 1 END', energyCost: 'Free' },
   { command: 'FUNCTION / CALL', category: 'Control Flow', parameters: 'name', description: 'Define reusable blocks of logic (functions) and invoke them.', example: 'FUNCTION retreat BACKUP END CALL retreat', energyCost: 'Free' },
   // --- Movement ---
   { command: 'MOVE', category: 'Movement', parameters: '—', description: 'Standard forward propulsion. Blocked during STASIS.', example: 'MOVE', energyCost: '2/tick' },
@@ -147,12 +148,12 @@ export interface ArrayOpDoc {
 }
 
 export const ARRAY_OPS_TABLE: ArrayOpDoc[] = [
-  { signature: 'SET arr = [v0, v1, v2]', description: 'Declare an array literal with initial values. Elements can be any expression.', returns: 'array', example: 'SET angles = [0, 0.785, 1.57, -0.785]' },
-  { signature: 'arr[index]', description: 'Read the value at zero-based index. Returns undefined if out of bounds.', returns: 'value', example: 'SET a = angles[0]' },
-  { signature: 'SET arr[index] = val', description: 'Write a value at zero-based index. Index must be within current array bounds.', returns: '—', example: 'SET scores[i] = ROUND(dist)' },
-  { signature: 'LENGTH(arr)', description: 'Returns the number of elements in the array. Works on strings too (returns character count).', returns: 'number', example: 'SET n = LENGTH(enemies)' },
-  { signature: 'PUSH(arr, value)', description: 'Appends value to the end of the array. Returns the new array length.', returns: 'number', example: 'PUSH(queue, NEAREST_VISIBLE_X)' },
-  { signature: 'POP(arr)', description: 'Removes and returns the last element of the array. Returns undefined if empty.', returns: 'value', example: 'SET last = POP(queue)' },
+  { signature: 'SET arr = [v0, v1, v2]', description: 'Declare an array literal with initial values. Elements can be any expression. Supports advanced deterministic memory management for state tracking.', returns: 'array', example: 'SET angles = [0, 0.785, 1.57, -0.785]' },
+  { signature: 'arr[index]', description: 'Read the value at zero-based index. Returns undefined if out of bounds. Reading from arrays is an O(1) constant time operation.', returns: 'value', example: 'SET a = angles[0]' },
+  { signature: 'SET arr[index] = val', description: 'Write a value at zero-based index. Index must be within current array bounds. O(1) time complexity.', returns: '—', example: 'SET scores[i] = ROUND(dist)' },
+  { signature: 'LENGTH(arr)', description: 'Returns the number of elements in the array. Works on strings too (returns character count). O(1) lookup. Essential for O(N) bounds-checking in loops.', returns: 'number', example: 'SET n = LENGTH(enemies)' },
+  { signature: 'PUSH(arr, value)', description: 'Appends value to the end of the array. Dynamic allocation occurs automatically. Returns the new array length.', returns: 'number', example: 'PUSH(queue, NEAREST_VISIBLE_X)' },
+  { signature: 'POP(arr)', description: 'Removes and returns the last element of the array. Returns undefined if empty. O(1) time complexity.', returns: 'value', example: 'SET last = POP(queue)' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -167,10 +168,10 @@ export interface DictionaryOpDoc {
 }
 
 export const DICTIONARY_OPS_TABLE: DictionaryOpDoc[] = [
-  { signature: 'SET obj = { key: "val" }', description: 'Declare an object literal (Dictionary). Keys can be identifiers or strings.', returns: 'object', example: 'SET state = { mode: "HUNT", target_id: 4 }' },
-  { signature: 'obj.key', description: 'Dot notation to access or modify a property. Key must be an identifier.', returns: 'value', example: 'SET m = state.mode' },
-  { signature: 'obj["key"]', description: 'Bracket notation to access or modify a property. Key can be any expression resolving to a string.', returns: 'value', example: 'SET state["mode"] = "EVADE"' },
-  { signature: 'SET obj.key = val', description: 'Mutating assignment. Update a property on an existing object.', returns: '—', example: 'SET state.mode = "ATTACK"' },
+  { signature: 'SET obj = { key: "val" }', description: 'Declare an object literal (Dictionary/Hash Map). Supports O(1) lookups and dynamic key insertion. Perfect for powerful state machines and memory persistence.', returns: 'object', example: 'SET state = { mode: "HUNT", target_id: 4 }' },
+  { signature: 'obj.key', description: 'Dot notation to access or modify a property. Key must be an identifier. Fast O(1) property access.', returns: 'value', example: 'SET m = state.mode' },
+  { signature: 'obj["key"]', description: 'Bracket notation to access or modify a property. Key can be any expression resolving to a string. O(1) property access.', returns: 'value', example: 'SET state["mode"] = "EVADE"' },
+  { signature: 'SET obj.key = val', description: 'Mutating assignment. Update a property on an existing object. Extremely useful for state preservation across ticks.', returns: '—', example: 'SET state.mode = "ATTACK"' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -191,7 +192,7 @@ export const SENSOR_FUNCTIONS_TABLE: SensorFunctionDoc[] = [
   {
     signature: 'GET_ALL_VISIBLE_ENEMIES()',
     category: 'Vision Array',
-    description: 'Returns an Array of enemy snapshots for every alive enemy currently inside this robot\'s FOV cone. Each snapshot is a 4-element sub-array. Enemies are intentionally returned UNSORTED — players are expected to implement their own sorting algorithm (bubble sort, quicksort, etc.) to find their priority target.',
+    description: 'Returns an Array of enemy snapshots for every alive enemy currently inside this robot\'s FOV cone. Each snapshot is a 4-element sub-array. Enemies are intentionally returned UNSORTED — players are expected to implement O(N) complexity linear scans or O(N log N) sorting algorithms to find their priority target without triggering TLE crashes.',
     returns: 'Array of [distance, x, y, health]',
     returnDetail: 'enemies[i][0] = distance  •  enemies[i][1] = position X  •  enemies[i][2] = position Y  •  enemies[i][3] = health (0–100)',
     example:
@@ -216,7 +217,7 @@ FIRE`,
   {
     signature: 'RAYCAST(angle)',
     category: 'Line of Sight',
-    description: 'Fires an invisible physics ray from the robot\'s current position in the direction (robot.rotation + angle), where angle is a relative radian offset. Returns the distance in arena units to the first solid obstacle encountered. Checks: arena boundary walls → SOLID obstacles → any alive robot (enemy OR friendly). TRAP and LAVA zones are transparent.',
+    description: 'Fires an advanced physics ray from the robot\'s current position in the direction (robot.rotation + angle), where angle is a relative radian offset. Returns the distance in arena units to the first solid obstacle encountered. Essential for advanced collision avoidance and Line-of-Sight verification before firing. Checks: boundary walls → SOLID obstacles → alive robots. TRAP and LAVA zones are transparent.',
     returns: 'number (distance in arena units)',
     returnDetail: 'Range: 1 to FOV range (default 300). Returns the FOV range value when nothing is hit within sensor range.',
     example:
@@ -317,7 +318,7 @@ export const ALGORITHM_CHALLENGES: AlgorithmChallenge[] = [
     description: 'Continuously rotate the FOV with SCAN until an enemy enters vision, then engage. Classic search algorithm applied to robot combat.',
     difficulty: 'BEGINNER',
     concept: 'FOV Sweep / Detection Loop',
-    color: '#22d3ee',
+    color: 'var(--docs-cyan)',
     code:
       `// ── Spiral Search Pattern ──────────────────────
 // Uses SCAN to rotate the FOV cone until CAN_SEE_ENEMY
@@ -345,7 +346,7 @@ END`,
     description: 'Only fire when energy is sufficient and the enemy is visible. Waits during STASIS for energy to recover. Maximises the Efficiency Score metric.',
     difficulty: 'INTERMEDIATE',
     concept: 'Resource-Aware Decision Making',
-    color: '#a855f7',
+    color: 'var(--docs-purple)',
     code:
       `// ── Energy-Efficient Sniper ────────────────────
 // Optimises damage-per-energy-unit to achieve a
@@ -382,7 +383,7 @@ END`,
     description: 'Detect STASIS entry, back away from the last known enemy position, and wait for energy to recover before re-engaging.',
     difficulty: 'ADVANCED',
     concept: 'State Machine / Stasis Recovery',
-    color: '#f97316',
+    color: 'var(--docs-orange)',
     code:
       `// ── Defensive Regeneration Loop ────────────────
 // A two-state machine: COMBAT and RECOVERY.
@@ -427,7 +428,7 @@ END`,
     description: 'Use GET_ALL_VISIBLE_ENEMIES() to gather all targets as a data structure, then write a minimum-health search in AliScript to always fire at the weakest enemy. The ultimate test of your algorithm skills.',
     difficulty: 'ADVANCED',
     concept: 'Array Processing / Min-Search / RAYCAST LOS',
-    color: '#ec4899',
+    color: 'var(--docs-pink)',
     code:
       `// ── Sensor Array Targeting ─────────────────────
 // Phase 1 Advanced: gather ALL visible enemies,
@@ -473,7 +474,7 @@ END`,
     description: 'AliScript natively executes your code top-to-bottom every tick (10 times a second). You don\'t need an infinite WHILE TRUE DO loop! Use an initialization flag to preserve state across ticks using the new Dictionary syntax.',
     difficulty: 'ADVANCED',
     concept: 'State Machines / Game Loop Architecture',
-    color: '#f43f5e',
+    color: 'var(--docs-rose)',
     code:
       `// ── The Dictionary State Machine ───────────────
 // Scripts run 10 times a second automatically.
@@ -510,7 +511,7 @@ END`,
     description: 'AliScript enforces a hard cap of 2,000 AST-node evaluations per tick. Brute-force O(N²) nested loops will crash your robot mid-combat with a [FATAL] TLE error. Learn to write O(N) linear scans or O(N log N) algorithms to stay under quota.',
     difficulty: 'ADVANCED',
     concept: 'Complexity Analysis / Instruction Quota',
-    color: '#ef4444',
+    color: 'var(--docs-red)',
     code:
       `// ── The TLE Optimization ───────────────────────
 // BAD: O(N²) brute-force — WILL trigger TLE crash
@@ -560,19 +561,19 @@ export interface QuickRefDoc {
 }
 
 export const QUICK_REF: QuickRefDoc[] = [
-  { title: 'CONTROL FLOW', icon: Hexagon, color: '#f59e0b', commands: ['IF...ELSE', 'WHILE...DO', 'FOR...TO', 'FUNCTION', 'CALL', 'END'] },
-  { title: 'SENSORS / FOV', icon: Eye, color: '#06b6d4', commands: ['SCAN (blocked in STASIS)', 'WAIT', 'CAN_SEE_ENEMY', 'NEAREST_VISIBLE_X/Y', 'CAN_SEE_OBSTACLE'] },
-  { title: 'MOVEMENT & VISION', icon: Move, color: '#4ade80', commands: ['rotation / angle / rot', 'fovDirection (Eye)', 'lockVision (Link)', 'SET rotation = 1.57', 'PATHFIND'] },
-  { title: 'ENERGY', icon: Zap, color: '#a855f7', commands: ['MY_ENERGY (0–100)', 'ENERGY_PCT', 'IN_STASIS', 'Regen: +3/tick in STASIS only'] },
-  { title: 'INTELLIGENCE', icon: Brain, color: '#6366f1', commands: ['SET var = val', 'Math (+,-,*,/,%)', 'NOT / AND / OR', 'TRUE / FALSE'] },
-  { title: 'ROTATION SYSTEM', icon: RotateCw, color: '#f59e0b', commands: ['rotation = body', 'fovDirection = eyes', 'lockVision = link', 'SET lockVision = TRUE', 'Auto-disables on SET'] },
-  { title: 'STATUS QUERIES', icon: BarChart3, color: '#06b6d4', commands: ['GET_HEALTH()', 'GET_ENERGY()', 'GET_POSITION()', 'GET_DISTANCE()'] },
-  { title: 'MATH STDLIB', icon: Calculator, color: '#f97316', commands: ['ABS(x)', 'SQRT(x)', 'ATAN2(y, x)', 'SIN / COS', 'POW / MIN / MAX', 'FLOOR / CEIL / ROUND'] },
-  { title: 'ARRAYS', icon: Brackets, color: '#818cf8', commands: ['SET arr = [1, 2, 3]', 'arr[index]', 'LENGTH(arr)', 'PUSH(arr, val)', 'POP(arr)'] },
-  { title: 'DICTIONARIES / STATE', icon: Braces, color: '#f43f5e', commands: ['SET obj = { k: "v" }', 'obj.key', 'obj["key"]', 'SET obj.key = val'] },
-  { title: 'ADVANCED SENSORS', icon: Radar, color: '#ec4899', commands: ['GET_ALL_VISIBLE_ENEMIES()', 'Returns [dist, x, y, hp][]', 'RAYCAST(angle)', 'Returns dist to first hit'] },
-  { title: 'SWARM INTELLIGENCE', icon: RadioReceiver, color: '#34d399', commands: ['BROADCAST(data)', 'Returns recipient count', 'RECEIVE()', 'Returns Array of messages'] },
-  { title: 'SYSTEM LIMITS', icon: ServerCrash, color: '#ef4444', commands: ['2000 Operations / Tick', 'Exceeding Quota = TLE Crash', 'WHILE loops cap at 10 iters'] },
+  { title: 'CONTROL FLOW', icon: Hexagon, color: 'var(--docs-orange)', commands: ['IF...ELSE', 'WHILE...DO', 'FOR...TO', 'FUNCTION', 'CALL', 'END'] },
+  { title: 'SENSORS / FOV', icon: Eye, color: 'var(--docs-cyan-dark)', commands: ['SCAN (blocked in STASIS)', 'WAIT', 'CAN_SEE_ENEMY', 'NEAREST_VISIBLE_X/Y', 'CAN_SEE_OBSTACLE'] },
+  { title: 'MOVEMENT & VISION', icon: Move, color: 'var(--docs-green)', commands: ['rotation / angle / rot', 'fovDirection (Eye)', 'lockVision (Link)', 'SET rotation = 1.57', 'PATHFIND'] },
+  { title: 'ENERGY', icon: Zap, color: 'var(--docs-purple)', commands: ['MY_ENERGY (0–100)', 'ENERGY_PCT', 'IN_STASIS', 'Regen: +3/tick in STASIS only'] },
+  { title: 'INTELLIGENCE', icon: Brain, color: 'var(--docs-indigo)', commands: ['SET var = val', 'Math (+,-,*,/,%)', 'NOT / AND / OR', 'TRUE / FALSE'] },
+  { title: 'ROTATION SYSTEM', icon: RotateCw, color: 'var(--docs-orange)', commands: ['rotation = body', 'fovDirection = eyes', 'lockVision = link', 'SET lockVision = TRUE', 'Auto-disables on SET'] },
+  { title: 'STATUS QUERIES', icon: BarChart3, color: 'var(--docs-cyan-dark)', commands: ['GET_HEALTH()', 'GET_ENERGY()', 'GET_POSITION()', 'GET_DISTANCE()'] },
+  { title: 'MATH STDLIB', icon: Calculator, color: 'var(--docs-orange)', commands: ['ABS(x)', 'SQRT(x)', 'ATAN2(y, x)', 'SIN / COS', 'POW / MIN / MAX', 'FLOOR / CEIL / ROUND'] },
+  { title: 'ARRAYS', icon: Brackets, color: 'var(--docs-indigo)', commands: ['SET arr = [1, 2, 3]', 'arr[index]', 'LENGTH(arr)', 'PUSH(arr, val)', 'POP(arr)'] },
+  { title: 'DICTIONARIES / STATE', icon: Braces, color: 'var(--docs-rose)', commands: ['SET obj = { k: "v" }', 'obj.key', 'obj["key"]', 'SET obj.key = val'] },
+  { title: 'ADVANCED SENSORS', icon: Radar, color: 'var(--docs-pink)', commands: ['GET_ALL_VISIBLE_ENEMIES()', 'Returns [dist, x, y, hp][]', 'RAYCAST(angle)', 'Returns dist to first hit'] },
+  { title: 'SWARM INTELLIGENCE', icon: RadioReceiver, color: 'var(--docs-emerald)', commands: ['BROADCAST(data)', 'Returns recipient count', 'RECEIVE()', 'Returns Array of messages'] },
+  { title: 'SYSTEM LIMITS', icon: ServerCrash, color: 'var(--docs-red)', commands: ['2000 Operations / Tick', 'Exceeding Quota = TLE Crash', 'WHILE loops cap at 10 iters'] },
 ];
 
 
@@ -581,24 +582,34 @@ export const QUICK_REF: QuickRefDoc[] = [
 // ---------------------------------------------------------------------------
 
 export const SAMPLE_SCRIPT =
-  `// The Energy-Aware Stalker v2.3
-// NOTE: energy only regens during STASIS, not during WAIT/STOP.
-WHILE TRUE DO
-  IF IN_STASIS THEN
-    // Blocked — wait for energy recovery (+3/tick)
-    WAIT 5
+  `// The Array Sniper v2.5
+// Uses the new Vision Array API to find targets!
+
+// Initialize a state machine flag
+IF NOT state THEN
+  SET state = { mode: "SEARCH" }
+END
+
+IF state.mode == "SEARCH" THEN
+  SCAN
+  SET rotation = rotation + 0.1
+  MOVE
+  IF CAN_SEE_ENEMY THEN
+    SET state.mode = "ENGAGE"
+  END
+END
+
+IF state.mode == "ENGAGE" THEN
+  SET enemies = GET_ALL_VISIBLE_ENEMIES()
+  IF LENGTH(enemies) > 0 THEN
+    // Target the first visible enemy
+    SET target = enemies[0]
+    SET aim = ATAN2(target[2] - POSITION_Y, target[1] - POSITION_X)
+    SET rotation = aim
+    FIRE
   ELSE
-    IF CAN_SEE_ENEMY THEN
-      IF MY_ENERGY > 60 THEN
-        BURST_FIRE
-      ELSE
-        FIRE
-      END
-    ELSE
-      SCAN
-      SET rotation = rotation + 0.1
-      MOVE
-    END
+    // Lost sight, return to searching
+    SET state.mode = "SEARCH"
   END
 END`;
 
@@ -607,28 +618,28 @@ END`;
 // ---------------------------------------------------------------------------
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  'Control Flow': '#f59e0b',
-  Movement: '#4ade80',
-  Vision: '#22d3ee',
-  Sensors: '#06b6d4',
-  Attack: '#f97316',
-  Tactics: '#eab308',
-  'Advanced Combat': '#ef4444',
-  Evasion: '#10b981',
-  Intelligence: '#a855f7',
-  Energy: '#818cf8',
-  FOV: '#22d3ee',
-  Scan: '#67e8f9',
-  Self: '#94a3b8',
-  Combat: '#f87171',
-  flag: '#4ade80',
-  Math: '#f97316',
-  Arrays: '#818cf8',
-  'Advanced Sensors': '#ec4899',
-  'Vision Array': '#ec4899',
-  'Line of Sight': '#f43f5e',
-  'Swarm Comm': '#34d399',
-  Swarm: '#34d399',
+  'Control Flow': 'var(--docs-orange)',
+  Movement: 'var(--docs-green)',
+  Vision: 'var(--docs-cyan)',
+  Sensors: 'var(--docs-cyan-dark)',
+  Attack: 'var(--docs-orange)',
+  Tactics: 'var(--docs-yellow)',
+  'Advanced Combat': 'var(--docs-red)',
+  Evasion: 'var(--docs-emerald)',
+  Intelligence: 'var(--docs-purple)',
+  Energy: 'var(--docs-indigo)',
+  FOV: 'var(--docs-cyan)',
+  Scan: 'var(--docs-cyan)',
+  Self: 'var(--docs-slate)',
+  Combat: 'var(--docs-red)',
+  flag: 'var(--docs-green)',
+  Math: 'var(--docs-orange)',
+  Arrays: 'var(--docs-indigo)',
+  'Advanced Sensors': 'var(--docs-pink)',
+  'Vision Array': 'var(--docs-pink)',
+  'Line of Sight': 'var(--docs-rose)',
+  'Swarm Comm': 'var(--docs-emerald)',
+  Swarm: 'var(--docs-emerald)',
 };
 
 
@@ -637,9 +648,9 @@ export const CATEGORY_COLORS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 export const TACTICS_DATA = [
-  { title: 'THE STALKER', desc: 'Sensor-loop logic for hyper-accurate target acquisition.', code: '// Adaptive Scan Loop\nSCAN\nWHILE NOT scanned_spotted DO\n  SET rotation = rotation + 0.1\n  WAIT 2\n  SCAN\nEND\nPATHFIND', color: '#22d3ee' },
-  { title: 'THE TURRET', desc: 'Energy-efficient static defense with manual rotation.', code: 'FUNCTION defend\n  SCAN\n  IF scanned_distance < 150 THEN\n    BURST_FIRE\n    WAIT 10\n  ELSE\n    SET rotation = rotation + 0.05\n  END\nEND\nSTOP\nWHILE TRUE DO CALL defend END', color: '#f97316' },
-  { title: 'THE JITTERBUG', desc: 'Chaotic movement offsets to bypass enemy trajectory prediction.', code: 'SET offset = 1\nWHILE TRUE DO\n  MOVE_FAST\n  SET rotation = rotation + (offset * 0.5)\n  SET offset = offset * -1\n  IF CAN_SEE_ENEMY THEN FIRE END\n  WAIT 3\nEND', color: '#a855f7' },
+  { title: 'THE STALKER', desc: 'Sensor-loop logic for hyper-accurate target acquisition.', code: '// Adaptive Scan Loop\nSCAN\nWHILE NOT scanned_spotted DO\n  SET rotation = rotation + 0.1\n  WAIT 2\n  SCAN\nEND\nPATHFIND', color: 'var(--docs-cyan)' },
+  { title: 'THE TURRET', desc: 'Energy-efficient static defense with manual rotation.', code: 'FUNCTION defend\n  SCAN\n  IF scanned_distance < 150 THEN\n    BURST_FIRE\n    WAIT 10\n  ELSE\n    SET rotation = rotation + 0.05\n  END\nEND\nSTOP\nWHILE TRUE DO CALL defend END', color: 'var(--docs-orange)' },
+  { title: 'THE JITTERBUG', desc: 'Chaotic movement offsets to bypass enemy trajectory prediction.', code: 'SET offset = 1\nWHILE TRUE DO\n  MOVE_FAST\n  SET rotation = rotation + (offset * 0.5)\n  SET offset = offset * -1\n  IF CAN_SEE_ENEMY THEN FIRE END\n  WAIT 3\nEND', color: 'var(--docs-purple)' },
 ];
 
 // ---------------------------------------------------------------------------

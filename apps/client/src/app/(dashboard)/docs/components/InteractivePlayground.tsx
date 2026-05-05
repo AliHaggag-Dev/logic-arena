@@ -36,7 +36,7 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
             type="button"
             id="parse-script-btn"
             onClick={onParse}
-            className={`mt-3 w-full ${isMobile ? "py-4 text-[11px]" : "py-3 px-6 text-[10px]"} rounded-xl font-black tracking-[0.28em] font-mono bg-accent/10 border border-accent/20 text-accent/70 hover:bg-accent/20 hover:text-accent hover:border-accent/50 hover:drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.4)] transition-all duration-200 active:scale-[0.98]`}
+            className={`mt-3 w-full ${isMobile ? "py-4 text-[11px]" : "py-3 px-6 text-[10px]"} rounded-xl font-black tracking-[0.28em] font-mono bg-accent/10 border border-accent/20 text-accent/70 hover:bg-accent/20 hover:text-accent hover:border-accent/50 hover:drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.4)] transition-all duration-200 active:scale-[0.98] cursor-pointer`}
           >
             ▶ RUN PARSER
           </button>

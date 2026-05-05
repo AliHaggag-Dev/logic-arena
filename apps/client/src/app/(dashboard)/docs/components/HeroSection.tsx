@@ -1,6 +1,27 @@
 import React from "react";
+import { 
+  COMMAND_TABLE, 
+  IDENTIFIER_TABLE, 
+  QUERY_TABLE, 
+  MATH_STDLIB_TABLE, 
+  ARRAY_OPS_TABLE, 
+  DICTIONARY_OPS_TABLE, 
+  SENSOR_FUNCTIONS_TABLE, 
+  SWARM_FUNCTIONS_TABLE 
+} from "../constants/docsData";
 
 export function HeroSection({ isMobile }: { isMobile: boolean }) {
+  const totalCommands = 
+    COMMAND_TABLE.length + 
+    QUERY_TABLE.length + 
+    MATH_STDLIB_TABLE.length + 
+    ARRAY_OPS_TABLE.length + 
+    DICTIONARY_OPS_TABLE.length + 
+    SENSOR_FUNCTIONS_TABLE.length + 
+    SWARM_FUNCTIONS_TABLE.length;
+
+  const totalIdentifiers = IDENTIFIER_TABLE.length;
+
   return (
     <div className={`border-b border-accent/10 ${isMobile ? "pb-6 mb-8" : "pb-9 mb-[52px]"} text-center`}>
       <h1 className={`${isMobile ? "text-3xl" : "text-[clamp(32px,6vw,56px)]"} font-black tracking-[0.22em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.9)] mb-4 leading-none`}>
@@ -9,7 +30,7 @@ export function HeroSection({ isMobile }: { isMobile: boolean }) {
         </span>
         ALISCRIPT
         <span className="text-[0.38em] text-accent/35 tracking-[0.3em] ml-4 align-super">
-          v2.3
+          v2.5
         </span>
       </h1>
 
@@ -23,9 +44,9 @@ export function HeroSection({ isMobile }: { isMobile: boolean }) {
       {/* Status badges */}
       <div className={`flex justify-center ${isMobile ? "gap-2" : "gap-4"} mt-6 flex-wrap`}>
         {[
-          { label: "COMMANDS", value: "13" },
-          { label: "IDENTIFIERS", value: "20" },
-          { label: "CORE", value: "v2.3" },
+          { label: "COMMANDS", value: totalCommands.toString() },
+          { label: "IDENTIFIERS", value: totalIdentifiers.toString() },
+          { label: "CORE", value: "v2.5" },
         ].map(({ label, value }) => (
           <div
             key={label}

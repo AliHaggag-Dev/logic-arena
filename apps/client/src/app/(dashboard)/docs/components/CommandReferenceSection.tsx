@@ -17,12 +17,12 @@ function FilterChip({ label, active, color, onClick }: FilterChipProps) {
       style={{
         padding: '5px 14px',
         borderRadius: '4px',
-        backgroundColor: active ? `${color}18` : 'transparent',
+        backgroundColor: active ? `color-mix(in srgb, ${color} 9%, transparent)` : 'transparent',
         border: active
-          ? `1px solid ${color}55`
+          ? `1px solid color-mix(in srgb, ${color} 33%, transparent)`
           : `1px solid rgba(var(--accent-rgb),0.12)`,
         color: active ? color : `rgba(var(--accent-rgb),0.35)`,
-        textShadow: active ? `0 0 8px ${color}66` : 'none',
+        textShadow: active ? `0 0 8px color-mix(in srgb, ${color} 40%, transparent)` : 'none',
         transition: 'all 0.15s',
       }}
       className="text-[9px] font-bold tracking-[0.2em] cursor-pointer font-mono hover:opacity-80 shrink-0"
@@ -97,8 +97,8 @@ export function CommandReferenceSection({ isMobile }: { isMobile: boolean }) {
                     <span
                       className="text-[8px] font-black tracking-[0.2em] px-2 py-0.5 rounded-full uppercase"
                       style={{
-                        backgroundColor: `${catColor}12`,
-                        border: `1px solid ${catColor}30`,
+                        backgroundColor: `color-mix(in srgb, ${catColor} 7%, transparent)`,
+                        border: `1px solid color-mix(in srgb, ${catColor} 19%, transparent)`,
                         color: catColor,
                       }}
                     >
@@ -206,8 +206,8 @@ export function CommandReferenceSection({ isMobile }: { isMobile: boolean }) {
                       <span
                         className="inline-block px-2.5 py-1 rounded text-[9px] font-bold tracking-[0.15em] whitespace-nowrap"
                         style={{
-                          backgroundColor: `${catColor}12`,
-                          border: `1px solid ${catColor}30`,
+                          backgroundColor: `color-mix(in srgb, ${catColor} 7%, transparent)`,
+                          border: `1px solid color-mix(in srgb, ${catColor} 19%, transparent)`,
                           color: catColor,
                         }}
                       >

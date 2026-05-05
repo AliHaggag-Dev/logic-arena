@@ -11,7 +11,7 @@ export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript:
           <div
             key={tactic.title}
             className="bg-card/60 rounded-xl p-6 relative overflow-hidden backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
-            style={{ border: `1px solid ${tactic.color}33` }}
+            style={{ border: `1px solid color-mix(in srgb, ${tactic.color} 20%, transparent)` }}
           >
             <div className="absolute top-0 left-0 w-1 h-full opacity-50" style={{ backgroundColor: tactic.color }} />
 
@@ -29,7 +29,7 @@ export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript:
               onClick={() => onLoadScript(tactic.code)}
               className="mt-4 w-full py-3 bg-transparent text-[9px] font-bold tracking-[0.2em] uppercase cursor-pointer rounded-xl transition-all hover:bg-white/5 hover:opacity-90 border border-white/10 active:scale-[0.98]"
               style={{
-                borderColor: `${tactic.color}33`,
+                borderColor: `color-mix(in srgb, ${tactic.color} 20%, transparent)`,
                 color: tactic.color,
               }}
             >

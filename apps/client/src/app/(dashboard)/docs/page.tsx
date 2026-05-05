@@ -13,6 +13,7 @@ import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { EnergyCostSection } from './components/EnergyCostSection';
 import { QueryFunctionsSection } from './components/QueryFunctionsSection';
 import { IdentifierReferenceSection } from './components/IdentifierReferenceSection';
+import { AdvancedLanguageFeaturesSection } from './components/AdvancedLanguageFeaturesSection';
 import './docs.css';
 
 export default function DocsPage() {
@@ -64,6 +65,8 @@ export default function DocsPage() {
         <QueryFunctionsSection isMobile={isMobile} />
 
         <IdentifierReferenceSection isMobile={isMobile} />
+
+        <AdvancedLanguageFeaturesSection isMobile={isMobile} />
 
         <EnergyCostSection isMobile={isMobile} />
 

@@ -31,10 +31,10 @@ export function EnergyDrainSimulator({ isMobile }: { isMobile: boolean }) {
   const exitingStasis = energy > STASIS_ENTRY_THRESHOLD && energy < STASIS_EXIT_THRESHOLD;
 
   const barColor =
-    inStasis || exitingStasis ? '#ef4444' :
-    pct > 60               ? '#4ade80' :
-    pct > 30               ? '#f59e0b' :
-                             '#ef4444';
+    inStasis || exitingStasis ? 'var(--docs-red)' :
+    pct > 60               ? 'var(--docs-green)' :
+    pct > 30               ? 'var(--docs-orange)' :
+                             'var(--docs-red)';
 
   const tickCost = SIMULATE_CMDS[simIndex].cmds.reduce(
     (sum, cmd) => sum + getCost(cmd),
@@ -84,8 +84,8 @@ export function EnergyDrainSimulator({ isMobile }: { isMobile: boolean }) {
 
       {/* Energy bar */}
       <div className="mb-4">
-        <div className="flex justify-between text-[10px] font-mono mb-1.5">
-          <span style={{ color: inStasis ? '#ef4444' : barColor }} className="font-black tracking-widest uppercase">
+        <div className="flex items-end justify-between mb-2">
+          <span style={{ color: inStasis ? 'var(--docs-red)' : barColor }} className="font-black tracking-widest uppercase">
             {inStasis       ? '⚠ STASIS — REGEN ACTIVE'  :
              exitingStasis  ? '↑ EXITING STASIS…'         :
                               'ENERGY'}
@@ -95,7 +95,7 @@ export function EnergyDrainSimulator({ isMobile }: { isMobile: boolean }) {
         <div className="h-3 rounded-full bg-card/60 border border-text-secondary/10 overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-100"
-            style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${barColor}99, ${barColor})` }}
+            style={{ width: `${pct}%`, background: `linear-gradient(90deg, color-mix(in srgb, ${barColor} 60%, transparent), ${barColor})` }}
           />
         </div>
         {exitingStasis && (
@@ -112,11 +112,11 @@ export function EnergyDrainSimulator({ isMobile }: { isMobile: boolean }) {
             key={p.label}
             type="button"
             onClick={() => { setSimIndex(i); handleReset(); }}
-            className="px-3 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all border"
+            className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all ${i === simIndex ? 'bg-card' : 'bg-transparent'} hover:opacity-75 cursor-pointer`}
             style={{
-              borderColor: i === simIndex ? '#818cf8' : 'rgba(255,255,255,0.1)',
-              background:  i === simIndex ? 'rgba(129,140,248,0.15)' : 'transparent',
-              color:       i === simIndex ? '#818cf8' : 'var(--text-secondary)',
+              borderColor: i === simIndex ? 'var(--docs-indigo)' : 'color-mix(in srgb, var(--text-primary) 10%, transparent)',
+              transform:   i === simIndex ? 'scale(1.05)' : 'scale(1)',
+              color:       i === simIndex ? 'var(--docs-indigo)' : 'var(--text-secondary)',
             }}
           >
             {p.label}
@@ -146,9 +146,9 @@ export function EnergyDrainSimulator({ isMobile }: { isMobile: boolean }) {
             </span>
           </>
         )}
-        <span
-          className="ml-auto font-black"
-          style={{ color: netPerTick >= 0 ? '#4ade80' : '#f97316' }}
+        <span 
+          className="font-mono text-sm tracking-widest font-black ml-auto"
+          style={{ color: netPerTick >= 0 ? 'var(--docs-green)' : 'var(--docs-orange)' }}
         >
           NET {netPerTick >= 0 ? '+' : ''}{netPerTick} / tick
         </span>
@@ -165,20 +165,20 @@ export function EnergyDrainSimulator({ isMobile }: { isMobile: boolean }) {
       <div className="flex gap-3">
         <button
           type="button"
-          onClick={() => setRunning(r => !r)}
-          className="flex-1 py-2.5 rounded-xl font-black text-[11px] tracking-[0.2em] uppercase transition-all border"
+          className="flex-1 py-3 rounded-lg border font-black tracking-widest hover:opacity-75 uppercase transition-all cursor-pointer"
           style={{
-            borderColor: running ? '#ef4444' : '#818cf8',
-            background:  running ? 'rgba(239,68,68,0.12)' : 'rgba(129,140,248,0.12)',
-            color:       running ? '#ef4444' : '#818cf8',
+            borderColor: running ? 'var(--docs-red)' : 'var(--docs-indigo)',
+            background:  running ? 'color-mix(in srgb, var(--docs-red) 5%, transparent)' : 'color-mix(in srgb, var(--docs-indigo) 5%, transparent)',
+            color:       running ? 'var(--docs-red)' : 'var(--docs-indigo)',
           }}
+          onClick={() => setRunning(!running)}
         >
           {running ? '⏸ PAUSE' : '▶ SIMULATE'}
         </button>
         <button
           type="button"
           onClick={handleReset}
-          className="px-5 py-2.5 rounded-xl font-black text-[11px] tracking-[0.2em] uppercase transition-all border border-text-secondary/20 text-text-secondary/60 hover:border-text-secondary/40"
+          className="px-5 py-2.5 rounded-xl font-black text-[11px] tracking-[0.2em] uppercase transition-all border border-text-secondary/20 text-text-secondary/60 hover:border-text-secondary/40 cursor-pointer"
         >
           RESET
         </button>

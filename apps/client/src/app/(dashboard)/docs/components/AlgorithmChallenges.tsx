@@ -6,9 +6,9 @@ import { ALGORITHM_CHALLENGES, AlgorithmChallenge } from '../constants/docsData'
 import { SectionLabel } from './SectionLabel';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  BEGINNER:     '#22d3ee',
-  INTERMEDIATE: '#a855f7',
-  ADVANCED:     '#f97316',
+  BEGINNER:     'var(--docs-cyan)',
+  INTERMEDIATE: 'var(--docs-purple)',
+  ADVANCED:     'var(--docs-orange)',
 };
 
 interface AlgorithmChallengesProps {
@@ -35,8 +35,8 @@ const ChallengeCard = ({
     <div
       className={`border bg-card/60 backdrop-blur-sm transition-all duration-300 rounded-xl overflow-hidden ${isExpanded ? 'ring-1 ring-accent/20' : ''}`}
       style={{
-        borderColor: isExpanded ? `${challenge.color}66` : 'rgba(var(--accent-rgb),0.12)',
-        boxShadow:   isExpanded ? `0 0 20px ${challenge.color}22` : 'none',
+        borderColor: isExpanded ? `color-mix(in srgb, ${challenge.color} 40%, transparent)` : 'rgba(var(--accent-rgb),0.12)',
+        boxShadow:   isExpanded ? `0 0 20px color-mix(in srgb, ${challenge.color} 13%, transparent)` : 'none',
       }}
     >
       {/* Header */}
@@ -57,13 +57,13 @@ const ChallengeCard = ({
             <div className="flex items-center gap-2">
               <h3
                 className={`${isMobile ? 'text-[11px]' : 'text-sm'} font-black tracking-[0.1em] uppercase`}
-                style={{ color: challenge.color }}
+                style={{ color: 'var(--docs-yellow)' }}
               >
                 {challenge.title}
               </h3>
               <span
                 className="text-[8px] font-bold tracking-[0.2em] px-1.5 py-0.5 border rounded-sm"
-                style={{ color: diffColor, borderColor: `${diffColor}44`, background: `${diffColor}0d` }}
+                style={{ color: diffColor, borderColor: `color-mix(in srgb, ${diffColor} 27%, transparent)`, background: `color-mix(in srgb, ${diffColor} 5%, transparent)` }}
               >
                 {challenge.difficulty}
               </span>
@@ -112,11 +112,11 @@ const ChallengeCard = ({
           <button
             type="button"
             onClick={() => onLoadScript(challenge.code)}
-            className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] hover:opacity-90"
+            className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] hover:opacity-90 cursor-pointer"
             style={{
               color:       challenge.color,
-              borderColor: `${challenge.color}44`,
-              background:  `${challenge.color}0d`,
+              borderColor: `color-mix(in srgb, ${challenge.color} 27%, transparent)`,
+              background:  `color-mix(in srgb, ${challenge.color} 5%, transparent)`,
             }}
           >
             ▶ LOAD_TO_CORE

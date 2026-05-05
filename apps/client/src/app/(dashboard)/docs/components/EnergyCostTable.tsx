@@ -30,21 +30,21 @@ interface EnergyEntry {
 
 const ENTRIES: EnergyEntry[] = [
   // Cognitive — free
-  { command: 'IF / WHILE',    cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Control-flow never costs energy' },
-  { command: 'FUNCTION/CALL', cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡' },
-  { command: 'SET',           cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Executes even during STASIS — ideal for state machine flags' },
-  { command: 'WAIT',          cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Costs 0 energy. Energy does NOT regenerate during WAIT — regen only occurs in STASIS.' },
-  { command: 'STOP',          cost: 0, unit: 'free', category: 'cognitive', color: '#f59e0b', icon: '⬡', note: 'Allowed during STASIS' },
+  { command: 'IF / FOR / WHILE', cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡', note: 'Control-flow never costs energy' },
+  { command: 'FUNCTION/CALL', cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡' },
+  { command: 'SET',           cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡', note: 'Executes even during STASIS — ideal for state machine flags' },
+  { command: 'WAIT',          cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡', note: 'Costs 0 energy. Energy does NOT regenerate during WAIT — regen only occurs in STASIS.' },
+  { command: 'STOP',          cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡', note: 'Allowed during STASIS' },
   // Movement
-  { command: 'MOVE',      cost: 2, unit: '/tick', category: 'movement', color: '#4ade80', icon: '⦾' },
-  { command: 'BACKUP',    cost: 2, unit: '/tick', category: 'movement', color: '#4ade80', icon: '⦾' },
-  { command: 'MOVE_FAST', cost: 4, unit: '/tick', category: 'movement', color: '#4ade80', icon: '⦾', note: '2× speed for 2× the cost. Blocked during STASIS.' },
-  { command: 'PATHFIND',  cost: 3, unit: '/tick', category: 'movement', color: '#4ade80', icon: '⦾', note: 'A* navigation toward nearest visible target. Blocked during STASIS.' },
+  { command: 'MOVE',      cost: 2, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: '⦾' },
+  { command: 'BACKUP',    cost: 2, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: '⦾' },
+  { command: 'MOVE_FAST', cost: 4, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: '⦾', note: '2× speed for 2× the cost. Blocked during STASIS.' },
+  { command: 'PATHFIND',  cost: 3, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: '⦾', note: 'A* navigation toward nearest visible target. Blocked during STASIS.' },
   // Sensor
-  { command: 'SCAN', cost: 3, unit: '/call', category: 'sensor', color: '#22d3ee', icon: '◈', note: 'BLOCKED during STASIS — use WAIT to pause execution and let STASIS regen energy.' },
+  { command: 'SCAN', cost: 3, unit: '/call', category: 'sensor', color: 'var(--docs-cyan)', icon: '◈', note: 'BLOCKED during STASIS — use WAIT to pause execution and let STASIS regen energy.' },
   // Combat
-  { command: 'FIRE',       cost: 8,  unit: '/shot',  category: 'combat', color: '#f97316', icon: '◉', note: '25 HP damage on hit. Only fires if an enemy is within FOV.' },
-  { command: 'BURST_FIRE', cost: 18, unit: '/burst', category: 'combat', color: '#ef4444', icon: '◉', note: '3 shots × 8 HP = up to 24 HP total. Requires enemy in FOV.' },
+  { command: 'FIRE',       cost: 8,  unit: '/shot',  category: 'combat', color: 'var(--docs-orange)', icon: '◉', note: '25 HP damage on hit. Only fires if an enemy is within FOV.' },
+  { command: 'BURST_FIRE', cost: 18, unit: '/burst', category: 'combat', color: 'var(--docs-red)', icon: '◉', note: '3 shots × 8 HP = up to 24 HP total. Requires enemy in FOV.' },
 ];
 
 const CATEGORY_LABELS: Record<EnergyEntry['category'], string> = {
@@ -87,7 +87,7 @@ export function EnergyCostTable({ isMobile }: { isMobile: boolean }) {
           <div key={cat}>
             <div
               className="text-[10px] tracking-[0.5em] font-black uppercase mb-3 pb-2 border-b"
-              style={{ color, borderColor: `${color}33` }}
+              style={{ color, borderColor: `color-mix(in srgb, ${color} 20%, transparent)` }}
             >
               {CATEGORY_LABELS[cat]}
             </div>
@@ -100,7 +100,7 @@ export function EnergyCostTable({ isMobile }: { isMobile: boolean }) {
                     className={`${isMobile ? 'flex flex-col gap-1 p-3' : 'grid items-center gap-4 px-4 py-2.5'} rounded-xl border bg-card/40 transition-colors`}
                     style={{
                       gridTemplateColumns: isMobile ? undefined : '160px 100px 1fr',
-                      borderColor: `${e.color}22`,
+                      borderColor: `color-mix(in srgb, ${e.color} 13%, transparent)`,
                     }}
                   >
                     {/* Command name */}

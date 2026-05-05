@@ -10,7 +10,7 @@ export function IdentifierReferenceSection({ isMobile }: { isMobile: boolean }) 
 
   return (
     <section className={isMobile ? 'mb-10' : 'mb-16'}>
-      <SectionLabel text="BUILT-IN IDENTIFIERS v2.3" isMobile={isMobile} />
+      <SectionLabel text="BUILT-IN IDENTIFIERS v2.5" isMobile={isMobile} />
 
       <div className={`flex flex-col ${isMobile ? 'gap-6' : 'gap-8'} mt-5`}>
         {categories.map(cat => {
@@ -21,7 +21,7 @@ export function IdentifierReferenceSection({ isMobile }: { isMobile: boolean }) 
             <div key={cat}>
               <div
                 className="text-[10px] tracking-[0.5em] font-black uppercase mb-3 pb-2 border-b border-accent/20"
-                style={{ color: catColor, borderColor: `${catColor}33` }}
+                style={{ color: catColor, borderColor: `color-mix(in srgb, ${catColor} 20%, transparent)` }}
               >
                 {cat}
               </div>
