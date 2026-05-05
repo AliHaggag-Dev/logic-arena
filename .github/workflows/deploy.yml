@@ -2,7 +2,7 @@ name: Deploy to Production
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -45,3 +45,4 @@ jobs:
             cd ~/logic-arena
             docker compose pull
             docker compose up -d
+            docker image prune -f
