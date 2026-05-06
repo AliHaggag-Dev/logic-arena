@@ -1,4 +1,16 @@
-import { Robot, Obstacle, performRaycast } from '@logic-arena/engine';
+import {
+  Robot,
+  Obstacle,
+  performRaycast,
+  ALISCRIPT_MAX_COLLECTION_ELEMENTS,
+  assertAliScriptCollectionCanGrow,
+  assertAliScriptCollectionSize,
+  createAliScriptDictionary,
+  enforceAliScriptStringLimit,
+  isForbiddenAliScriptPropertyKey,
+  safeGetAliScriptProperty,
+  safeSetAliScriptProperty,
+} from '@logic-arena/engine';
 import {
   Expression, NodeType, Identifier, NumberLiteral, StringLiteral,
   FunctionCallExpression, ArrayLiteral, IndexExpression,
@@ -42,9 +54,11 @@ export class ExpressionEvaluator {
 
     switch (expression.type) {
       case NodeType.NumberLiteral:
-      case NodeType.StringLiteral:
       case NodeType.BooleanLiteral:
         return expression.value;
+
+      case NodeType.StringLiteral:
+        return enforceAliScriptStringLimit(String(expression.value));
 
       case NodeType.Identifier:
         return resolveIdentifier(robot, expression as Identifier | NumberLiteral | StringLiteral, memory);
@@ -78,6 +92,7 @@ export class ExpressionEvaluator {
       // ── Array literal: [1, 2, 3] ──────────────────────────────────────────
       case NodeType.ArrayLiteral: {
         const arrLit = expression as ArrayLiteral;
+        assertAliScriptCollectionSize(arrLit.elements.length);
         return arrLit.elements.map(
           el => this.evaluateExpression(robot, el, memory, getRobots, getObstacles, depth + 1),
         );
@@ -94,7 +109,9 @@ export class ExpressionEvaluator {
           return undefined;
         }
         if (obj !== null && typeof obj === 'object' && !Array.isArray(obj)) {
-          return (obj as Record<string, unknown>)[String(idx)];
+          const key = String(idx);
+          if (isForbiddenAliScriptPropertyKey(key)) return undefined;
+          return safeGetAliScriptProperty(obj as Record<string, unknown>, key);
         }
         return undefined;
       }
@@ -102,9 +119,14 @@ export class ExpressionEvaluator {
       // Object literal: { mode: "HUNT", target_id: 4 }
       case NodeType.ObjectLiteral: {
         const objLit = expression as ObjectLiteral;
-        const result: Record<string, unknown> = {};
+        assertAliScriptCollectionSize(objLit.properties.length);
+        const result: Record<string, unknown> = createAliScriptDictionary();
         for (const prop of objLit.properties) {
-          result[prop.key] = this.evaluateExpression(robot, prop.value, memory, getRobots, getObstacles, depth + 1);
+          safeSetAliScriptProperty(
+            result,
+            prop.key,
+            this.evaluateExpression(robot, prop.value, memory, getRobots, getObstacles, depth + 1),
+          );
         }
         return result;
       }
@@ -114,7 +136,8 @@ export class ExpressionEvaluator {
         const memExpr = expression as MemberExpression;
         const target = this.evaluateExpression(robot, memExpr.object, memory, getRobots, getObstacles, depth + 1);
         if (target !== null && typeof target === 'object' && !Array.isArray(target)) {
-          return (target as Record<string, unknown>)[memExpr.property];
+          if (isForbiddenAliScriptPropertyKey(memExpr.property)) return undefined;
+          return safeGetAliScriptProperty(target as Record<string, unknown>, memExpr.property);
         }
         return undefined;
       }
@@ -138,21 +161,21 @@ export class ExpressionEvaluator {
 
     switch (name) {
       // ── Single-arg math ────────────────────────────────────────────────
-      case 'ABS':    return typeof a === 'number' ? Math.abs(a) : 0;
-      case 'SQRT':   return typeof a === 'number' ? Math.sqrt(Math.max(0, a)) : 0;
-      case 'SIN':    return typeof a === 'number' ? Math.sin(a) : 0;
-      case 'COS':    return typeof a === 'number' ? Math.cos(a) : 0;
-      case 'TAN':    return typeof a === 'number' ? Math.tan(a) : 0;
-      case 'FLOOR':  return typeof a === 'number' ? Math.floor(a) : 0;
-      case 'CEIL':   return typeof a === 'number' ? Math.ceil(a) : 0;
-      case 'ROUND':  return typeof a === 'number' ? Math.round(a) : 0;
-      case 'LOG':    return typeof a === 'number' && a > 0 ? Math.log(a) : 0;
+      case 'ABS': return typeof a === 'number' ? Math.abs(a) : 0;
+      case 'SQRT': return typeof a === 'number' ? Math.sqrt(Math.max(0, a)) : 0;
+      case 'SIN': return typeof a === 'number' ? Math.sin(a) : 0;
+      case 'COS': return typeof a === 'number' ? Math.cos(a) : 0;
+      case 'TAN': return typeof a === 'number' ? Math.tan(a) : 0;
+      case 'FLOOR': return typeof a === 'number' ? Math.floor(a) : 0;
+      case 'CEIL': return typeof a === 'number' ? Math.ceil(a) : 0;
+      case 'ROUND': return typeof a === 'number' ? Math.round(a) : 0;
+      case 'LOG': return typeof a === 'number' && a > 0 ? Math.log(a) : 0;
 
       // ── Two-arg math ───────────────────────────────────────────────────
-      case 'POW':    return typeof a === 'number' && typeof b === 'number' ? Math.pow(a, b) : 0;
-      case 'ATAN2':  return typeof a === 'number' && typeof b === 'number' ? Math.atan2(a, b) : 0;
-      case 'MIN':    return typeof a === 'number' && typeof b === 'number' ? Math.min(a, b) : 0;
-      case 'MAX':    return typeof a === 'number' && typeof b === 'number' ? Math.max(a, b) : 0;
+      case 'POW': return typeof a === 'number' && typeof b === 'number' ? Math.pow(a, b) : 0;
+      case 'ATAN2': return typeof a === 'number' && typeof b === 'number' ? Math.atan2(a, b) : 0;
+      case 'MIN': return typeof a === 'number' && typeof b === 'number' ? Math.min(a, b) : 0;
+      case 'MAX': return typeof a === 'number' && typeof b === 'number' ? Math.max(a, b) : 0;
 
       // ── Zero-arg ───────────────────────────────────────────────────────
       case 'RANDOM': return Math.random();
@@ -171,6 +194,7 @@ export class ExpressionEvaluator {
         // We handle PUSH/POP as side-effect functions in block-executor instead.
         // For expression-level, PUSH returns the new length.
         if (Array.isArray(a)) {
+          assertAliScriptCollectionCanGrow(a.length);
           a.push(b);
           return a.length;
         }
@@ -296,6 +320,7 @@ export class ExpressionEvaluator {
           if (!Array.isArray(allyMemory[INBOX_KEY])) {
             allyMemory[INBOX_KEY] = [];
           }
+          assertAliScriptCollectionCanGrow((allyMemory[INBOX_KEY] as unknown[]).length);
           (allyMemory[INBOX_KEY] as unknown[]).push(safePayload);
           broadcastCount++;
         }
@@ -325,7 +350,7 @@ export class ExpressionEvaluator {
         const inbox = memory[INBOX_KEY];
         if (!Array.isArray(inbox) || inbox.length === 0) return [];
         // Shallow-copy the inbox then clear it so each message is read once.
-        const drained: unknown[] = inbox.slice();
+        const drained: unknown[] = inbox.slice(0, ALISCRIPT_MAX_COLLECTION_ELEMENTS);
         memory[INBOX_KEY] = [];
         return drained;
       }

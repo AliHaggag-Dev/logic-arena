@@ -6,3 +6,4 @@ export * from './core/game-loop';
 export { EnergyManager, ENERGY_COSTS, DEFAULT_MAX_ENERGY, STASIS_BLOCKED_COMMANDS } from './energy-manager';
 export { FovCalculator } from './fov-calculator';
 export { performRaycast } from './physics/raycast';
+export * from './sandbox-limits';

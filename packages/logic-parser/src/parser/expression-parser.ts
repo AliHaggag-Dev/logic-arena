@@ -1,5 +1,5 @@
-import { 
-    TokenType, NodeType, Expression, 
+import {
+    TokenType, NodeType, Expression,
     BinaryExpression, UnaryExpression, BooleanLiteral,
     Identifier, NumberLiteral, StringLiteral,
     FunctionCallExpression, ArrayLiteral, IndexExpression,
@@ -18,6 +18,9 @@ const BUILTIN_FN_NAMES = new Set([
     "BROADCAST", "RECEIVE",
 ]);
 
+const MAX_LITERAL_COLLECTION_ELEMENTS = 100;
+const FORBIDDEN_OBJECT_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
 /** Helper to check peekToken type without TS narrowing side-effects. */
 function peekIs(parser: Parser, type: TokenType): boolean {
     return (parser.peekToken.type as TokenType) === type;
@@ -29,7 +32,7 @@ function curIs(parser: Parser, type: TokenType): boolean {
 }
 
 export class ExpressionParser {
-    constructor(private parser: Parser) {}
+    constructor(private parser: Parser) { }
 
     // Precedence tower (low → high):
     //   OR → AND → comparison → binary (+−*/%) → unary(NOT/−) → postfix → primary
@@ -332,6 +335,9 @@ export class ExpressionParser {
             this.parser.nextToken(); // move to next element
             const el = this.parseOrExpression();
             if (el) elements.push(el);
+            if (elements.length > MAX_LITERAL_COLLECTION_ELEMENTS) {
+                throw new Error(`AliScript array literals are capped at ${MAX_LITERAL_COLLECTION_ELEMENTS} elements`);
+            }
         }
 
         // expect ']'
@@ -361,6 +367,9 @@ export class ExpressionParser {
             this.parser.nextToken(); // consume ','
             const prop = this.parseObjectProperty();
             if (prop) properties.push(prop);
+            if (properties.length > MAX_LITERAL_COLLECTION_ELEMENTS) {
+                throw new Error(`AliScript dictionary literals are capped at ${MAX_LITERAL_COLLECTION_ELEMENTS} properties`);
+            }
         }
 
         // expect '}'
@@ -382,6 +391,10 @@ export class ExpressionParser {
             key = this.parser.currentToken.value;
         } else {
             return null;
+        }
+
+        if (FORBIDDEN_OBJECT_KEYS.has(key)) {
+            throw new Error(`Forbidden AliScript dictionary key: ${key}`);
         }
 
         // expect ':'

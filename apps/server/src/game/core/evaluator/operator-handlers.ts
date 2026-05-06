@@ -1,7 +1,13 @@
+import { enforceAliScriptStringLimit } from '@logic-arena/engine';
+
 export function evaluateBinary(left: unknown, right: unknown, operator: string): unknown {
   // Logical operators — must come BEFORE the numeric type guard (operands are booleans)
   if (operator === 'AND') return Boolean(left) && Boolean(right);
   if (operator === 'OR') return Boolean(left) || Boolean(right);
+
+  if (operator === '+' && (typeof left === 'string' || typeof right === 'string')) {
+    return enforceAliScriptStringLimit(String(left ?? '') + String(right ?? ''));
+  }
 
   // Arithmetic operators require numbers
   if (typeof left !== 'number' || typeof right !== 'number') return undefined;

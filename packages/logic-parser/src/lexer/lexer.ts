@@ -25,6 +25,30 @@ const BUILTIN_FUNCTIONS = new Set([
     "BROADCAST", "RECEIVE",
 ]);
 
+const MAX_TOKEN_STRING_LENGTH = 255;
+
+function isWhitespace(char: string): boolean {
+    return char === ' ' || char === '\t' || char === '\n' || char === '\r' || char === '\f' || char === '\v';
+}
+
+function isAlpha(char: string): boolean {
+    const code = char.charCodeAt(0);
+    return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+}
+
+function isDigit(char: string): boolean {
+    const code = char.charCodeAt(0);
+    return code >= 48 && code <= 57;
+}
+
+function isIdentifierStart(char: string): boolean {
+    return isAlpha(char) || char === '_';
+}
+
+function isIdentifierPart(char: string): boolean {
+    return isIdentifierStart(char) || isDigit(char);
+}
+
 export class Lexer {
     private input: string;
     private position: number = 0;
@@ -45,7 +69,7 @@ export class Lexer {
     }
 
     private skipWhitespace(): void {
-        while (this.char !== null && /\s/.test(this.char)) {
+        while (this.char !== null && isWhitespace(this.char)) {
             this.readChar();
         }
     }
@@ -64,7 +88,7 @@ export class Lexer {
 
     private readIdentifier(): string {
         let start = this.position - 1;
-        while (this.char !== null && /[a-zA-Z_0-9]/.test(this.char)) {
+        while (this.char !== null && isIdentifierPart(this.char)) {
             this.readChar();
         }
         return this.input.slice(start, this.position - 1);
@@ -74,7 +98,7 @@ export class Lexer {
         let start = this.position - 1;
         let hasDot = false;
         while (this.char !== null) {
-            if (/[0-9]/.test(this.char)) {
+            if (isDigit(this.char)) {
                 this.readChar();
             } else if (this.char === '.' && !hasDot) {
                 hasDot = true;
@@ -90,6 +114,9 @@ export class Lexer {
         let start = this.position;
         this.readChar(); // Consume opening quote
         while (this.char !== null && this.char !== '"') {
+            if ((this.position - 1) - start >= MAX_TOKEN_STRING_LENGTH) {
+                throw new Error(`AliScript string literal exceeds ${MAX_TOKEN_STRING_LENGTH} characters`);
+            }
             this.readChar();
         }
         const str = this.input.slice(start, this.position - 1);
@@ -183,7 +210,7 @@ export class Lexer {
                 token = { type: TokenType.COLON, value: ":" };
                 break;
             default:
-                if (/[a-zA-Z_]/.test(this.char)) {
+                if (isIdentifierStart(this.char)) {
                     const value = this.readIdentifier();
                     const upper = value.toUpperCase();
                     if (isKeyword(value)) {
@@ -196,13 +223,13 @@ export class Lexer {
                         return { type: TokenType.IDENTIFIER, value: upper };
                     }
                     return { type: TokenType.IDENTIFIER, value };
-                } else if (/[0-9]/.test(this.char)) {
+                } else if (isDigit(this.char)) {
                     return { type: TokenType.NUMBER, value: this.readNumber() };
                 }
-                token = { type: TokenType.EOF, value: "" }; 
+                token = { type: TokenType.EOF, value: "" };
                 break;
         }
-        
+
         this.readChar();
         return token;
     }
