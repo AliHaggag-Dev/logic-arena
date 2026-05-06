@@ -7,6 +7,7 @@ import { useSocket } from "../../../context/SocketContext";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import type { LeaderboardUser } from "./types";
 import { POLL_INTERVAL_MS } from "./types";
+import { getAuthUserId } from "../../../lib/client-security";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ const LeaderboardPage = () => {
   }, []);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
+    const userId = getAuthUserId();
     setIsGuest(!userId);
     setCurrentUserId(userId || "");
 
@@ -55,9 +56,8 @@ const LeaderboardPage = () => {
 
   return (
     <div
-      className={`min-h-screen bg-bg-primary font-mono text-accent selection:bg-accent/30 relative overflow-hidden ${
-        isMobile ? "pb-[calc(80px+env(safe-area-inset-bottom))]" : "pb-12"
-      }`}
+      className={`min-h-screen bg-bg-primary font-mono text-accent selection:bg-accent/30 relative overflow-hidden ${isMobile ? "pb-[calc(80px+env(safe-area-inset-bottom))]" : "pb-12"
+        }`}
     >
       {/* Background Grid */}
       <div

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useSearchParams } from 'next/navigation';
 import { API_BASE_URL } from '../../../lib/api-client';
+import { getAuthUserId } from '../../../lib/client-security';
 import {
   GameState, RobotState, ProjectileState, ObstacleState,
   FiredTracer, SpeechBubbleState,
@@ -30,7 +31,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
   const [speechBubble, setSpeechBubble] = useState<SpeechBubbleState | null>(null);
   const [selectedRobotId, setSelectedRobotId] = useState<string>('');
   const [socketUserId, setSocketUserId] = useState<string | null>(null);
-  
+
   const [trainingStats, setTrainingStats] = useState({
     shotsFired: 0,
     startTime: Date.now(),
@@ -137,11 +138,11 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
       if (now - lastUiUpdateRef.current > 100) {
         lastUiUpdateRef.current = now;
         setUiState({ ...parsed, obstacles: [] });
-        const activeUserId = (typeof window !== 'undefined' ? localStorage.getItem('userId') : null) || socketUserId;
+        const activeUserId = getAuthUserId() || socketUserId;
         setSelectedRobotId(prev => {
           const hasUser = activeUserId && parsed.robots.some(r => r.id === activeUserId);
           const hasPrev = prev && parsed.robots.some(r => r.id === prev);
-          
+
           if (!hasPrev && parsed.robots.length > 0) {
             return hasUser ? activeUserId : parsed.robots[0].id;
           }
@@ -155,7 +156,7 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
     };
 
     const handleLogicExecuted = (data: { robotId: string; action: string; message?: string }) => {
-      const activeUserId = (typeof window !== 'undefined' ? localStorage.getItem('userId') : null) || socketUserId;
+      const activeUserId = getAuthUserId() || socketUserId;
 
       if (data.action === 'FIRE') {
         if (data.robotId === activeUserId) {

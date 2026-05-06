@@ -28,9 +28,7 @@ export default function RobotDetailPage() {
   const [color, setColor] = useState("DEFAULT");
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
-  const [isGuest, setIsGuest] = useState<boolean>(
-    () => typeof window !== "undefined" && !localStorage.getItem("token")
-  );
+  const [isGuest, setIsGuest] = useState<boolean>(false);
 
   // Track the dismiss timer so we can clear it on unmount
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -128,17 +126,16 @@ export default function RobotDetailPage() {
   const saveButtonLabel = isGuest
     ? "CONFIGURATION LOCKED"
     : saving
-    ? "SAVING..."
-    : "SAVE LOADOUT";
+      ? "SAVING..."
+      : "SAVE LOADOUT";
 
   return (
     <>
       <div
-        className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${
-          isMobile
+        className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile
             ? "pb-[calc(8rem+env(safe-area-inset-bottom))]"
             : "pb-20"
-        }`}
+          }`}
       >
         {/* Grid background */}
         <div
@@ -151,27 +148,24 @@ export default function RobotDetailPage() {
         />
 
         <div
-          className={`max-w-[1100px] mx-auto ${
-            isMobile ? "px-4 pt-6" : "px-6 pt-10"
-          } relative z-10`}
+          className={`max-w-[1100px] mx-auto ${isMobile ? "px-4 pt-6" : "px-6 pt-10"
+            } relative z-10`}
           style={{ animation: "garageFadeIn 0.35s ease" }}
         >
           {/* ── Top bar ── */}
           <div
-            className={`flex items-center justify-between border-b border-accent/10 ${
-              isMobile ? "pb-4 mb-6" : "pb-5 mb-8"
-            }`}
+            className={`flex items-center justify-between border-b border-accent/10 ${isMobile ? "pb-4 mb-6" : "pb-5 mb-8"
+              }`}
           >
             <div>
               <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-1 uppercase font-bold">
                 // ROBOT CONFIGURATION
               </p>
               <h1
-                className={`m-0 ${
-                  isMobile
+                className={`m-0 ${isMobile
                     ? "text-xl"
                     : "text-[clamp(20px,3.5vw,32px)]"
-                } font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight uppercase`}
+                  } font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight uppercase`}
               >
                 {robot.name}
               </h1>
@@ -180,11 +174,10 @@ export default function RobotDetailPage() {
             <button
               type="button"
               onClick={() => router.push("/garage")}
-              className={`${
-                isMobile
+              className={`${isMobile
                   ? "text-[8px] px-3 py-1.5"
                   : "text-[10px] px-4 py-2"
-              } tracking-[0.2em] text-accent/70 hover:text-accent/90 transition-colors duration-200 border border-accent/10 hover:border-accent/30 rounded-lg bg-accent/5 hover:bg-accent/10 uppercase font-bold font-mono`}
+                } tracking-[0.2em] text-accent/70 hover:text-accent/90 transition-colors duration-200 border border-accent/10 hover:border-accent/30 rounded-lg bg-accent/5 hover:bg-accent/10 uppercase font-bold font-mono`}
             >
               ← BACK
             </button>
@@ -192,9 +185,8 @@ export default function RobotDetailPage() {
 
           {/* ── Main layout: Viewer + Controls ── */}
           <div
-            className={`grid grid-cols-1 ${
-              isMobile ? "gap-6" : "lg:grid-cols-[1fr_360px] gap-8"
-            }`}
+            className={`grid grid-cols-1 ${isMobile ? "gap-6" : "lg:grid-cols-[1fr_360px] gap-8"
+              }`}
           >
             {/* 3-D viewer */}
             <div
@@ -210,11 +202,9 @@ export default function RobotDetailPage() {
 
             {/* Controls panel */}
             <div
-              className={`flex flex-col ${
-                isMobile ? "gap-5" : "gap-6"
-              } border border-accent/10 rounded-xl ${
-                isMobile ? "p-5" : "p-6"
-              } bg-card/40 backdrop-blur-md h-fit garage-scrollbar`}
+              className={`flex flex-col ${isMobile ? "gap-5" : "gap-6"
+                } border border-accent/10 rounded-xl ${isMobile ? "p-5" : "p-6"
+                } bg-card/40 backdrop-blur-md h-fit garage-scrollbar`}
               style={{
                 boxShadow: !isMobile
                   ? "0 0 48px rgba(var(--accent-rgb),0.06)"

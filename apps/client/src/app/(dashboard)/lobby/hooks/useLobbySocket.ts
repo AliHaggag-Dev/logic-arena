@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { LobbyMatch } from "../components/LobbyMatchCard";
+import { getSelectedScriptId, hasAuthSession } from "../../../../lib/client-security";
 // Socket.IO connects to the server origin — strip the /api path suffix if present
 const SOCKET_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api").replace(/\/api$/, "");
 
@@ -22,46 +23,25 @@ export function useLobbySocket(): UseLobbySocketReturn {
   const [matches, setMatches] = useState<LobbyMatch[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
   const [retryKey, setRetryKey] = useState(0);
-
-  const socketRef = useRef<Socket | null>(null);
-  
-  if (!socketRef.current && typeof window !== "undefined") {
-    socketRef.current = io(SOCKET_URL, {
-      autoConnect: false,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 2000,
-    });
-  }
+  const [socket] = useState<Socket>(() => io(SOCKET_URL, {
+    autoConnect: false,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 2000,
+  }));
 
   const scriptIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    scriptIdRef.current = localStorage.getItem("selectedScriptId");
-    
-    const handleStorage = () => {
-      scriptIdRef.current = localStorage.getItem("selectedScriptId");
-    };
-    
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    scriptIdRef.current = getSelectedScriptId();
   }, []);
 
   useEffect(() => {
-    const socket = socketRef.current;
-    if (!socket) return;
-
-    const token =
-      localStorage.getItem("token") ||
-      localStorage.getItem("jwtToken") ||
-      null;
-
-    if (!token) {
+    if (!hasAuthSession()) {
       setConnectionStatus("error");
       return;
     }
 
-    socket.auth = { token };
+    socket.auth = {};
 
     setConnectionStatus("connecting");
     if (!socket.connected) {
@@ -106,14 +86,13 @@ export function useLobbySocket(): UseLobbySocketReturn {
       socket.off("lobbyUpdated", onLobbyUpdated);
       socket.off("matchCreated", onMatchCreated);
     };
-  }, [retryKey, router]);
+  }, [retryKey, router, socket]);
 
   useEffect(() => {
-    const socket = socketRef.current;
     return () => {
-      if (socket) socket.disconnect();
+      socket.disconnect();
     };
-  }, []);
+  }, [socket]);
 
-  return { matches, connectionStatus, retryKey, setRetryKey, socket: socketRef.current as Socket };
+  return { matches, connectionStatus, retryKey, setRetryKey, socket };
 }

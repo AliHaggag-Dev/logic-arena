@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Socket } from 'socket.io-client';
+import { getAuthUsername } from '../../../lib/client-security';
 
 interface WinnerScreenProps {
   matchResult: {
@@ -20,12 +21,7 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
 }) => {
   const router = useRouter();
   const { winner, draw, efficiencyScores } = matchResult;
-  const [username, setUsername] = useState<string>('PLAYER');
-
-  useEffect(() => {
-    const stored = localStorage.getItem('username');
-    if (stored) setUsername(stored);
-  }, []);
+  const username = getAuthUsername() ?? 'PLAYER';
 
   const isWinner = winner?.id === currentUserId;
   const title = draw ? 'DRAW' : isWinner ? 'VICTORY' : 'DEFEATED';

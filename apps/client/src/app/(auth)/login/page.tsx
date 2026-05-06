@@ -9,6 +9,7 @@ import { AuthContainer } from "../components/AuthContainer";
 import { AuthHeader } from "../components/AuthHeader";
 import { AuthSocials } from "../components/AuthSocials";
 import { AuthStatusTerminal } from "../components/AuthStatusTerminal";
+import { clearSensitiveBrowserStorage, setAuthSession } from "../../../lib/client-security";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -25,9 +26,7 @@ export default function LoginPage() {
 
   // Auto-redirect to dashboard if a user session exists
   React.useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('userId')) {
-      router.push('/dashboard');
-    }
+    clearSensitiveBrowserStorage();
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -39,8 +38,8 @@ export default function LoginPage() {
       const response = await apiClient.post("/auth/login", { username, password });
       const { userId, username: returnedUsername } = response.data;
 
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("username", returnedUsername || username);
+      clearSensitiveBrowserStorage();
+      setAuthSession({ userId, username: returnedUsername || username });
 
       setStatus({ message: "LOGIN SUCCESSFUL. REDIRECTING...", errors: [], type: "success" });
       setTimeout(() => router.push("/dashboard"), 1000);

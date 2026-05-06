@@ -11,6 +11,7 @@ import { useLobbySocket } from "./hooks/useLobbySocket";
 import { useDeployMatch } from "./hooks/useDeployMatch";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useAuthState } from "../../../hooks/useAuthState";
+import { getSelectedScriptId } from "../../../lib/client-security";
 
 export default function LobbyPage() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function LobbyPage() {
 
   const handleJoinMatch = (matchId: string) => {
     if (isGuest) return;
-    const scriptId = localStorage.getItem("selectedScriptId");
+    const scriptId = getSelectedScriptId();
     if (scriptId) router.push(`/arena?scriptId=${scriptId}&matchId=${matchId}`);
     else setShowScriptWarning(true);
   };

@@ -8,14 +8,12 @@ export function useChallengeSystem() {
   const [allowChallenges, setAllowChallenges] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && !localStorage.getItem("token")) return;
-    
     apiClient.get('/users/profile').then(res => {
       const ns = res.data.notificationSettings;
       if (ns) {
         setAllowChallenges(ns.challengeReqs !== false);
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const showToast = useCallback((message: string, type: "info" | "error" = "info") => {

@@ -7,6 +7,7 @@ import { useGameState } from './hooks/useGameState';
 import { Scene3D } from './components/Scene3D';
 import WinnerScreen from './components/WinnerScreen';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { getAuthUserId, getSelectedScriptId, setSelectedScriptId } from '../../lib/client-security';
 
 // Refactored Components
 import { useFPS } from './hooks/useFPS';
@@ -25,12 +26,12 @@ interface RobotScript {
 }
 
 const ROBOT_FILES: Record<string, string> = {
-  'unit-01':         '/robots/robot.glb',
-  'unit-02':         '/robots/robot2.glb',
+  'unit-01': '/robots/robot.glb',
+  'unit-02': '/robots/robot2.glb',
   'chassis-unit-01': '/robots/robot.glb',
   'chassis-unit-02': '/robots/robot2.glb',
-  'chassis-wraith':  '/robots/bunny.glb',
-  'chassis-titan':   '/robots/armored-robot.glb',
+  'chassis-wraith': '/robots/bunny.glb',
+  'chassis-titan': '/robots/armored-robot.glb',
 };
 
 const ArenaPageContent = () => {
@@ -97,7 +98,7 @@ const ArenaPageContent = () => {
 
       // 1. Try to resolve if missing
       if (!targetScriptId) {
-        const stored = localStorage.getItem('selectedScriptId');
+        const stored = getSelectedScriptId();
         if (stored) {
           targetScriptId = stored;
           setResolvedScriptId(stored);
@@ -106,7 +107,7 @@ const ArenaPageContent = () => {
             const res = await apiClient.get('/scripts');
             if (res.data && res.data.length > 0) {
               targetScriptId = res.data[0].id as string;
-              localStorage.setItem('selectedScriptId', targetScriptId as string);
+              setSelectedScriptId(targetScriptId as string);
               setResolvedScriptId(targetScriptId);
             } else {
               if (isMounted) {
@@ -117,7 +118,7 @@ const ArenaPageContent = () => {
             }
           } catch (err: unknown) {
             const axiosError = err as { response?: { status?: number } };
-            if (axiosError.response?.status === 401 || !localStorage.getItem('userId')) {
+            if (axiosError.response?.status === 401 || !getAuthUserId()) {
               if (isMounted) {
                 setResolvedScriptId('guest-script');
                 setScript({
@@ -148,9 +149,9 @@ const ArenaPageContent = () => {
         }
       } catch (err: unknown) {
         const axiosError = err as { response?: { status?: number, data?: { message?: string } }, message?: string };
-        
+
         // GUEST MODE: If unauthorized or script not found, provide a default training script
-        if (axiosError.response?.status === 401 || !localStorage.getItem('userId')) {
+        if (axiosError.response?.status === 401 || !getAuthUserId()) {
           if (isMounted) {
             setResolvedScriptId('guest-script');
             setScript({
@@ -163,15 +164,15 @@ const ArenaPageContent = () => {
           return;
         }
 
-        // Self-healing: If the script is invalid (e.g. shared localStorage across accounts),
+        // Self-healing: If the script is invalid, clear the in-memory selection
         // clear the invalid cache and fallback to the user's first available script.
-        localStorage.removeItem('selectedScriptId');
-        
+        setSelectedScriptId(null);
+
         try {
           const res = await apiClient.get('/scripts');
           if (res.data && res.data.length > 0) {
             const fallbackId = res.data[0].id as string;
-            localStorage.setItem('selectedScriptId', fallbackId);
+            setSelectedScriptId(fallbackId);
             if (isMounted) {
               setResolvedScriptId(fallbackId); // Triggers re-run with valid ID
             }
@@ -203,12 +204,12 @@ const ArenaPageContent = () => {
   const obstacles = obstaclesRef.current || [];
   const projectiles = gameStateRef.current?.projectiles || [];
   const isConnected = !!socket?.connected;
-  const activeUserId = (typeof window !== 'undefined' ? localStorage.getItem('userId') : null) || socketUserId;
+  const activeUserId = getAuthUserId() || socketUserId;
   const matchId = searchParams.get('matchId') || 'default-match';
 
   // Determine if this is a PvP match
   const isPvP = availableRobots.length >= 2 && !availableRobots.some(id => id.toLowerCase().includes('bot'));
-  
+
   // If PvP, lock the user to their own robot so they cannot switch to the opponent
   const filteredAvailableRobots = isPvP && activeUserId && availableRobots.includes(activeUserId)
     ? [activeUserId]
@@ -245,7 +246,7 @@ const ArenaPageContent = () => {
       </div>
 
       {displayMode === 'TRAINING_SOLO' && (
-        <TrainingHUD 
+        <TrainingHUD
           playerRobot={robots.find(r => r.id === activeUserId)}
           shotsFired={trainingStats.shotsFired}
           dummiesDestroyed={trainingStats.dummiesDestroyed}
@@ -257,7 +258,7 @@ const ArenaPageContent = () => {
       )}
 
       {displayMode === 'RACING' && (
-        <RacingHUD 
+        <RacingHUD
           playerRobot={robots.find(r => r.id === activeUserId)}
           startTime={trainingStats.startTime}
           isMobile={isMobile}

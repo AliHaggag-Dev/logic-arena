@@ -9,6 +9,7 @@ import { AuthContainer } from "../components/AuthContainer";
 import { AuthHeader } from "../components/AuthHeader";
 import { AuthSocials } from "../components/AuthSocials";
 import { AuthStatusTerminal } from "../components/AuthStatusTerminal";
+import { clearSensitiveBrowserStorage } from "../../../lib/client-security";
 import { PasswordStrengthIndicator } from "../components/PasswordStrengthIndicator";
 
 export default function RegisterPage() {
@@ -25,11 +26,8 @@ export default function RegisterPage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const router = useRouter();
 
-  // Auto-redirect to dashboard if a token exists
   React.useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('token')) {
-      router.push('/dashboard');
-    }
+    clearSensitiveBrowserStorage();
   }, [router]);
 
   // ── Password strength ────────────────────────────────────────────────────

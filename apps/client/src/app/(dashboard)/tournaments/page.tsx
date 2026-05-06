@@ -9,6 +9,7 @@ import { CreateTournamentForm } from "./components/CreateTournamentForm";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { AuthModal } from "../../../components/AuthModal";
 import { useAuthState } from "../../../hooks/useAuthState";
+import { getAuthUserId } from "../../../lib/client-security";
 
 export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -23,7 +24,7 @@ export default function TournamentsPage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
-    setUserId(localStorage.getItem("userId"));
+    setUserId(getAuthUserId());
   }, []);
 
   const fetchTournaments = useCallback(async () => {

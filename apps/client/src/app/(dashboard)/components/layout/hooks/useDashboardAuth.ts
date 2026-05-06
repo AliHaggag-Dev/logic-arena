@@ -1,6 +1,7 @@
 import { useRouter } from "next/navigation";
 import { useAuthState } from "../../../../../hooks/useAuthState";
 import { apiClient } from "../../../../../lib/api-client";
+import { clearAuthSession, clearSensitiveBrowserStorage } from "../../../../../lib/client-security";
 
 export function useDashboardAuth() {
   const router = useRouter();
@@ -9,12 +10,9 @@ export function useDashboardAuth() {
   const handleLogout = async () => {
     try {
       await apiClient.post("/auth/logout");
-    } catch (e) {}
-    ["userId", "username"].forEach((k) =>
-      localStorage.removeItem(k)
-    );
-    // Notify all mounted useAuthState subscribers in the same tab
-    window.dispatchEvent(new Event("auth:changed"));
+    } catch (e) { }
+    clearSensitiveBrowserStorage();
+    clearAuthSession();
     router.push("/login");
   };
 

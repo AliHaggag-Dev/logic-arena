@@ -4,6 +4,7 @@ import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ThemeSwitcher } from "./ui/ThemeSwitcher";
 import { useAuthState } from "../hooks/useAuthState";
+import { clearAuthSession, clearSensitiveBrowserStorage } from "../lib/client-security";
 
 export function MobileHeader() {
   const pathname = usePathname() || "";
@@ -26,11 +27,9 @@ export function MobileHeader() {
   const handleLogout = async () => {
     try {
       await import('../lib/api-client').then(m => m.apiClient.post("/auth/logout"));
-    } catch (e) {}
-    ["userId", "username"].forEach((k) =>
-      localStorage.removeItem(k)
-    );
-    window.dispatchEvent(new Event("auth:changed"));
+    } catch (e) { }
+    clearSensitiveBrowserStorage();
+    clearAuthSession();
     refresh();
     router.push("/login");
   };

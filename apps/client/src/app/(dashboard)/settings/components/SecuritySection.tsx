@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "../../../../lib/api-client";
 import { AlertTriangle } from "lucide-react";
 import { useFeedback, SectionHeader, SettingsInput, SaveButton, PasswordStrength } from "./Shared";
+import { clearAuthSession, clearSensitiveBrowserStorage, getAuthUsername } from "../../../../lib/client-security";
 
 export function SecuritySection({ isGuest = false }: { isGuest?: boolean }) {
   const router = useRouter();
@@ -21,7 +22,7 @@ export function SecuritySection({ isGuest = false }: { isGuest?: boolean }) {
   const [loadingDelete, setLoadingDelete] = useState(false);
 
   useEffect(() => {
-    setStoredUsername(localStorage.getItem("username") ?? "");
+    setStoredUsername(getAuthUsername() ?? "");
   }, [showDeleteModal]);
 
   const changePassword = async () => {
@@ -53,7 +54,8 @@ export function SecuritySection({ isGuest = false }: { isGuest?: boolean }) {
     setLoadingDelete(true);
     try {
       await apiClient.delete("/users/account", { data: { confirmation: deleteConfirm } });
-      ["userId", "username"].forEach((k) => localStorage.removeItem(k));
+      clearSensitiveBrowserStorage();
+      clearAuthSession();
       router.push("/login");
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };

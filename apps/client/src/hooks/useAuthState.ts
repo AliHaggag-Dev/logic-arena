@@ -1,24 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
-
-/** Auth keys that identify a real (non-guest) session. */
-const AUTH_KEYS = ["userId", "username"] as const;
-const USERNAME_KEY = "username";
+import { apiClient } from "../lib/api-client";
+import { clearAuthSession, getAuthSession, setAuthSession } from "../lib/client-security";
 
 function readAuthState(): { isGuest: boolean; username: string | null } {
-  if (typeof window === "undefined") return { isGuest: true, username: null };
-  const hasToken = AUTH_KEYS.every((k) => !!localStorage.getItem(k));
+  const session = getAuthSession();
   return {
-    isGuest: !hasToken,
-    username: localStorage.getItem(USERNAME_KEY),
+    isGuest: !session.isAuthenticated,
+    username: session.username,
   };
 }
 
 /**
- * Returns reactive `{ isGuest, username }` that automatically updates when:
- *  1. Another tab writes/removes auth keys (StorageEvent).
- *  2. The apiClient interceptor fires the custom `auth:expired` event after a 401.
- *  3. The user explicitly logs out (same-tab localStorage.removeItem triggers the
- *     `auth:changed` custom event fired by handleLogout helpers).
+ * Returns reactive `{ isGuest, username }` backed by in-memory session metadata.
+ * Sensitive account identifiers are intentionally never persisted to localStorage.
  */
 export function useAuthState(): {
   isGuest: boolean;
@@ -32,23 +26,35 @@ export function useAuthState(): {
   }, []);
 
   useEffect(() => {
-    // Cross-tab sync
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === null || AUTH_KEYS.includes(e.key as (typeof AUTH_KEYS)[number]) || e.key === USERNAME_KEY) {
+    if (getAuthSession().userId) return;
+
+    let cancelled = false;
+    apiClient.get("/users/profile").then((res) => {
+      if (cancelled) return;
+      setAuthSession({
+        isAuthenticated: true,
+        userId: res.data.id ?? null,
+        username: res.data.username ?? null,
+      });
+      refresh();
+    }).catch(() => {
+      if (!cancelled) {
+        clearAuthSession();
         refresh();
       }
-    };
+    });
 
-    // Same-tab events (fired by apiClient interceptor and logout helpers)
+    return () => { cancelled = true; };
+  }, [refresh]);
+
+  useEffect(() => {
     const onExpired = () => refresh();
     const onChanged = () => refresh();
 
-    window.addEventListener("storage", onStorage);
     window.addEventListener("auth:expired", onExpired);
     window.addEventListener("auth:changed", onChanged);
 
     return () => {
-      window.removeEventListener("storage", onStorage);
       window.removeEventListener("auth:expired", onExpired);
       window.removeEventListener("auth:changed", onChanged);
     };

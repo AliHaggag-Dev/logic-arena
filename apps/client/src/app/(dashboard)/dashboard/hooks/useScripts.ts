@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "../../../../lib/api-client";
 import { RobotScript } from "../components/ScriptCard";
 import { useAuthState } from "../../../../hooks/useAuthState";
+import { setSelectedScriptId } from "../../../../lib/client-security";
 
 export type GameMode = "COMBAT" | "RACING" | "TRAINING_SOLO";
 
@@ -44,7 +45,7 @@ export function useScripts() {
             } catch (error: unknown) {
                 const axiosError = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
                 if (axiosError.response?.status === 401) {
-                    // apiClient interceptor already cleared localStorage & fired auth:expired.
+                    // apiClient interceptor already cleared in-memory auth and fired auth:expired.
                     // Just fall back to guest script — no console.error needed here.
                     setScripts([GUEST_SCRIPT]);
                 } else {
@@ -95,7 +96,7 @@ export function useScripts() {
     }, [router, selectedMode]);
 
     const handleGoToLobby = useCallback((scriptId: string) => {
-        localStorage.setItem("selectedScriptId", scriptId);
+        setSelectedScriptId(scriptId);
         router.push("/lobby");
     }, [router]);
 

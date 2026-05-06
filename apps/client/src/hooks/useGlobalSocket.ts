@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import { API_BASE_URL } from '../lib/api-client';
+import { hasAuthSession } from '../lib/client-security';
 
 type Handlers = {
   onChallengeReceived: (data: { challengerId: string; challengerName: string }) => void;
@@ -19,18 +20,17 @@ export function useGlobalSocket(handlers: Handlers) {
   useEffect(() => { handlersRef.current = handlers; });
 
   useEffect(() => {
-    // Only connect if we have a user session
-    const userId = localStorage.getItem('userId');
-    if (!userId) return;
+    // Only connect if we have an in-memory user session.
+    if (!hasAuthSession()) return;
 
     const wsUrl = API_BASE_URL
       .replace('https://', 'wss://')
       .replace('http://', 'ws://')
       .replace(/\/api$/, '');
 
-    const socket = io(wsUrl, { 
-      withCredentials: true, 
-      transports: ['websocket', 'polling'] 
+    const socket = io(wsUrl, {
+      withCredentials: true,
+      transports: ['websocket', 'polling']
     });
 
     socketRef.current = socket;

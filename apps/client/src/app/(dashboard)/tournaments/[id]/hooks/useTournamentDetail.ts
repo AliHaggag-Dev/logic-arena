@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiClient } from "../../../../../lib/api-client";
+import { clearAuthSession, clearSensitiveBrowserStorage, getAuthUserId } from "../../../../../lib/client-security";
 import { Tournament } from "../../types";
 
 const POLL_INTERVAL_MS = 10_000;
@@ -14,7 +15,7 @@ export function useTournamentDetail(id: string) {
   const [startError, setStartError] = useState<string | null>(null);
 
   useEffect(() => {
-    setUserId(localStorage.getItem("userId"));
+    setUserId(getAuthUserId());
   }, []);
 
   const fetchTournament = useCallback(async () => {
@@ -50,8 +51,8 @@ export function useTournamentDetail(id: string) {
       const axiosError = err as { response?: { status?: number, data?: { message?: string } } };
       if (axiosError.response?.status === 401) {
         setIsGuest(true);
-        localStorage.removeItem("userId");
-        localStorage.removeItem("username");
+        clearSensitiveBrowserStorage();
+        clearAuthSession();
         setUserId(null);
         setShowAuthModal(true);
         setStartError(null);
@@ -75,8 +76,8 @@ export function useTournamentDetail(id: string) {
       const axiosError = err as { response?: { status?: number } };
       if (axiosError.response?.status === 401) {
         setIsGuest(true);
-        localStorage.removeItem("userId");
-        localStorage.removeItem("username");
+        clearSensitiveBrowserStorage();
+        clearAuthSession();
         setUserId(null);
         setShowAuthModal(true);
       }
@@ -88,12 +89,12 @@ export function useTournamentDetail(id: string) {
   const myMatch =
     tournament?.status === "IN_PROGRESS" && userId
       ? tournament.matches.find(
-          (m) =>
-            m.status !== "COMPLETED" &&
-            (m.player1Id === userId || m.player2Id === userId) &&
-            m.player1Id &&
-            m.player2Id
-        ) || null
+        (m) =>
+          m.status !== "COMPLETED" &&
+          (m.player1Id === userId || m.player2Id === userId) &&
+          m.player1Id &&
+          m.player2Id
+      ) || null
       : null;
 
   const myOpponent =

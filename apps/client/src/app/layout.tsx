@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import { MobileHeader } from "../components/MobileHeader";
 import { MobileNav } from "../components/MobileNav";
 import PullToRefresh from "../components/PullToRefresh";
+import { ServiceWorkerRegistrar } from "../components/ServiceWorkerRegistrar";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-geist-sans",
@@ -125,24 +126,7 @@ export default function RootLayout({
           <MobileNav />
         </ThemeProvider>
 
-        {/* Service Worker registration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js', { scope: '/' })
-                    .then(function(reg) {
-                      console.log('[SW] Registered:', reg.scope);
-                    })
-                    .catch(function(err) {
-                      console.warn('[SW] Registration failed:', err);
-                    });
-                });
-              }
-            `,
-          }}
-        />
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );

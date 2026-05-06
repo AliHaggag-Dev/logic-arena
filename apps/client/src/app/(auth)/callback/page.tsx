@@ -3,6 +3,7 @@
 import React, { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
+import { clearSensitiveBrowserStorage, setAuthSession } from "../../../lib/client-security";
 
 function CallbackContent() {
   const router = useRouter();
@@ -15,8 +16,8 @@ function CallbackContent() {
     const username = params.get("username");
 
     if (userId && username) {
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("username", username);
+      clearSensitiveBrowserStorage();
+      setAuthSession({ userId, username });
       router.push("/dashboard");
     } else {
       router.push("/login");
@@ -42,14 +43,14 @@ function CallbackContent() {
 
       <div className="min-h-screen bg-bg-primary flex items-center justify-center font-mono relative overflow-hidden">
         {/* Background Grid Illusion */}
-        <div 
+        <div
           className="absolute inset-0 z-0 pointer-events-none"
-          style={{ 
+          style={{
             backgroundImage: 'linear-gradient(rgba(var(--accent-rgb),0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.06) 1px, transparent 1px)',
-            backgroundSize: '40px 40px' 
+            backgroundSize: '40px 40px'
           }}
         />
-        
+
         {/* Moving Scanline */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden mix-blend-overlay opacity-20">
           <div className="w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent animate-[scanline_8s_linear_infinite]" />
@@ -61,7 +62,7 @@ function CallbackContent() {
             <div className="w-12 h-12 border-t-2 border-r-2 border-accent rounded-full animate-[rotate-hex_1s_linear_infinite]" />
             <div className="absolute text-accent font-black text-xl shadow-accent">⬢</div>
           </div>
-          
+
           <div className="flex flex-col items-center gap-2">
             <div className="text-accent text-[12px] tracking-[0.4em] font-black animate-pulse">
               {isMobile ? "SIGNING IN..." : "ESTABLISHING CONNECTION..."}

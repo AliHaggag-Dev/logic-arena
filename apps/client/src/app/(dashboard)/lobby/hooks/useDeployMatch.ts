@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
+import { getSelectedScriptId } from "../../../../lib/client-security";
 
 const DEPLOY_TIMEOUT_MS = 10000;
 
@@ -41,7 +42,7 @@ export function useDeployMatch({ socket, onNoScript }: UseDeployMatchOptions): U
   }, [socket]);
 
   const handleDeployMatch = useCallback(() => {
-    const scriptId = localStorage.getItem("selectedScriptId");
+    const scriptId = getSelectedScriptId();
     if (!scriptId) {
       onNoScript();
       return;

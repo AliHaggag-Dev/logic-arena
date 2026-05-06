@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { apiClient } from "../../../../lib/api-client";
 import { useFeedback, SectionHeader, SettingsInput, SaveButton } from "./Shared";
+import { getAuthUsername, setAuthSession, getAuthUserId } from "../../../../lib/client-security";
 
 export function IdentitySection({ isGuest = false }: { isGuest?: boolean }) {
   const [username, setUsername] = useState("");
@@ -20,7 +21,7 @@ export function IdentitySection({ isGuest = false }: { isGuest?: boolean }) {
   const [loadingEmail, setLoadingEmail] = useState(false);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username") ?? "";
+    const storedUsername = getAuthUsername() ?? "";
     setUsername(storedUsername);
     setInitials(storedUsername?.[0]?.toUpperCase() ?? "?");
 
@@ -48,7 +49,7 @@ export function IdentitySection({ isGuest = false }: { isGuest?: boolean }) {
     setLoadingUsername(true);
     try {
       await apiClient.put("/users/identity", { username: newUsername });
-      localStorage.setItem("username", newUsername);
+      setAuthSession({ userId: getAuthUserId(), username: newUsername });
       setOriginalUsername(newUsername);
       setUsername(newUsername);
       setInitials(newUsername[0]?.toUpperCase() ?? "?");
