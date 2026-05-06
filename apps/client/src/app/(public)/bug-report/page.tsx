@@ -71,7 +71,7 @@ export default function BugReportPage() {
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12 sm:pb-20">
         {/* Back */}
-        <Link href="/" className="group inline-flex items-center gap-2.5 mb-10 transition-all" style={{ color: "rgba(var(--accent-rgb),0.6)" }}>
+        <Link href="/dashboard" className="group inline-flex items-center gap-2.5 mb-10 transition-all" style={{ color: "rgba(var(--accent-rgb),0.6)" }}>
           <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
           <span className="text-[10px] font-black tracking-[0.3em] uppercase group-hover:text-accent transition-colors" style={{ fontFamily: "var(--font-mono)" }}>Back to Home</span>
         </Link>

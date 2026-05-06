@@ -314,7 +314,7 @@ export default function PublicPageLayout({
   title,
   subtitle,
   lastUpdated,
-  backHref = "/",
+  backHref = "/dashboard",
   backLabel = "Back to Home",
   sections,
   children,
@@ -356,12 +356,12 @@ export default function PublicPageLayout({
       </div>
 
       {/* ── Page content ──────────────────────────────────── */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-24 pb-8 sm:pb-12 lg:pb-16">
 
         {/* Back link */}
         <Link
           href={backHref}
-          className="group inline-flex items-center mt-4 gap-2.5 mb-10 transition-all duration-300"
+          className="group inline-flex items-center gap-2.5 mb-10 transition-all duration-300"
           style={{ color: "rgba(var(--accent-rgb), 0.6)" }}
         >
           <ArrowLeft
