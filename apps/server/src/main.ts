@@ -27,6 +27,7 @@ async function bootstrap() {
 
   // ── Payload size limits ────────────────────────────────────────────────────
   // Hard cap JSON/urlencoded request bodies to prevent memory exhaustion attacks.
+  app.use(cookieParser());
   app.use(express.json({ limit: '100kb' }));
   app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
@@ -39,9 +40,6 @@ async function bootstrap() {
       forbidUnknownValues: true,
     }),
   );
-
-  // ── Cookie parser (required for HttpOnly JWT cookies) ─────────────────────
-  app.use(cookieParser());
 
   // ── Security headers ───────────────────────────────────────────────────────
   app.use(
