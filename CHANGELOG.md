@@ -1991,3 +1991,55 @@ Shipped a complete overhaul of the AliScript execution model — replacing hardw
 ### Current Status
 
 * Logic Arena's scripting engine is now deterministic, fair, and algorithmically educational. The 2,000-op quota enforces Big O thinking at the gameplay level. The Swarm API unlocks coordinated multi-robot tactics. Dictionary state machines replace spaghetti variable lists. The energy economy survives loop-heavy scripts without punishing players for using control flow. Ready for: **Fog of War, University Competition launch, and multiplayer stress testing.**
+
+## [2.8.0] - The Black Market, LeetCode Campaign & Enterprise Security - 2026-05-07
+
+A colossal update transforming the game’s economy, 3D rendering pipeline, and security posture. Introduced a full Black Market economy with native AAA .glb models, a 60-level LeetCode-style algorithmic campaign, global reactive authentication, and concluded with a monumental 4-Layer Enterprise Security Audit (Phase 9).
+
+---
+
+### New Features
+
+* **Black Market Economy & AAA 3D Models:**
+  Architected a full-stack economy using Prisma. Players earn points to purchase custom Chassis, Neon Paints, and Tracer Rounds in the Black Market. Replaced legacy procedural geometry (Phantom/Wraith/Titan) with premium AAA `.glb` models (`bunny.glb` and `armored-robot.glb`). Refactored the `RobotShowroom` and `ArenaModels` to dynamically preload, scale, and color-tint native models on-the-fly.
+  
+* **LeetCode Algorithmic Warfare Campaign (Phase 6):**
+  Overhauled the 10-level linear campaign into a robust 60-level tab-based algorithmic proving ground across 6 categories (Conditionals, Loops, Arrays, etc.). Implemented locked-state overlays, `completedCampaignLevels` progress tracking, and dynamic SVG visuals featuring zero-JS overhead CSS animations (e.g., flowing trees, scanning arrays).
+
+* **AliScript Documentation & UI Polish:**
+  Synchronized documentation to AliScript v2.5. Built the `AdvancedLanguageFeaturesSection` for modular API tables and O(1) vs O(N) efficiency rules. Refactored the entire public layout: premium `ScrollToTop` component, sticky desktop headers, gliding active pill indicators, and a dynamic HeroSection that computes capabilities directly from data tables.
+
+* **PWA & Branding Overhaul:**
+  Generated 8 production-ready PWA icon sizes via `sharp-cli` and updated `manifest.json` for native app-like installation. Rewrote OpenGraph and Twitter Cards metadata to utilize high-res branding.
+
+* **Enterprise Security Audit (Phase 9 - 4 Layers):**
+  - **Perimeter:** Added `helmet` (CSP, HSTS), `@nestjs/throttler` (DDoS protection), and migrated from `localStorage` JWTs to Secure HttpOnly cookies.
+  - **Database:** Enforced global Mass Assignment protection via `ValidationPipe`, capped payloads to 100kb, and eliminated IDOR vulnerabilities.
+  - **Sandbox:** Hardened the AliScript parser against Prototype Pollution (blocked `__proto__`), OOM attacks (hardcapped arrays/dictionaries to 100 elements), and ReDoS (O(1) char-code parsing).
+  - **Frontend:** Integrated `isomorphic-dompurify` to sanitize all `dangerouslySetInnerHTML` XSS sinks and eliminated sensitive data from browser storage.
+
+---
+
+### Technical Scars and Resolutions
+
+* **Issue — "The Missing Express Module" (Strict Monorepo Pruning):**
+  Deploying Layer 2 payload limits (`express.json()`) crashed the Docker container with `Cannot find module 'express'`. 
+  **Resolution:** Identified that Docker's strict prune stripped hoisted modules not explicitly listed in `apps/server/package.json`. Added `express` and `cookie-parser` directly to dependencies to survive the CI/CD pipeline.
+
+* **Issue — "The React Hydration Race Condition" (Ghost Auth Desync):**
+  The dashboard occasionally threw ghost 401 errors on initial load because components attempted data fetches before the client-side session was fully hydrated from storage.
+  **Resolution:** Replaced static storage checks with a reactive `useAuthState` hook and wired a global Axios interceptor in `api-client.ts`. Wrapped fetch calls behind hydration checks (`isHydrated`) to eliminate race conditions.
+
+* **Issue — "The Unbounded Regex Lexer" (ReDoS Vulnerability):**
+  The original AliScript Lexer used generic regular expressions for tokenization, exposing the engine to catastrophic backtracking if a player submitted heavily nested strings.
+  **Resolution:** Rewrote the lexer to use deterministic O(1) character-code checking and hardcapped string parsing at 255 characters, neutralizing the ReDoS vector entirely.
+
+* **Issue — "The 3D Procedural Override" (GLB Model Sizing):**
+  Transitioning from Three.js primitives to native `.glb` assets caused extreme scaling disparities (e.g., UNIT-01 rendering microscopically).
+  **Resolution:** Rearchitected `ArenaModels.tsx` to conditionally bypass procedural logic, injecting dynamic `scale` and `position` adjustment vectors specifically tailored for the imported native meshes, while preserving `useRobotColorTint` compatibility.
+
+---
+
+### Current Status
+
+* Logic Arena has evolved into a visually stunning, highly secure AAA platform. The transition to GLB models and a 60-level LeetCode campaign elevates the gameplay, while the Phase 9 security audit guarantees enterprise-grade data protection and backend stability. Ready for: **Avatar Upload Integration (Phase 10) and Live Multiplayer Matchmaking.**
