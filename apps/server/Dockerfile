@@ -21,6 +21,9 @@ COPY packages/logic-parser/package.json ./packages/logic-parser/
 
 COPY packages/ ./packages/
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules
+COPY --from=deps /app/packages/engine/node_modules ./packages/engine/node_modules
+COPY --from=deps /app/packages/logic-parser/node_modules ./packages/logic-parser/node_modules
 
 COPY apps/server/ ./apps/server/
 

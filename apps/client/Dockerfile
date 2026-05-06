@@ -32,6 +32,9 @@ COPY packages/ ./packages/
 
 # After copying packages source, copy node_modules from deps stage  
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/client/node_modules ./apps/client/node_modules
+COPY --from=deps /app/packages/engine/node_modules ./packages/engine/node_modules
+COPY --from=deps /app/packages/logic-parser/node_modules ./packages/logic-parser/node_modules
 
 # Build Next.js client
 COPY apps/client/ ./apps/client/
