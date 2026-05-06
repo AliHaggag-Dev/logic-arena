@@ -1,12 +1,13 @@
 import {
-  Controller, Post, Get, Put, Delete,
-  Body, Param, Req, UseGuards,
-  HttpException, HttpStatus,
+    Controller, Post, Get, Put, Delete,
+    Body, Param, Req, UseGuards,
+    HttpException, HttpStatus,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ScriptsService } from './scripts.service';
 import { AuthGuard } from '../../common/auth.guard';
 import { RedisService } from '../../common/redis.service';
+import { UpsertScriptDto } from './scripts.dto';
 
 // ── Sandbox: script-save rate limit ──────────────────────────────────────────
 const SCRIPT_SAVE_LIMIT = 10;       // max saves
@@ -37,7 +38,7 @@ export class ScriptsController {
     // ── Endpoints ────────────────────────────────────────────────────────────
 
     @Post()
-    async create(@Req() req: { user: { sub: string } }, @Body() body: { title: string; content: string }) {
+    async create(@Req() req: { user: { sub: string } }, @Body() body: UpsertScriptDto) {
         const userId = req.user.sub;
         await this.enforceScriptSaveLimit(userId);
         return this.scriptsService.createScript(userId, body.title, body.content);
@@ -56,7 +57,7 @@ export class ScriptsController {
     }
 
     @Put(':id')
-    async update(@Param('id') id: string, @Req() req: { user: { sub: string } }, @Body() body: { title: string; content: string }) {
+    async update(@Param('id') id: string, @Req() req: { user: { sub: string } }, @Body() body: UpsertScriptDto) {
         const userId = req.user.sub;
         await this.enforceScriptSaveLimit(userId);
         return this.scriptsService.updateScript(id, userId, body.title, body.content);

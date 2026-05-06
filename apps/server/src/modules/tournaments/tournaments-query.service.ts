@@ -5,6 +5,8 @@ import { RedisService } from '../../common/redis.service';
 const LIST_CACHE_KEY = 'tournaments:list';
 const LIST_TTL = 10;       // seconds — matches client poll interval
 const DETAIL_TTL = 10;     // seconds — matches client poll interval
+const MAX_TOURNAMENTS_PER_PAGE = 100;
+const MAX_TOURNAMENT_MATCHES_PER_PAGE = 100;
 const tournamentKey = (id: string) => `tournament:${id}`;
 
 @Injectable()
@@ -12,7 +14,7 @@ export class TournamentsQueryService {
   constructor(
     private prisma: PrismaService,
     private redis: RedisService,
-  ) {}
+  ) { }
 
   async findAll() {
     // FIX 3: cache the list regardless of auth — tournament data is public
@@ -25,6 +27,7 @@ export class TournamentsQueryService {
         creator: { select: { id: true, username: true } },
       },
       orderBy: { createdAt: 'desc' },
+      take: MAX_TOURNAMENTS_PER_PAGE,
     });
 
     await this.redis.set(LIST_CACHE_KEY, tournaments, LIST_TTL);
@@ -41,7 +44,7 @@ export class TournamentsQueryService {
       include: {
         participants: { select: { id: true, username: true } },
         creator: { select: { id: true, username: true } },
-        matches: { orderBy: [{ round: 'asc' }, { matchIndex: 'asc' }] },
+        matches: { orderBy: [{ round: 'asc' }, { matchIndex: 'asc' }], take: MAX_TOURNAMENT_MATCHES_PER_PAGE },
       },
     });
     if (!tournament) throw new NotFoundException('Tournament not found');
@@ -51,15 +54,15 @@ export class TournamentsQueryService {
     for (const m of tournament.matches) {
       if (m.player1Id) playerIds.add(m.player1Id);
       if (m.player2Id) playerIds.add(m.player2Id);
-      if (m.winnerId)  playerIds.add(m.winnerId);
+      if (m.winnerId) playerIds.add(m.winnerId);
     }
 
     const users =
       playerIds.size > 0
         ? await this.prisma.user.findMany({
-            where: { id: { in: [...playerIds] } },
-            select: { id: true, username: true },
-          })
+          where: { id: { in: [...playerIds] } },
+          select: { id: true, username: true },
+        })
         : [];
 
     const userMap = new Map(users.map((u) => [u.id, u]));
@@ -68,7 +71,7 @@ export class TournamentsQueryService {
       ...m,
       player1: m.player1Id ? (userMap.get(m.player1Id) ?? null) : null,
       player2: m.player2Id ? (userMap.get(m.player2Id) ?? null) : null,
-      winner:  m.winnerId  ? (userMap.get(m.winnerId)  ?? null) : null,
+      winner: m.winnerId ? (userMap.get(m.winnerId) ?? null) : null,
     }));
 
     const result = { ...tournament, matches: enrichedMatches };

@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
+import { MAX_SCRIPT_CONTENT_LENGTH } from './scripts.dto';
 
 // ── Sandbox limits ──────────────────────────────────────────────────────────
-const MAX_SCRIPT_CHARS = 5_000;
+const MAX_SCRIPT_CHARS = MAX_SCRIPT_CONTENT_LENGTH;
 const MAX_SCRIPT_LINES = 100;
+const MAX_SCRIPTS_PER_PAGE = 100;
 
 @Injectable()
 export class ScriptsService {
@@ -36,7 +38,7 @@ export class ScriptsService {
     }
 
     async getScriptById(scriptId: string, userId: string) {
-        const script = await this.prisma.robotScript.findUnique({
+        const script = await this.prisma.robotScript.findFirst({
             where: { id: scriptId, userId },
         });
         if (!script) {
@@ -48,6 +50,8 @@ export class ScriptsService {
     async getUserScripts(userId: string) {
         return this.prisma.robotScript.findMany({
             where: { userId },
+            orderBy: { createdAt: 'desc' },
+            take: MAX_SCRIPTS_PER_PAGE,
         });
     }
     async updateScript(scriptId: string, userId: string, title: string, content: string) {
@@ -55,11 +59,11 @@ export class ScriptsService {
             throw new BadRequestException('Script content cannot be empty.');
         }
         this.validateScriptSize(content);
-        const script = await this.prisma.robotScript.findUnique({
-            where: { id: scriptId },
+        const script = await this.prisma.robotScript.findFirst({
+            where: { id: scriptId, userId },
         });
 
-        if (!script || script.userId !== userId) {
+        if (!script) {
             throw new NotFoundException("Script not found or unauthorized.");
         }
 
@@ -75,16 +79,18 @@ export class ScriptsService {
     }
 
     async deleteScript(scriptId: string, userId: string) {
-        const script = await this.prisma.robotScript.findUnique({
-            where: { id: scriptId },
+        const script = await this.prisma.robotScript.findFirst({
+            where: { id: scriptId, userId },
         });
 
-        if (!script || script.userId !== userId) {
+        if (!script) {
             throw new NotFoundException("Script not found or unauthorized.");
         }
 
-        return this.prisma.robotScript.delete({
-            where: { id: scriptId },
+        await this.prisma.robotScript.deleteMany({
+            where: { id: scriptId, userId },
         });
+
+        return { success: true };
     }
 }

@@ -14,11 +14,7 @@ import { MatchEngine } from './match.engine';
 import { Robot } from '@logic-arena/engine';
 import { PrismaService } from '../../common/prisma.service';
 import { BLACK_MARKET_ITEMS } from '../users/black-market.constants';
-
-interface CampaignFightDto {
-  levelId: string;
-  userScript: string;
-}
+import { CampaignFightDto } from './matches.dto';
 
 interface RequestWithUser extends Request {
   user: { sub: string };
@@ -32,9 +28,9 @@ interface CampaignFightResult {
 }
 
 /** Named constants for campaign fight configuration */
-const ENGINE_TICK_MS           = 100;
-const WIN_POLL_MS              = 150;
-const MAX_TICKS                = 300; // ~30 s cap
+const ENGINE_TICK_MS = 100;
+const WIN_POLL_MS = 150;
+const MAX_TICKS = 300; // ~30 s cap
 const COMPLETION_TOKEN_TTL_SEC = 60;
 
 function completionTokenKey(userId: string, levelId: string): string {
@@ -49,7 +45,7 @@ export class MatchesController {
     private readonly campaignService: CampaignService,
     private readonly redis: RedisService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   /** Synchronous campaign fight — no WebSocket, no DB persistence */
   @Post('campaign')
@@ -74,25 +70,25 @@ export class MatchesController {
       enemyScript = await this.campaignService.getEnemyScriptSecure(userId, levelId);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
-      if (msg === ERR_LEVEL_LOCKED)    throw new ForbiddenException('Level is locked');
+      if (msg === ERR_LEVEL_LOCKED) throw new ForbiddenException('Level is locked');
       if (msg === ERR_LEVEL_NOT_FOUND) throw new NotFoundException('Level not found');
       throw e;
     }
 
     // ── Load user loadout ────────────────────────────────────────────────────
     const user = await this.prisma.user.findUnique({
-      where:  { id: userId },
+      where: { id: userId },
       select: { equippedChassis: true, equippedPaint: true, equippedTracer: true },
     });
 
-    let userColor       = '#22d3ee';
+    let userColor = '#22d3ee';
     let userTracerColor = '#22d3ee';
-    let userModel       = 'unit-01';
+    let userModel = 'unit-01';
 
     if (user) {
       userModel = user.equippedChassis || 'chassis-phantom';
-      const paint  = BLACK_MARKET_ITEMS.find((i) => i.id === user.equippedPaint);
-      if (paint?.color)  userColor       = paint.color;
+      const paint = BLACK_MARKET_ITEMS.find((i) => i.id === user.equippedPaint);
+      if (paint?.color) userColor = paint.color;
       const tracer = BLACK_MARKET_ITEMS.find((i) => i.id === user.equippedTracer);
       if (tracer?.color) userTracerColor = tracer.color;
     }
@@ -101,8 +97,8 @@ export class MatchesController {
     const matchId = `campaign-${crypto.randomUUID()}`;
 
     const engine = new MatchEngine(matchId, [
-      { id: userId,  script: userScript,  color: userColor,   model: userModel,  tracerColor: userTracerColor },
-      { id: 'bot-2', script: enemyScript, color: '#ef4444',   model: 'unit-02',  tracerColor: '#ef4444'       },
+      { id: userId, script: userScript, color: userColor, model: userModel, tracerColor: userTracerColor },
+      { id: 'bot-2', script: enemyScript, color: '#ef4444', model: 'unit-02', tracerColor: '#ef4444' },
     ]);
 
     const startMs = Date.now();
@@ -112,22 +108,22 @@ export class MatchesController {
 
       const check = setInterval(() => {
         tick++;
-        const state      = engine.getState();
-        const robots     = state.robots as Robot[];
+        const state = engine.getState();
+        const robots = state.robots as Robot[];
         const aliveRobots = robots.filter((r) => r.health > 0);
 
-        const isOver   = robots.length > 0 && aliveRobots.length <= 1;
+        const isOver = robots.length > 0 && aliveRobots.length <= 1;
         const timedOut = tick >= MAX_TICKS;
 
         if (isOver || timedOut) {
           clearInterval(check);
           engine.stop();
 
-          const userBot  = robots.find((r) => r.id === userId);
+          const userBot = robots.find((r) => r.id === userId);
           const botAlive = (userBot?.health ?? 0) > 0;
 
           const draw = !botAlive && aliveRobots.length === 0;
-          const won  = botAlive && aliveRobots.length === 1;
+          const won = botAlive && aliveRobots.length === 1;
 
           let completionToken: string | null = null;
           const storeToken = async () => {

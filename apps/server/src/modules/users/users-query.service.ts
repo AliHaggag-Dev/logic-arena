@@ -27,9 +27,9 @@ export class UsersQueryService {
         email: true,
         rank: true,
         createdAt: true,
-        selectedRobotId:      true,
-        selectedColor:        true,
-        arenaPreferences:     true,
+        selectedRobotId: true,
+        selectedColor: true,
+        arenaPreferences: true,
         notificationSettings: true,
         googleId: true,
         githubId: true,
@@ -37,6 +37,7 @@ export class UsersQueryService {
         combatStats: true,
         Match: {
           orderBy: { createdAt: 'desc' },
+          take: 100,
           select: {
             id: true,
             type: true,
@@ -71,23 +72,23 @@ export class UsersQueryService {
     const zeroCombatStats: CombatStats = { efficiency: 0, aggression: 0, defense: 0, precision: 0, speed: 0 };
 
     const profile: UserProfile = {
-      username:             user.username,
-      email:                user.email,
-      rank:                 user.rank,
-      memberSince:          user.createdAt,
-      selectedRobotId:      user.selectedRobotId,
-      selectedColor:        user.selectedColor,
-      arenaPreferences:     (user.arenaPreferences as unknown as ArenaPreferences | null) ?? DEFAULT_ARENA_PREFERENCES,
+      username: user.username,
+      email: user.email,
+      rank: user.rank,
+      memberSince: user.createdAt,
+      selectedRobotId: user.selectedRobotId,
+      selectedColor: user.selectedColor,
+      arenaPreferences: (user.arenaPreferences as unknown as ArenaPreferences | null) ?? DEFAULT_ARENA_PREFERENCES,
       notificationSettings: (user.notificationSettings as unknown as NotificationSettings | null) ?? DEFAULT_NOTIFICATION_SETTINGS,
       totalMatches,
       wins,
       losses,
       winRate,
       matchHistory,
-      hasGoogle:    !!user.googleId,
-      hasGithub:    !!user.githubId,
-      provider:     user.provider,
-      combatStats:  (user.combatStats as CombatStats | null) ?? zeroCombatStats,
+      hasGoogle: !!user.googleId,
+      hasGithub: !!user.githubId,
+      provider: user.provider,
+      combatStats: (user.combatStats as CombatStats | null) ?? zeroCombatStats,
     };
 
     await this.redis.set(profileKey(userId), profile, PROFILE_TTL);
@@ -127,11 +128,11 @@ export class UsersQueryService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
-        points:          true,
-        unlockedItems:   true,
+        points: true,
+        unlockedItems: true,
         equippedChassis: true,
-        equippedPaint:   true,
-        equippedTracer:  true,
+        equippedPaint: true,
+        equippedTracer: true,
       },
     });
     if (!user) throw new Error('USER_NOT_FOUND');
@@ -164,11 +165,11 @@ export class UsersQueryService {
     }
 
     return {
-      points:          user.points,
+      points: user.points,
       unlockedItems,
       equippedChassis: user.equippedChassis,
       equippedPaint,
-      equippedTracer:  user.equippedTracer,
+      equippedTracer: user.equippedTracer,
     };
   }
 }

@@ -1,5 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { ValidationPipe } from '@nestjs/common';
+import express from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
@@ -19,9 +21,24 @@ function isOriginAllowed(origin: string | undefined): boolean {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
 
   const isDev = process.env.NODE_ENV === 'development';
+
+  // ── Payload size limits ────────────────────────────────────────────────────
+  // Hard cap JSON/urlencoded request bodies to prevent memory exhaustion attacks.
+  app.use(express.json({ limit: '100kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
+
+  // ── Strict DTO validation / mass-assignment protection ─────────────────────
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      forbidUnknownValues: true,
+    }),
+  );
 
   // ── Cookie parser (required for HttpOnly JWT cookies) ─────────────────────
   app.use(cookieParser());
@@ -34,20 +51,20 @@ async function bootstrap() {
       contentSecurityPolicy: isDev
         ? false
         : {
-            directives: {
-              defaultSrc:     ["'self'"],
-              scriptSrc:      ["'self'"],              // NO unsafe-inline — blocks XSS
-              styleSrc:       ["'self'", "'unsafe-inline'"], // Needed for CSS-in-JS libs
-              imgSrc:         ["'self'", 'data:', 'blob:', 'https:'],
-              connectSrc:     ["'self'", 'wss://logicarena.dev', 'https://logicarena.dev'],
-              fontSrc:        ["'self'", 'https://fonts.gstatic.com'],
-              frameSrc:       ["'none'"],              // Disables iframes entirely
-              objectSrc:      ["'none'"],
-              baseUri:        ["'self'"],
-              formAction:     ["'self'"],
-              upgradeInsecureRequests: [],
-            },
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],              // NO unsafe-inline — blocks XSS
+            styleSrc: ["'self'", "'unsafe-inline'"], // Needed for CSS-in-JS libs
+            imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+            connectSrc: ["'self'", 'wss://logicarena.dev', 'https://logicarena.dev'],
+            fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+            frameSrc: ["'none'"],              // Disables iframes entirely
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            upgradeInsecureRequests: [],
           },
+        },
 
       // ─ HTTP Strict Transport Security ──────────────────────────────────────
       // Tells browsers to ONLY use HTTPS for this domain for 1 year.
@@ -88,11 +105,11 @@ async function bootstrap() {
         callback(new Error(`CORS: origin '${origin}' is not whitelisted`));
       }
     },
-    methods:          ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders:   ['Content-Type', 'Authorization', 'X-Requested-With'],
-    exposedHeaders:   ['X-Cache', 'X-RateLimit-Limit', 'X-RateLimit-Remaining'],
-    credentials:      true,   // Required: allows browser to send HttpOnly cookies
-    maxAge:           86_400, // 24 h preflight cache
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['X-Cache', 'X-RateLimit-Limit', 'X-RateLimit-Remaining'],
+    credentials: true,   // Required: allows browser to send HttpOnly cookies
+    maxAge: 86_400, // 24 h preflight cache
   });
 
   // ── WebSocket ──────────────────────────────────────────────────────────────

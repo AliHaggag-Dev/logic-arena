@@ -14,17 +14,24 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { PrismaService } from '../../common/prisma.service';
-import { RedisService }  from '../../common/redis.service';
-import { AuthGuard }     from '../../common/auth.guard';
-import { UsersQueryService }  from './users-query.service';
-import { UsersCommandService }  from './users-command.service';
+import { RedisService } from '../../common/redis.service';
+import { AuthGuard } from '../../common/auth.guard';
+import { UsersQueryService } from './users-query.service';
+import { UsersCommandService } from './users-command.service';
 import {
   LeaderboardEntry,
   LEADERBOARD_LIMIT,
   LEADERBOARD_TTL,
-  ArenaPreferences,
-  NotificationSettings,
 } from './types';
+import {
+  EquipItemDto,
+  PurchaseItemDto,
+  UpdateArenaPreferencesDto,
+  UpdateIdentityDto,
+  UpdateNotificationSettingsDto,
+  UpdatePasswordDto,
+  UpdateProfileDto,
+} from './users.dto';
 import { ItemCategory } from './black-market.constants';
 
 /** Typed request shape produced by AuthGuard JWT strategy */
@@ -38,11 +45,11 @@ const LEADERBOARD_CACHE_KEY = 'leaderboard:snapshot';
 @Controller('users')
 export class UsersController {
   constructor(
-    private readonly prisma:        PrismaService,
-    private readonly queryService:  UsersQueryService,
+    private readonly prisma: PrismaService,
+    private readonly queryService: UsersQueryService,
     private readonly commandService: UsersCommandService,
-    private readonly redis:         RedisService,
-  ) {}
+    private readonly redis: RedisService,
+  ) { }
 
   // ── Leaderboard (public, short-lived Redis cache) ─────────────────────────
   @Get('leaderboard')
@@ -54,12 +61,12 @@ export class UsersController {
     // 2. Fetch top-N users ordered by rank desc, then by won matches desc as tiebreaker
     const users = await this.prisma.user.findMany({
       orderBy: [{ rank: 'desc' }, { wonMatches: { _count: 'desc' } }],
-      take:    LEADERBOARD_LIMIT,
-      select:  {
-        id:       true,
+      take: LEADERBOARD_LIMIT,
+      select: {
+        id: true,
         username: true,
-        rank:     true,
-        _count:   { select: { wonMatches: true } },
+        rank: true,
+        _count: { select: { wonMatches: true } },
       },
     });
 
@@ -100,7 +107,7 @@ export class UsersController {
   @Patch('profile')
   async updateProfile(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { robotId: string; color: string },
+    @Body() body: UpdateProfileDto,
   ) {
     try {
       await this.commandService.updateLoadout(req.user.sub, body.robotId, body.color);
@@ -116,7 +123,7 @@ export class UsersController {
   @Get('matches/:matchId/replay')
   async getReplay(@Param('matchId') matchId: string) {
     const match = await this.prisma.match.findUnique({
-      where:  { id: matchId },
+      where: { id: matchId },
       select: { id: true, replayData: true, winnerId: true, duration: true, createdAt: true },
     });
     if (!match) throw new NotFoundException('Match not found');
@@ -128,7 +135,7 @@ export class UsersController {
   @Put('identity')
   async updateIdentity(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { username?: string; email?: string },
+    @Body() body: UpdateIdentityDto,
   ) {
     if (body.username !== undefined && body.username.trim().length < 3) {
       throw new BadRequestException('Username must be at least 3 characters');
@@ -150,7 +157,7 @@ export class UsersController {
   @Put('password')
   async updatePassword(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { currentPassword: string; newPassword: string },
+    @Body() body: UpdatePasswordDto,
   ) {
     if (!body.newPassword || body.newPassword.length < 8) {
       throw new BadRequestException('New password must be at least 8 characters');
@@ -173,7 +180,7 @@ export class UsersController {
   @Put('preferences')
   async updateArenaPreferences(
     @Req() req: AuthenticatedRequest,
-    @Body() body: Partial<ArenaPreferences>,
+    @Body() body: UpdateArenaPreferencesDto,
   ) {
     try {
       await this.commandService.updateArenaPreferences(req.user.sub, body);
@@ -189,7 +196,7 @@ export class UsersController {
   @Put('notifications')
   async updateNotificationSettings(
     @Req() req: AuthenticatedRequest,
-    @Body() body: Partial<NotificationSettings>,
+    @Body() body: UpdateNotificationSettingsDto,
   ) {
     try {
       await this.commandService.updateNotificationSettings(req.user.sub, body);
@@ -217,7 +224,7 @@ export class UsersController {
   @Post('black-market/purchase')
   async purchaseItem(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { itemId: string },
+    @Body() body: PurchaseItemDto,
   ) {
     if (!body?.itemId) throw new BadRequestException('itemId is required');
     try {
@@ -233,9 +240,9 @@ export class UsersController {
   @Post('black-market/equip')
   async equipItem(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { itemId: string; category: ItemCategory },
+    @Body() body: EquipItemDto,
   ) {
-    if (!body?.itemId)   throw new BadRequestException('itemId is required');
+    if (!body?.itemId) throw new BadRequestException('itemId is required');
     if (!body?.category) throw new BadRequestException('category is required');
     const validCategories: ItemCategory[] = ['chassis', 'paint', 'tracer'];
     if (!validCategories.includes(body.category)) {
