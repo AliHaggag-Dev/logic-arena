@@ -29,6 +29,7 @@ export class CloudinaryService {
           folder: 'logic-arena/avatars',
           public_id: userId,
           overwrite: true,
+          invalidate: true, // Busts Cloudinary CDN cache
           resource_type: 'image',
           transformation: [
             { width: AVATAR_SIZE, height: AVATAR_SIZE, crop: 'fill', gravity: 'face' },
@@ -40,7 +41,8 @@ export class CloudinaryService {
             this.logger.error('Cloudinary upload failed', error);
             reject(new InternalServerErrorException('Avatar upload failed'));
           } else {
-            resolve(result.secure_url);
+            // Append the version timestamp to bust the browser's local cache
+            resolve(`${result.secure_url}?v=${result.version}`);
           }
         },
       );
