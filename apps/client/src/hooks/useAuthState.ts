@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 
 /** Auth keys that identify a real (non-guest) session. */
-const AUTH_KEYS = ["token", "jwtToken"] as const;
+const AUTH_KEYS = ["userId", "username"] as const;
 const USERNAME_KEY = "username";
 
 function readAuthState(): { isGuest: boolean; username: string | null } {
   if (typeof window === "undefined") return { isGuest: true, username: null };
-  const hasToken = AUTH_KEYS.some((k) => !!localStorage.getItem(k));
+  const hasToken = AUTH_KEYS.every((k) => !!localStorage.getItem(k));
   return {
     isGuest: !hasToken,
     username: localStorage.getItem(USERNAME_KEY),

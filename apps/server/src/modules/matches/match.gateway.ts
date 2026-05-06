@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import { PrismaService } from '../../common/prisma.service';
 import { RedisService } from '../../common/redis.service';
+import { AUTH_COOKIE_NAME, JwtPayload } from '../auth/types';
 
 import { AuthenticatedSocket } from './gateway/types';
 import { MatchState } from './gateway/match.state';
@@ -55,9 +56,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // ---------------------------------------------------------------------------
 
   async handleConnection(@ConnectedSocket() client: AuthenticatedSocket) {
-    const token =
-      client.handshake?.auth?.token ||
-      client.handshake?.headers?.authorization;
+    const token = this.extractWsToken(client);
 
     if (!token) {
       client.userId = `guest_${client.id}`;
@@ -67,8 +66,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     try {
-      const cleanToken = token.replace('Bearer ', '');
-      const decoded: any = jwt.verify(cleanToken, process.env.JWT_SECRET as string);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
       client.userId = decoded.sub;
       await this.redisService.set(`user:online:${client.userId}`, '1', 300);
       client.emit('authenticated', { userId: client.userId });
@@ -77,6 +75,33 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.isGuest = true;
       client.emit('authenticated', { userId: client.userId, isGuest: true });
     }
+  }
+
+  /**
+   * Extracts the JWT from the WebSocket handshake.
+   * Priority:
+   *  1. Cookie header (browser sends HttpOnly cookies automatically on WS upgrade)
+   *  2. socket.io auth object  { auth: { token } }  — used by the lobby/arena hooks
+   *  3. Authorization header
+   */
+  private extractWsToken(client: AuthenticatedSocket): string | undefined {
+    // 1. Cookie on the WS upgrade request
+    const cookieHeader = client.handshake?.headers?.cookie ?? '';
+    const cookieMatch = cookieHeader
+      .split(';')
+      .map((c) => c.trim())
+      .find((c) => c.startsWith(`${AUTH_COOKIE_NAME}=`));
+    if (cookieMatch) return cookieMatch.slice(AUTH_COOKIE_NAME.length + 1);
+
+    // 2. socket.io auth payload (lobby / arena sockets pass token here)
+    const authToken = client.handshake?.auth?.token as string | undefined;
+    if (authToken) return authToken.replace(/^Bearer\s+/i, '');
+
+    // 3. Authorization header
+    const authHeader = client.handshake?.headers?.authorization as string | undefined;
+    if (authHeader?.startsWith('Bearer ')) return authHeader.slice(7);
+
+    return undefined;
   }
 
   async handleDisconnect(@ConnectedSocket() client: AuthenticatedSocket) {

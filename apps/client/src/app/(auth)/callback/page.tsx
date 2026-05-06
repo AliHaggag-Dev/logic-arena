@@ -10,13 +10,11 @@ function CallbackContent() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
-    const token = params.get("token");
+    // Token is no longer in the URL, it is an HttpOnly cookie set by the server.
     const userId = params.get("userId");
     const username = params.get("username");
 
-    if (token && userId && username) {
-      localStorage.setItem("jwtToken", token);
-      localStorage.setItem("token", token);
+    if (userId && username) {
       localStorage.setItem("userId", userId);
       localStorage.setItem("username", username);
       router.push("/dashboard");

@@ -10,16 +10,7 @@ import { POLL_INTERVAL_MS } from "./types";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-/** Extract the `sub` claim from a JWT without verifying its signature.
- *  Used only to derive currentUserId for UI highlighting — not for auth. */
-const parseJwtSub = (token: string): string => {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return typeof payload.sub === "string" ? payload.sub : "";
-  } catch {
-    return "";
-  }
-};
+
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -46,9 +37,9 @@ const LeaderboardPage = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token") || localStorage.getItem("jwtToken");
-    setIsGuest(!token);
-    setCurrentUserId(token ? parseJwtSub(token) : "");
+    const userId = localStorage.getItem("userId");
+    setIsGuest(!userId);
+    setCurrentUserId(userId || "");
 
     fetchLeaderboard();
 

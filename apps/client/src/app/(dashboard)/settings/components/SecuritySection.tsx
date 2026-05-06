@@ -53,7 +53,7 @@ export function SecuritySection({ isGuest = false }: { isGuest?: boolean }) {
     setLoadingDelete(true);
     try {
       await apiClient.delete("/users/account", { data: { confirmation: deleteConfirm } });
-      ["token", "jwtToken", "userId", "username"].forEach((k) => localStorage.removeItem(k));
+      ["userId", "username"].forEach((k) => localStorage.removeItem(k));
       router.push("/login");
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };

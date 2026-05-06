@@ -14,12 +14,12 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
   const matchIdFromUrl = searchParams.get('matchId');
 
   const socket: Socket = useMemo(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    // Rely on HttpOnly cookies for auth
     const wsUrl = API_BASE_URL
       .replace('https://', 'wss://')
       .replace('http://', 'ws://')
       .replace(/\/api$/, '');
-    return io(wsUrl, { autoConnect: false, auth: { token } });
+    return io(wsUrl, { autoConnect: false, withCredentials: true });
   }, []);
 
   // Core game state — ref for zero-re-render R3F reads, state for UI

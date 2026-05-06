@@ -117,7 +117,7 @@ const ArenaPageContent = () => {
             }
           } catch (err: unknown) {
             const axiosError = err as { response?: { status?: number } };
-            if (axiosError.response?.status === 401 || !localStorage.getItem('token')) {
+            if (axiosError.response?.status === 401 || !localStorage.getItem('userId')) {
               if (isMounted) {
                 setResolvedScriptId('guest-script');
                 setScript({
@@ -150,7 +150,7 @@ const ArenaPageContent = () => {
         const axiosError = err as { response?: { status?: number, data?: { message?: string } }, message?: string };
         
         // GUEST MODE: If unauthorized or script not found, provide a default training script
-        if (axiosError.response?.status === 401 || !localStorage.getItem('token')) {
+        if (axiosError.response?.status === 401 || !localStorage.getItem('userId')) {
           if (isMounted) {
             setResolvedScriptId('guest-script');
             setScript({

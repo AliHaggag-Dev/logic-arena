@@ -19,18 +19,19 @@ export function useGlobalSocket(handlers: Handlers) {
   useEffect(() => { handlersRef.current = handlers; });
 
   useEffect(() => {
-    const token =
-      localStorage.getItem('jwtToken') ||
-      localStorage.getItem('token');
-    if (!token) return;
+    // Only connect if we have a user session
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
 
     const wsUrl = API_BASE_URL
       .replace('https://', 'wss://')
       .replace('http://', 'ws://')
       .replace(/\/api$/, '');
 
-    const socket = io(wsUrl, { auth: { token }, transports: ['websocket', 'polling'] },
-    );
+    const socket = io(wsUrl, { 
+      withCredentials: true, 
+      transports: ['websocket', 'polling'] 
+    });
 
     socketRef.current = socket;
 

@@ -6,20 +6,14 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
     || (isDev ? "http://localhost:3001/api" : "https://logicarena.dev/api");
 
 /** Keys cleared when the server returns 401 (session expired / invalid token). */
-const AUTH_STORAGE_KEYS = ["token", "jwtToken", "userId", "username"] as const;
+const AUTH_STORAGE_KEYS = ["userId", "username"] as const;
 
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
+    withCredentials: true, // Required to send HttpOnly cookies
 });
 
-apiClient.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem("token");
-        if (token) config.headers.Authorization = `Bearer ${token}`;
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
+// Remove request interceptor that injects Authorization header from localStorage
 
 /**
  * Global 401 interceptor.

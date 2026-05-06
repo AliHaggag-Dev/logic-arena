@@ -23,8 +23,11 @@ export function MobileHeader() {
 
   const visibilityClass = (isAuthPage || isStaticPage) ? "flex" : "flex md:hidden";
 
-  const handleLogout = () => {
-    ["token", "jwtToken", "userId", "username"].forEach((k) =>
+  const handleLogout = async () => {
+    try {
+      await import('../lib/api-client').then(m => m.apiClient.post("/auth/logout"));
+    } catch (e) {}
+    ["userId", "username"].forEach((k) =>
       localStorage.removeItem(k)
     );
     window.dispatchEvent(new Event("auth:changed"));

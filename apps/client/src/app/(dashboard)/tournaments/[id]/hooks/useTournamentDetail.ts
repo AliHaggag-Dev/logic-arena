@@ -50,8 +50,8 @@ export function useTournamentDetail(id: string) {
       const axiosError = err as { response?: { status?: number, data?: { message?: string } } };
       if (axiosError.response?.status === 401) {
         setIsGuest(true);
-        localStorage.removeItem("token");
         localStorage.removeItem("userId");
+        localStorage.removeItem("username");
         setUserId(null);
         setShowAuthModal(true);
         setStartError(null);
@@ -75,8 +75,8 @@ export function useTournamentDetail(id: string) {
       const axiosError = err as { response?: { status?: number } };
       if (axiosError.response?.status === 401) {
         setIsGuest(true);
-        localStorage.removeItem("token");
         localStorage.removeItem("userId");
+        localStorage.removeItem("username");
         setUserId(null);
         setShowAuthModal(true);
       }
