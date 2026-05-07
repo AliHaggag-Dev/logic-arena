@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Lightbulb, Compass, ChevronDown } from 'lucide-react';
+import { ChevronDown, Lightbulb } from 'lucide-react';
 import { ROTATION_SYSTEM_GUIDE, RotationExample } from '../constants/docsData';
 import { SectionLabel } from './SectionLabel';
 
@@ -32,7 +32,7 @@ const ExampleCard = ({
       className={`border bg-card/60 backdrop-blur-sm transition-all duration-300 rounded-xl overflow-hidden ${isExpanded ? 'ring-1 ring-amber-500/20' : ''}`}
       style={{
         borderColor: isExpanded ? `color-mix(in srgb, ${color} 40%, transparent)` : 'rgba(245, 158, 11, 0.12)',
-        boxShadow:   isExpanded ? `0 0 20px color-mix(in srgb, ${color} 13%, transparent)` : 'none',
+        boxShadow: isExpanded ? `0 0 20px color-mix(in srgb, ${color} 13%, transparent)` : 'none',
       }}
     >
       {/* Header */}

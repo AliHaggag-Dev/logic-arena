@@ -13,20 +13,17 @@ export default function CampaignLevelPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const levelId = id;
+  const invalidLevelId = !levelId;
 
   const [level, setLevel] = useState<LevelDetail | null>(null);
-  const [fetching, setFetching] = useState(true);
+  const [fetching, setFetching] = useState(!invalidLevelId);
   const [error, setError] = useState<string | null>(null);
   const [script, setScript] = useState("");
   const [modal, setModal] = useState<ModalState>("idle");
   const [reward, setReward] = useState<number>(0);
 
   useEffect(() => {
-    if (!levelId) {
-      setError("Invalid level ID.");
-      setFetching(false);
-      return;
-    }
+    if (invalidLevelId) return;
 
     apiClient
       .get(`/campaign/levels/${levelId}`)
@@ -39,7 +36,7 @@ export default function CampaignLevelPage() {
         }
       })
       .finally(() => setFetching(false));
-  }, [levelId]);
+  }, [invalidLevelId, levelId]);
 
   const handleFight = useCallback(async () => {
     if (!script.trim()) return;
@@ -52,10 +49,10 @@ export default function CampaignLevelPage() {
       });
 
       if (fightRes.data.won) {
-        try { 
-          await apiClient.post(`/campaign/levels/${levelId}/complete`, { 
-            completionToken: fightRes.data.completionToken 
-          }); 
+        try {
+          await apiClient.post(`/campaign/levels/${levelId}/complete`, {
+            completionToken: fightRes.data.completionToken
+          });
         } catch { }
         setReward(level?.pointsReward ?? 0);
         setModal("victory");
@@ -71,6 +68,8 @@ export default function CampaignLevelPage() {
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
+  const displayError = invalidLevelId ? "Invalid level ID." : error;
+
   if (fetching) {
     return (
       <div className="min-h-screen bg-bg-primary font-mono flex items-center justify-center">
@@ -81,11 +80,11 @@ export default function CampaignLevelPage() {
     );
   }
 
-  if (error || !level) {
+  if (displayError || !level) {
     return (
       <div className="min-h-screen bg-bg-primary font-mono flex flex-col items-center justify-center p-4 text-center">
         <div className="text-red-500 text-[14px] font-black tracking-[0.2em] mb-4">
-          {error || "An unknown error occurred."}
+          {displayError || "An unknown error occurred."}
         </div>
         <button
           type="button"

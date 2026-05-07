@@ -1,15 +1,23 @@
 import React from 'react';
-import { 
-  MATH_STDLIB_TABLE, 
-  ARRAY_OPS_TABLE, 
-  DICTIONARY_OPS_TABLE, 
-  SENSOR_FUNCTIONS_TABLE, 
-  SWARM_FUNCTIONS_TABLE 
+import {
+  MATH_STDLIB_TABLE,
+  ARRAY_OPS_TABLE,
+  DICTIONARY_OPS_TABLE,
+  SENSOR_FUNCTIONS_TABLE,
+  SWARM_FUNCTIONS_TABLE,
+  type ArrayOpDoc,
+  type DictionaryOpDoc,
+  type MathFunctionDoc,
+  type SensorFunctionDoc,
+  type SwarmFunctionDoc,
 } from '../constants/docsData';
 import { SectionLabel } from './SectionLabel';
 
+type SimpleLanguageFeatureDoc = MathFunctionDoc | ArrayOpDoc | DictionaryOpDoc;
+type AdvancedLanguageFeatureDoc = SensorFunctionDoc | SwarmFunctionDoc;
+
 export const AdvancedLanguageFeaturesSection = ({ isMobile }: { isMobile: boolean }) => {
-  const renderSimpleTable = (data: any[], colorCode: string, title: string) => (
+  const renderSimpleTable = (data: SimpleLanguageFeatureDoc[], colorCode: string, title: string) => (
     <div className="mb-8">
       <div
         className="text-[10px] tracking-[0.5em] font-black uppercase mb-3 pb-2 border-b border-accent/20"
@@ -26,7 +34,7 @@ export const AdvancedLanguageFeaturesSection = ({ isMobile }: { isMobile: boolea
           >
             <div className={`flex ${isMobile ? 'flex-col gap-2' : 'justify-between items-center'} mb-2`}>
               <code className="font-black tracking-wide text-sm" style={{ color: colorCode }}>{item.signature}</code>
-              <span 
+              <span
                 className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full w-fit"
                 style={{ color: `color-mix(in srgb, ${colorCode} 90%, transparent)`, backgroundColor: `color-mix(in srgb, ${colorCode} 15%, transparent)` }}
               >
@@ -44,7 +52,7 @@ export const AdvancedLanguageFeaturesSection = ({ isMobile }: { isMobile: boolea
     </div>
   );
 
-  const renderAdvancedTable = (data: any[], colorCode: string, title: string) => (
+  const renderAdvancedTable = (data: AdvancedLanguageFeatureDoc[], colorCode: string, title: string) => (
     <div className="mb-8">
       <div
         className="text-[10px] tracking-[0.5em] font-black uppercase mb-3 pb-2 border-b border-accent/20"
@@ -61,7 +69,7 @@ export const AdvancedLanguageFeaturesSection = ({ isMobile }: { isMobile: boolea
           >
             <div className={`flex ${isMobile ? 'flex-col items-start' : 'items-center'} gap-3 p-4 border-b border-accent/5`} style={{ backgroundColor: `color-mix(in srgb, ${colorCode} 4%, transparent)` }}>
               <code className="font-black tracking-wide text-sm" style={{ color: colorCode }}>{item.signature}</code>
-              <span 
+              <span
                 className="text-[9px] font-bold tracking-[0.2em] px-2 py-0.5 rounded-full uppercase"
                 style={{ color: colorCode, border: `1px solid color-mix(in srgb, ${colorCode} 25%, transparent)` }}
               >
@@ -70,7 +78,7 @@ export const AdvancedLanguageFeaturesSection = ({ isMobile }: { isMobile: boolea
             </div>
             <div className="p-4 space-y-4">
               <p className="text-xs text-text-secondary/90 leading-relaxed">{item.description}</p>
-              
+
               <div className="flex flex-col gap-1.5">
                 <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase">Returns</div>
                 <div className="text-xs font-mono text-accent/70">{item.returns}</div>
@@ -107,10 +115,10 @@ export const AdvancedLanguageFeaturesSection = ({ isMobile }: { isMobile: boolea
   return (
     <section className={isMobile ? 'mb-10' : 'mb-16'}>
       <SectionLabel text="ADVANCED LANGUAGE FEATURES" isMobile={isMobile} />
-      
+
       <p className="text-[10px] text-text-secondary/50 mt-3 mb-6 leading-relaxed tracking-wide font-medium">
-        AliScript has evolved into a fully-fledged deterministic language. 
-        Leverage these powerful data structures and APIs, but beware of the 2,000 instruction-per-tick 
+        AliScript has evolved into a fully-fledged deterministic language.
+        Leverage these powerful data structures and APIs, but beware of the 2,000 instruction-per-tick
         quota. <strong className="text-text-secondary/70">O(N)</strong> complexity is required for array traversals!
       </p>
 

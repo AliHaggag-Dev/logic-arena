@@ -1,6 +1,14 @@
-import { MarketItem } from "./types";
+import type { ItemCategory, MarketItem } from "./types";
 
 export const INITIAL_POINTS = 1500;
+export const CATEGORIES: ItemCategory[] = ["chassis", "paint", "tracer"];
+export const STARTER_ITEM_IDS = ["chassis-phantom", "paint-crimson", "tracer-pulse"] as const;
+
+export const DEFAULT_LOADOUT: Record<ItemCategory, string> = {
+  chassis: "chassis-phantom",
+  paint: "paint-crimson",
+  tracer: "tracer-pulse",
+};
 
 export const MARKET_ITEMS: MarketItem[] = [
   // ── ROBOT CHASSIS ──────────────────────────────────────────────
@@ -140,7 +148,7 @@ export const MARKET_ITEMS: MarketItem[] = [
   },
 ];
 
-export const CATEGORY_LABELS: Record<string, string> = {
+export const CATEGORY_LABELS: Record<ItemCategory, string> = {
   chassis: "Robot Chassis",
   paint: "Neon Paints",
   tracer: "Tracer Rounds",

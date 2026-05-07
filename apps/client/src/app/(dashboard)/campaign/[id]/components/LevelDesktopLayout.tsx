@@ -52,7 +52,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
         <div className="flex flex-col gap-5">
           <div className="border border-accent/15 rounded-xl p-6 bg-accent/[0.02]">
             <p className="text-[9px] tracking-[0.3em] text-accent/30 mb-3 uppercase">
-              // MISSION_BRIEF
+              {'// '}MISSION_BRIEF
             </p>
             <p className="text-[11px] text-accent/70 tracking-[0.08em] leading-relaxed">
               {level.description}
@@ -61,7 +61,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
 
           <div className="border border-red-500/20 rounded-xl p-6 bg-red-500/[0.03]">
             <p className="text-[9px] tracking-[0.3em] text-red-500/50 mb-4 uppercase">
-              // ENEMY_INTEL
+              {'// '}ENEMY_INTEL
             </p>
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center text-[10px]">
@@ -82,7 +82,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
           </div>
 
           <div className="border border-accent/10 rounded-xl p-5 bg-transparent">
-            <p className="text-[9px] tracking-[0.3em] text-accent/25 mb-3 uppercase">// TACTICS</p>
+            <p className="text-[9px] tracking-[0.3em] text-accent/25 mb-3 uppercase">{'// '}TACTICS</p>
             <ul className="text-[10px] text-accent/35 tracking-[0.06em] leading-relaxed space-y-1.5 list-none p-0 m-0">
               <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> Use SCAN to detect proximity</li>
               <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> TIME your FIRE commands carefully</li>
@@ -96,7 +96,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <p className="text-[9px] tracking-[0.3em] text-accent/35 uppercase m-0">
-              // YOUR_ALISCRIPT
+              {'// '}YOUR_ALISCRIPT
             </p>
             <span className="text-[9px] text-accent/20 tracking-[0.12em]">
               {script.split("\n").filter(Boolean).length} LINES

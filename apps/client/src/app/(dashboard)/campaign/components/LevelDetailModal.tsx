@@ -15,11 +15,12 @@ interface LevelDetailModalProps {
 }
 
 export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
-  const router   = useRouter();
-  const [hintOpen, setHintOpen] = useState(false);
+  const router = useRouter();
+  const [hintState, setHintState] = useState<{ levelId?: string; isOpen: boolean }>({
+    isOpen: false,
+  });
 
-  // Reset hint state when modal opens a new level
-  useEffect(() => { setHintOpen(false); }, [level?.id]);
+  const hintOpen = hintState.levelId === level?.id && hintState.isOpen;
 
   // Close on Escape key
   useEffect(() => {
@@ -144,7 +145,12 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
             id={`hint-toggle-${level.id}`}
             aria-expanded={hintOpen}
             aria-controls={`hint-content-${level.id}`}
-            onClick={() => setHintOpen((v) => !v)}
+            onClick={() =>
+              setHintState((state) => ({
+                levelId: level.id,
+                isOpen: state.levelId === level.id ? !state.isOpen : true,
+              }))
+            }
             className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-accent/5 transition-colors cursor-pointer"
           >
             <span className="text-[9px] tracking-[0.3em] text-accent/60 uppercase font-bold flex items-center gap-2">
@@ -160,8 +166,8 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
           <div
             id={`hint-content-${level.id}`}
             style={{
-              maxHeight:  hintOpen ? '200px' : '0',
-              overflow:   'hidden',
+              maxHeight: hintOpen ? '200px' : '0',
+              overflow: 'hidden',
               transition: 'max-height 0.35s cubic-bezier(0.4,0,0.2,1)',
             }}
           >
@@ -190,10 +196,10 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
               onClick={handleEngage}
               className="w-full py-3.5 rounded-xl text-[11px] tracking-[0.3em] font-black uppercase transition-all relative overflow-hidden group cursor-pointer"
               style={{
-                background:  `linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.1))`,
-                border:      `1px solid rgba(var(--accent-rgb),0.4)`,
-                color:       `rgb(var(--accent-rgb))`,
-                boxShadow:   `0 0 20px rgba(var(--accent-rgb),0.15)`,
+                background: `linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.1))`,
+                border: `1px solid rgba(var(--accent-rgb),0.4)`,
+                color: `rgb(var(--accent-rgb))`,
+                boxShadow: `0 0 20px rgba(var(--accent-rgb),0.15)`,
               }}
             >
               <span className="relative z-10 flex items-center justify-center gap-2">

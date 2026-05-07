@@ -49,7 +49,7 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
       <div className="flex flex-col gap-4 shrink-0 mb-4">
         {/* Mission brief */}
         <div className="border border-accent/15 rounded-xl p-4 bg-accent/[0.02]">
-          <p className="text-[9px] tracking-[0.3em] text-accent/30 mb-2 uppercase">// MISSION_BRIEF</p>
+          <p className="text-[9px] tracking-[0.3em] text-accent/30 mb-2 uppercase">{'// '}MISSION_BRIEF</p>
           <p className="text-[10px] text-accent/70 tracking-[0.08em] leading-relaxed">{level.description}</p>
         </div>
 
@@ -72,7 +72,7 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
       {/* Code Editor Full Width */}
       <div className="flex flex-col flex-1 gap-3 pb-8">
         <div className="flex justify-between items-center px-1">
-          <p className="text-[9px] tracking-[0.3em] text-accent/35 uppercase m-0">// YOUR_ALISCRIPT</p>
+          <p className="text-[9px] tracking-[0.3em] text-accent/35 uppercase m-0">{'// '}YOUR_ALISCRIPT</p>
           <span className="text-[9px] text-accent/20 tracking-[0.12em]">
             {script.split("\n").filter(Boolean).length} LINES
           </span>
@@ -92,10 +92,10 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
           onClick={handleFight}
           disabled={!script.trim() || modal === "loading"}
           className={`w-full h-[44px] shrink-0 rounded-xl text-[10px] font-black tracking-[0.2em] font-mono flex items-center justify-center gap-2 transition-transform duration-150 border active:scale-95 ${modal === "loading"
-              ? "bg-accent/5 border-accent/20 text-accent/70 cursor-not-allowed"
-              : !script.trim()
-                ? "bg-accent/5 border-accent/15 text-accent/25 cursor-default"
-                : "bg-accent/10 border-accent/40 text-accent cursor-pointer shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"
+            ? "bg-accent/5 border-accent/20 text-accent/70 cursor-not-allowed"
+            : !script.trim()
+              ? "bg-accent/5 border-accent/15 text-accent/25 cursor-default"
+              : "bg-accent/10 border-accent/40 text-accent cursor-pointer shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"
             }`}
         >
           {modal === "loading" ? (

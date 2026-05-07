@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Zap, Shield, ChevronDown } from 'lucide-react';
+import { ChevronDown, Zap } from 'lucide-react';
 import { ALGORITHM_CHALLENGES, AlgorithmChallenge } from '../constants/docsData';
 import { SectionLabel } from './SectionLabel';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  BEGINNER:     'var(--docs-cyan)',
+  BEGINNER: 'var(--docs-cyan)',
   INTERMEDIATE: 'var(--docs-purple)',
-  ADVANCED:     'var(--docs-orange)',
+  ADVANCED: 'var(--docs-orange)',
 };
 
 interface AlgorithmChallengesProps {
@@ -36,7 +36,7 @@ const ChallengeCard = ({
       className={`border bg-card/60 backdrop-blur-sm transition-all duration-300 rounded-xl overflow-hidden ${isExpanded ? 'ring-1 ring-accent/20' : ''}`}
       style={{
         borderColor: isExpanded ? `color-mix(in srgb, ${challenge.color} 40%, transparent)` : 'rgba(var(--accent-rgb),0.12)',
-        boxShadow:   isExpanded ? `0 0 20px color-mix(in srgb, ${challenge.color} 13%, transparent)` : 'none',
+        boxShadow: isExpanded ? `0 0 20px color-mix(in srgb, ${challenge.color} 13%, transparent)` : 'none',
       }}
     >
       {/* Header */}
@@ -114,9 +114,9 @@ const ChallengeCard = ({
             onClick={() => onLoadScript(challenge.code)}
             className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] hover:opacity-90 cursor-pointer"
             style={{
-              color:       challenge.color,
+              color: challenge.color,
               borderColor: `color-mix(in srgb, ${challenge.color} 27%, transparent)`,
-              background:  `color-mix(in srgb, ${challenge.color} 5%, transparent)`,
+              background: `color-mix(in srgb, ${challenge.color} 5%, transparent)`,
             }}
           >
             ▶ LOAD_TO_CORE
