@@ -155,3 +155,21 @@ export const CATEGORY_LABELS: Record<ItemCategory, string> = {
 };
 
 export const RARITY_ORDER = { COMMON: 0, RARE: 1, LEGENDARY: 2 } as const;
+
+export const RARITY_STYLES: Record<MarketItem["rarity"], { badge: string; border: string; glow: string }> = {
+  COMMON: {
+    badge: "text-accent/70 bg-accent/10 border-accent/20",
+    border: "border-accent/15 hover:border-accent/40",
+    glow: "hover:shadow-[0_0_18px_rgba(var(--accent-rgb),0.12)]",
+  },
+  RARE: {
+    badge: "text-purple-400 bg-purple-500/10 border-purple-500/30",
+    border: "border-purple-500/20 hover:border-purple-400/60",
+    glow: "hover:shadow-[0_0_18px_rgba(168,85,247,0.18)]",
+  },
+  LEGENDARY: {
+    badge: "text-amber-400 bg-amber-500/10 border-amber-500/30",
+    border: "border-amber-500/20 hover:border-amber-400/60",
+    glow: "hover:shadow-[0_0_22px_rgba(245,158,11,0.22)]",
+  },
+};

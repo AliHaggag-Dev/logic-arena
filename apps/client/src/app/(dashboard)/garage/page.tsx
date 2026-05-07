@@ -7,11 +7,12 @@ import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useAuthState } from "../../../hooks/useAuthState";
 import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
 import { RobotShowroom } from "../black-market/components/RobotShowroom";
-import { MARKET_ITEMS, CATEGORY_LABELS } from "../black-market/constants";
+import { MARKET_ITEMS, CATEGORY_LABELS, RARITY_STYLES } from "../black-market/constants";
 import { MarketItem } from "../black-market/types";
-import { Hexagon, Check, PackageOpen, Target, Loader2, PaintBucket, CheckCircle, AlertTriangle, Zap } from "lucide-react";
+import { Hexagon, PackageOpen, Target, Loader2, PaintBucket, CheckCircle, AlertTriangle, Zap } from "lucide-react";
+import { MOBILE_BREAKPOINT, TOAST_DURATION_MS } from "./constants/robots.constants";
 
-const MOBILE_BREAKPOINT = "(max-width: 768px)";
+const CATEGORY_KEYS = ["chassis", "paint", "tracer"] as const;
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 interface ToastProps {
@@ -44,23 +45,7 @@ function Toast({ message, type }: ToastProps) {
   );
 }
 
-const RARITY_STYLES: Record<MarketItem["rarity"], { badge: string; border: string; glow: string }> = {
-  COMMON: {
-    badge: "text-accent/70 bg-accent/10 border-accent/20",
-    border: "border-accent/15 hover:border-accent/40",
-    glow: "hover:shadow-[0_0_18px_rgba(var(--accent-rgb),0.12)]",
-  },
-  RARE: {
-    badge: "text-purple-400 bg-purple-500/10 border-purple-500/30",
-    border: "border-purple-500/20 hover:border-purple-400/60",
-    glow: "hover:shadow-[0_0_18px_rgba(168,85,247,0.18)]",
-  },
-  LEGENDARY: {
-    badge: "text-amber-400 bg-amber-500/10 border-amber-500/30",
-    border: "border-amber-500/20 hover:border-amber-400/60",
-    glow: "hover:shadow-[0_0_22px_rgba(245,158,11,0.22)]",
-  },
-};
+
 
 export default function GaragePage() {
   const { isGuest } = useAuthState();
@@ -84,7 +69,7 @@ export default function GaragePage() {
   const showToast = useCallback((message: string, type: "success" | "error") => {
     clearAllSafeTimeouts();
     setToast({ message, type });
-    setSafeTimeout(() => setToast(null), 3000);
+    setSafeTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, [clearAllSafeTimeouts, setSafeTimeout]);
 
   // Fetch Loadout
@@ -219,8 +204,9 @@ export default function GaragePage() {
             <div className="w-full lg:w-[55%] flex flex-col gap-4 min-h-0">
               {/* Category Tabs */}
               <div className="flex gap-2 p-1.5 bg-[rgba(var(--accent-rgb),0.02)] backdrop-blur-md rounded-xl border border-accent/20 overflow-x-auto no-scrollbar">
-                {(["chassis", "paint", "tracer"] as const).map((cat) => (
+                {CATEGORY_KEYS.map((cat) => (
                   <button
+                    type="button"
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-xs sm:text-[11px] tracking-widest transition-all whitespace-nowrap ${activeCategory === cat

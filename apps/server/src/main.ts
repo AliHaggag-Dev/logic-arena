@@ -118,7 +118,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const port = process.env.PORT ?? 3001;
-  console.log(`🚀 Logic Arena Server is LIVE on port ${port}`);
+  if (isDev) {
+    console.log(`🚀 Logic Arena Server is LIVE on port ${port}`);
+  }
   await app.listen(port);
 }
 

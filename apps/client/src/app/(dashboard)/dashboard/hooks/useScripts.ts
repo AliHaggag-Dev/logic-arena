@@ -54,7 +54,7 @@ export function useScripts() {
                     // apiClient interceptor already cleared in-memory auth and fired auth:expired.
                     // Just fall back to guest script — no console.error needed here.
                     setScripts([GUEST_SCRIPT]);
-                } else {
+                } else if (process.env.NODE_ENV === 'development') {
                     console.error("Failed to fetch scripts:", axiosError.response?.data?.message ?? axiosError.message);
                 }
             } finally {
@@ -96,7 +96,7 @@ export function useScripts() {
             const errMsg = axiosError.response?.status === 401
                 ? "Unauthorized. Please log in to create scripts."
                 : (axiosError.response?.data?.message ?? "An unexpected error occurred.");
-            console.error("Failed to create script:", errMsg);
+            if (process.env.NODE_ENV === 'development') console.error("Failed to create script:", errMsg);
             setStatus({
                 message: `[ERR] COMPILATION FAILED: ${errMsg}`,
                 type: "error"
@@ -150,7 +150,7 @@ export function useScripts() {
             const errMsg = axiosError.response?.status === 401
                 ? "Unauthorized. Please log in to delete scripts."
                 : (axiosError.response?.data?.message ?? "An unexpected error occurred.");
-            console.error("Failed to delete script:", errMsg);
+            if (process.env.NODE_ENV === 'development') console.error("Failed to delete script:", errMsg);
             // Restore on failure
             if (snapshot) {
                 setScripts((prev) => {

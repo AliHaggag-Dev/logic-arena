@@ -7,11 +7,11 @@ export class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
-    const port   = parseInt(process.env.SMTP_PORT ?? '587', 10);
+    const port = parseInt(process.env.SMTP_PORT ?? '587', 10);
     const secure = port === 465; // true = SSL (465), false = STARTTLS (587)
 
     this.transporter = nodemailer.createTransport({
-      host:   process.env.SMTP_HOST ?? 'smtp.gmail.com',
+      host: process.env.SMTP_HOST ?? 'smtp.gmail.com',
       port,
       secure,
       auth: {
@@ -24,10 +24,9 @@ export class EmailService {
     this.transporter.verify((err) => {
       if (err) {
         this.logger.error(`SMTP connection failed: ${err.message}`);
-        console.error('❌ SMTP verify failed:', err);
+        this.logger.error('❌ SMTP verify failed', err instanceof Error ? err.stack : undefined);
       } else {
         this.logger.log('✅ SMTP transporter ready');
-        console.log('✅ SMTP transporter ready');
       }
     });
   }
@@ -35,7 +34,7 @@ export class EmailService {
   async sendVerificationCode(to: string, code: string): Promise<void> {
     try {
       await this.transporter.sendMail({
-        from:    `"Logic Arena" <${process.env.SMTP_USER}>`,
+        from: `"Logic Arena" <${process.env.SMTP_USER}>`,
         to,
         subject: '[ Logic Arena ] — Email Verification Code',
         html: `
@@ -48,10 +47,8 @@ export class EmailService {
           </div>
         `,
       });
-      console.log(`✅ Verification email sent to ${to}`);
       this.logger.log(`Verification email sent → ${to}`);
     } catch (err: any) {
-      console.error('❌ Verification email failed:', err.message, err);
       this.logger.error(`Failed to send verification email to ${to}: ${err.message}`);
       throw err; // re-throw so AuthService can surface the failure
     }
@@ -60,7 +57,7 @@ export class EmailService {
   async sendResetCode(to: string, code: string): Promise<void> {
     try {
       await this.transporter.sendMail({
-        from:    `"Logic Arena" <${process.env.SMTP_USER}>`,
+        from: `"Logic Arena" <${process.env.SMTP_USER}>`,
         to,
         subject: '[ Logic Arena ] — Password Reset Code',
         html: `
@@ -73,10 +70,8 @@ export class EmailService {
           </div>
         `,
       });
-      console.log(`✅ Reset email sent to ${to}`);
       this.logger.log(`Reset email sent → ${to}`);
     } catch (err: any) {
-      console.error('❌ Reset email failed:', err.message, err);
       this.logger.error(`Failed to send reset email to ${to}: ${err.message}`);
       throw err;
     }

@@ -33,7 +33,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.client.on('connect', () => {
-      console.log('Redis Connected Successfully');
       this.logger.log('✅ Redis connected');
     });
     this.client.on('ready', () => { this.isReady = true; this.logger.log('✅ Redis ready'); });
@@ -42,9 +41,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.client.on('end', () => { this.isReady = false; this.logger.warn('🔌 Redis disconnected'); });
 
     // Non-blocking connect — app boots regardless of Redis state
-    this.client.connect().catch((err: any) => {
-      console.error(`\n❌ [REDIS NETWORK/AUTH ERROR] Exact message: ${err.message}\n`, err);
-      this.logger.error(`Redis initial connect failed (degraded mode): ${err.message}`);
+    this.client.connect().catch((err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Redis initial connect failed (degraded mode): ${message}`);
     });
   }
 

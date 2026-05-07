@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { GameLoop, Robot, GameConfig, GameMode } from '@logic-arena/engine';
 import { SandboxRunner } from '../../common/sandbox.runner';
 import { createRobot, parseAndSetLogic } from './robot-factory';
@@ -5,6 +6,7 @@ import { createGameDependencies, GameDependencies } from './game-dependencies';
 import { NodeType, ActionExpression, ScanStatement } from '@logic-arena/logic-parser';
 
 export class MatchEngine {
+  private readonly logger = new Logger(MatchEngine.name);
   private gameLoop: GameLoop;
   private sandboxRunner: SandboxRunner;
   private deps: GameDependencies;
@@ -147,7 +149,7 @@ export class MatchEngine {
       this.deps.actionExecutor.executeAction(userId, action, {});
     }
 
-    console.log(`[MatchEngine] Manual command for ${userId}: ${cmd}`);
+    this.logger.debug(`Manual command for ${userId}: ${cmd}`);
     return true;
   }
 
