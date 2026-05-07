@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Trophy, Skull, Swords } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { ModalState } from '../types';
@@ -15,9 +15,19 @@ export function LevelModal({ modal, setModal, reward, router }: LevelModalProps)
 
   const isVictory = modal === "victory";
   const isDraw = modal === "draw";
+  const primaryButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    primaryButtonRef.current?.focus();
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setModal("idle");
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [setModal]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" role="dialog" aria-modal="true">
       <div
         className={`rounded-2xl border p-6 sm:p-10 text-center max-w-[420px] w-full font-mono ${isVictory
           ? "bg-bg-primary border-accent/40 shadow-[0_0_60px_rgba(var(--accent-rgb),0.25)]"
@@ -41,6 +51,7 @@ export function LevelModal({ modal, setModal, reward, router }: LevelModalProps)
               <span className="text-accent font-black text-[20px] sm:text-[22px] drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.7)]">+{reward}</span>
             </div>
             <button
+              ref={primaryButtonRef}
               type="button"
               onClick={() => router.push("/campaign")}
               className="w-full h-[44px] sm:py-3 sm:h-auto rounded-lg text-[10px] font-black tracking-[0.25em] bg-accent/10 border border-accent/40 text-accent transition-transform active:scale-95 hover:bg-accent/20 duration-150 uppercase cursor-pointer"
@@ -59,6 +70,7 @@ export function LevelModal({ modal, setModal, reward, router }: LevelModalProps)
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <button
+                ref={primaryButtonRef}
                 type="button"
                 onClick={() => setModal("idle")}
                 className="w-full h-[44px] sm:flex-1 sm:py-3 sm:h-auto rounded-lg text-[10px] font-black tracking-[0.2em] bg-yellow-500/10 border border-yellow-500/30 text-yellow-500/70 transition-transform active:scale-95 hover:bg-yellow-500/20 duration-150 uppercase cursor-pointer"
@@ -85,6 +97,7 @@ export function LevelModal({ modal, setModal, reward, router }: LevelModalProps)
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <button
+                ref={primaryButtonRef}
                 type="button"
                 onClick={() => setModal("idle")}
                 className="w-full h-[44px] sm:flex-1 sm:py-3 sm:h-auto rounded-lg text-[10px] font-black tracking-[0.2em] bg-accent/10 border border-accent/30 text-accent/70 transition-transform active:scale-95 hover:bg-accent/20 duration-150 uppercase cursor-pointer"

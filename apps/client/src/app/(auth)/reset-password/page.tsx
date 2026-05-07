@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
+import { AuthLoadingFallback } from "../components/AuthLoadingFallback";
 
 function ResetPasswordContent() {
   const [code, setCode] = useState("");
@@ -168,7 +169,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<AuthLoadingFallback label="LOADING RESET TERMINAL..." />}>
       <ResetPasswordContent />
     </Suspense>
   );

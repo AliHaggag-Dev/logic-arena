@@ -4,6 +4,7 @@ import React, { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { clearSensitiveBrowserStorage, setAuthSession } from "../../../lib/client-security";
+import { AuthLoadingFallback } from "../components/AuthLoadingFallback";
 
 function CallbackContent() {
   const router = useRouter();
@@ -84,7 +85,7 @@ function CallbackContent() {
 
 export default function AuthCallbackPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<AuthLoadingFallback label="VERIFYING ACCOUNT..." />}>
       <CallbackContent />
     </Suspense>
   );

@@ -42,6 +42,13 @@ export const MarketItemCard = React.memo(function MarketItemCard({
   onPurchase,
 }: MarketItemCardProps) {
   const styles = RARITY_STYLES[item.rarity];
+  const handlePreview = () => onPreview(item);
+  const handlePreviewKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onPreview(item);
+    }
+  };
 
   return (
     <div
@@ -51,8 +58,10 @@ export const MarketItemCard = React.memo(function MarketItemCard({
         ${styles.border} ${styles.glow}
         ${isPreview ? "ring-1 ring-[rgba(var(--accent-rgb),0.6)] shadow-[0_0_24px_rgba(var(--accent-rgb),0.15)]" : ""}
       `}
-      onClick={() => onPreview(item)}
+      onClick={handlePreview}
+      onKeyDown={handlePreviewKeyDown}
       role="button"
+      tabIndex={0}
       aria-label={`Preview ${item.name}`}
     >
       {/* Top scanline accent */}

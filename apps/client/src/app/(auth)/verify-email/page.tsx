@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
+import { AuthLoadingFallback } from "../components/AuthLoadingFallback";
 
 function VerifyEmailContent() {
   const [code, setCode] = useState("");
@@ -18,6 +19,8 @@ function VerifyEmailContent() {
   const email = searchParams.get("email") || "";
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { setSafeTimeout } = useSafeTimeout();
+  const [emailUser, emailDomain] = email.split("@");
+  const maskedEmail = email && emailDomain ? `${emailUser}***@${emailDomain}` : "NO EMAIL PROVIDED";
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +113,7 @@ function VerifyEmailContent() {
                 disabled={isLoading}
               />
               <p className="text-[10px] text-accent/30 tracking-[0.1em] mt-2">
-                CODE SENT TO: {email.split('@')[0]}***@{email.split('@')[1]}
+                CODE SENT TO: {maskedEmail}
               </p>
             </div>
 
@@ -154,7 +157,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<AuthLoadingFallback label="LOADING VERIFICATION TERMINAL..." />}>
       <VerifyEmailContent />
     </Suspense>
   );

@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart } from "lucide-react";
 import NavLink from "../../../../../components/ui/NavLink";
 
@@ -42,16 +43,14 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
 
       {/* ── SYSTEM STATUS (Replaces Logo for more Nav room) ── */}
       <div className="p-[20px_14px_8px] relative z-10 w-full">
-        <div className={`flex items-center gap-2.5 px-3 py-2 rounded-md shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.05)] text-[9px] tracking-[0.2em] font-bold uppercase overflow-hidden border ${
-          username 
-            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-500" 
+        <div className={`flex items-center gap-2.5 px-3 py-2 rounded-md shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.05)] text-[9px] tracking-[0.2em] font-bold uppercase overflow-hidden border ${username
+            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-500"
             : "bg-yellow-500/5 border-yellow-500/20 text-yellow-500/70"
-        }`}>
-          <span className={`w-1.5 h-1.5 shrink-0 rounded-full animate-pulse ${
-            username 
-              ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" 
+          }`}>
+          <span className={`w-1.5 h-1.5 shrink-0 rounded-full animate-pulse ${username
+              ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"
               : "bg-yellow-500 shadow-[0_0_8px_rgba(var(--color-yellow-500),0.6)]"
-          }`} />
+            }`} />
           <span className="truncate">{username ? "CONNECTED" : "GUEST MODE"}</span>
         </div>
       </div>
@@ -77,7 +76,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
         <div className="flex items-center gap-2 mb-2.5 p-[8px_10px] bg-accent/[0.04] rounded-md border border-accent/10 hover:border-accent/30 transition-colors group cursor-default">
           <span className="w-6 h-6 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center text-[10px] text-accent shrink-0 shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)] group-hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.4)] transition-all duration-300 overflow-hidden">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              <Image src={avatarUrl} alt="Avatar" width={24} height={24} className="w-full h-full object-cover" />
             ) : (
               "◉"
             )}

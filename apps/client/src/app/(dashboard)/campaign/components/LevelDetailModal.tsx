@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   X, Lock, ChevronDown, ChevronUp, Zap, Trophy, Cpu, Shield,
@@ -19,15 +19,22 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
   const [hintState, setHintState] = useState<{ levelId?: string; isOpen: boolean }>({
     isOpen: false,
   });
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const hintOpen = hintState.levelId === level?.id && hintState.isOpen;
 
-  // Close on Escape key
+  // Close on Escape key + restore focus
   useEffect(() => {
     if (!level) return;
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    closeButtonRef.current?.focus();
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
+    return () => {
+      document.removeEventListener('keydown', handler);
+      previousFocusRef.current?.focus();
+    };
   }, [level, onClose]);
 
   const handleBackdropClick = useCallback(
@@ -51,7 +58,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={`Campaign level: ${level.title}`}
+      aria-labelledby={`level-title-${level.id}`}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
       onClick={handleBackdropClick}
@@ -82,7 +89,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
             </p>
 
             {/* Title */}
-            <h2 className="text-[20px] font-black tracking-[0.18em] text-accent leading-tight mb-3">
+            <h2 id={`level-title-${level.id}`} className="text-[20px] font-black tracking-[0.18em] text-accent leading-tight mb-3">
               {level.title}
             </h2>
 
@@ -110,6 +117,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
 
           {/* Close button */}
           <button
+            ref={closeButtonRef}
             type="button"
             aria-label="Close level details"
             onClick={onClose}
