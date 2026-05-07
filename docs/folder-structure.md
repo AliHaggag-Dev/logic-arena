@@ -1,71 +1,80 @@
 # Folder Structure
 
-This project follows a modular and layered architecture, separating concerns between the frontend (Next.js), backend (NestJS), and the core Game Engine. The `logic-arena` root contains these main divisions.
+This project follows a strict monorepo architecture managed by `pnpm workspaces`. It enforces a clean separation of concerns between the frontend (Next.js), the backend API (NestJS), and the core physics engine.
 
-```
+```text
 logic-arena/
 ├── apps/
-│   ├── client/ (Next.js Frontend)
-│   │   ├── public/ (Static assets)
+│   ├── client/                  # Next.js 16 Frontend (App Router, PWA)
+│   │   ├── public/              # Static assets, 3D GLB models, sounds
 │   │   ├── src/
-│   │   │   ├── app/ (Next.js App Router)
-│   │   │   │   ├── api/ (API Routes)
-│   │   │   │   ├── (auth)/ (Authentication & Layouts)
-│   │   │   │   ├── (dashboard)/ (Live Match, Script Management, User Dashboard, Leaderboards, Tournaments, Settings, ...)
-│   │   │   │   ├── (public)/ (Privacy Policy, Terms of Service, Contact, ...)
+│   │   │   ├── app/
+│   │   │   │   ├── api/         # Next.js route handlers
+│   │   │   │   ├── (auth)/      # Login, Register, Password Recovery layouts
+│   │   │   │   ├── (dashboard)/ # Main app: Dashboard, Leaderboard, Black Market, Garage, Tournaments, Campaign
+│   │   │   │   ├── (public)/    # Static pages: Docs, Privacy, Terms
+│   │   │   │   ├── arena/       # The 3D Battle Arena & Spectator Views
 │   │   │   │   └── layout.tsx
-│   │   │   ├── components/ (Reusable UI)
-|   |   |   |── context/ (Context providers)
-│   │   │   ├── hooks/ (Custom React hooks)
-│   │   │   ├── lib/ (Utilities, API clients)
-|   |   |   |── providers/ (Providers)
-|   |   |   |── workers/
+│   │   │   ├── components/      # Shared Atomic UI (Buttons, Modals, Navbars)
+│   │   │   ├── context/         # React Context (Auth, Socket)
+│   │   │   ├── hooks/           # Custom hooks (useGameState, useMediaQuery)
+│   │   │   ├── lib/             # API client, utility functions
+│   │   │   └── providers/       # Theme and global state providers
 │   │   └── tailwind.config.ts
 │   │
-│   ├── server/ (NestJS Backend)
+│   ├── server/                  # NestJS 11 Backend
+│   │   ├── prisma/              # PostgreSQL schema & migrations
 │   │   ├── src/
-│   │   │   ├── common/ (Guards, Prisma, Redis, DTOs)
-│   │   │   ├── game/core/
-│   │   │   │   ├── evaluator/ (Logic AST execution, Memory Sync)
-│   │   │   │   └── pathfinder/ (A* navigation grid, string-pulling algorithms)
+│   │   │   ├── common/          # Guards, Interceptors, PrismaService, RedisService
+│   │   │   ├── game/
+│   │   │   │   └── core/        # Logic evaluator & block executors
 │   │   │   ├── modules/
-│   │   │   │   ├── auth/ (Registration, Login, Password, OAuth strategies)
-│   │   │   │   ├── users/ (CQRS: Query and Command services)
-│   │   │   │   ├── tournaments/ (CQRS: Bracket generation, tracking)
-│   │   │   │   ├── robot-scripts/ (Script compiler/storage)
+│   │   │   │   ├── auth/        # JWT Auth, Google/GitHub OAuth, OTP
+│   │   │   │   ├── users/       # Profiles, Black Market, Leaderboard, Combat Stats
+│   │   │   │   ├── tournaments/ # Bracket generation and lifecycle
+│   │   │   │   ├── campaign/    # LeetCode-style level orchestration
+│   │   │   │   ├── scripts/     # CRUD for AliScript payloads
 │   │   │   │   └── matches/
-│   │   │   │       ├── gateway/ (Delta diffing, match loops, socket emitters)
+│   │   │   │       ├── gateway/ # Socket.io orchestration, Spectator mode, Delta diffing
 │   │   │   │       └── match.engine.ts
-│   │   │   ├── app.module.ts
-│   │   │   ├── app.service.ts
-│   │   │   ├── app.controller.ts
-│   │   │   ├── app.controller.spec.ts
 │   │   │   └── main.ts
-│   │   └── prisma/ (Schema)
+│   │   └── Dockerfile
 │   │
 ├── packages/
-│   ├── engine/          (Core Game Engine)
+│   ├── engine/                  # Headless 2D Physics Engine
 │   │   └── src/
-│   │       ├── core/    (Game loop, Robot updater)
-│   │       ├── physics/ (Vectors, collisions)  
-│   │       ├── utils/   (Animation loop polyfill)
-│   │       └── index.ts
-│   └── logic-parser/    (AliScript grammar tokenizer and parser logic)
+│   │       ├── core/            # Robot updater, bounding boxes
+│   │       ├── physics/         # Spatial vectors, collision detection, Raycasting
+│   │       └── pathfinder/      # A* navigation grid
+│   └── logic-parser/            # Custom Compiler
+│       └── src/                 # Tokenizer, AST Parser for AliScript
 │
-├── docs/ (Project documentation)
+├── docs/                        # Project documentation
 │   ├── aliscript-language.md
 │   ├── erd-diagram.md
 │   ├── folder-structure.md
 │   ├── game-rules.md
 │   ├── script-sandboxing.md
 │   └── system-architecture.md
-└── package.json (pnpm Workspaces)
+│
+├── docker-compose.yml           # Local production orchestration
+└── package.json
 ```
 
-## Rationale for Structure:
+## Architectural Rationale
 
-*   **Pnpm Workspaces (`apps/`, `packages/`):** Utilizing strict workspace boundaries guarantees scalable isolated domains natively decoupled optimally securing performance and cross-module resolution correctly natively.
-*   **Next.js Route Groups:** Client navigation natively separates logical UX layouts (`auth`, `public`, `dashboard`) preserving UI integrity cleanly isolated.
-*   **NestJS CQRS Controllers:** The backend logically splits `tournaments` and `users` into Query/Command pipelines natively abstracting raw data interactions purely functionally.
-*   **Decomposed Match Gateway:** The `apps/server/src/modules/matches/gateway/` uniquely separates diff-comparators, win conditions, and telemetry into independent files natively preventing monolithic loops.
-*   **Isolating Game Engine vs Sandbox Execution**: `packages/engine` only computes rigid physics bounds while `apps/server/src/game/core/evaluator/` natively drives the dynamic instruction execution completely independent from global constraints cleanly securing boundaries dynamically.
+### 1. Monorepo Isolation (`apps/` vs `packages/`)
+By extracting the `engine` and `logic-parser` into their own NPM packages within the workspace, we guarantee that the backend evaluator and frontend replay viewer can both depend on the exact same deterministic physics code without circular dependencies.
+
+### 2. Next.js Route Groups
+The `apps/client` heavily utilizes Next.js Route Groups (`(auth)`, `(dashboard)`, `(public)`) to isolate entirely different UX layouts. The `(dashboard)` contains the sidebar and sticky header, while the `arena/` directory sits outside of all layouts to maximize canvas rendering performance.
+
+### 3. NestJS CQRS Pattern
+Inside the backend `modules/`, complex domains like `users` and `tournaments` follow a Command Query Responsibility Segregation (CQRS) pattern. Read operations (e.g., getting a profile or leaderboard) go through a `QueryService` optimized with Redis. Write operations (e.g., buying a Black Market item) go through a `CommandService` using Prisma SQL transactions.
+
+### 4. Decomposed WebSocket Gateway
+The `apps/server/src/modules/matches/gateway/` uniquely separates the massive Socket.io responsibilities into focused domains:
+- `match.state.ts`: Tracks all active sockets, matches, and spectator viewers in memory.
+- `match.loop.ts`: The central 50ms interval loop driving the `engine`.
+- `match.delta-diff.ts`: Compresses state payloads by only broadcasting values that changed since the last tick.
+- `match.persistence.ts`: Flushes completed match telemetry to PostgreSQL.

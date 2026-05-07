@@ -9,7 +9,7 @@
 ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝    ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝
 ```
 
-**v2.3.0 | Program your robot. Outsmart your opponent. Dominate the arena.**
+**v2.9.0 | Program your robot. Outsmart your opponent. Dominate the arena.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-97.5%25-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
@@ -20,7 +20,7 @@
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=flat-square&logo=pwa)](https://logicarena.dev)
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=flat-square&logo=docker)](https://www.docker.com/)
 
-[**Live Demo (v2.3.0)**](https://logicarena.dev) · [**Documentation**](#project-documentation) · [**Report Bug**](https://github.com/Ali-Haggag7/logic-arena/issues)
+[**Live Demo (v2.9.0)**](https://logicarena.dev) · [**Documentation**](#project-documentation) · [**Report Bug**](https://github.com/Ali-Haggag7/logic-arena/issues)
 
 </div>
 
@@ -36,28 +36,35 @@ Unlike traditional games, **you don't play Logic Arena with a keyboard**. You pr
 
 ---
 
-## ✨ Features
+## ✨ Core Features
 
-### 🤖 AliScript v2.2 — Custom Combat Language
-Write robot behavior scripts using Logic Arena's custom language. Supports `AND`/`OR`/`!=`/`<=`/`>=` operators, parenthesis grouping, `BURST_FIRE` 3-shot spreads, and a full operator precedence tower. Strict server-side execution sandboxing limits script size, logic timeouts, whitelisted commands, and applies execution rate limiting.
+### 🤖 AliScript v2.5 — Custom Combat Language
+Write robot behavior scripts using Logic Arena's custom language. Now supports **Dictionaries, State Machines, Dot Notation**, advanced sensory arrays, and **Swarm Intelligence** via a secure broadcast protocol. Strict server-side execution sandboxing limits script size, logic timeouts (TLE quotas), whitelisted commands, and applies execution rate limiting.
 
 ### ⚡ Real-Time Physics & FOV System
-Features vector-based physics, collision detection, and projectile simulations running at 20 ticks/second. Robots possess an FOV (Field of View) and SCAN system tracking 15-degree rotation behavior. Tactical choices consume points through a new robust Energy & STASIS system.
+Features vector-based physics, collision detection, and projectile simulations running at 20 ticks/second. Robots possess an FOV (Field of View) and SCAN system tracking 15-degree rotation behavior. Tactical choices consume points through a robust Energy & STASIS system.
 
-### 🎮 3D Arena Renderer
-The battle arena is rendered in **Three.js / React Three Fiber** — a full 3D environment with dynamic lighting, obstacle geometry, robot meshes, and particle effects synchronized via **Socket.io**.
+### 🎮 3D Arena Renderer & Garage
+The battle arena is rendered in **Three.js / React Three Fiber** — a full 3D environment with dynamic lighting, obstacle geometry, AAA robot meshes, and particle effects synchronized via **Socket.io**. Unlock and equip unique custom robot chassis models in the **Garage**.
 
-### 🎨 Multi-Theme System & Mobile-First Interface
-Toggle between Cyberpunk, Light, and Desert themes. A fully mobile-first dashboard experience uses `MobileNav` and a smart `MobileHeader` for app-like feeling, completely customizable via a 5-section Settings page.
+### 💼 Economy & Black Market
+Earn progression through battles and campaigns, and spend your currency in the **Black Market** to unlock custom paints, premium tracer rounds, and elite chassis models.
 
-### 📱 PWA Support & Production Scalability
-Fully Progressive Web App support ensures it's installable locally with offline pages, safe-area mapping, and theme syncing. Backed by Redis presence and a Dockerized backend infrastructure for production.
+### 🏆 Global Leaderboard & Spectator Mode
+Watch top-tier players clash in real time. The **Spectator Mode** features a zero-payload overhead architecture allowing users to securely "watch" live matches directly from the Global Leaderboard, complete with live viewer counts.
 
-### 🎬 Replay Systems & Tournament Brackets
-Post-match 2D canvas replay with playback control. Run 4/8-player tournaments with automatic bracket generation and live SVG updates.
+### 🌍 Campaign & LeetCode-Style Challenges
+Progress through a multi-stage **Algorithmic Warfare Campaign** where each level tests specific logic paradigms, or dynamically initiate challenges against active opponents globally across the dashboard.
 
-### 🏆 Global Challenges & Campaign Mode
-Progress through a 10-level solo Campaign Mode or dynamically initiate challenges against active opponents globally across the dashboard.
+### 🛡️ Enterprise-Grade Security
+Built with a 4-Layer security architecture:
+1. **Perimeter:** HttpOnly Cookies & rate limiting.
+2. **Database:** ORM payload protection and sanitization.
+3. **Execution:** AliScript AST Sandbox hardening & memory quotas.
+4. **Frontend:** React XSS DOM protection.
+
+### 📱 PWA Support & Multi-Theme System
+Toggle between Cyberpunk, Light, and Obsidian Ember themes. Fully Progressive Web App support ensures it's installable locally with offline pages, safe-area mapping, and a frictionless mobile-first dashboard experience.
 
 ---
 
@@ -78,33 +85,32 @@ logic-arena/
 ### Data Flow
 
 ```text
-[Player writes AliScript v2.2] 
+[Player writes AliScript v2.5] 
         ↓
 [Client sends script via request payload / Socket.io]
         ↓
-[Server parses & evaluates AST securely]
+[Server parses & evaluates AST securely in Sandbox]
         ↓
 [Game Engine: physics tick every 50ms (20 ticks/sec)]
         ↓
-[State broadcast to all clients]
+[State delta broadcast to Match Room + Spectators]
         ↓
 [React Three Fiber renders the frame]
         ↓
-[Snapshot saved to database every 500ms]
+[Snapshot saved to database / Redis every tick]
 ```
 
 ### Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 16, React Three Fiber, TypeScript |
-| Backend | NestJS 11, Socket.io, JWT Auth |
+| Frontend | Next.js 16, React Three Fiber, Framer Motion, TailwindCSS |
+| Backend | NestJS 11, Socket.io, JWT Auth, Cloudinary (Avatars) |
 | Production / Scaling | Docker + Nginx, Redis (Upstash) for presence + rate limiting |
-| Packages / Engine | Custom typescript engine, logic-parser |
+| Packages / Engine | Custom typescript physics engine, AST logic-parser |
 | Database | PostgreSQL + Prisma ORM |
-| PWA Integration | Service Worker |
+| PWA Integration | Service Worker, webmanifest |
 | Monorepo | pnpm workspaces |
-| Styling | Multi-theme system, TailwindCSS |
 
 ---
 
@@ -129,7 +135,7 @@ pnpm install
 
 # Set up environment variables
 cp apps/server/.env.example apps/server/.env
-# Fill in DATABASE_URL, DIRECT_URL, JWT_SECRET, REDIS_URL
+# Fill in DATABASE_URL, DIRECT_URL, JWT_SECRET, REDIS_URL, CLOUDINARY keys
 ```
 
 ### Database & Redis Setup
@@ -155,34 +161,35 @@ Open [http://localhost:3000](http://localhost:3000) — register an account and 
 
 ## 🎮 How to Play
 
-1. **Register** an account and log in
-2. Go to **BATTLE_LOBBY** and join or create a match
-3. Open the **Script Console** inside the arena
+1. **Register** an account and log in.
+2. Go to **Lobby** and challenge an opponent or join the **Campaign**.
+3. Open the **Script Console** inside the arena.
 4. Write your AliScript strategy:
 
 ```text
-IF distance < 400
+IF GET_DISTANCE(ENEMY) < 400
   FIRE
 END
 MOVE_FAST
 ```
 
-5. Hit **EXECUTE** — your robot follows your logic in real-time
-6. After the match, review your **Match Replay** to learn from every frame
+5. Hit **EXECUTE** — your robot follows your logic in real-time.
+6. Check the **Leaderboard** to track your global ranking and combat analytics.
 
 ---
 
-## 📜 AliScript v2.2 Reference
+## 📜 AliScript v2.5 Reference
 
 | Category | Commands / Operators |
 |----------|-------------|
 | **Movement** | `MOVE`, `MOVE_FAST`, `BACKUP`, `STOP`, `PATHFIND` |
 | **Actions** | `FIRE`, `BURST_FIRE`, `SCAN`, `WAIT` |
-| **Variables/State** | `SET` |
+| **Variables/Data** | `SET`, Dictionaries (`state.mode = "attack"`), State Machines |
 | **Control Flow** | `IF` / `ELSE` / `END`, `WHILE` / `DO` / `END` |
 | **Logic/Operators** | `AND`, `OR`, `NOT`, `!=`, `<=`, `>=`, parentheses grouping |
+| **Sensing** | `GET_DISTANCE()`, `GET_HEALTH()`, `GET_ENERGY()` |
 | **Functions** | `FUNCTION`, `CALL` |
-| **Booleans** | `TRUE`, `FALSE` |
+| **Swarm/Comms** | `BROADCAST`, `RECEIVE` |
 
 ---
 
@@ -190,39 +197,37 @@ MOVE_FAST
 
 | Document | Description |
 |----------|-------------|
-| [System Architecture](./docs/system-architecture.md) | Data flow, components, security model |
-| [Script Sandboxing](./docs/script-sandboxing.md) | Server-side script isolation approaches |
-| [ERD Diagram](./docs/erd-diagram.md) | Full database schema |
-| [Game Rules](./docs/game-rules.md) | Physics, combat, and scoring rules |
-| [Folder Structure](./docs/folder-structure.md) | Monorepo layout and conventions |
+| [System Architecture](./docs/system-architecture.md) | Data flow, backend services, security model |
+| [Script Sandboxing](./docs/script-sandboxing.md) | Server-side AST script isolation & TLE quotas |
+| [ERD Diagram](./docs/erd-diagram.md) | Full PostgreSQL database schema |
+| [Game Rules](./docs/game-rules.md) | Physics, combat, Energy system, and scoring rules |
+| [Folder Structure](./docs/folder-structure.md) | Monorepo layout and architectural conventions |
+| [AliScript Language](./docs/aliscript-language.md) | Complete language syntax and reference guide |
+| [Rotation System Guide](./docs/rotation-system-guide.md) | Deep dive into robot FOV and scanner mechanics |
 
 ---
 
-## 🗺️ Roadmap
+## 🗺️ Roadmap Progress
 
-- [x] Custom AliScript language engine
+- [x] Custom AliScript language engine (v2.5)
 - [x] Real-time multiplayer with Socket.io
 - [x] 3D arena renderer (Three.js / R3F)
-- [x] JWT authentication system
-- [x] Match history & player profiles
-- [x] Match replay system
+- [x] OAuth + JWT authentication system
+- [x] Match history, Radar charts & Combat Analytics
+- [x] Match replay system (2D Canvas)
 - [x] Tournament bracket system
-- [x] Interactive AliScript documentation
-- [x] AliScript WHILE loops & variables (done in v1.8.0)
-- [x] FOV system (done)
-- [x] Training Mode (done in v1.8.0)
-- [x] Racing Mode (done in v1.8.0)
-- [x] Docker + Redis for production (done in v2.0.0)
-- [x] Multi-theme system
-- [x] PWA support
-- [x] Mobile-first dashboard
-- [x] Campaign Mode
-- [x] Script sandboxing
+- [x] Dictionaries & State Machines
+- [x] Swarm Intelligence (Broadcast protocol)
+- [x] Black Market & Economy System
+- [x] Robot Garage (Custom AAA 3D Models)
+- [x] Docker + Redis for production scale
+- [x] Live Spectator Mode & Viewer counts
+- [x] PWA support & Mobile-first dashboard
+- [x] LeetCode-style Campaign Mode
+- [x] 4-Layer Architecture Security Hardening
 - [ ] Fog of War
-- [ ] Energy System UI
 - [ ] University competition admin panel
 - [ ] AliScript IDE with syntax highlighting
-- [ ] Spectator mode
 
 ---
 <div align="center">

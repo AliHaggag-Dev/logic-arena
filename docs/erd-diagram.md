@@ -1,138 +1,105 @@
-# Entity Relationship Diagram (ERD) (v2.2.0)
+# Entity Relationship Diagram (ERD)
 
-## Entities:
-
-### User
-*   `id` (PK, String, UUID)
-*   `email` (String, Unique)
-*   `username` (String, Unique)
-*   `passwordHash` (String, Nullable)
-*   `googleId` (String, Unique, Nullable)
-*   `githubId` (String, Unique, Nullable)
-*   `avatarUrl` (String, Nullable)
-*   `provider` (String, Nullable) — 'local', 'google', 'github'
-*   `isVerified` (Boolean)
-*   `verifyCode` / `verifyExpiry` (String / DateTime, Nullable)
-*   `resetCode` / `resetExpiry` (String / DateTime, Nullable)
-*   `rank` (Integer)
-*   `currentLevel` (Integer)
-*   `selectedRobotId` (String)
-*   `selectedColor` (String)
-*   `createdAt` (Timestamp)
-
-### RobotScript
-*   `id` (PK, String, UUID)
-*   `title` (String)
-*   `content` (Text)
-*   `userId` (FK to User.id)
-*   `version` (Integer)
-*   `createdAt` (Timestamp)
-
-### Match
-*   `id` (PK, String, UUID)
-*   `type` (String)
-*   `status` (String) — 'pending', 'in_progress', 'completed'
-*   `winnerId` (FK to User.id, Nullable)
-*   `duration` (Integer)
-*   `replayData` (JSON, Nullable)
-*   `startedAt` (Timestamp, Nullable)
-*   `endedAt` (Timestamp, Nullable)
-*   `createdAt` (Timestamp)
-
-### MatchParticipant
-*   `id` (PK, String, UUID)
-*   `matchId` (FK to Match.id)
-*   `userId` (FK to User.id)
-*   `robotScriptId` (FK to RobotScript.id)
-*   `score` (Integer)
-*   `placement` (Integer, Nullable)
-*   `createdAt` (Timestamp)
-
-### Tournament
-*   `id` (PK, String, UUID)
-*   `name` (String)
-*   `status` (String) — 'WAITING', 'IN_PROGRESS', 'COMPLETED'
-*   `creatorId` (FK to User.id)
-*   `winnerId` (String, Nullable)
-*   `createdAt` (Timestamp)
-
-### TournamentMatch
-*   `id` (PK, String, UUID)
-*   `tournamentId` (FK to Tournament.id)
-*   `round` (Integer)
-*   `matchIndex` (Integer)
-*   `player1Id` (String, Nullable)
-*   `player2Id` (String, Nullable)
-*   `winnerId` (String, Nullable)
-*   `status` (String) — 'PENDING', 'IN_PROGRESS', 'COMPLETED'
-*   `createdAt` (Timestamp)
-
-## Relationships:
-
-*   **User -- RobotScript:** 1-to-Many
-*   **User -- Match (Winner):** 1-to-Many
-*   **User -- MatchParticipant:** 1-to-Many
-*   **Match -- MatchParticipant:** 1-to-Many
-*   **MatchParticipant -- RobotScript:** 1-to-1 association mapped internally 
-*   **User -- Tournament (Creator):** 1-to-Many
-*   **Tournament -- TournamentMatch:** 1-to-Many
-
-## Diagram:
+This document maps the entire PostgreSQL schema utilized by the Logic Arena backend via Prisma ORM.
 
 ```mermaid
 erDiagram
-    User ||--o{ RobotScript : creates
-    User ||--o{ Match : wins
-    User ||--o{ MatchParticipant : participates
-    Match ||--o{ MatchParticipant : has
-    RobotScript ||--o{ MatchParticipant : runs
-    User ||--o{ Tournament : organizes
-    Tournament ||--o{ TournamentMatch : schedules
-
-    User {
+    USER ||--o{ ROBOT_SCRIPT : "writes"
+    USER ||--o{ MATCH_PARTICIPANT : "plays in"
+    USER ||--o{ MATCH : "wins"
+    USER ||--o{ TOURNAMENT : "creates/participates"
+    
+    MATCH ||--o{ MATCH_PARTICIPANT : "has"
+    ROBOT_SCRIPT ||--o{ MATCH_PARTICIPANT : "executes in"
+    
+    TOURNAMENT ||--o{ TOURNAMENT_MATCH : "organizes"
+    
+    USER {
         String id PK
-        String email UK
-        String username UK
-        String provider
+        String email "UNIQUE"
+        String username "UNIQUE"
+        String passwordHash
+        String googleId "UNIQUE"
+        String githubId "UNIQUE"
+        String avatarUrl
+        String provider "local | google | github"
+        Boolean isVerified
         Int rank
-        Int currentLevel
+        Json combatStats "{efficiency, aggression, defense, precision, speed}"
+        Int currentLevel "Legacy Campaign"
+        String[] completedCampaignLevels
+        String selectedRobotId "Legacy Chassis"
+        String selectedColor
+        Json arenaPreferences "{defaultRobot, soundFx, music, graphicsQuality}"
+        Json notificationSettings "{challengeReqs, tournamentAlerts}"
+        Int points "Black Market Currency"
+        String[] unlockedItems
+        String equippedChassis
+        String equippedPaint
+        String equippedTracer
+        DateTime createdAt
     }
 
-    RobotScript {
+    ROBOT_SCRIPT {
         String id PK
-        String userId FK
         String title
-        String content
+        String content "Raw AliScript"
+        String userId FK
         Int version
+        DateTime createdAt
     }
 
-    Match {
+    MATCH {
         String id PK
-        String status
-        String type
-        String winnerId FK
-        Json replayData
+        String type "1v1 | BR | RACING | CAMPAIGN"
+        String status "pending | in_progress | completed"
+        String winnerId FK "Nullable"
+        Int duration "Seconds"
+        Json replayData "Compressed tick history"
+        DateTime startedAt
+        DateTime endedAt
+        DateTime createdAt
     }
 
-    MatchParticipant {
-        String matchId PK,FK
-        String userId PK,FK
+    MATCH_PARTICIPANT {
+        String id PK
+        String matchId FK
+        String userId FK
         String robotScriptId FK
         Int score
+        Int placement "1st, 2nd, etc."
+        DateTime createdAt
     }
 
-    Tournament {
+    TOURNAMENT {
         String id PK
         String name
-        String status
+        String status "WAITING | IN_PROGRESS | COMPLETED"
         String creatorId FK
+        String winnerId "Nullable"
+        DateTime createdAt
     }
 
-    TournamentMatch {
+    TOURNAMENT_MATCH {
         String id PK
         String tournamentId FK
-        Int round
-        String player1Id
-        String player2Id
+        Int round "1=Quarter, 2=Semi, 3=Final"
+        Int matchIndex "Bracket position"
+        String player1Id "Nullable"
+        String player2Id "Nullable"
+        String winnerId "Nullable"
+        String status "PENDING | IN_PROGRESS | COMPLETED"
+        DateTime createdAt
     }
 ```
+
+## Schema Highlights
+
+### Player Identity & Black Market
+The `USER` model contains extensive metadata, including Cloudinary avatar URLs, OAuth IDs, and JSON blocks for `combatStats`, `arenaPreferences`, and `notificationSettings`. It natively handles Black Market progression (`points`, `unlockedItems`, `equippedChassis`).
+
+### Match History & Telemetry
+Every arena encounter is tracked via the `MATCH` and `MATCH_PARTICIPANT` junction table. Scripts executed during a match are hard-linked (`robotScriptId`) so players can analyze exactly which code payload resulted in a win or loss. Telemetry is saved to `replayData` for the post-game 2D canvas viewer.
+
+### Tournaments
+The `TOURNAMENT` and `TOURNAMENT_MATCH` tables support dynamic, n-player recursive bracket generation, mapping the progression of players through quarter-finals to the championship match.
