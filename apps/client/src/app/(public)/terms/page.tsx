@@ -139,7 +139,8 @@ export default function TermsPage() {
           </PublicBody>
           {[
             "Write, test, and submit AliScript programs to control virtual robots in competitive and campaign modes.",
-            "Participate in ranked and unranked matches against other users.",
+            "Participate in ranked matches, Campaigns, or Tournaments against other users.",
+            "Watch live matches via Spectator Mode and interact with the Black Market economy.",
             "Access and read platform documentation, patch notes, and community resources.",
             "Share match replays and your AliScript programs with other users for educational or community purposes.",
             "Report bugs and submit feature requests through official channels.",
@@ -199,8 +200,9 @@ export default function TermsPage() {
             The Arena is built on fair competition and mutual respect. The following conduct is strictly prohibited and will result in disciplinary action up to and including permanent account termination:
           </PublicBody>
           {[
-            ["Sandbox Exploitation", "Attempting to circumvent, escape, or otherwise abuse the AliScript execution sandbox to affect the host server, other users' sessions, or the match engine outside intended game mechanics."],
-            ["Platform Sabotage", "Submitting code intentionally designed to cause server crashes, memory exhaustion, or degraded performance for other users."],
+            ["Sandbox & Quota Exploitation", "Attempting to circumvent the AliScript execution sandbox or maliciously evade Time Limit Exceeded (TLE) quotas to degrade server performance."],
+            ["Economy Manipulation", "Exploiting bugs to generate infinite Black Market points, duplicate items, or manipulate Garage cosmetic loadouts."],
+            ["Platform Sabotage", "Submitting code intentionally designed to cause server crashes or memory exhaustion."],
             ["Vulnerability Exploitation", "Exploiting bugs, security vulnerabilities, or unintended mechanics for competitive advantage without first reporting them through our responsible disclosure process."],
             ["Harassment & Toxicity", "Engaging in harassment, hate speech, threats, or any abusive behaviour toward other users in any platform communication channel."],
             ["Multi-Accounting", "Creating or using multiple accounts to exploit matchmaking, manipulate rankings, or circumvent suspensions."],

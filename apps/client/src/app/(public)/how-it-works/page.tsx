@@ -25,7 +25,7 @@ const SECTIONS: PublicSection[] = [
 const ALISCRIPT_FEATURES = [
   { icon: <Code2 size={15} />, label: "Imperative Syntax", desc: "Familiar C-style control flow: if / else / while / for — zero learning curve if you know any language." },
   { icon: <Zap size={15} />, label: "Robot API Built-In", desc: "robot.move(), robot.attack(), robot.scan() — native language primitives, not a library." },
-  { icon: <RefreshCw size={15} />, label: "Deterministic Execution", desc: "Runs inside the engine at 60 ticks/second with a fixed instruction quota ensuring hardware-independent outcomes." },
+  { icon: <RefreshCw size={15} />, label: "Deterministic Execution", desc: "Runs inside the engine at 20 ticks/second (50ms) with a fixed instruction quota ensuring hardware-independent outcomes." },
   { icon: <Shield size={15} />, label: "Sandboxed & Safe", desc: "No filesystem or network access. Pure battle logic — no side-channel attacks, no infinite loops escaping the quota." },
   { icon: <Layers size={15} />, label: "Version History", desc: "Every script submission is versioned. Roll back to any prior version from your Garage at any time." },
   { icon: <Trophy size={15} />, label: "Instant Replay", desc: "Every match is recorded and replayable frame-by-frame in the 3D Arena viewer, complete with event annotations." },
@@ -34,7 +34,7 @@ const ALISCRIPT_FEATURES = [
 const ENGINE_FACTS = [
   ["Deterministic Bytecode", "AliScript programs are compiled to a deterministic bytecode that produces identical outcomes regardless of server hardware or load."],
   ["Instruction Quota System", "Each robot is allocated a fixed ops budget per tick. Scripts that exceed the budget receive a TLE (Time Limit Exceeded) result — not an unfair hardware advantage."],
-  ["WebSocket Real-Time Sync", "Live matches stream state deltas over WSS to all connected clients at 60 FPS. The 3D renderer interpolates intermediate frames for smooth visuals."],
+  ["WebSocket Real-Time Sync", "Live matches stream compressed state deltas over WSS to all connected clients and spectators at 20 ticks/sec. The 3D renderer smoothly interpolates intermediate frames for 60+ FPS visuals."],
   ["Replay Ledger", "Every match outcome is committed to an append-only ledger on the server. Replays are lossless — they re-execute the original bytecode against the recorded input, not a saved video."],
 ];
 
@@ -61,8 +61,8 @@ export default function HowItWorksPage() {
       number: "03",
       title: "Enter the Arena",
       icon: <Swords size={16} />,
-      body: "Queue for a ranked or unranked match. The matchmaking engine pairs you against an opponent of comparable ELO rating. Once both players are confirmed, the battle engine executes your scripts deterministically on the server — and the result streams live to the 3D Arena viewer in your browser.",
-      detail: "Matches are fully observable in real-time. Every robot action, health delta, and AI decision is rendered faithfully in the 3D viewer. Spectator mode is always on — any player can watch any live match, and your friends can spectate your ranked games directly via a share link.",
+      body: "Queue for a ranked match, challenge a friend in the Lobby, or tackle algorithmic boss fights in the Campaign. The matchmaking engine pairs you fairly. Once confirmed, the battle engine executes your scripts deterministically on the server — and the result streams live to the 3D Arena viewer in your browser.",
+      detail: "Matches are fully observable in real-time. Every robot action, health delta, and AI decision is rendered faithfully in the 3D viewer. Spectator Mode is always on — anyone can watch top players battle live directly from the Global Leaderboard.",
     },
     {
       id: "climb-the-ranks",
@@ -70,7 +70,7 @@ export default function HowItWorksPage() {
       title: "Climb the Ranks",
       icon: <Crown size={16} />,
       body: "Wins earn ELO rating points; losses reduce them. The ELO delta per match is determined by the skill gap between you and your opponent — defeating a higher-ranked player earns significantly more. Study your match replays to identify strategic weaknesses, iterate your script, and ascend the global leaderboard.",
-      detail: "The leaderboard is global, real-time, and permanent. Seasonal resets are announced 30 days in advance. Top performers from each season are preserved in the Hall of Champions — a permanent historical record of Logic Arena's elite.",
+      detail: "The leaderboard is global, real-time, and backed by Redis for instant updates. Earn points through victories to unlock premium AAA chassis models, custom tracer colors, and exclusive paints in the Black Market.",
     },
   ];
 
@@ -130,7 +130,7 @@ export default function HowItWorksPage() {
       <PublicSectionCard id="aliscript-language" index={5} title="The AliScript Language" icon={<BookOpen size={16} />}>
         <div className="flex flex-col gap-6">
           <PublicBody>
-            AliScript is a purpose-built combat scripting language designed from the ground up for the Logic Arena engine. It executes inside each robot&apos;s sandboxed runtime at 60 ticks per second, with a deterministic instruction quota that guarantees fair outcomes on any server hardware.
+            AliScript is a purpose-built combat scripting language designed from the ground up for the Logic Arena engine. It executes inside each robot&apos;s sandboxed runtime at 20 ticks per second, with a deterministic Time Limit Exceeded (TLE) instruction quota that guarantees fair outcomes on any server hardware.
           </PublicBody>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {ALISCRIPT_FEATURES.map(f => (

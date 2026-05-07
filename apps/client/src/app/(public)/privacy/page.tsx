@@ -74,10 +74,10 @@ export default function PrivacyPage() {
             style={{ border: "1px solid rgba(var(--accent-rgb), 0.12)" }}
           >
             <PublicDefinition term="Account Data">
-              Your username, email address, and — when you authenticate via Google or GitHub — your public OAuth profile name and avatar URL. We do not collect passwords when you use OAuth. If you register with an email and password directly, your password is stored as a one-way bcrypt hash and is never readable by our team.
+              Your username, email address, custom uploaded avatars (processed securely via Cloudinary), and — when you authenticate via Google or GitHub — your public OAuth profile name. We do not collect passwords when you use OAuth. If you register with an email and password directly, your password is stored as a one-way bcrypt hash and is never readable by our team.
             </PublicDefinition>
             <PublicDefinition term="Platform Data">
-              Match results, ELO rating history, AliScript program versions you submit, campaign progress, cosmetic selections, and session metadata (timestamps, match durations). This data is the engine of Logic Arena — it powers rankings, matchmaking, and replay systems.
+              Match results, ELO rating history, AliScript program versions you submit, campaign progress, Black Market points, Garage cosmetic selections, and session metadata. This data is the engine of Logic Arena — it powers rankings, matchmaking, and replay systems.
             </PublicDefinition>
             <PublicDefinition term="Usage Analytics">
               Aggregate, anonymised telemetry about feature engagement (e.g., which editor tools are used most). No individual user is identifiable in this data.
