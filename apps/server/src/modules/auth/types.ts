@@ -12,6 +12,9 @@ export const AUTH_COOKIE_MAX_AGE_SECONDS = 3_600;
 export interface JwtPayload {
   sub: string;
   username: string;
+  sessionVersion?: number;
   iat?: number;
   exp?: number;
 }
+
+export const sessionVersionKey = (userId: string) => `auth:session-version:${userId}`;

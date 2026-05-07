@@ -6,6 +6,9 @@ import { Prisma } from '@prisma/client';
 import { RedisService } from '../../../common/redis.service';
 
 const LEADERBOARD_CACHE_KEY = 'leaderboard:snapshot';
+const LEADERBOARD_ZSET_KEY = 'leaderboard:rank';
+const replayKey = (matchId: string) => `replay:${matchId}`;
+const REPLAY_TTL = 3_600;
 
 // Maximum reference values used to normalize each raw metric to 0-100
 const MAX_DAMAGE_PER_MATCH = 200;  // theoretical max damage a robot deals
@@ -188,13 +191,25 @@ export async function persistMatchResults(
   }
 
   if (winner && winner.id !== 'bot-2') {
-    await prisma.user.update({
+    const updatedWinner = await prisma.user.update({
       where: { id: winner.id },
       data: { rank: { increment: 10 } },
+      select: { id: true, rank: true },
     });
+
+    if (redis?.healthy) {
+      await redis.getClient().zadd(LEADERBOARD_ZSET_KEY, String(updatedWinner.rank), updatedWinner.id);
+    }
   }
 
   if (redis) {
     await redis.del(LEADERBOARD_CACHE_KEY, ...playerIds.map((id) => profileKey(id)));
+    await redis.set(replayKey(matchId), {
+      id: createdMatch.id,
+      replayData: snapshots,
+      winnerId: createdMatch.winnerId,
+      duration: createdMatch.duration,
+      createdAt: createdMatch.createdAt,
+    }, REPLAY_TTL);
   }
 }

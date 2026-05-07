@@ -33,7 +33,8 @@ import { AuthRegistrationService } from './auth-registration.service';
 import { AuthLoginService } from './auth-login.service';
 import { AuthPasswordService } from './auth-password.service';
 import { AuthOAuthService } from './auth-oauth.service';
-import { AUTH_COOKIE_NAME, JwtPayload } from './types';
+import { RedisService } from '../../common/redis.service';
+import { AUTH_COOKIE_NAME, AUTH_COOKIE_MAX_AGE_SECONDS, JwtPayload, sessionVersionKey } from './types';
 
 /**
  * Auth endpoints are protected by a strict per-IP rate limit:
@@ -47,7 +48,8 @@ export class AuthController {
     private readonly authLoginService: AuthLoginService,
     private readonly authPasswordService: AuthPasswordService,
     private readonly authOAuthService: AuthOAuthService,
-  ) {}
+    private readonly redis: RedisService,
+  ) { }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -77,7 +79,15 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @SkipThrottle()
-  logout(@Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const token = req.cookies?.[AUTH_COOKIE_NAME] as string | undefined;
+    const secret = process.env.JWT_SECRET;
+    if (token && secret) {
+      try {
+        const payload = jwt.verify(token, secret) as JwtPayload;
+        await this.redis.incr(sessionVersionKey(payload.sub), AUTH_COOKIE_MAX_AGE_SECONDS);
+      } catch { /* ignore invalid/expired token during logout */ }
+    }
     res.clearCookie(AUTH_COOKIE_NAME, { path: '/' });
     return { message: 'Logged out' };
   }
@@ -89,7 +99,7 @@ export class AuthController {
   @Get('me')
   @HttpCode(HttpStatus.OK)
   @SkipThrottle()
-  me(@Req() req: Request) {
+  async me(@Req() req: Request) {
     const token = req.cookies?.[AUTH_COOKIE_NAME] as string | undefined;
     if (!token) throw new UnauthorizedException('No session');
 
@@ -98,6 +108,10 @@ export class AuthController {
 
     try {
       const payload = jwt.verify(token, secret) as JwtPayload;
+      const currentSessionVersion = await this.redis.get<number>(sessionVersionKey(payload.sub));
+      if ((currentSessionVersion ?? 0) !== (payload.sessionVersion ?? 0)) {
+        throw new UnauthorizedException('Session expired');
+      }
       return { userId: payload.sub, username: payload.username };
     } catch {
       throw new UnauthorizedException('Session expired');

@@ -5,6 +5,7 @@ import { PrismaService } from '../../common/prisma.service';
 import { RedisService } from '../../common/redis.service';
 import { CloudinaryService } from '../../common/cloudinary.service';
 import { ALLOWED_ROBOT_IDS, COLOR_REGEX, profileKey, loadoutKey, preferencesKey, blackMarketKey, combatLoadoutKey, BCRYPT_ROUNDS, PRISMA_UNIQUE_VIOLATION, ArenaPreferences, NotificationSettings } from './types';
+import { AUTH_COOKIE_MAX_AGE_SECONDS, sessionVersionKey } from '../auth/types';
 import { BLACK_MARKET_ITEMS, DEFAULT_UNLOCKED_ITEMS, ItemCategory } from './black-market.constants';
 
 @Injectable()
@@ -76,6 +77,7 @@ export class UsersCommandService {
       where: { id: userId },
       data: { passwordHash: newHash },
     });
+    await this.redis.incr(sessionVersionKey(userId), AUTH_COOKIE_MAX_AGE_SECONDS);
   }
 
   async updateArenaPreferences(

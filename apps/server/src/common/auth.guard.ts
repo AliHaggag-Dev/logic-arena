@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { AUTH_COOKIE_NAME, JwtPayload } from '../modules/auth/types';
+import { RedisService } from './redis.service';
+import { AUTH_COOKIE_NAME, JwtPayload, sessionVersionKey } from '../modules/auth/types';
 
 /**
  * HTTP guard that authenticates requests via:
@@ -18,7 +19,9 @@ import { AUTH_COOKIE_NAME, JwtPayload } from '../modules/auth/types';
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  constructor(private readonly redis: RedisService) { }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
 
     const token = this.extractToken(request);
@@ -33,6 +36,10 @@ export class AuthGuard implements CanActivate {
 
     try {
       const decoded = jwt.verify(token, secret) as JwtPayload;
+      const currentSessionVersion = await this.redis.get<number>(sessionVersionKey(decoded.sub));
+      if ((currentSessionVersion ?? 0) !== (decoded.sessionVersion ?? 0)) {
+        throw new UnauthorizedException('Session expired or invalid');
+      }
       request.user = decoded;
       return true;
     } catch {

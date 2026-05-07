@@ -4,24 +4,30 @@ import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
 import { PrismaService } from '../../common/prisma.service';
 import { EmailService } from '../../common/email.service';
+import { RedisService } from '../../common/redis.service';
 import { BCRYPT_ROUNDS, PRISMA_UNIQUE_VIOLATION } from './types';
+
+const AUTH_CODE_TTL_SECONDS = 15 * 60;
+const verifyCodeKey = (email: string) => `auth:verify:${email.toLowerCase()}`;
 
 @Injectable()
 export class AuthRegistrationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
-  ) {}
+    private readonly redis: RedisService,
+  ) { }
 
   async register(email: string, username: string, password: string) {
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const verifyCode = randomInt(100000, 999999).toString();
-    const verifyExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
     try {
       const user = await this.prisma.user.create({
-        data: { email, username, passwordHash, isVerified: false, verifyCode, verifyExpiry },
+        data: { email, username, passwordHash, isVerified: false },
       });
+
+      await this.redis.set(verifyCodeKey(email), verifyCode, AUTH_CODE_TTL_SECONDS);
 
       try {
         await this.emailService.sendVerificationCode(email, verifyCode);
@@ -51,13 +57,17 @@ export class AuthRegistrationService {
 
   async verifyEmail(email: string, code: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user || user.verifyCode !== code || !user.verifyExpiry || user.verifyExpiry < new Date()) {
+    const redisCode = await this.redis.get<string>(verifyCodeKey(email));
+    const legacyDbCodeIsValid = user?.verifyCode === code && !!user.verifyExpiry && user.verifyExpiry >= new Date();
+
+    if (!user || (redisCode !== code && !legacyDbCodeIsValid)) {
       throw new UnauthorizedException('Invalid or expired verification code');
     }
     await this.prisma.user.update({
       where: { id: user.id },
       data: { isVerified: true, verifyCode: null, verifyExpiry: null },
     });
+    await this.redis.del(verifyCodeKey(email));
     return { success: true };
   }
 

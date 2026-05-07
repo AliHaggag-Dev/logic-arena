@@ -44,6 +44,9 @@ interface AuthenticatedRequest {
 }
 
 const LEADERBOARD_CACHE_KEY = 'leaderboard:snapshot';
+const LEADERBOARD_ZSET_KEY = 'leaderboard:rank';
+const replayKey = (matchId: string) => `replay:${matchId}`;
+const REPLAY_TTL = 3_600;
 
 /** Multer file size hard cap — 2 MB */
 const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
@@ -64,6 +67,37 @@ export class UsersController {
     // 1. Serve from cache if available
     const cached = await this.redis.get<LeaderboardEntry[]>(LEADERBOARD_CACHE_KEY);
     if (cached) return cached;
+
+    // 1b. Prefer Redis sorted-set ranking when already warm
+    if (this.redis.healthy) {
+      const ranked = await this.redis.getClient().zrevrange(LEADERBOARD_ZSET_KEY, 0, LEADERBOARD_LIMIT - 1, 'WITHSCORES');
+      const ids = ranked.filter((_, i) => i % 2 === 0);
+      if (ids.length > 0) {
+        const users = await this.prisma.user.findMany({
+          where: { id: { in: ids } },
+          select: {
+            id: true,
+            username: true,
+            rank: true,
+            _count: { select: { wonMatches: true } },
+          },
+        });
+        const byId = new Map(users.map((u) => [u.id, u]));
+        const presenceKeys = ids.map((id) => `user:online:${id}`);
+        const presenceValues = await this.redis.getClient().mget(...presenceKeys);
+        const result = ids
+          .map((id, i) => {
+            const user = byId.get(id);
+            return user ? { ...user, isOnline: presenceValues[i] !== null && presenceValues[i] !== undefined } : null;
+          })
+          .filter((entry): entry is LeaderboardEntry => entry !== null);
+
+        if (result.length > 0) {
+          await this.redis.set(LEADERBOARD_CACHE_KEY, result, LEADERBOARD_TTL);
+          return result;
+        }
+      }
+    }
 
     // 2. Fetch top-N users ordered by rank desc, then by won matches desc as tiebreaker
     const users = await this.prisma.user.findMany({
@@ -90,6 +124,12 @@ export class UsersController {
 
     // 4. Cache the assembled result for LEADERBOARD_TTL seconds
     await this.redis.set(LEADERBOARD_CACHE_KEY, result, LEADERBOARD_TTL);
+    if (this.redis.healthy && users.length > 0) {
+      await this.redis.getClient().zadd(
+        LEADERBOARD_ZSET_KEY,
+        ...users.flatMap((user) => [String(user.rank), user.id]),
+      );
+    }
 
     return result;
   }
@@ -148,11 +188,15 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @Get('matches/:matchId/replay')
   async getReplay(@Param('matchId') matchId: string) {
+    const cached = await this.redis.get<unknown>(replayKey(matchId));
+    if (cached) return cached;
+
     const match = await this.prisma.match.findUnique({
       where: { id: matchId },
       select: { id: true, replayData: true, winnerId: true, duration: true, createdAt: true },
     });
     if (!match) throw new NotFoundException('Match not found');
+    await this.redis.set(replayKey(matchId), match, REPLAY_TTL);
     return match;
   }
 

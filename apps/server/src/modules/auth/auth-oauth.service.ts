@@ -2,15 +2,20 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { PrismaService } from '../../common/prisma.service';
+import { RedisService } from '../../common/redis.service';
 import {
   AUTH_COOKIE_NAME,
   AUTH_COOKIE_MAX_AGE_SECONDS,
   JwtPayload,
+  sessionVersionKey,
 } from './types';
 
 @Injectable()
 export class AuthOAuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
+  ) { }
 
   async findOrCreateOAuthUser(data: {
     provider: string;
@@ -69,7 +74,9 @@ export class AuthOAuthService {
 
     // Build a signed token — but we do NOT return it; the controller sets it as
     // an HttpOnly cookie so it is never exposed to JavaScript.
-    const payload: JwtPayload = { sub: user.id, username: user.username };
+    const sessionVersionRaw = await this.redis.get<number>(sessionVersionKey(user.id));
+    const sessionVersion = sessionVersionRaw ?? 0;
+    const payload: JwtPayload = { sub: user.id, username: user.username, sessionVersion };
     const token = jwt.sign(payload, secret, { expiresIn: '1h' });
 
     return { token, userId: user.id, username: user.username };
@@ -92,10 +99,10 @@ export class AuthOAuthService {
 
     res.cookie(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
-      secure:   isProd,
+      secure: isProd,
       sameSite: isProd ? 'strict' : 'lax',
-      maxAge:   AUTH_COOKIE_MAX_AGE_SECONDS * 1_000,
-      path:     '/',
+      maxAge: AUTH_COOKIE_MAX_AGE_SECONDS * 1_000,
+      path: '/',
     });
 
     // Pass only non-sensitive identity info in the URL so the client can
