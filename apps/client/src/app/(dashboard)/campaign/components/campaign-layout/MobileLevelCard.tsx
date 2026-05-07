@@ -1,16 +1,18 @@
+import { memo, useCallback } from "react";
 import { Check, Lock, Zap } from "lucide-react";
 
 import { DIFFICULTY_CONFIG } from "../../constants/difficulty.constants";
 import type { ApiLevelInfo } from "../../types/campaign.types";
 
-export function MobileLevelCard({
+export const MobileLevelCard = memo(function MobileLevelCard({
   level,
-  onClick,
+  onSelect,
 }: {
   level: ApiLevelInfo;
-  onClick: () => void;
+  onSelect: (level: ApiLevelInfo) => void;
 }) {
   const dc = DIFFICULTY_CONFIG[level.difficulty] ?? DIFFICULTY_CONFIG.EASY;
+  const handleClick = useCallback(() => onSelect(level), [level, onSelect]);
 
   if (!level.unlocked) {
     return (
@@ -48,7 +50,7 @@ export function MobileLevelCard({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       className="relative flex items-stretch min-h-[100px] rounded-2xl border overflow-hidden cursor-pointer text-left w-full group transition-all duration-200 active:scale-[0.98]"
       style={{
         borderColor: level.completed ? "rgba(var(--accent-rgb),0.15)" : "rgba(var(--accent-rgb),0.25)",
@@ -97,4 +99,4 @@ export function MobileLevelCard({
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
     </button>
   );
-}
+});

@@ -32,7 +32,7 @@ interface MarketItemCardProps {
   onPurchase: (item: MarketItem) => void;
 }
 
-export function MarketItemCard({
+export const MarketItemCard = React.memo(function MarketItemCard({
   item,
   isOwned,
   isEquipped,
@@ -128,20 +128,19 @@ export function MarketItemCard({
               isEquipped
                 ? `${item.name} is currently equipped`
                 : isOwned
-                ? `Equip ${item.name}`
-                : `Purchase ${item.name}`
+                  ? `Equip ${item.name}`
+                  : `Purchase ${item.name}`
             }
             className={`
               flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black tracking-[0.18em]
               transition-all duration-200 border font-mono
-              ${
-                isOwned && isEquipped
-                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default"
-                  : isOwned && !isEquipped
+              ${isOwned && isEquipped
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default"
+                : isOwned && !isEquipped
                   ? "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
                   : !canAfford && item.price > 0
-                  ? "bg-red-500/5 border-red-500/20 text-red-500/40 cursor-not-allowed opacity-60"
-                  : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
+                    ? "bg-red-500/5 border-red-500/20 text-red-500/40 cursor-not-allowed opacity-60"
+                    : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
               }
             `}
           >
@@ -176,4 +175,4 @@ export function MarketItemCard({
       </div>
     </div>
   );
-}
+});

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { memo, useMemo } from "react";
 
 interface Props { levelId: string; difficulty: string; }
 
@@ -8,49 +8,51 @@ const DC: Record<string, string> = {
 };
 
 /* ── Conditionals: branching decision tree with data flowing down ──────── */
-function CondVis({ order, c }: { order: number; c: string }) {
+const CondVis = memo(function CondVis({ order, c }: { order: number; c: string }) {
   const depth = Math.min(order + 1, 6);
-  const nodes: React.ReactElement[] = [];
-  const lines: React.ReactElement[] = [];
-  let idx = 0;
+  const { nodes, lines } = useMemo(() => {
+    const nextNodes: React.ReactElement[] = [];
+    const nextLines: React.ReactElement[] = [];
+    let idx = 0;
 
-  function addNode(x: number, y: number, lvl: number, key: string) {
-    if (lvl > depth) return;
-    const r = 4.5 - lvl * 0.4;
-    nodes.push(
-      <circle key={`n${key}`} cx={x} cy={y} r={Math.max(r, 2)}
-        fill={lvl === 1 ? c : `${c}50`} stroke={c} strokeWidth="0.5"
-        style={{ animation: `nodePop 0.4s ${lvl * 0.12}s both` }} />
-    );
-    if (lvl < depth) {
-      const spread = 48 / Math.pow(2, lvl);
-      const ny = y + 16;
-      const lx = x - spread, rx = x + spread;
-      // Lines with flowing particle
-      lines.push(
-        <g key={`l${key}l`}>
-          <line x1={x} y1={y} x2={lx} y2={ny} stroke={`${c}30`} strokeWidth="0.8" />
-          <circle r="1.5" fill={c}>
-            <animateMotion dur={`${1 + idx * 0.1}s`} repeatCount="indefinite"
-              path={`M${x},${y} L${lx},${ny}`} />
-          </circle>
-        </g>
+    function addNode(x: number, y: number, lvl: number, key: string) {
+      if (lvl > depth) return;
+      const r = 4.5 - lvl * 0.4;
+      nextNodes.push(
+        <circle key={`n${key}`} cx={x} cy={y} r={Math.max(r, 2)}
+          fill={lvl === 1 ? c : `${c}50`} stroke={c} strokeWidth="0.5"
+          style={{ animation: `nodePop 0.4s ${lvl * 0.12}s both` }} />
       );
-      lines.push(
-        <g key={`l${key}r`}>
-          <line x1={x} y1={y} x2={rx} y2={ny} stroke={`${c}30`} strokeWidth="0.8" />
-          <circle r="1.5" fill={c} opacity="0.6">
-            <animateMotion dur={`${1.3 + idx * 0.1}s`} repeatCount="indefinite"
-              path={`M${x},${y} L${rx},${ny}`} />
-          </circle>
-        </g>
-      );
-      idx++;
-      addNode(lx, ny, lvl + 1, `${key}l`);
-      addNode(rx, ny, lvl + 1, `${key}r`);
+      if (lvl < depth) {
+        const spread = 48 / Math.pow(2, lvl);
+        const ny = y + 16;
+        const lx = x - spread, rx = x + spread;
+        nextLines.push(
+          <g key={`l${key}l`}>
+            <line x1={x} y1={y} x2={lx} y2={ny} stroke={`${c}30`} strokeWidth="0.8" />
+            <circle r="1.5" fill={c}>
+              <animateMotion dur={`${1 + idx * 0.1}s`} repeatCount="indefinite"
+                path={`M${x},${y} L${lx},${ny}`} />
+            </circle>
+          </g>
+        );
+        nextLines.push(
+          <g key={`l${key}r`}>
+            <line x1={x} y1={y} x2={rx} y2={ny} stroke={`${c}30`} strokeWidth="0.8" />
+            <circle r="1.5" fill={c} opacity="0.6">
+              <animateMotion dur={`${1.3 + idx * 0.1}s`} repeatCount="indefinite"
+                path={`M${x},${y} L${rx},${ny}`} />
+            </circle>
+          </g>
+        );
+        idx++;
+        addNode(lx, ny, lvl + 1, `${key}l`);
+        addNode(rx, ny, lvl + 1, `${key}r`);
+      }
     }
-  }
-  addNode(75, 8, 1, "r");
+    addNode(75, 8, 1, "r");
+    return { nodes: nextNodes, lines: nextLines };
+  }, [c, depth]);
 
   return (
     <svg viewBox="0 0 150 90" className="w-full h-full">
@@ -65,12 +67,33 @@ function CondVis({ order, c }: { order: number; c: string }) {
       </text>
     </svg>
   );
-}
+});
 
 /* ── Loops: orbiting particles with trails ─────────────────────────────── */
-function LoopVis({ order, c }: { order: number; c: string }) {
+const LoopVis = memo(function LoopVis({ order, c }: { order: number; c: string }) {
   const rings = Math.min(order + 1, 5);
   const dots = order + 2;
+  const ringElements = useMemo(() => Array.from({ length: rings }, (_, i) => {
+    const rx = 16 + i * 9, ry = 9 + i * 5;
+    return (
+      <g key={`r${i}`}>
+        <ellipse cx="75" cy="42" rx={rx} ry={ry}
+          fill="none" stroke={`${c}20`} strokeWidth="0.6" />
+        <circle r="2.5" fill={c} opacity={0.9 - i * 0.1} filter="url(#glow)">
+          <animateMotion
+            dur={`${2 + i * 0.8}s`} repeatCount="indefinite"
+            path={`M${75 - rx},42 A${rx},${ry} 0 1,${i % 2} ${75 + rx},42 A${rx},${ry} 0 1,${i % 2} ${75 - rx},42`}
+          />
+        </circle>
+        <circle r="1.5" fill={c} opacity="0.3">
+          <animateMotion
+            dur={`${2 + i * 0.8}s`} repeatCount="indefinite" begin={`-${0.3 + i * 0.1}s`}
+            path={`M${75 - rx},42 A${rx},${ry} 0 1,${i % 2} ${75 + rx},42 A${rx},${ry} 0 1,${i % 2} ${75 - rx},42`}
+          />
+        </circle>
+      </g>
+    );
+  }), [c, rings]);
   return (
     <svg viewBox="0 0 150 90" className="w-full h-full">
       {/* Center hub */}
@@ -81,29 +104,7 @@ function LoopVis({ order, c }: { order: number; c: string }) {
         <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite" />
       </circle>
       {/* Orbital rings */}
-      {Array.from({ length: rings }, (_, i) => {
-        const rx = 16 + i * 9, ry = 9 + i * 5;
-        return (
-          <g key={`r${i}`}>
-            <ellipse cx="75" cy="42" rx={rx} ry={ry}
-              fill="none" stroke={`${c}20`} strokeWidth="0.6" />
-            {/* Orbiting dot */}
-            <circle r="2.5" fill={c} opacity={0.9 - i * 0.1} filter="url(#glow)">
-              <animateMotion
-                dur={`${2 + i * 0.8}s`} repeatCount="indefinite"
-                path={`M${75 - rx},42 A${rx},${ry} 0 1,${i % 2} ${75 + rx},42 A${rx},${ry} 0 1,${i % 2} ${75 - rx},42`}
-              />
-            </circle>
-            {/* Trail dot */}
-            <circle r="1.5" fill={c} opacity="0.3">
-              <animateMotion
-                dur={`${2 + i * 0.8}s`} repeatCount="indefinite" begin={`-${0.3 + i * 0.1}s`}
-                path={`M${75 - rx},42 A${rx},${ry} 0 1,${i % 2} ${75 + rx},42 A${rx},${ry} 0 1,${i % 2} ${75 - rx},42`}
-              />
-            </circle>
-          </g>
-        );
-      })}
+      {ringElements}
       <defs>
         <filter id="glow"><feGaussianBlur stdDeviation="1.5" result="blur" />
           <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
@@ -114,14 +115,34 @@ function LoopVis({ order, c }: { order: number; c: string }) {
       </text>
     </svg>
   );
-}
+});
 
 /* ── Arrays: grid with scanning beam sweeping across ───────────────────── */
-function ArrVis({ order, c }: { order: number; c: string }) {
+const ArrVis = memo(function ArrVis({ order, c }: { order: number; c: string }) {
   const cols = Math.min(order + 3, 10);
   const cellW = Math.min(14, 120 / cols);
   const totalW = cols * cellW;
   const startX = 75 - totalW / 2;
+  const cells = useMemo(() => Array.from({ length: cols }, (_, i) => {
+    const x = startX + i * cellW;
+    const active = i < order;
+    return (
+      <g key={i}>
+        <rect x={x + 1} y="25" width={cellW - 2} height={cellW - 2}
+          rx="2" fill={active ? `${c}20` : `${c}06`}
+          stroke={active ? `${c}70` : `${c}18`} strokeWidth="0.8">
+          {active && (
+            <animate attributeName="fill-opacity" values="0.3;0.8;0.3"
+              dur={`${1.2 + i * 0.15}s`} repeatCount="indefinite" begin={`${i * 0.1}s`} />
+          )}
+        </rect>
+        <text x={x + cellW / 2} y={25 + cellW / 2 + 2}
+          textAnchor="middle" fill={active ? c : `${c}25`}
+          fontSize="6" fontFamily="monospace" fontWeight="bold">{i}</text>
+      </g>
+    );
+  }), [c, cellW, cols, order, startX]);
+
   return (
     <svg viewBox="0 0 150 90" className="w-full h-full">
       <defs>
@@ -134,25 +155,7 @@ function ArrVis({ order, c }: { order: number; c: string }) {
         </linearGradient>
       </defs>
       {/* Cells */}
-      {Array.from({ length: cols }, (_, i) => {
-        const x = startX + i * cellW;
-        const active = i < order;
-        return (
-          <g key={i}>
-            <rect x={x + 1} y="25" width={cellW - 2} height={cellW - 2}
-              rx="2" fill={active ? `${c}20` : `${c}06`}
-              stroke={active ? `${c}70` : `${c}18`} strokeWidth="0.8">
-              {active && (
-                <animate attributeName="fill-opacity" values="0.3;0.8;0.3"
-                  dur={`${1.2 + i * 0.15}s`} repeatCount="indefinite" begin={`${i * 0.1}s`} />
-              )}
-            </rect>
-            <text x={x + cellW / 2} y={25 + cellW / 2 + 2}
-              textAnchor="middle" fill={active ? c : `${c}25`}
-              fontSize="6" fontFamily="monospace" fontWeight="bold">{i}</text>
-          </g>
-        );
-      })}
+      {cells}
       {/* Scanning beam that sweeps across */}
       <rect x={startX} y="24" width={cellW * 1.5} height={cellW} rx="1"
         fill="url(#scanBeam)" opacity="0.6">
@@ -172,7 +175,7 @@ function ArrVis({ order, c }: { order: number; c: string }) {
       </text>
     </svg>
   );
-}
+});
 
 /* ── Data Structures: animated state machine with value changes ────────── */
 function DsVis({ order, c }: { order: number; c: string }) {
@@ -264,41 +267,42 @@ function RecVis({ order, c }: { order: number; c: string }) {
 }
 
 /* ── Graph Theory: node network with traversal animation ───────────────── */
-function GfxVis({ order, c }: { order: number; c: string }) {
+const GfxVis = memo(function GfxVis({ order, c }: { order: number; c: string }) {
   const nodeCount = Math.min(order + 3, 10);
-  const positions = Array.from({ length: nodeCount }, (_, i) => {
+  const positions = useMemo(() => Array.from({ length: nodeCount }, (_, i) => {
     const angle = (i / nodeCount) * Math.PI * 2 - Math.PI / 2;
     const r = 26 + (i % 3) * 5;
     return { x: 75 + Math.cos(angle) * r, y: 44 + Math.sin(angle) * r };
-  });
+  }), [nodeCount]);
   // Build edges
-  const edges: React.ReactElement[] = [];
-  for (let i = 0; i < nodeCount; i++) {
-    const j = (i + 1) % nodeCount;
-    const pi = positions[i], pj = positions[j];
-    edges.push(
-      <g key={`e${i}`}>
-        <line x1={pi.x} y1={pi.y} x2={pj.x} y2={pj.y}
-          stroke={`${c}20`} strokeWidth="0.8" />
-        {/* Traversal particle moving along edge */}
-        <circle r="1.8" fill={c} opacity="0.8">
-          <animateMotion dur={`${1.5 + i * 0.15}s`} repeatCount="indefinite"
-            begin={`${i * 0.3}s`}
-            path={`M${pi.x},${pi.y} L${pj.x},${pj.y}`} />
-        </circle>
-      </g>
-    );
-    // Cross edges for complexity
-    if (i + 2 < nodeCount && i % 2 === 0) {
-      const pk = positions[i + 2];
-      edges.push(
-        <line key={`x${i}`} x1={pi.x} y1={pi.y} x2={pk.x} y2={pk.y}
-          stroke={`${c}10`} strokeWidth="0.5" strokeDasharray="2 2">
-          <animate attributeName="stroke-dashoffset" values="0;-8" dur="2s" repeatCount="indefinite" />
-        </line>
+  const edges = useMemo(() => {
+    const nextEdges: React.ReactElement[] = [];
+    for (let i = 0; i < nodeCount; i++) {
+      const j = (i + 1) % nodeCount;
+      const pi = positions[i], pj = positions[j];
+      nextEdges.push(
+        <g key={`e${i}`}>
+          <line x1={pi.x} y1={pi.y} x2={pj.x} y2={pj.y}
+            stroke={`${c}20`} strokeWidth="0.8" />
+          <circle r="1.8" fill={c} opacity="0.8">
+            <animateMotion dur={`${1.5 + i * 0.15}s`} repeatCount="indefinite"
+              begin={`${i * 0.3}s`}
+              path={`M${pi.x},${pi.y} L${pj.x},${pj.y}`} />
+          </circle>
+        </g>
       );
+      if (i + 2 < nodeCount && i % 2 === 0) {
+        const pk = positions[i + 2];
+        nextEdges.push(
+          <line key={`x${i}`} x1={pi.x} y1={pi.y} x2={pk.x} y2={pk.y}
+            stroke={`${c}10`} strokeWidth="0.5" strokeDasharray="2 2">
+            <animate attributeName="stroke-dashoffset" values="0;-8" dur="2s" repeatCount="indefinite" />
+          </line>
+        );
+      }
     }
-  }
+    return nextEdges;
+  }, [c, nodeCount, positions]);
   return (
     <svg viewBox="0 0 150 90" className="w-full h-full">
       {edges}
@@ -323,7 +327,7 @@ function GfxVis({ order, c }: { order: number; c: string }) {
       </text>
     </svg>
   );
-}
+});
 
 /* ── Main Component ─────────────────────────────────────────────────────── */
 const VIS_MAP: Record<string, React.ComponentType<{ order: number; c: string }>> = {
@@ -331,11 +335,15 @@ const VIS_MAP: Record<string, React.ComponentType<{ order: number; c: string }>>
   ds: DsVis, rec: RecVis, gfx: GfxVis,
 };
 
-export function LevelVisual({ levelId, difficulty }: Props) {
-  const [prefix, num] = levelId.split("-");
-  const order = parseInt(num, 10) || 1;
-  const c = DC[difficulty] ?? DC.EASY;
-  const Comp = VIS_MAP[prefix];
+export const LevelVisual = memo(function LevelVisual({ levelId, difficulty }: Props) {
+  const { Comp, c, order } = useMemo(() => {
+    const [prefix, num] = levelId.split("-");
+    return {
+      Comp: VIS_MAP[prefix],
+      order: parseInt(num, 10) || 1,
+      c: DC[difficulty] ?? DC.EASY,
+    };
+  }, [difficulty, levelId]);
 
   if (!Comp) return null;
 
@@ -351,4 +359,4 @@ export function LevelVisual({ levelId, difficulty }: Props) {
       `}</style>
     </div>
   );
-}
+});

@@ -1,16 +1,20 @@
+import { memo, useMemo } from "react";
 import { Check, Cpu, GitBranch, Lock, Zap } from "lucide-react";
 
 import { DIFFICULTY_CONFIG } from "../../constants/difficulty.constants";
 import { TAB_ICONS } from "./tabMeta";
 import type { CampaignViewProps } from "./types";
 
-export function DesktopLayout({
+export const DesktopLayout = memo(function DesktopLayout({
   tabs,
   activeTabId,
   setActiveTabId,
   setSelectedLevel,
 }: CampaignViewProps) {
-  const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0];
+  const activeTab = useMemo(
+    () => tabs.find((t) => t.id === activeTabId) ?? tabs[0],
+    [activeTabId, tabs],
+  );
 
   return (
     <div className="max-w-[1280px] mx-auto px-8 pt-16 pb-[120px] relative z-10 animate-[fadeIn_0.4s_ease]">
@@ -41,8 +45,8 @@ export function DesktopLayout({
                   type="button"
                   onClick={() => setActiveTabId(tab.id)}
                   className={`relative flex flex-col items-start p-4 rounded-xl border text-left transition-all cursor-pointer overflow-hidden group ${isActive
-                      ? "bg-accent/10 border-accent/50"
-                      : "bg-bg-primary border-accent/10 hover:bg-accent/5 hover:border-accent/30"
+                    ? "bg-accent/10 border-accent/50"
+                    : "bg-bg-primary border-accent/10 hover:bg-accent/5 hover:border-accent/30"
                     }`}
                   style={isActive ? { boxShadow: "0 0 20px rgba(var(--accent-rgb),0.12)" } : {}}
                 >
@@ -135,8 +139,8 @@ export function DesktopLayout({
                   type="button"
                   onClick={() => setSelectedLevel(level)}
                   className={`group text-left relative p-5 rounded-xl border transition-all min-h-[190px] flex flex-col justify-between overflow-hidden cursor-pointer ${level.completed
-                      ? "bg-accent/[0.025] border-accent/15 hover:border-accent/35"
-                      : "bg-bg-primary border-accent/25 hover:border-accent/55 hover:bg-accent/[0.03]"
+                    ? "bg-accent/[0.025] border-accent/15 hover:border-accent/35"
+                    : "bg-bg-primary border-accent/25 hover:border-accent/55 hover:bg-accent/[0.03]"
                     }`}
                   style={!level.completed ? { boxShadow: "inset 0 0 30px rgba(var(--accent-rgb),0.015)" } : {}}
                 >
@@ -181,4 +185,4 @@ export function DesktopLayout({
       </div>
     </div>
   );
-}
+});

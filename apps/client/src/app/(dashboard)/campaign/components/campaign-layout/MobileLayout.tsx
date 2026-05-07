@@ -1,17 +1,24 @@
+import { memo, useMemo } from "react";
 import { Cpu, GitBranch } from "lucide-react";
 
 import { MobileLevelCard } from "./MobileLevelCard";
 import { TAB_ICONS, TAB_SHORT } from "./tabMeta";
 import type { CampaignViewProps } from "./types";
 
-export function MobileLayout({
+export const MobileLayout = memo(function MobileLayout({
   tabs,
   activeTabId,
   setActiveTabId,
   setSelectedLevel,
 }: CampaignViewProps) {
-  const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0];
-  const completedCount = activeTab.levels.filter((l) => l.completed).length;
+  const activeTab = useMemo(
+    () => tabs.find((t) => t.id === activeTabId) ?? tabs[0],
+    [activeTabId, tabs],
+  );
+  const completedCount = useMemo(
+    () => activeTab.levels.filter((l) => l.completed).length,
+    [activeTab.levels],
+  );
   const totalCount = activeTab.levels.length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
@@ -90,10 +97,10 @@ export function MobileLayout({
           <MobileLevelCard
             key={level.id}
             level={level}
-            onClick={() => setSelectedLevel(level)}
+            onSelect={setSelectedLevel}
           />
         ))}
       </div>
     </div>
   );
-}
+});

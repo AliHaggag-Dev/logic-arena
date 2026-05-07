@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
+const GAME_MODE_OPTIONS = ["COMBAT", "RACING", "TRAINING_SOLO"] as const;
+
 export const CustomSelect = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const options = ["COMBAT", "RACING", "TRAINING_SOLO"];
 
     return (
         <>
@@ -24,7 +25,7 @@ export const CustomSelect = ({ value, onChange }: { value: string, onChange: (va
                         <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-[70] animate-in fade-in slide-in-from-top-2 duration-200">
                             <div className="bg-card border border-accent/30 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
                                 <div className="flex flex-col">
-                                    {options.map((opt) => (
+                                    {GAME_MODE_OPTIONS.map((opt) => (
                                         <button
                                             key={opt}
                                             onClick={() => { onChange(opt); setIsOpen(false); }}
@@ -53,7 +54,7 @@ export const CustomSelect = ({ value, onChange }: { value: string, onChange: (va
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
                         <div className="absolute top-full right-0 mt-2 w-40 z-50 bg-bg-secondary/90 backdrop-blur-xl border border-accent shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-1">
-                            {options.map((opt) => (
+                            {GAME_MODE_OPTIONS.map((opt) => (
                                 <button
                                     key={opt}
                                     onClick={() => { onChange(opt); setIsOpen(false); }}
