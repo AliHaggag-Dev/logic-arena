@@ -25,10 +25,7 @@ export const MobileLayout = memo(function MobileLayout({
   return (
     <div className="flex flex-col relative z-10">
       {/* ── Sticky header + tab strip ── */}
-      <div
-        className="sticky top-0 z-30 pb-3"
-        style={{ background: "rgba(var(--bg-primary-rgb,10,10,20),0.96)", backdropFilter: "blur(16px)" }}
-      >
+      <div className="sticky top-0 z-30 pb-3 bg-bg-primary/95 backdrop-blur-md">
         {/* Title row */}
         <div className="flex items-baseline justify-between px-4 pt-4 pb-2">
           <div>

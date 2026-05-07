@@ -50,7 +50,10 @@ export default function PullToRefresh({ children }: { children: React.ReactNode 
                 return;
             }
 
-            const eased = Math.min(MAX_PULL, delta * (1 - delta / (MAX_PULL * 3)));
+            // Native-feeling rubber-band resistance curve
+            // It asymptotically approaches 'c' without ever dipping back down
+            const c = 200;
+            const eased = (c * delta) / (delta + c);
             setPullY(eased);
             setPhase(eased >= THRESHOLD ? "ready" : "pulling");
             e.preventDefault();
@@ -61,8 +64,13 @@ export default function PullToRefresh({ children }: { children: React.ReactNode 
 
             if (phaseRef.current === "ready") {
                 setPhase("loading");
-                setPullY(44);
+                setPullY(76);
+                
+                // 1. Refetch Server Components (if any)
                 router.refresh();
+                // 2. Dispatch custom event to remount Client Components and trigger their useEffects instantly
+                window.dispatchEvent(new Event("global-refresh"));
+                
                 setTimeout(() => { setPhase("idle"); setPullY(0); }, 1000);
             } else {
                 setPhase("idle");
@@ -82,8 +90,7 @@ export default function PullToRefresh({ children }: { children: React.ReactNode 
 
     const isActive = !pathname?.startsWith("/arena");
     const progress = Math.min(1, pullY / THRESHOLD);
-    const dashOffset = 60 - progress * 60;
-    const opacity = phase === "idle" ? 0 : Math.min(1, progress * 2);
+    const opacity = phase === "idle" ? 0 : phase === "loading" ? 1 : Math.min(1, progress * 1.5);
     const isSpinning = phase === "loading";
 
     return (
@@ -95,37 +102,40 @@ export default function PullToRefresh({ children }: { children: React.ReactNode 
                         position: "fixed",
                         top: 0,
                         left: "50%",
-                        transform: `translateX(-50%) translateY(${pullY - 52}px)`,
+                        transform: `translateX(-50%) translateY(${pullY - 56}px)`,
                         transition: phase === "idle" || phase === "loading"
-                            ? "transform 0.25s ease, opacity 0.25s ease"
+                            ? "transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease"
                             : "none",
                         zIndex: 9999,
-                        width: 36,
-                        height: 36,
+                        width: 42,
+                        height: 42,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         opacity,
                         pointerEvents: "none",
+                        background: "rgba(var(--bg-primary-rgb), 0.85)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: "50%",
+                        border: "1px solid rgba(var(--accent-rgb), 0.15)",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
                     }}
                 >
                     <svg
-                        width="28" height="28" viewBox="0 0 28 28"
-                        style={{ animation: isSpinning ? "ptr-spin 0.75s linear infinite" : "none" }}
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20" height="20" viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="var(--accent)"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ 
+                            animation: isSpinning ? "ptr-spin 0.75s linear infinite" : "none",
+                            transform: isSpinning ? "none" : `rotate(${progress * 220}deg)`
+                        }}
                     >
-                        <circle
-                            cx="14" cy="14" r="11"
-                            fill="none"
-                            stroke="#22d3ee"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeDasharray="60"
-                            strokeDashoffset={isSpinning ? 15 : dashOffset}
-                            style={{
-                                transformOrigin: "center",
-                                transition: isSpinning ? "none" : "stroke-dashoffset 0.1s linear",
-                            }}
-                        />
+                        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                        <path d="M21 3v5h-5" />
                     </svg>
                 </div>
             )}

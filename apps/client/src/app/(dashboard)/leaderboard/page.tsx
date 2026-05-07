@@ -118,7 +118,13 @@ const LeaderboardPage = () => {
       }
     }, POLL_INTERVAL_MS);
 
-    return () => clearInterval(interval);
+    const handleGlobalRefresh = () => fetchLeaderboard();
+    window.addEventListener("global-refresh", handleGlobalRefresh);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("global-refresh", handleGlobalRefresh);
+    };
   }, [fetchLeaderboard]);
 
   const handleSpectate = useCallback(

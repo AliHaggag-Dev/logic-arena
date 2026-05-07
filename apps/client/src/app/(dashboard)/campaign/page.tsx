@@ -14,23 +14,31 @@ export default function CampaignPage() {
   useEffect(() => {
     let cancelled = false;
 
-    apiClient
-      .get("/campaign/tabs")
-      .then((r) => {
-        if (!cancelled) setTabs(r.data);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          setIsGuest(true);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const fetchTabs = () => {
+      setLoading(true);
+      apiClient
+        .get("/campaign/tabs")
+        .then((r) => {
+          if (!cancelled) setTabs(r.data);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          if (err.response?.status === 401 || err.response?.status === 403) {
+            setIsGuest(true);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    };
+
+    fetchTabs();
+
+    window.addEventListener("global-refresh", fetchTabs);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("global-refresh", fetchTabs);
     };
   }, []);
 
