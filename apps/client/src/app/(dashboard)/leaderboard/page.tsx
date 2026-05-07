@@ -7,9 +7,10 @@ import { apiClient, API_BASE_URL } from "../../../lib/api-client";
 import { LeaderboardTable } from "./components/LeaderboardTable";
 import { useSocket } from "../../../context/SocketContext";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
+import { useAuthState } from "../../../hooks/useAuthState";
 import type { LeaderboardUser } from "./types";
 import { POLL_INTERVAL_MS } from "./types";
-import { getAuthUserId } from "../../../lib/client-security";
+import { getAuthSession } from "../../../lib/client-security";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,8 +27,10 @@ const LeaderboardPage = () => {
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState("");
-  const [isGuest, setIsGuest] = useState(false);
+
+  // Reactive auth state — correctly handles async session load after HttpOnly cookie auth
+  const { isGuest } = useAuthState();
+  const [currentUserId, setCurrentUserId] = useState(() => getAuthSession().userId ?? "");
 
   const { sendChallenge } = useSocket();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -105,11 +108,14 @@ const LeaderboardPage = () => {
     };
   }, [applyStatusUpdate]);
 
+  // Sync currentUserId reactively whenever the auth session changes
   useEffect(() => {
-    const userId = getAuthUserId();
-    setIsGuest(!userId);
-    setCurrentUserId(userId || "");
+    const sync = () => setCurrentUserId(getAuthSession().userId ?? "");
+    window.addEventListener("auth:changed", sync);
+    return () => window.removeEventListener("auth:changed", sync);
+  }, []);
 
+  useEffect(() => {
     fetchLeaderboard();
 
     const interval = setInterval(() => {
