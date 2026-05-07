@@ -1,10 +1,31 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { useRobotColorTint } from "../../garage/hooks/useRobotColorTint";
+
+const CHASSIS_MODEL_PATHS: Record<string, string> = {
+  "chassis-unit-01": "/robots/robot.glb",
+  "chassis-unit-02": "/robots/robot2.glb",
+  "chassis-wraith": "/robots/bunny.glb",
+  "chassis-titan": "/robots/armored-robot.glb",
+};
+
+function usePrefersReducedMotion(): boolean {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setPrefersReducedMotion(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  return prefersReducedMotion;
+}
 
 // ── Sub-meshes ────────────────────────────────────────────────────────────────
 
@@ -12,33 +33,27 @@ interface RobotMeshProps {
   chassisId: string;
   paintColor: string;
   tracerColor: string;
+  animate: boolean;
 }
 
-function RobotMesh({ chassisId, paintColor, tracerColor }: RobotMeshProps) {
+function RobotMesh({ chassisId, paintColor, tracerColor, animate }: RobotMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
 
   const isUnit01 = chassisId === 'chassis-unit-01';
   const isUnit02 = chassisId === 'chassis-unit-02';
   const isWraith = chassisId === 'chassis-wraith';
   const isTitan = chassisId === 'chassis-titan';
+  const modelPath = CHASSIS_MODEL_PATHS[chassisId];
 
-  // Load all GLTF models
-  const unit01GLTF = useGLTF("/robots/robot.glb");
-  const unit02GLTF = useGLTF("/robots/robot2.glb");
-  const wraithGLTF = useGLTF("/robots/bunny.glb");
-  const titanGLTF = useGLTF("/robots/armored-robot.glb");
-
-  // Determine which, if any, is active
-  const activeScene = isUnit01 ? unit01GLTF.scene
-    : isUnit02 ? unit02GLTF.scene
-      : isWraith ? wraithGLTF.scene
-        : isTitan ? titanGLTF.scene
-          : null;
+  // Load only the active GLTF model instead of all chassis models per showroom.
+  const activeGLTF = useGLTF(modelPath ?? "/robots/robot.glb");
+  const activeScene = modelPath ? activeGLTF.scene : null;
 
   // Apply color tint to the loaded GLTF model
   useRobotColorTint(activeScene, paintColor);
 
   useFrame((_, delta) => {
+    if (!animate) return;
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.4;
     }
@@ -163,12 +178,14 @@ function RobotMesh({ chassisId, paintColor, tracerColor }: RobotMeshProps) {
 
 interface PedestalProps {
   glowColor: string;
+  animate: boolean;
 }
 
-function Pedestal({ glowColor }: PedestalProps) {
+function Pedestal({ glowColor, animate }: PedestalProps) {
   const ringRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
+    if (!animate) return;
     if (ringRef.current) {
       const mat = ringRef.current.material as THREE.MeshStandardMaterial;
       mat.emissiveIntensity = 0.6 + Math.sin(state.clock.elapsedTime * 2) * 0.35;
@@ -178,7 +195,7 @@ function Pedestal({ glowColor }: PedestalProps) {
   return (
     <group position={[0, -1.0, 0]}>
       {/* Base disc */}
-      <mesh receiveShadow>
+      <mesh>
         <cylinderGeometry args={[1.1, 1.3, 0.12, 48]} />
         <meshStandardMaterial color="#0a0a0a" metalness={0.95} roughness={0.05} />
       </mesh>
@@ -201,15 +218,16 @@ function Pedestal({ glowColor }: PedestalProps) {
 
 interface SceneLightsProps {
   color: string;
+  highQuality: boolean;
 }
 
-function SceneLights({ color }: SceneLightsProps) {
+function SceneLights({ color, highQuality }: SceneLightsProps) {
   return (
     <>
       <ambientLight intensity={0.3} />
-      <directionalLight position={[3, 5, 3]} intensity={1.2} castShadow />
+      <directionalLight position={[3, 5, 3]} intensity={highQuality ? 1.2 : 0.9} />
       <pointLight position={[0, 1.5, 2]} color={color} intensity={2.5} distance={6} />
-      <pointLight position={[-2, 0, -1]} color={color} intensity={1.0} distance={5} />
+      {highQuality && <pointLight position={[-2, 0, -1]} color={color} intensity={1.0} distance={5} />}
     </>
   );
 }
@@ -220,19 +238,31 @@ interface RobotShowroomProps {
   chassisId: string;
   paintColor: string;
   tracerColor: string;
+  quality?: "low" | "medium" | "high";
 }
 
-export function RobotShowroom({ chassisId, paintColor, tracerColor }: RobotShowroomProps) {
+export function RobotShowroom({ chassisId, paintColor, tracerColor, quality = "medium" }: RobotShowroomProps) {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const highQuality = quality === "high";
+  const animate = !prefersReducedMotion && quality !== "low";
+  const dpr = useMemo<[number, number]>(() => {
+    if (quality === "low") return [1, 1];
+    if (quality === "high") return [1, 2];
+    return [1, 1.5];
+  }, [quality]);
+
   return (
     <Canvas
-      shadows
+      frameloop={animate ? "always" : "demand"}
+      dpr={dpr}
+      gl={{ antialias: quality !== "low", alpha: true, powerPreference: quality === "low" ? "low-power" : "high-performance" }}
       camera={{ position: [0, 0.8, 3.8], fov: 45 }}
       style={{ background: "transparent" }}
     >
-      <SceneLights color={paintColor} />
-      <Environment preset="city" />
-      <RobotMesh chassisId={chassisId} paintColor={paintColor} tracerColor={tracerColor} />
-      <Pedestal glowColor={paintColor} />
+      <SceneLights color={paintColor} highQuality={highQuality} />
+      {quality !== "low" && <Environment preset="city" />}
+      <RobotMesh chassisId={chassisId} paintColor={paintColor} tracerColor={tracerColor} animate={animate} />
+      <Pedestal glowColor={paintColor} animate={animate} />
       <OrbitControls
         enablePan={false}
         enableZoom={false}

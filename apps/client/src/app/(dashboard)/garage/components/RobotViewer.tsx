@@ -2,7 +2,7 @@
 
 import React, { Suspense, useRef, useMemo } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { useGLTF, OrbitControls, Environment } from "@react-three/drei";
+import { useGLTF, OrbitControls, Environment, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useRobotColorTint } from "../hooks/useRobotColorTint";
@@ -43,10 +43,14 @@ function RobotModel({
 
 /* ─── Loading placeholder (CSS-based, outside WebGL) ────────────────── */
 function ViewerLoadingOverlay() {
+  const { active, progress } = useProgress();
+
+  if (!active && progress >= 100) return null;
+
   return (
     <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
       <span className="text-accent/50 text-[10px] tracking-[0.25em] font-mono animate-pulse uppercase">
-        LOADING MODEL...
+        LOADING MODEL {Math.round(progress)}%
       </span>
     </div>
   );
@@ -117,8 +121,8 @@ export function RobotViewer({ file, color, scale, isMobile }: RobotViewerProps) 
         />
       </Canvas>
 
-      {/* CSS loading overlay — shown until Suspense resolves */}
-      <Suspense fallback={<ViewerLoadingOverlay />}>{null}</Suspense>
+      {/* CSS loading overlay tied to Drei loader progress */}
+      <ViewerLoadingOverlay />
     </div>
   );
 }
