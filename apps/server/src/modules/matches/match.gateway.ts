@@ -1,6 +1,11 @@
 import {
-  WebSocketGateway, SubscribeMessage, MessageBody,
-  ConnectedSocket, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect,
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { OnModuleDestroy } from '@nestjs/common';
 import { Server } from 'socket.io';
@@ -25,7 +30,9 @@ import { MatchLoopManager } from './gateway/match.loop';
     credentials: true,
   },
 })
-export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy {
+export class MatchGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy
+{
   @WebSocketServer()
   server!: Server;
 
@@ -41,13 +48,27 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
   constructor(
     private readonly prisma: PrismaService,
     private readonly redisService: RedisService,
-  ) { }
+  ) {}
 
   onModuleInit() {
     // Initialize the separated managers
-    this.lobbyManager = new MatchLobbyManager(this.state, this.server, this.prisma, this.redisService);
-    this.socialManager = new MatchSocialManager(this.server, this.prisma, this.redisService);
-    this.loopManager = new MatchLoopManager(this.state, this.server, this.prisma, this.redisService);
+    this.lobbyManager = new MatchLobbyManager(
+      this.state,
+      this.server,
+      this.prisma,
+      this.redisService,
+    );
+    this.socialManager = new MatchSocialManager(
+      this.server,
+      this.prisma,
+      this.redisService,
+    );
+    this.loopManager = new MatchLoopManager(
+      this.state,
+      this.server,
+      this.prisma,
+      this.redisService,
+    );
 
     // Boot up the global match tick loop
     this.loopManager.startLoop();
@@ -82,7 +103,10 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET as string,
+      ) as JwtPayload;
       client.userId = decoded.sub;
       this.cancelDisconnectCleanup(client.userId);
       await this.redisService.set(`user:online:${client.userId}`, '1', 300);
@@ -115,7 +139,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
     if (authToken) return authToken.replace(/^Bearer\s+/i, '');
 
     // 3. Authorization header
-    const authHeader = client.handshake?.headers?.authorization as string | undefined;
+    const authHeader = client.handshake?.headers?.authorization;
     if (authHeader?.startsWith('Bearer ')) return authHeader.slice(7);
 
     return undefined;
@@ -147,7 +171,12 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
 
           if (this.state.lobbyMatches.has(matchId)) {
             this.state.lobbyMatches.delete(matchId);
-            this.server.to(LOBBY_ROOM).emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
+            this.server
+              .to(LOBBY_ROOM)
+              .emit(
+                'lobbyUpdated',
+                Array.from(this.state.lobbyMatches.values()),
+              );
           }
         }
       }
@@ -178,7 +207,9 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
           }
         }
         if (lobbyChanged) {
-          this.server.to(LOBBY_ROOM).emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
+          this.server
+            .to(LOBBY_ROOM)
+            .emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
         }
       }
     }, 2000);
@@ -193,7 +224,12 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
   @SubscribeMessage('joinMatch')
   async handleJoinMatch(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { matchId: string; scriptId: string; mode?: 'COMBAT' | 'RACING' | 'TRAINING_SOLO' },
+    @MessageBody()
+    data: {
+      matchId: string;
+      scriptId: string;
+      mode?: 'COMBAT' | 'RACING' | 'TRAINING_SOLO';
+    },
   ) {
     return this.lobbyManager.handleJoinMatch(client, data);
   }
@@ -241,16 +277,12 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
   }
 
   @SubscribeMessage('toggleLockVision')
-  handleToggleLockVision(
-    @ConnectedSocket() client: AuthenticatedSocket,
-  ) {
+  handleToggleLockVision(@ConnectedSocket() client: AuthenticatedSocket) {
     return this.lobbyManager.handleToggleLockVision(client);
   }
 
   @SubscribeMessage('respawnDummies')
-  handleRespawnDummies(
-    @ConnectedSocket() client: AuthenticatedSocket,
-  ) {
+  handleRespawnDummies(@ConnectedSocket() client: AuthenticatedSocket) {
     return this.lobbyManager.handleRespawnDummies(client);
   }
 

@@ -45,7 +45,7 @@ export class BlockExecutor {
     private actionExecutor: ActionExecutor,
     private expressionEvaluator: ExpressionEvaluator,
     private functions: Map<string, Map<string, FunctionDeclaration>>,
-  ) { }
+  ) {}
 
   executeBlock(
     robotId: string,
@@ -136,22 +136,22 @@ export class BlockExecutor {
             );
             const result = cond
               ? this.executeBlock(
-                robotId,
-                robot,
-                ifStmt.consequence,
-                memory,
-                opsCounter,
-                dispatchedActions,
-              )
-              : ifStmt.alternate
-                ? this.executeBlock(
                   robotId,
                   robot,
-                  ifStmt.alternate,
+                  ifStmt.consequence,
                   memory,
                   opsCounter,
                   dispatchedActions,
                 )
+              : ifStmt.alternate
+                ? this.executeBlock(
+                    robotId,
+                    robot,
+                    ifStmt.alternate,
+                    memory,
+                    opsCounter,
+                    dispatchedActions,
+                  )
                 : {};
 
             // Propagate control flow signals (BREAK, CONTINUE, RETURN) up through IF
@@ -301,12 +301,12 @@ export class BlockExecutor {
                     const argValue =
                       i < callStmt.args.length
                         ? this.expressionEvaluator.evaluateExpression(
-                          robot,
-                          callStmt.args[i],
-                          memory,
-                          () => this.gameLoop.getRobots(),
-                          () => this.gameLoop.getGameState().obstacles,
-                        )
+                            robot,
+                            callStmt.args[i],
+                            memory,
+                            () => this.gameLoop.getRobots(),
+                            () => this.gameLoop.getGameState().obstacles,
+                          )
                         : undefined;
                     scopedMemory[paramName] = argValue;
                   }

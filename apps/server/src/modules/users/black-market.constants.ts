@@ -25,16 +25,16 @@ export const BLACK_MARKET_ITEMS: BlackMarketItem[] = [
   { id: 'chassis-unit-01', category: 'chassis', price: 0 },
   { id: 'chassis-unit-02', category: 'chassis', price: 0 },
   { id: 'chassis-phantom', category: 'chassis', price: 0 },
-  { id: 'chassis-wraith',  category: 'chassis', price: 800 },
-  { id: 'chassis-titan',   category: 'chassis', price: 1800 },
+  { id: 'chassis-wraith', category: 'chassis', price: 800 },
+  { id: 'chassis-titan', category: 'chassis', price: 1800 },
   // Neon paints
   { id: 'paint-default', category: 'paint', price: 0, color: 'DEFAULT' },
   { id: 'paint-crimson', category: 'paint', price: 300, color: '#ef4444' },
-  { id: 'paint-void',    category: 'paint', price: 500, color: '#1e1b4b' },
-  { id: 'paint-aurora',  category: 'paint', price: 700, color: '#10b981' },
-  { id: 'paint-solar',   category: 'paint', price: 1200, color: '#f97316' },
+  { id: 'paint-void', category: 'paint', price: 500, color: '#1e1b4b' },
+  { id: 'paint-aurora', category: 'paint', price: 700, color: '#10b981' },
+  { id: 'paint-solar', category: 'paint', price: 1200, color: '#f97316' },
   // Tracer rounds
-  { id: 'tracer-pulse',   category: 'tracer', price: 200, color: '#22d3ee' },
+  { id: 'tracer-pulse', category: 'tracer', price: 200, color: '#22d3ee' },
   { id: 'tracer-inferno', category: 'tracer', price: 450, color: '#fb923c' },
-  { id: 'tracer-ghost',   category: 'tracer', price: 600, color: '#c084fc' },
+  { id: 'tracer-ghost', category: 'tracer', price: 600, color: '#c084fc' },
 ];

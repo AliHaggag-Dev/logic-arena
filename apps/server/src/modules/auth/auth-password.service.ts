@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
 import { PrismaService } from '../../common/prisma.service';
@@ -15,7 +19,7 @@ export class AuthPasswordService {
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
     private readonly redis: RedisService,
-  ) { }
+  ) {}
 
   async forgotPassword(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -37,7 +41,10 @@ export class AuthPasswordService {
   async resetPassword(email: string, code: string, newPassword: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     const redisCode = await this.redis.get<string>(resetCodeKey(email));
-    const legacyDbCodeIsValid = user?.resetCode === code && !!user.resetExpiry && user.resetExpiry >= new Date();
+    const legacyDbCodeIsValid =
+      user?.resetCode === code &&
+      !!user.resetExpiry &&
+      user.resetExpiry >= new Date();
 
     if (!user || (redisCode !== code && !legacyDbCodeIsValid)) {
       throw new UnauthorizedException('Invalid or expired reset code');

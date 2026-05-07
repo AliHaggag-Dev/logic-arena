@@ -14,8 +14,8 @@ export interface HeapNode {
 export class MinHeap<T extends { f: number }> {
   private data: T[] = [];
 
-  get size(): number { 
-      return this.data.length; 
+  get size(): number {
+    return this.data.length;
   }
 
   push(node: T): void {

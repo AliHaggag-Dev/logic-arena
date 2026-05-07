@@ -17,7 +17,7 @@ export class TournamentsCommandService {
     private prisma: PrismaService,
     private redis: RedisService,
     private queryService: TournamentsQueryService,
-  ) { }
+  ) {}
 
   async create(name: string, userId: string) {
     const tournament = await this.prisma.tournament.create({
@@ -72,10 +72,14 @@ export class TournamentsCommandService {
 
     const count = tournament.participants.length;
     if (count !== 4 && count !== 8 && count !== 2)
-      throw new BadRequestException('Need exactly 2, 4 or 8 participants to start');
+      throw new BadRequestException(
+        'Need exactly 2, 4 or 8 participants to start',
+      );
 
     // Shuffle participants
-    const shuffled = [...tournament.participants].sort(() => Math.random() - 0.5);
+    const shuffled = [...tournament.participants].sort(
+      () => Math.random() - 0.5,
+    );
     const p = (i: number): string | null => shuffled[i]?.id ?? null;
 
     // Build all match rows up front, then insert in one batch
@@ -93,28 +97,55 @@ export class TournamentsCommandService {
       // ── 8-player: 4 quarters → 2 semis → 1 final ──
       for (let i = 0; i < 4; i++) {
         matchData.push({
-          tournamentId: id, round: 1, matchIndex: i,
-          player1Id: p(i * 2), player2Id: p(i * 2 + 1), status: 'PENDING',
+          tournamentId: id,
+          round: 1,
+          matchIndex: i,
+          player1Id: p(i * 2),
+          player2Id: p(i * 2 + 1),
+          status: 'PENDING',
         });
       }
       for (let i = 0; i < 2; i++) {
-        matchData.push({ tournamentId: id, round: 2, matchIndex: i, status: 'PENDING' });
+        matchData.push({
+          tournamentId: id,
+          round: 2,
+          matchIndex: i,
+          status: 'PENDING',
+        });
       }
-      matchData.push({ tournamentId: id, round: 3, matchIndex: 0, status: 'PENDING' });
+      matchData.push({
+        tournamentId: id,
+        round: 3,
+        matchIndex: 0,
+        status: 'PENDING',
+      });
     } else if (count >= 4) {
       // ── 4-player: 2 semis → 1 final ──
       for (let i = 0; i < 2; i++) {
         matchData.push({
-          tournamentId: id, round: 1, matchIndex: i,
-          player1Id: p(i * 2), player2Id: p(i * 2 + 1), status: 'PENDING',
+          tournamentId: id,
+          round: 1,
+          matchIndex: i,
+          player1Id: p(i * 2),
+          player2Id: p(i * 2 + 1),
+          status: 'PENDING',
         });
       }
-      matchData.push({ tournamentId: id, round: 2, matchIndex: 0, status: 'PENDING' });
+      matchData.push({
+        tournamentId: id,
+        round: 2,
+        matchIndex: 0,
+        status: 'PENDING',
+      });
     } else {
       // ── 2-player: single final ──
       matchData.push({
-        tournamentId: id, round: 1, matchIndex: 0,
-        player1Id: p(0), player2Id: p(1), status: 'PENDING',
+        tournamentId: id,
+        round: 1,
+        matchIndex: 0,
+        player1Id: p(0),
+        player2Id: p(1),
+        status: 'PENDING',
       });
     }
 
@@ -147,7 +178,9 @@ export class TournamentsCommandService {
       });
       if (!match) throw new NotFoundException('Match not found');
       if (match.tournamentId !== id)
-        throw new BadRequestException('Match does not belong to this tournament');
+        throw new BadRequestException(
+          'Match does not belong to this tournament',
+        );
       if (match.status === 'COMPLETED')
         throw new BadRequestException('Match already completed');
 
@@ -157,14 +190,17 @@ export class TournamentsCommandService {
 
       // FIX 1: winnerId must be one of the two match participants
       if (winnerId !== match.player1Id && winnerId !== match.player2Id)
-        throw new BadRequestException('Winner must be a participant in this match');
+        throw new BadRequestException(
+          'Winner must be a participant in this match',
+        );
 
       // Mark match complete with a status guard for concurrent requests.
       const completed = await tx.tournamentMatch.updateMany({
         where: { id: matchId, status: { not: 'COMPLETED' } },
         data: { winnerId, status: 'COMPLETED' },
       });
-      if (completed.count === 0) throw new BadRequestException('Match already completed');
+      if (completed.count === 0)
+        throw new BadRequestException('Match already completed');
 
       // Determine total rounds for this tournament
       const tournament = await tx.tournament.findUnique({
@@ -182,7 +218,11 @@ export class TournamentsCommandService {
         const slot = match.matchIndex % 2 === 0 ? 'player1Id' : 'player2Id';
 
         const nextMatch = await tx.tournamentMatch.findFirst({
-          where: { tournamentId: id, round: nextRound, matchIndex: nextMatchIndex },
+          where: {
+            tournamentId: id,
+            round: nextRound,
+            matchIndex: nextMatchIndex,
+          },
           select: { id: true },
         });
 

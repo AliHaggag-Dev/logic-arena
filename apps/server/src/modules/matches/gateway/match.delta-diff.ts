@@ -25,21 +25,33 @@ function arraysEqualUnordered(a: string[], b: string[]): boolean {
   return aSorted.every((value, index) => value === bSorted[index]);
 }
 
-function propChanged(prop: TrackedRobotProp, current: Robot, previous: SafeRobotSnapshot): boolean {
+function propChanged(
+  prop: TrackedRobotProp,
+  current: Robot,
+  previous: SafeRobotSnapshot,
+): boolean {
   const currentValue = current[prop as keyof Robot];
   const previousValue = previous[prop];
 
   if (prop === 'position' || prop === 'velocity') {
-    return !vectorsEqual(currentValue as Vector2 | undefined, previousValue as Vector2 | undefined);
+    return !vectorsEqual(
+      currentValue as Vector2 | undefined,
+      previousValue as Vector2 | undefined,
+    );
   }
 
   return currentValue !== previousValue;
 }
 
-function cloneTrackedValue(prop: TrackedRobotProp, robot: Robot): SafeRobotSnapshot[TrackedRobotProp] {
+function cloneTrackedValue(
+  prop: TrackedRobotProp,
+  robot: Robot,
+): SafeRobotSnapshot[TrackedRobotProp] {
   const value = robot[prop as keyof Robot];
   if (prop === 'position' || prop === 'velocity') {
-    return cloneVector(value as Vector2 | undefined) as SafeRobotSnapshot[TrackedRobotProp];
+    return cloneVector(
+      value as Vector2 | undefined,
+    ) as SafeRobotSnapshot[TrackedRobotProp];
   }
   return value as SafeRobotSnapshot[TrackedRobotProp];
 }
@@ -83,10 +95,15 @@ function computeProjectileDelta(
   return { upsert, remove };
 }
 
-export function computeDeltaDiff(state: GameState, prevState: SafeGameSnapshot | null | undefined): GameStateDelta {
+export function computeDeltaDiff(
+  state: GameState,
+  prevState: SafeGameSnapshot | null | undefined,
+): GameStateDelta {
   if (!prevState) return { type: 'full', state };
 
-  const previousRobotsById = new Map(prevState.robots.map((robot) => [robot.id, robot]));
+  const previousRobotsById = new Map(
+    prevState.robots.map((robot) => [robot.id, robot]),
+  );
   const robotsDiff = state.robots
     .map((robot): RobotDelta | null => {
       const previousRobot = previousRobotsById.get(robot.id);
@@ -97,13 +114,25 @@ export function computeDeltaDiff(state: GameState, prevState: SafeGameSnapshot |
 
       for (const prop of TRACKED_ROBOT_PROPS) {
         if (propChanged(prop, robot, previousRobot)) {
-          (robotDelta as Record<TrackedRobotProp, SafeRobotSnapshot[TrackedRobotProp]>)[prop] = cloneTrackedValue(prop, robot);
+          (
+            robotDelta as Record<
+              TrackedRobotProp,
+              SafeRobotSnapshot[TrackedRobotProp]
+            >
+          )[prop] = cloneTrackedValue(prop, robot);
           changed = true;
         }
       }
 
-      const visibleRobotIds = (robot.visibleEntities?.robots ?? []).map((visibleRobot) => visibleRobot.id);
-      if (!arraysEqualUnordered(visibleRobotIds, previousRobot.visibleRobotIds ?? [])) {
+      const visibleRobotIds = (robot.visibleEntities?.robots ?? []).map(
+        (visibleRobot) => visibleRobot.id,
+      );
+      if (
+        !arraysEqualUnordered(
+          visibleRobotIds,
+          previousRobot.visibleRobotIds ?? [],
+        )
+      ) {
         robotDelta.visibleRobotIds = visibleRobotIds;
         changed = true;
       }
@@ -116,7 +145,10 @@ export function computeDeltaDiff(state: GameState, prevState: SafeGameSnapshot |
     type: 'delta',
     diff: {
       robots: robotsDiff,
-      projectiles: computeProjectileDelta(state.projectiles, prevState.projectiles),
+      projectiles: computeProjectileDelta(
+        state.projectiles,
+        prevState.projectiles,
+      ),
     },
   };
 }
@@ -126,9 +158,13 @@ export function generateSafeSnapshot(state: GameState): SafeGameSnapshot {
     robots: state.robots.map((r) => {
       const snap: SafeRobotSnapshot = { id: r.id, visibleRobotIds: [] };
       for (const prop of TRACKED_ROBOT_PROPS) {
-        (snap as Record<TrackedRobotProp, SafeRobotSnapshot[TrackedRobotProp]>)[prop] = cloneTrackedValue(prop, r);
+        (snap as Record<TrackedRobotProp, SafeRobotSnapshot[TrackedRobotProp]>)[
+          prop
+        ] = cloneTrackedValue(prop, r);
       }
-      snap.visibleRobotIds = (r.visibleEntities?.robots ?? []).map((vr) => vr.id);
+      snap.visibleRobotIds = (r.visibleEntities?.robots ?? []).map(
+        (vr) => vr.id,
+      );
       return snap;
     }),
     projectiles: state.projectiles.map(toSafeProjectile),

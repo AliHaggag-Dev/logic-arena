@@ -7,9 +7,10 @@ import { AuthOAuthService } from '../auth-oauth.service';
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor(private authOAuthService: AuthOAuthService) {
     const isDev = process.env.NODE_ENV === 'development';
-    const callbackURL = isDev 
-      ? 'http://localhost:3001/api/auth/github/callback' 
-      : (process.env.GITHUB_CALLBACK_URL || 'https://logicarena.dev/api/auth/github/callback');
+    const callbackURL = isDev
+      ? 'http://localhost:3001/api/auth/github/callback'
+      : process.env.GITHUB_CALLBACK_URL ||
+        'https://logicarena.dev/api/auth/github/callback';
 
     super({
       clientID: process.env.GITHUB_CLIENT_ID || '',
@@ -19,8 +20,14 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any, done: Function) {
-    const email = profile.emails?.[0]?.value ?? `${profile.username}@github.com`;
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: Function,
+  ) {
+    const email =
+      profile.emails?.[0]?.value ?? `${profile.username}@github.com`;
     const user = await this.authOAuthService.findOrCreateOAuthUser({
       provider: 'github',
       providerId: profile.id,

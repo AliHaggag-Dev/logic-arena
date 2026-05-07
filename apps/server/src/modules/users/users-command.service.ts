@@ -1,12 +1,36 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException as BadReq, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException as BadReq,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../common/prisma.service';
 import { RedisService } from '../../common/redis.service';
 import { CloudinaryService } from '../../common/cloudinary.service';
-import { ALLOWED_ROBOT_IDS, COLOR_REGEX, profileKey, loadoutKey, preferencesKey, blackMarketKey, combatLoadoutKey, leaderboardSnapshotKey, leaderboardRankKey, BCRYPT_ROUNDS, PRISMA_UNIQUE_VIOLATION, ArenaPreferences, NotificationSettings } from './types';
+import {
+  ALLOWED_ROBOT_IDS,
+  COLOR_REGEX,
+  profileKey,
+  loadoutKey,
+  preferencesKey,
+  blackMarketKey,
+  combatLoadoutKey,
+  leaderboardSnapshotKey,
+  leaderboardRankKey,
+  BCRYPT_ROUNDS,
+  PRISMA_UNIQUE_VIOLATION,
+  ArenaPreferences,
+  NotificationSettings,
+} from './types';
 import { AUTH_COOKIE_MAX_AGE_SECONDS, sessionVersionKey } from '../auth/types';
-import { BLACK_MARKET_ITEMS, DEFAULT_UNLOCKED_ITEMS, ItemCategory } from './black-market.constants';
+import {
+  BLACK_MARKET_ITEMS,
+  DEFAULT_UNLOCKED_ITEMS,
+  ItemCategory,
+} from './black-market.constants';
 import { campaignVersionKey } from '../campaign/campaign.service';
 
 @Injectable()
@@ -15,7 +39,7 @@ export class UsersCommandService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
     private readonly cloudinary: CloudinaryService,
-  ) { }
+  ) {}
 
   private async invalidateUserCaches(userId: string): Promise<void> {
     await this.redis.del(
@@ -31,12 +55,20 @@ export class UsersCommandService {
     await this.redis.del(leaderboardSnapshotKey, leaderboardRankKey);
   }
 
-  async updateLoadout(userId: string, robotId: string, color: string): Promise<void> {
+  async updateLoadout(
+    userId: string,
+    robotId: string,
+    color: string,
+  ): Promise<void> {
     if (!ALLOWED_ROBOT_IDS.includes(robotId)) {
-      throw new Error(`Invalid robotId "${robotId}". Must be one of: ${ALLOWED_ROBOT_IDS.join(', ')}`);
+      throw new Error(
+        `Invalid robotId "${robotId}". Must be one of: ${ALLOWED_ROBOT_IDS.join(', ')}`,
+      );
     }
     if (color !== 'DEFAULT' && !COLOR_REGEX.test(color)) {
-      throw new Error(`Invalid color "${color}". Must match #rrggbb format or be "DEFAULT".`);
+      throw new Error(
+        `Invalid color "${color}". Must match #rrggbb format or be "DEFAULT".`,
+      );
     }
 
     await this.prisma.user.update({
@@ -65,8 +97,10 @@ export class UsersCommandService {
         err.code === PRISMA_UNIQUE_VIOLATION
       ) {
         const target = (err.meta?.target as string[]) ?? [];
-        if (target.includes('username')) throw new ConflictException('Username already taken');
-        if (target.includes('email')) throw new ConflictException('Email already registered');
+        if (target.includes('username'))
+          throw new ConflictException('Username already taken');
+        if (target.includes('email'))
+          throw new ConflictException('Email already registered');
       }
       throw err;
     }
@@ -82,7 +116,9 @@ export class UsersCommandService {
       select: { passwordHash: true },
     });
     if (!user?.passwordHash) {
-      throw new UnauthorizedException('Account uses OAuth — password cannot be changed here');
+      throw new UnauthorizedException(
+        'Account uses OAuth — password cannot be changed here',
+      );
     }
     const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isValid) {
@@ -93,7 +129,10 @@ export class UsersCommandService {
       where: { id: userId },
       data: { passwordHash: newHash },
     });
-    await this.redis.incr(sessionVersionKey(userId), AUTH_COOKIE_MAX_AGE_SECONDS);
+    await this.redis.incr(
+      sessionVersionKey(userId),
+      AUTH_COOKIE_MAX_AGE_SECONDS,
+    );
     await this.redis.del(profileKey(userId));
   }
 
@@ -101,14 +140,22 @@ export class UsersCommandService {
     userId: string,
     prefs: Partial<ArenaPreferences>,
   ): Promise<void> {
-    if (prefs.defaultRobot !== undefined && !ALLOWED_ROBOT_IDS.includes(prefs.defaultRobot)) {
-      throw new Error(`Invalid defaultRobot "${prefs.defaultRobot}". Must be one of: ${ALLOWED_ROBOT_IDS.join(', ')}`);
+    if (
+      prefs.defaultRobot !== undefined &&
+      !ALLOWED_ROBOT_IDS.includes(prefs.defaultRobot)
+    ) {
+      throw new Error(
+        `Invalid defaultRobot "${prefs.defaultRobot}". Must be one of: ${ALLOWED_ROBOT_IDS.join(', ')}`,
+      );
     }
     const current = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { arenaPreferences: true },
     });
-    const merged = { ...(current?.arenaPreferences as unknown as ArenaPreferences ?? {}), ...prefs };
+    const merged = {
+      ...((current?.arenaPreferences as unknown as ArenaPreferences) ?? {}),
+      ...prefs,
+    };
     await this.prisma.user.update({
       where: { id: userId },
       data: { arenaPreferences: merged },
@@ -124,7 +171,11 @@ export class UsersCommandService {
       where: { id: userId },
       select: { notificationSettings: true },
     });
-    const merged = { ...(current?.notificationSettings as unknown as NotificationSettings ?? {}), ...settings };
+    const merged = {
+      ...((current?.notificationSettings as unknown as NotificationSettings) ??
+        {}),
+      ...settings,
+    };
     await this.prisma.user.update({
       where: { id: userId },
       data: { notificationSettings: merged },
@@ -135,7 +186,7 @@ export class UsersCommandService {
   async deleteAccount(userId: string, confirmation: string): Promise<void> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { username: true }
+      select: { username: true },
     });
 
     if (!user) {
@@ -180,10 +231,7 @@ export class UsersCommandService {
     });
     if (!user) throw new NotFoundException('User not found');
 
-    const effectiveOwned = [
-      ...user.unlockedItems,
-      ...DEFAULT_UNLOCKED_ITEMS,
-    ];
+    const effectiveOwned = [...user.unlockedItems, ...DEFAULT_UNLOCKED_ITEMS];
     if (effectiveOwned.includes(itemId)) {
       throw new ConflictException('Item already owned');
     }
@@ -204,10 +252,16 @@ export class UsersCommandService {
     });
 
     if (updateResult.count === 0) {
-      throw new ConflictException('Item purchase could not be completed — retry with latest wallet state');
+      throw new ConflictException(
+        'Item purchase could not be completed — retry with latest wallet state',
+      );
     }
 
-    await this.redis.del(profileKey(userId), blackMarketKey(userId), combatLoadoutKey(userId));
+    await this.redis.del(
+      profileKey(userId),
+      blackMarketKey(userId),
+      combatLoadoutKey(userId),
+    );
   }
 
   async equipItem(
@@ -226,15 +280,15 @@ export class UsersCommandService {
     });
     if (!user) throw new NotFoundException('User not found');
 
-    const effectiveOwned = [
-      ...user.unlockedItems,
-      ...DEFAULT_UNLOCKED_ITEMS,
-    ];
+    const effectiveOwned = [...user.unlockedItems, ...DEFAULT_UNLOCKED_ITEMS];
     if (!effectiveOwned.includes(itemId)) {
       throw new BadReq('Item not owned — purchase it first');
     }
 
-    const fieldMap: Record<ItemCategory, 'equippedChassis' | 'equippedPaint' | 'equippedTracer'> = {
+    const fieldMap: Record<
+      ItemCategory,
+      'equippedChassis' | 'equippedPaint' | 'equippedTracer'
+    > = {
       chassis: 'equippedChassis',
       paint: 'equippedPaint',
       tracer: 'equippedTracer',
@@ -244,6 +298,11 @@ export class UsersCommandService {
       where: { id: userId },
       data: { [fieldMap[category]]: itemId },
     });
-    await this.redis.del(profileKey(userId), loadoutKey(userId), blackMarketKey(userId), combatLoadoutKey(userId));
+    await this.redis.del(
+      profileKey(userId),
+      loadoutKey(userId),
+      blackMarketKey(userId),
+      combatLoadoutKey(userId),
+    );
   }
 }

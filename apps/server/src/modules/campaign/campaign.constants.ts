@@ -74,7 +74,8 @@ export const CAMPAIGN_TABS: CampaignTab[] = [
   {
     id: 'graph-theory',
     label: 'Graph Theory',
-    description: 'Navigate connected threat networks and pathfinding algorithms.',
+    description:
+      'Navigate connected threat networks and pathfinding algorithms.',
   },
 ];
 
@@ -92,7 +93,9 @@ export function getLevelById(id: string): CampaignLevel | undefined {
 }
 
 export function getLevelsByTab(tabId: CampaignTabId): CampaignLevel[] {
-  return CAMPAIGN_LEVELS.filter((l) => l.tabId === tabId).sort((a, b) => a.order - b.order);
+  return CAMPAIGN_LEVELS.filter((l) => l.tabId === tabId).sort(
+    (a, b) => a.order - b.order,
+  );
 }
 
 export function getPreviousLevelId(level: CampaignLevel): string | null {

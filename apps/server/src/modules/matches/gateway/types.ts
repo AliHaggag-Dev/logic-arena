@@ -8,12 +8,21 @@ export type AuthenticatedSocket = Socket & {
 };
 
 export const TRACKED_ROBOT_PROPS = [
-  'position', 'velocity', 'health', 'rotation', 'isAlive', 'color',
-  'speedMultiplier', 'energy', 'maxEnergy', 'inStasis', 'fovDirection',
+  'position',
+  'velocity',
+  'health',
+  'rotation',
+  'isAlive',
+  'color',
+  'speedMultiplier',
+  'energy',
+  'maxEnergy',
+  'inStasis',
+  'fovDirection',
   'hitWallTimestamp',
 ] as const;
 
-export type TrackedRobotProp = typeof TRACKED_ROBOT_PROPS[number];
+export type TrackedRobotProp = (typeof TRACKED_ROBOT_PROPS)[number];
 
 export type SafeRobotSnapshot = Pick<Partial<Robot>, TrackedRobotProp> & {
   id: string;
@@ -43,4 +52,7 @@ export interface ProjectileDelta {
 
 export type GameStateDelta =
   | { type: 'full'; state: GameState }
-  | { type: 'delta'; diff: { robots: RobotDelta[]; projectiles: ProjectileDelta } };
+  | {
+      type: 'delta';
+      diff: { robots: RobotDelta[]; projectiles: ProjectileDelta };
+    };

@@ -11,9 +11,9 @@ const replayKey = (matchId: string) => `replay:${matchId}`;
 const REPLAY_TTL = 3_600;
 
 // Maximum reference values used to normalize each raw metric to 0-100
-const MAX_DAMAGE_PER_MATCH = 200;  // theoretical max damage a robot deals
-const MAX_ENERGY_RATE = 3;    // max energy commands-per-second
-const MAX_EFFICIENCY = 25;   // efficiency score ceiling (damage/energy * 100)
+const MAX_DAMAGE_PER_MATCH = 200; // theoretical max damage a robot deals
+const MAX_ENERGY_RATE = 3; // max energy commands-per-second
+const MAX_EFFICIENCY = 25; // efficiency score ceiling (damage/energy * 100)
 
 function clamp(v: number, lo = 0, hi = 100): number {
   return Math.max(lo, Math.min(hi, v));
@@ -54,15 +54,12 @@ function computeCombatStats(
 
   // Precision: proxy — damage dealt / energy consumed × 100 reflects
   // how targeted/precise the robot's fire is (higher when each shot connects)
-  const rawPrecision = energyConsumed > 0
-    ? (damageDealt / energyConsumed) * 100
-    : 0;
+  const rawPrecision =
+    energyConsumed > 0 ? (damageDealt / energyConsumed) * 100 : 0;
   const precision = normalize(rawPrecision, 80);
 
   // Speed: command rate per second (energy consumed is a proxy for total commands)
-  const rawSpeed = durationSecs > 0
-    ? energyConsumed / durationSecs
-    : 0;
+  const rawSpeed = durationSecs > 0 ? energyConsumed / durationSecs : 0;
   const speed = normalize(rawSpeed, MAX_ENERGY_RATE);
 
   return { efficiency, aggression, defense, precision, speed };
@@ -79,7 +76,13 @@ function mergeStats(
   if (!existing) return incoming;
 
   const w = 0.35; // weight for new match
-  const keys: (keyof CombatStats)[] = ['efficiency', 'aggression', 'defense', 'precision', 'speed'];
+  const keys: (keyof CombatStats)[] = [
+    'efficiency',
+    'aggression',
+    'defense',
+    'precision',
+    'speed',
+  ];
   const merged = {} as CombatStats;
   for (const k of keys) {
     merged[k] = clamp(Math.round(existing[k] * (1 - w) + incoming[k] * w));
@@ -149,7 +152,8 @@ export async function persistMatchResults(
       }
     }
 
-    const persistedWinnerId = winner && playerIdSet.has(winner.id) ? winner.id : null;
+    const persistedWinnerId =
+      winner && playerIdSet.has(winner.id) ? winner.id : null;
 
     const createdMatch = await tx.match.upsert({
       where: { id: matchId },
@@ -180,12 +184,19 @@ export async function persistMatchResults(
         const scriptId = playerScriptMap.get(robot.id);
         if (!scriptId) return;
 
-        const existingStats = userMap.get(robot.id)?.combatStats as CombatStats | null;
-        const newStats = computeCombatStats(robot, efficiencyScores[robot.id] ?? 0, durationSecs);
+        const existingStats = userMap.get(robot.id)
+          ?.combatStats as CombatStats | null;
+        const newStats = computeCombatStats(
+          robot,
+          efficiencyScores[robot.id] ?? 0,
+          durationSecs,
+        );
         const mergedStats = mergeStats(existingStats, newStats);
 
         await tx.matchParticipant.upsert({
-          where: { matchId_userId: { matchId: createdMatch.id, userId: robot.id } },
+          where: {
+            matchId_userId: { matchId: createdMatch.id, userId: robot.id },
+          },
           create: {
             matchId: createdMatch.id,
             userId: robot.id,
@@ -202,17 +213,19 @@ export async function persistMatchResults(
 
         await tx.user.update({
           where: { id: robot.id },
-          data: { combatStats: mergedStats as unknown as Prisma.InputJsonValue },
+          data: {
+            combatStats: mergedStats as unknown as Prisma.InputJsonValue,
+          },
         });
       }),
     );
 
     const updatedWinner = persistedWinnerId
       ? await tx.user.update({
-        where: { id: persistedWinnerId },
-        data: { rank: { increment: 10 } },
-        select: { id: true, rank: true },
-      })
+          where: { id: persistedWinnerId },
+          data: { rank: { increment: 10 } },
+          select: { id: true, rank: true },
+        })
       : null;
 
     return { createdMatch, playerIds, updatedWinner };
@@ -221,21 +234,30 @@ export async function persistMatchResults(
   if (!persistenceResult) return;
 
   if (persistenceResult.updatedWinner && redis?.healthy) {
-    await redis.getClient().zadd(
-      LEADERBOARD_ZSET_KEY,
-      String(persistenceResult.updatedWinner.rank),
-      persistenceResult.updatedWinner.id,
-    );
+    await redis
+      .getClient()
+      .zadd(
+        LEADERBOARD_ZSET_KEY,
+        String(persistenceResult.updatedWinner.rank),
+        persistenceResult.updatedWinner.id,
+      );
   }
 
   if (redis) {
-    await redis.del(LEADERBOARD_CACHE_KEY, ...persistenceResult.playerIds.map((id) => profileKey(id)));
-    await redis.set(replayKey(matchId), {
-      id: persistenceResult.createdMatch.id,
-      replayData: snapshots,
-      winnerId: persistenceResult.createdMatch.winnerId,
-      duration: persistenceResult.createdMatch.duration,
-      createdAt: persistenceResult.createdMatch.createdAt,
-    }, REPLAY_TTL);
+    await redis.del(
+      LEADERBOARD_CACHE_KEY,
+      ...persistenceResult.playerIds.map((id) => profileKey(id)),
+    );
+    await redis.set(
+      replayKey(matchId),
+      {
+        id: persistenceResult.createdMatch.id,
+        replayData: snapshots,
+        winnerId: persistenceResult.createdMatch.winnerId,
+        duration: persistenceResult.createdMatch.duration,
+        createdAt: persistenceResult.createdMatch.createdAt,
+      },
+      REPLAY_TTL,
+    );
   }
 }

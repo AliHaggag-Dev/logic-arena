@@ -45,13 +45,13 @@ export class ActionExecutor {
     }
 
     const QUERY_LABELS: Record<string, string> = {
-      GET_HEALTH:        'health',
-      GET_ENERGY:        'energy',
-      GET_ENERGY_PCT:    'energy%',
-      GET_DISTANCE:      'distance',
-      GET_POSITION:      'position',
-      GET_ROTATION:      'rotation',
-      GET_FOV_DIR:       'fov_dir',
+      GET_HEALTH: 'health',
+      GET_ENERGY: 'energy',
+      GET_ENERGY_PCT: 'energy%',
+      GET_DISTANCE: 'distance',
+      GET_POSITION: 'position',
+      GET_ROTATION: 'rotation',
+      GET_FOV_DIR: 'fov_dir',
       GET_VISIBLE_COUNT: 'visible',
     };
 
@@ -61,7 +61,7 @@ export class ActionExecutor {
     if (this.onEvent) {
       this.onEvent('queryResult', {
         robotId,
-        query:   queryName,
+        query: queryName,
         result,
         label,
         message: `[QUERY] ${label}`,
@@ -75,9 +75,9 @@ export class ActionExecutor {
     if (this.onEvent) {
       this.onEvent('queryResult', {
         robotId,
-        query:   'ERROR',
-        result:  'FATAL',
-        label:   message,
+        query: 'ERROR',
+        result: 'FATAL',
+        label: message,
         message: message,
       });
     }
@@ -89,9 +89,7 @@ export class ActionExecutor {
     memory: Record<string, unknown>,
   ): void {
     const actionCommand =
-      action.type === 'ScanStatement'
-        ? 'SCAN'
-        : (action as ActionExpression).command.toUpperCase();
+      action.type === 'ScanStatement' ? 'SCAN' : action.command.toUpperCase();
 
     // --- Energy gate ---
     // FIRE / BURST_FIRE skip this gate — CombatExecutor handles their own
@@ -100,7 +98,8 @@ export class ActionExecutor {
     const robot = this.gameLoop.getRobots().find((r) => r.id === robotId);
     if (!robot) return;
 
-    const isCombatCommand = actionCommand === 'FIRE' || actionCommand === 'BURST_FIRE';
+    const isCombatCommand =
+      actionCommand === 'FIRE' || actionCommand === 'BURST_FIRE';
 
     if (!isCombatCommand) {
       const allowed = this.energyManager.deduct(robot, actionCommand);

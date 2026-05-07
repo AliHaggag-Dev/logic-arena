@@ -34,31 +34,46 @@ const passwordSchema = z
 // DTOs
 // ---------------------------------------------------------------------------
 
-export const RegisterSchema = z.object({
-  username: usernameSchema,
-  email: emailSchema,
-  password: passwordSchema,
-}).strict();
+export const RegisterSchema = z
+  .object({
+    username: usernameSchema,
+    email: emailSchema,
+    password: passwordSchema,
+  })
+  .strict();
 
-export const LoginSchema = z.object({
-  username: usernameSchema,
-  password: z.string({ error: 'Password is required' }).min(1, 'Password is required').max(128, 'Password must be at most 128 characters'),
-}).strict();
+export const LoginSchema = z
+  .object({
+    username: usernameSchema,
+    password: z
+      .string({ error: 'Password is required' })
+      .min(1, 'Password is required')
+      .max(128, 'Password must be at most 128 characters'),
+  })
+  .strict();
 
-export const VerifyEmailSchema = z.object({
-  email: emailSchema,
-  code: z.string().length(6, 'Verification code must be exactly 6 characters'),
-}).strict();
+export const VerifyEmailSchema = z
+  .object({
+    email: emailSchema,
+    code: z
+      .string()
+      .length(6, 'Verification code must be exactly 6 characters'),
+  })
+  .strict();
 
-export const ForgotPasswordSchema = z.object({
-  email: emailSchema,
-}).strict();
+export const ForgotPasswordSchema = z
+  .object({
+    email: emailSchema,
+  })
+  .strict();
 
-export const ResetPasswordSchema = z.object({
-  email: emailSchema,
-  code: z.string().length(6, 'Reset code must be exactly 6 characters'),
-  newPassword: passwordSchema,
-}).strict();
+export const ResetPasswordSchema = z
+  .object({
+    email: emailSchema,
+    code: z.string().length(6, 'Reset code must be exactly 6 characters'),
+    newPassword: passwordSchema,
+  })
+  .strict();
 
 // ---------------------------------------------------------------------------
 // Inferred types
@@ -69,5 +84,3 @@ export type LoginDto = z.infer<typeof LoginSchema>;
 export type VerifyEmailDto = z.infer<typeof VerifyEmailSchema>;
 export type ForgotPasswordDto = z.infer<typeof ForgotPasswordSchema>;
 export type ResetPasswordDto = z.infer<typeof ResetPasswordSchema>;
-
-

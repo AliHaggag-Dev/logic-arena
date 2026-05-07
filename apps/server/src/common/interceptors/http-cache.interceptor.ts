@@ -9,14 +9,14 @@ import { RedisService } from '../redis.service';
 import { AUTH_COOKIE_NAME } from '../../modules/auth/types';
 
 const CACHE_TTL = 60; // seconds — public non-user-specific GET responses
-const PUBLIC_CACHEABLE_PATHS = new Set([
-  '/users/leaderboard',
-]);
+const PUBLIC_CACHEABLE_PATHS = new Set(['/users/leaderboard']);
 
 type HeaderValue = string | string[] | undefined;
 
 function headerIncludesAuthCookie(cookieHeader: HeaderValue): boolean {
-  const rawCookie = Array.isArray(cookieHeader) ? cookieHeader.join(';') : cookieHeader;
+  const rawCookie = Array.isArray(cookieHeader)
+    ? cookieHeader.join(';')
+    : cookieHeader;
   if (!rawCookie) return false;
 
   return rawCookie
@@ -39,9 +39,12 @@ function getPathname(url: string): string {
  */
 @Injectable()
 export class HttpCacheInterceptor implements NestInterceptor {
-  constructor(private readonly redis: RedisService) { }
+  constructor(private readonly redis: RedisService) {}
 
-  async intercept(ctx: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
+  async intercept(
+    ctx: ExecutionContext,
+    next: CallHandler,
+  ): Promise<Observable<unknown>> {
     const req = ctx.switchToHttp().getRequest<{
       url: string;
       method: string;
@@ -53,10 +56,17 @@ export class HttpCacheInterceptor implements NestInterceptor {
 
     const hasAuthorizationHeader = Boolean(req.headers['authorization']);
     const hasAuthCookie = headerIncludesAuthCookie(req.headers['cookie']);
-    const isExplicitlyCacheable = PUBLIC_CACHEABLE_PATHS.has(getPathname(req.url));
+    const isExplicitlyCacheable = PUBLIC_CACHEABLE_PATHS.has(
+      getPathname(req.url),
+    );
 
     // Only cache public GET — skip auth-gated, cookie-authenticated, and mutating requests
-    if (req.method !== 'GET' || hasAuthorizationHeader || hasAuthCookie || !isExplicitlyCacheable) {
+    if (
+      req.method !== 'GET' ||
+      hasAuthorizationHeader ||
+      hasAuthCookie ||
+      !isExplicitlyCacheable
+    ) {
       res.setHeader('X-Cache', 'BYPASS');
       return next.handle();
     }

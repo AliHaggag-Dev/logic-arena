@@ -19,7 +19,12 @@ export function createGameDependencies(
   // so both the physics tick and the action executor share the same state.
   const energyManager = gameLoop.energyManager;
   const pathfinder = new Pathfinder(gameLoop);
-  const actionExecutor = new ActionExecutor(gameLoop, onEvent, pathfinder, energyManager);
+  const actionExecutor = new ActionExecutor(
+    gameLoop,
+    onEvent,
+    pathfinder,
+    energyManager,
+  );
   const logicEvaluator = new LogicEvaluator(gameLoop, actionExecutor);
 
   return { pathfinder, actionExecutor, logicEvaluator, energyManager };

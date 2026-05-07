@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
@@ -16,7 +21,7 @@ export class AuthRegistrationService {
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
     private readonly redis: RedisService,
-  ) { }
+  ) {}
 
   async register(email: string, username: string, password: string) {
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
@@ -27,7 +32,11 @@ export class AuthRegistrationService {
         data: { email, username, passwordHash, isVerified: false },
       });
 
-      await this.redis.set(verifyCodeKey(email), verifyCode, AUTH_CODE_TTL_SECONDS);
+      await this.redis.set(
+        verifyCodeKey(email),
+        verifyCode,
+        AUTH_CODE_TTL_SECONDS,
+      );
 
       try {
         await this.emailService.sendVerificationCode(email, verifyCode);
@@ -58,7 +67,10 @@ export class AuthRegistrationService {
   async verifyEmail(email: string, code: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     const redisCode = await this.redis.get<string>(verifyCodeKey(email));
-    const legacyDbCodeIsValid = user?.verifyCode === code && !!user.verifyExpiry && user.verifyExpiry >= new Date();
+    const legacyDbCodeIsValid =
+      user?.verifyCode === code &&
+      !!user.verifyExpiry &&
+      user.verifyExpiry >= new Date();
 
     if (!user || (redisCode !== code && !legacyDbCodeIsValid)) {
       throw new UnauthorizedException('Invalid or expired verification code');

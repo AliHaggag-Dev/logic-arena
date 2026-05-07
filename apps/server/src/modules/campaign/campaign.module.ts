@@ -7,7 +7,7 @@ import { RedisService } from '../../common/redis.service';
 
 @Module({
   controllers: [CampaignController, MatchesController],
-  providers:   [CampaignService, PrismaService, RedisService],
-  exports:     [CampaignService],
+  providers: [CampaignService, PrismaService, RedisService],
+  exports: [CampaignService],
 })
 export class CampaignModule {}

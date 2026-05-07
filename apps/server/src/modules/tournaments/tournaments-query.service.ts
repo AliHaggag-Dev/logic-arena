@@ -3,8 +3,8 @@ import { PrismaService } from '../../common/prisma.service';
 import { RedisService } from '../../common/redis.service';
 
 const LIST_CACHE_KEY = 'tournaments:list';
-const LIST_TTL = 10;       // seconds — matches client poll interval
-const DETAIL_TTL = 10;     // seconds — matches client poll interval
+const LIST_TTL = 10; // seconds — matches client poll interval
+const DETAIL_TTL = 10; // seconds — matches client poll interval
 const MAX_TOURNAMENTS_PER_PAGE = 100;
 const MAX_TOURNAMENT_MATCHES_PER_PAGE = 100;
 const tournamentKey = (id: string) => `tournament:${id}`;
@@ -14,7 +14,7 @@ export class TournamentsQueryService {
   constructor(
     private prisma: PrismaService,
     private redis: RedisService,
-  ) { }
+  ) {}
 
   async findAll() {
     // FIX 3: cache the list regardless of auth — tournament data is public
@@ -44,7 +44,10 @@ export class TournamentsQueryService {
       include: {
         participants: { select: { id: true, username: true } },
         creator: { select: { id: true, username: true } },
-        matches: { orderBy: [{ round: 'asc' }, { matchIndex: 'asc' }], take: MAX_TOURNAMENT_MATCHES_PER_PAGE },
+        matches: {
+          orderBy: [{ round: 'asc' }, { matchIndex: 'asc' }],
+          take: MAX_TOURNAMENT_MATCHES_PER_PAGE,
+        },
       },
     });
     if (!tournament) throw new NotFoundException('Tournament not found');
@@ -60,9 +63,9 @@ export class TournamentsQueryService {
     const users =
       playerIds.size > 0
         ? await this.prisma.user.findMany({
-          where: { id: { in: [...playerIds] } },
-          select: { id: true, username: true },
-        })
+            where: { id: { in: [...playerIds] } },
+            select: { id: true, username: true },
+          })
         : [];
 
     const userMap = new Map(users.map((u) => [u.id, u]));

@@ -1,8 +1,15 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import Redis from 'ioredis';
 
 function isRedisTlsEnabled(): boolean {
-  return ['1', 'true', 'yes'].includes((process.env.REDIS_TLS ?? '').toLowerCase());
+  return ['1', 'true', 'yes'].includes(
+    (process.env.REDIS_TLS ?? '').toLowerCase(),
+  );
 }
 
 @Injectable()
@@ -21,12 +28,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       family: 4, // Force IPv4 to prevent Node DNS timeouts
       ...(useTls ? { tls: {} } : {}),
       // ── Resilience ────────────────────────────────────────────────────────
-      lazyConnect: true,        // don't block app startup
+      lazyConnect: true, // don't block app startup
       enableReadyCheck: true,
       connectTimeout: 5_000,
       maxRetriesPerRequest: 2,
       retryStrategy: (times) => {
-        if (times > 5) return null;         // stop retrying after 5 attempts
+        if (times > 5) return null; // stop retrying after 5 attempts
         return Math.min(times * 300, 3_000);
       },
       reconnectOnError: (err) => err.message.includes('READONLY'),
@@ -35,15 +42,29 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.client.on('connect', () => {
       this.logger.log('✅ Redis connected');
     });
-    this.client.on('ready', () => { this.isReady = true; this.logger.log('✅ Redis ready'); });
-    this.client.on('reconnecting', () => { this.isReady = false; this.logger.warn('🔄 Redis reconnecting…'); });
-    this.client.on('error', (err) => { this.isReady = false; this.logger.error(`❌ Redis: ${err.message}`); });
-    this.client.on('end', () => { this.isReady = false; this.logger.warn('🔌 Redis disconnected'); });
+    this.client.on('ready', () => {
+      this.isReady = true;
+      this.logger.log('✅ Redis ready');
+    });
+    this.client.on('reconnecting', () => {
+      this.isReady = false;
+      this.logger.warn('🔄 Redis reconnecting…');
+    });
+    this.client.on('error', (err) => {
+      this.isReady = false;
+      this.logger.error(`❌ Redis: ${err.message}`);
+    });
+    this.client.on('end', () => {
+      this.isReady = false;
+      this.logger.warn('🔌 Redis disconnected');
+    });
 
     // Non-blocking connect — app boots regardless of Redis state
     this.client.connect().catch((err: unknown) => {
       const message = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Redis initial connect failed (degraded mode): ${message}`);
+      this.logger.error(
+        `Redis initial connect failed (degraded mode): ${message}`,
+      );
     });
   }
 
@@ -68,14 +89,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     if (!this.isReady) return;
     try {
       await this.client.setex(key, ttlSeconds, JSON.stringify(value));
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   async del(...keys: string[]): Promise<void> {
     if (!this.isReady || !keys.length) return;
     try {
       await this.client.del(...keys);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   /** Scan + delete keys matching a glob pattern (cache invalidation). */
@@ -85,12 +110,20 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       const keys: string[] = [];
       let cursor = '0';
       do {
-        const [next, batch] = await this.client.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+        const [next, batch] = await this.client.scan(
+          cursor,
+          'MATCH',
+          pattern,
+          'COUNT',
+          100,
+        );
         cursor = next;
         keys.push(...batch);
       } while (cursor !== '0');
       if (keys.length) await this.client.del(...keys);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   /** Atomic increment with TTL — returns the new count (0 if Redis is down). */
@@ -100,10 +133,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       const count = await this.client.incr(key);
       if (count === 1) await this.client.expire(key, ttlSeconds);
       return count;
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   }
 
-  get healthy(): boolean { return this.isReady; }
+  get healthy(): boolean {
+    return this.isReady;
+  }
 
-  getClient(): Redis { return this.client; }
+  getClient(): Redis {
+    return this.client;
+  }
 }

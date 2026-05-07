@@ -1,6 +1,12 @@
 import {
-  Controller, Post, Body, Req, UseGuards,
-  NotFoundException, BadRequestException, ForbiddenException,
+  Controller,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '../../common/auth.guard';
@@ -45,7 +51,7 @@ export class MatchesController {
     private readonly campaignService: CampaignService,
     private readonly redis: RedisService,
     private readonly prisma: PrismaService,
-  ) { }
+  ) {}
 
   /** Synchronous campaign fight — no WebSocket, no DB persistence */
   @Post('campaign')
@@ -67,18 +73,27 @@ export class MatchesController {
     // ── Level-lock enforcement (403 on locked / 404 on unknown) ─────────────
     let enemyScript: string;
     try {
-      enemyScript = await this.campaignService.getEnemyScriptSecure(userId, levelId);
+      enemyScript = await this.campaignService.getEnemyScriptSecure(
+        userId,
+        levelId,
+      );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
-      if (msg === ERR_LEVEL_LOCKED) throw new ForbiddenException('Level is locked');
-      if (msg === ERR_LEVEL_NOT_FOUND) throw new NotFoundException('Level not found');
+      if (msg === ERR_LEVEL_LOCKED)
+        throw new ForbiddenException('Level is locked');
+      if (msg === ERR_LEVEL_NOT_FOUND)
+        throw new NotFoundException('Level not found');
       throw e;
     }
 
     // ── Load user loadout ────────────────────────────────────────────────────
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { equippedChassis: true, equippedPaint: true, equippedTracer: true },
+      select: {
+        equippedChassis: true,
+        equippedPaint: true,
+        equippedTracer: true,
+      },
     });
 
     let userColor = '#22d3ee';
@@ -89,7 +104,9 @@ export class MatchesController {
       userModel = user.equippedChassis || 'chassis-phantom';
       const paint = BLACK_MARKET_ITEMS.find((i) => i.id === user.equippedPaint);
       if (paint?.color) userColor = paint.color;
-      const tracer = BLACK_MARKET_ITEMS.find((i) => i.id === user.equippedTracer);
+      const tracer = BLACK_MARKET_ITEMS.find(
+        (i) => i.id === user.equippedTracer,
+      );
       if (tracer?.color) userTracerColor = tracer.color;
     }
 
@@ -97,8 +114,20 @@ export class MatchesController {
     const matchId = `campaign-${crypto.randomUUID()}`;
 
     const engine = new MatchEngine(matchId, [
-      { id: userId, script: userScript, color: userColor, model: userModel, tracerColor: userTracerColor },
-      { id: 'bot-2', script: enemyScript, color: '#ef4444', model: 'unit-02', tracerColor: '#ef4444' },
+      {
+        id: userId,
+        script: userScript,
+        color: userColor,
+        model: userModel,
+        tracerColor: userTracerColor,
+      },
+      {
+        id: 'bot-2',
+        script: enemyScript,
+        color: '#ef4444',
+        model: 'unit-02',
+        tracerColor: '#ef4444',
+      },
     ]);
 
     const startMs = Date.now();
@@ -109,7 +138,7 @@ export class MatchesController {
       const check = setInterval(() => {
         tick++;
         const state = engine.getState();
-        const robots = state.robots as Robot[];
+        const robots = state.robots;
         const aliveRobots = robots.filter((r) => r.health > 0);
 
         const isOver = robots.length > 0 && aliveRobots.length <= 1;
@@ -144,7 +173,8 @@ export class MatchesController {
           };
           storeToken().catch(() => {
             resolve({
-              won, draw,
+              won,
+              draw,
               durationSeconds: Math.floor((Date.now() - startMs) / 1000),
               completionToken: null,
             });

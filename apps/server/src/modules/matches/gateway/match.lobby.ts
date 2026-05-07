@@ -18,7 +18,7 @@ export class MatchLobbyManager {
     private server: Server,
     private prisma: PrismaService,
     private redis: RedisService,
-  ) { }
+  ) {}
 
   private async publishLobbySnapshot(): Promise<void> {
     const snapshot = Array.from(this.state.lobbyMatches.values());
@@ -28,10 +28,16 @@ export class MatchLobbyManager {
 
   async handleJoinMatch(
     client: AuthenticatedSocket,
-    data: { matchId: string; scriptId: string; mode?: 'COMBAT' | 'RACING' | 'TRAINING_SOLO' },
+    data: {
+      matchId: string;
+      scriptId: string;
+      mode?: 'COMBAT' | 'RACING' | 'TRAINING_SOLO';
+    },
   ) {
     if (!client.userId) {
-      client.emit('error', { message: 'Unauthorized: User not authenticated.' });
+      client.emit('error', {
+        message: 'Unauthorized: User not authenticated.',
+      });
       return;
     }
     if (!data.scriptId) {
@@ -45,7 +51,8 @@ export class MatchLobbyManager {
     let selectedRobotId = 'unit-01';
 
     if (client.isGuest) {
-      scriptContent = '// Guest Mode active\n// You can write temporary logic here';
+      scriptContent =
+        '// Guest Mode active\n// You can write temporary logic here';
     } else {
       const script = await this.prisma.robotScript.findUnique({
         where: { id: data.scriptId, userId: client.userId },
@@ -61,15 +68,25 @@ export class MatchLobbyManager {
         equippedPaint: string;
         equippedTracer: string;
       }>(combatLoadoutKey(client.userId));
-      const user = cachedLoadout ?? await this.prisma.user.findUnique({
-        where: { id: client.userId },
-        select: { equippedChassis: true, equippedPaint: true, equippedTracer: true },
-      });
+      const user =
+        cachedLoadout ??
+        (await this.prisma.user.findUnique({
+          where: { id: client.userId },
+          select: {
+            equippedChassis: true,
+            equippedPaint: true,
+            equippedTracer: true,
+          },
+        }));
       if (user) {
         selectedRobotId = user.equippedChassis || 'chassis-phantom';
-        const paint = BLACK_MARKET_ITEMS.find(i => i.id === user.equippedPaint);
+        const paint = BLACK_MARKET_ITEMS.find(
+          (i) => i.id === user.equippedPaint,
+        );
         if (paint?.color) selectedColor = paint.color;
-        const tracer = BLACK_MARKET_ITEMS.find(i => i.id === user.equippedTracer);
+        const tracer = BLACK_MARKET_ITEMS.find(
+          (i) => i.id === user.equippedTracer,
+        );
         if (tracer?.color) selectedTracerColor = tracer.color;
       }
     }
@@ -99,19 +116,27 @@ export class MatchLobbyManager {
           ? [playerToken]
           : mode === 'TRAINING_SOLO'
             ? [
-              playerToken,
-              { id: 'dummy-1', script: '', color: '#ef4444', model: 'dummy' },
-              { id: 'dummy-2', script: '', color: '#eab308', model: 'dummy' },
-              { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
-            ]
-            : [playerToken, { id: 'bot-2', script: '', color: '#ff00ff', model: 'unit-02' }];
+                playerToken,
+                { id: 'dummy-1', script: '', color: '#ef4444', model: 'dummy' },
+                { id: 'dummy-2', script: '', color: '#eab308', model: 'dummy' },
+                { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
+              ]
+            : [
+                playerToken,
+                { id: 'bot-2', script: '', color: '#ff00ff', model: 'unit-02' },
+              ];
 
-      match = new MatchEngine(data.matchId, initialPlayers, {
-        mode,
-        disableProjectiles: mode === 'RACING',
-      }, (event, payload) => {
-        this.server.to(data.matchId).emit(event, payload);
-      });
+      match = new MatchEngine(
+        data.matchId,
+        initialPlayers,
+        {
+          mode,
+          disableProjectiles: mode === 'RACING',
+        },
+        (event, payload) => {
+          this.server.to(data.matchId).emit(event, payload);
+        },
+      );
       this.state.matches.set(data.matchId, match);
       this.state.matchModes.set(data.matchId, mode);
       this.state.matchStartTime.set(data.matchId, Date.now());
@@ -135,18 +160,30 @@ export class MatchLobbyManager {
     } else {
       if (this.state.lobbyMatches.has(data.matchId)) {
         match.removePlayer('bot-2');
-        match.addPlayer({ id: client.userId!, script: scriptContent, color: selectedColor, model: selectedRobotId });
+        match.addPlayer({
+          id: client.userId,
+          script: scriptContent,
+          color: selectedColor,
+          model: selectedRobotId,
+        });
         this.state.lobbyMatches.delete(data.matchId);
         await this.publishLobbySnapshot();
       } else {
-        const isReconnect = match.getState().robots.some(r => r.id === client.userId);
+        const isReconnect = match
+          .getState()
+          .robots.some((r) => r.id === client.userId);
         if (!isReconnect) {
           match.removePlayer('bot-2');
         } else {
-          match.removePlayer(client.userId!);
+          match.removePlayer(client.userId);
         }
-        match.addPlayer({ id: client.userId!, script: scriptContent, color: selectedColor, model: selectedRobotId });
-        match.updateInitialPlayer(client.userId!, scriptContent);
+        match.addPlayer({
+          id: client.userId,
+          script: scriptContent,
+          color: selectedColor,
+          model: selectedRobotId,
+        });
+        match.updateInitialPlayer(client.userId, scriptContent);
       }
     }
 
@@ -165,7 +202,9 @@ export class MatchLobbyManager {
     // Check if user already has an active WAITING match
     for (const match of this.state.lobbyMatches.values()) {
       if (match.hostId === client.userId) {
-        client.emit('createMatchError', { message: 'You already have an active match in the lobby.' });
+        client.emit('createMatchError', {
+          message: 'You already have an active match in the lobby.',
+        });
         return;
       }
     }
@@ -175,11 +214,16 @@ export class MatchLobbyManager {
     const currentCount = await this.redis.incr(rateLimitKey, 60);
 
     if (currentCount > 3) {
-      client.emit('createMatchError', { message: 'Rate limit exceeded. Please wait before creating another match.' });
+      client.emit('createMatchError', {
+        message:
+          'Rate limit exceeded. Please wait before creating another match.',
+      });
       return;
     }
 
-    const user = await this.prisma.user.findUnique({ where: { id: client.userId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: client.userId },
+    });
     const matchId = crypto.randomUUID();
 
     // save match in db with status pending
@@ -226,9 +270,13 @@ export class MatchLobbyManager {
     }
   }
 
-  handleUpdateLogic(client: AuthenticatedSocket, data: { robotId: string; scriptContent: string }) {
+  handleUpdateLogic(
+    client: AuthenticatedSocket,
+    data: { robotId: string; scriptContent: string },
+  ) {
     if (client.matchId && this.state.matches.has(client.matchId)) {
-      if (data.robotId !== client.userId && !data.robotId.startsWith('bot-')) return;
+      if (data.robotId !== client.userId && !data.robotId.startsWith('bot-'))
+        return;
       const match = this.state.matches.get(client.matchId);
       match?.updateRobotScript(data.robotId, data.scriptContent);
       client.emit('logicExecuted', {
@@ -239,11 +287,15 @@ export class MatchLobbyManager {
     }
   }
 
-  handleManualCommand(client: AuthenticatedSocket, data: { robotId?: string; command: string }) {
+  handleManualCommand(
+    client: AuthenticatedSocket,
+    data: { robotId?: string; command: string },
+  ) {
     if (client.matchId && this.state.matches.has(client.matchId)) {
       const targetRobotId = data.robotId || client.userId!;
       // Only allow if it's the user's own robot or a test bot
-      if (targetRobotId !== client.userId && !targetRobotId.startsWith('bot-')) return;
+      if (targetRobotId !== client.userId && !targetRobotId.startsWith('bot-'))
+        return;
 
       const match = this.state.matches.get(client.matchId)!;
       const executed = match.receiveManualCommand(targetRobotId, data.command);

@@ -6,7 +6,11 @@ import { TournamentsQueryService } from './tournaments-query.service';
 import { TournamentsCommandService } from './tournaments-command.service';
 
 @Module({
-  providers: [PrismaService, TournamentsQueryService, TournamentsCommandService],
+  providers: [
+    PrismaService,
+    TournamentsQueryService,
+    TournamentsCommandService,
+  ],
   controllers: [TournamentsController],
 })
 export class TournamentsModule {}

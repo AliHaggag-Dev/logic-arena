@@ -34,7 +34,12 @@ import { AuthLoginService } from './auth-login.service';
 import { AuthPasswordService } from './auth-password.service';
 import { AuthOAuthService } from './auth-oauth.service';
 import { RedisService } from '../../common/redis.service';
-import { AUTH_COOKIE_NAME, AUTH_COOKIE_MAX_AGE_SECONDS, JwtPayload, sessionVersionKey } from './types';
+import {
+  AUTH_COOKIE_NAME,
+  AUTH_COOKIE_MAX_AGE_SECONDS,
+  JwtPayload,
+  sessionVersionKey,
+} from './types';
 
 /**
  * Auth endpoints are protected by a strict per-IP rate limit:
@@ -49,13 +54,17 @@ export class AuthController {
     private readonly authPasswordService: AuthPasswordService,
     private readonly authOAuthService: AuthOAuthService,
     private readonly redis: RedisService,
-  ) { }
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ZodValidationPipe(RegisterSchema))
   async register(@Body() body: RegisterDto) {
-    return this.authRegistrationService.register(body.email, body.username, body.password);
+    return this.authRegistrationService.register(
+      body.email,
+      body.username,
+      body.password,
+    );
   }
 
   /**
@@ -85,8 +94,13 @@ export class AuthController {
     if (token && secret) {
       try {
         const payload = jwt.verify(token, secret) as JwtPayload;
-        await this.redis.incr(sessionVersionKey(payload.sub), AUTH_COOKIE_MAX_AGE_SECONDS);
-      } catch { /* ignore invalid/expired token during logout */ }
+        await this.redis.incr(
+          sessionVersionKey(payload.sub),
+          AUTH_COOKIE_MAX_AGE_SECONDS,
+        );
+      } catch {
+        /* ignore invalid/expired token during logout */
+      }
     }
     res.clearCookie(AUTH_COOKIE_NAME, { path: '/' });
     return { message: 'Logged out' };
@@ -108,7 +122,9 @@ export class AuthController {
 
     try {
       const payload = jwt.verify(token, secret) as JwtPayload;
-      const currentSessionVersion = await this.redis.get<number>(sessionVersionKey(payload.sub));
+      const currentSessionVersion = await this.redis.get<number>(
+        sessionVersionKey(payload.sub),
+      );
       if ((currentSessionVersion ?? 0) !== (payload.sessionVersion ?? 0)) {
         throw new UnauthorizedException('Session expired');
       }
@@ -136,7 +152,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(ResetPasswordSchema))
   async resetPassword(@Body() body: ResetPasswordDto) {
-    return this.authPasswordService.resetPassword(body.email, body.code, body.newPassword);
+    return this.authPasswordService.resetPassword(
+      body.email,
+      body.code,
+      body.newPassword,
+    );
   }
 
   // ── OAuth ──────────────────────────────────────────────────────────────────
@@ -146,26 +166,52 @@ export class AuthController {
   @Get('google')
   @UseGuards(AuthGuard('google'))
   @SkipThrottle()
-  googleAuth() { /* Passport redirects */ }
+  googleAuth() {
+    /* Passport redirects */
+  }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   @SkipThrottle()
-  googleCallback(@Req() req: Request & { user: { token: string; userId: string; username: string } }, @Res() res: Response) {
+  googleCallback(
+    @Req()
+    req: Request & {
+      user: { token: string; userId: string; username: string };
+    },
+    @Res() res: Response,
+  ) {
     const { token, userId, username } = req.user;
-    this.authOAuthService.setSessionCookieAndRedirect(res, token, userId, username);
+    this.authOAuthService.setSessionCookieAndRedirect(
+      res,
+      token,
+      userId,
+      username,
+    );
   }
 
   @Get('github')
   @UseGuards(AuthGuard('github'))
   @SkipThrottle()
-  githubAuth() { /* Passport redirects */ }
+  githubAuth() {
+    /* Passport redirects */
+  }
 
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
   @SkipThrottle()
-  githubCallback(@Req() req: Request & { user: { token: string; userId: string; username: string } }, @Res() res: Response) {
+  githubCallback(
+    @Req()
+    req: Request & {
+      user: { token: string; userId: string; username: string };
+    },
+    @Res() res: Response,
+  ) {
     const { token, userId, username } = req.user;
-    this.authOAuthService.setSessionCookieAndRedirect(res, token, userId, username);
+    this.authOAuthService.setSessionCookieAndRedirect(
+      res,
+      token,
+      userId,
+      username,
+    );
   }
 }

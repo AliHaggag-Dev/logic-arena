@@ -15,7 +15,7 @@ export class MatchLoopManager {
     private server: Server,
     private prisma: PrismaService,
     private redis?: RedisService,
-  ) { }
+  ) {}
 
   startLoop() {
     if (this.timer) return;
@@ -63,13 +63,19 @@ export class MatchLoopManager {
 
         // Training mode: Detect when a dummy is killed for the first time this death
         if (mode === 'TRAINING_SOLO') {
-          const killedSet = this.state.dummyKilledThisTick.get(matchId) ?? new Set<string>();
+          const killedSet =
+            this.state.dummyKilledThisTick.get(matchId) ?? new Set<string>();
           for (const robot of state.robots) {
-            if (robot.id.startsWith('dummy-') && (!robot.isAlive || robot.health <= 0)) {
+            if (
+              robot.id.startsWith('dummy-') &&
+              (!robot.isAlive || robot.health <= 0)
+            ) {
               if (!killedSet.has(robot.id)) {
                 // Emit the kill event only once per death
                 killedSet.add(robot.id);
-                this.server.to(matchId).emit('dummyKilled', { robotId: robot.id });
+                this.server
+                  .to(matchId)
+                  .emit('dummyKilled', { robotId: robot.id });
               }
             } else {
               // Dummy is alive again (manually respawned) — clear killed flag

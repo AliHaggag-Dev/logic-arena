@@ -59,18 +59,22 @@ export class UsersController {
     private readonly queryService: UsersQueryService,
     private readonly commandService: UsersCommandService,
     private readonly redis: RedisService,
-  ) { }
+  ) {}
 
   // ── Leaderboard (public, short-lived Redis cache) ─────────────────────────
   @Get('leaderboard')
   async getLeaderboard(): Promise<LeaderboardEntry[]> {
     // 1. Serve from cache if available
-    const cached = await this.redis.get<LeaderboardEntry[]>(leaderboardSnapshotKey);
+    const cached = await this.redis.get<LeaderboardEntry[]>(
+      leaderboardSnapshotKey,
+    );
     if (cached) return cached;
 
     // 1b. Prefer Redis sorted-set ranking when already warm
     if (this.redis.healthy) {
-      const ranked = await this.redis.getClient().zrevrange(leaderboardRankKey, 0, LEADERBOARD_LIMIT - 1, 'WITHSCORES');
+      const ranked = await this.redis
+        .getClient()
+        .zrevrange(leaderboardRankKey, 0, LEADERBOARD_LIMIT - 1, 'WITHSCORES');
       const ids = ranked.filter((_, i) => i % 2 === 0);
       if (ids.length > 0) {
         const users = await this.prisma.user.findMany({
@@ -84,11 +88,20 @@ export class UsersController {
         });
         const byId = new Map(users.map((u) => [u.id, u]));
         const presenceKeys = ids.map((id) => `user:online:${id}`);
-        const presenceValues = await this.redis.getClient().mget(...presenceKeys);
+        const presenceValues = await this.redis
+          .getClient()
+          .mget(...presenceKeys);
         const result = ids
           .map((id, i) => {
             const user = byId.get(id);
-            return user ? { ...user, isOnline: presenceValues[i] !== null && presenceValues[i] !== undefined } : null;
+            return user
+              ? {
+                  ...user,
+                  isOnline:
+                    presenceValues[i] !== null &&
+                    presenceValues[i] !== undefined,
+                }
+              : null;
           })
           .filter((entry): entry is LeaderboardEntry => entry !== null);
 
@@ -113,9 +126,10 @@ export class UsersController {
 
     // 3. Batch all online-presence checks into a single MGET round-trip
     const presenceKeys = users.map((u) => `user:online:${u.id}`);
-    const presenceValues: (string | null)[] = presenceKeys.length > 0
-      ? await this.redis.getClient().mget(...presenceKeys)
-      : [];
+    const presenceValues: (string | null)[] =
+      presenceKeys.length > 0
+        ? await this.redis.getClient().mget(...presenceKeys)
+        : [];
 
     const result: LeaderboardEntry[] = users.map((user, i) => ({
       ...user,
@@ -125,15 +139,16 @@ export class UsersController {
     // 4. Cache the assembled result for LEADERBOARD_TTL seconds
     await this.redis.set(leaderboardSnapshotKey, result, LEADERBOARD_TTL);
     if (this.redis.healthy && users.length > 0) {
-      await this.redis.getClient().zadd(
-        leaderboardRankKey,
-        ...users.flatMap((user) => [String(user.rank), user.id]),
-      );
+      await this.redis
+        .getClient()
+        .zadd(
+          leaderboardRankKey,
+          ...users.flatMap((user) => [String(user.rank), user.id]),
+        );
     }
 
     return result;
   }
-
 
   // ── My Profile (auth-gated, Redis-first via service) ─────────────────────
   @UseGuards(AuthGuard)
@@ -143,7 +158,15 @@ export class UsersController {
     const profile = await this.queryService.getProfile(userId);
 
     if (!profile) {
-      return { username: 'UNKNOWN', totalMatches: 0, wins: 0, losses: 0, winRate: 0, rank: 0, matchHistory: [] };
+      return {
+        username: 'UNKNOWN',
+        totalMatches: 0,
+        wins: 0,
+        losses: 0,
+        winRate: 0,
+        rank: 0,
+        matchHistory: [],
+      };
     }
 
     return profile;
@@ -157,7 +180,11 @@ export class UsersController {
     @Body() body: UpdateProfileDto,
   ) {
     try {
-      await this.commandService.updateLoadout(req.user.sub, body.robotId, body.color);
+      await this.commandService.updateLoadout(
+        req.user.sub,
+        body.robotId,
+        body.color,
+      );
       return { success: true };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Update failed';
@@ -168,18 +195,24 @@ export class UsersController {
   // ── Avatar Upload (auth-gated, secure) ────────────────────────────────────
   @UseGuards(AuthGuard)
   @Post('avatar')
-  @UseInterceptors(FileInterceptor('avatar', {
-    limits: { fileSize: AVATAR_MAX_BYTES },
-  }))
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      limits: { fileSize: AVATAR_MAX_BYTES },
+    }),
+  )
   async uploadAvatar(
     @Req() req: AuthenticatedRequest,
     @UploadedFile(new ImageFileValidationPipe()) file: Express.Multer.File,
   ) {
     try {
-      const avatarUrl = await this.commandService.uploadAvatar(req.user.sub, file.buffer);
+      const avatarUrl = await this.commandService.uploadAvatar(
+        req.user.sub,
+        file.buffer,
+      );
       return { success: true, avatarUrl };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Avatar upload failed';
+      const message =
+        err instanceof Error ? err.message : 'Avatar upload failed';
       throw new BadRequestException(message);
     }
   }
@@ -193,7 +226,13 @@ export class UsersController {
 
     const match = await this.prisma.match.findUnique({
       where: { id: matchId },
-      select: { id: true, replayData: true, winnerId: true, duration: true, createdAt: true },
+      select: {
+        id: true,
+        replayData: true,
+        winnerId: true,
+        duration: true,
+        createdAt: true,
+      },
     });
     if (!match) throw new NotFoundException('Match not found');
     await this.redis.set(replayKey(matchId), match, REPLAY_TTL);
@@ -210,7 +249,10 @@ export class UsersController {
     if (body.username !== undefined && body.username.trim().length < 3) {
       throw new BadRequestException('Username must be at least 3 characters');
     }
-    if (body.email !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+    if (
+      body.email !== undefined &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)
+    ) {
       throw new BadRequestException('Invalid email format');
     }
     try {
@@ -230,7 +272,9 @@ export class UsersController {
     @Body() body: UpdatePasswordDto,
   ) {
     if (!body.newPassword || body.newPassword.length < 8) {
-      throw new BadRequestException('New password must be at least 8 characters');
+      throw new BadRequestException(
+        'New password must be at least 8 characters',
+      );
     }
     try {
       await this.commandService.updatePassword(
@@ -285,7 +329,8 @@ export class UsersController {
     try {
       return await this.queryService.getBlackMarket(req.user.sub);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to load Black Market data';
+      const message =
+        err instanceof Error ? err.message : 'Failed to load Black Market data';
       throw new NotFoundException(message);
     }
   }
@@ -316,10 +361,16 @@ export class UsersController {
     if (!body?.category) throw new BadRequestException('category is required');
     const validCategories: ItemCategory[] = ['chassis', 'paint', 'tracer'];
     if (!validCategories.includes(body.category)) {
-      throw new BadRequestException('category must be chassis, paint, or tracer');
+      throw new BadRequestException(
+        'category must be chassis, paint, or tracer',
+      );
     }
     try {
-      await this.commandService.equipItem(req.user.sub, body.itemId, body.category);
+      await this.commandService.equipItem(
+        req.user.sub,
+        body.itemId,
+        body.category,
+      );
       return { success: true };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Equip failed';

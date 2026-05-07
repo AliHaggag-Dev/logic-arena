@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 
 /** Max avatar dimension after Cloudinary transformation */
@@ -32,7 +36,12 @@ export class CloudinaryService {
           invalidate: true, // Busts Cloudinary CDN cache
           resource_type: 'image',
           transformation: [
-            { width: AVATAR_SIZE, height: AVATAR_SIZE, crop: 'fill', gravity: 'face' },
+            {
+              width: AVATAR_SIZE,
+              height: AVATAR_SIZE,
+              crop: 'fill',
+              gravity: 'face',
+            },
             { quality: 'auto', fetch_format: 'auto' },
           ],
         },

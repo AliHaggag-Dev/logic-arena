@@ -3,14 +3,24 @@ import { GameLoop, Robot, GameConfig, GameMode } from '@logic-arena/engine';
 import { SandboxRunner } from '../../common/sandbox.runner';
 import { createRobot, parseAndSetLogic } from './robot-factory';
 import { createGameDependencies, GameDependencies } from './game-dependencies';
-import { NodeType, ActionExpression, ScanStatement } from '@logic-arena/logic-parser';
+import {
+  NodeType,
+  ActionExpression,
+  ScanStatement,
+} from '@logic-arena/logic-parser';
 
 export class MatchEngine {
   private readonly logger = new Logger(MatchEngine.name);
   private gameLoop: GameLoop;
   private sandboxRunner: SandboxRunner;
   private deps: GameDependencies;
-  private initialPlayers: { id: string; script: string; color?: string; model?: string; tracerColor?: string }[] = [];
+  private initialPlayers: {
+    id: string;
+    script: string;
+    color?: string;
+    model?: string;
+    tracerColor?: string;
+  }[] = [];
   private tickInterval: NodeJS.Timeout | null = null;
   private matchId: string;
   private config?: GameConfig;
@@ -20,7 +30,13 @@ export class MatchEngine {
 
   constructor(
     matchId: string,
-    initialPlayers: { id: string; script: string; color?: string; model?: string; tracerColor?: string }[],
+    initialPlayers: {
+      id: string;
+      script: string;
+      color?: string;
+      model?: string;
+      tracerColor?: string;
+    }[],
     config?: GameConfig,
     private onEvent?: (event: string, payload: any) => void,
   ) {
@@ -32,7 +48,9 @@ export class MatchEngine {
     this.initialPlayers = initialPlayers;
 
     initialPlayers.forEach((p, i) => {
-      this.gameLoop.addRobot(createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor));
+      this.gameLoop.addRobot(
+        createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor),
+      );
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
   }
@@ -46,7 +64,9 @@ export class MatchEngine {
     this.gameLoop = new GameLoop(this.config);
     this.deps = createGameDependencies(this.gameLoop, this.onEvent);
     this.initialPlayers.forEach((p, i) => {
-      this.gameLoop.addRobot(createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor));
+      this.gameLoop.addRobot(
+        createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor),
+      );
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
     this.start();
@@ -73,7 +93,7 @@ export class MatchEngine {
   // ---------------------------------------------------------------------------
 
   private tick(): void {
-    this.gameLoop.getRobots().forEach(robot => {
+    this.gameLoop.getRobots().forEach((robot) => {
       if (!robot.isAlive) return;
       // Clear flag so logic executor can set it if an action is performed
       robot.executedCommandThisTick = false;
@@ -85,14 +105,24 @@ export class MatchEngine {
   // Player management
   // ---------------------------------------------------------------------------
 
-  addPlayer(playerScript: { id: string; script: string; color?: string; model?: string; tracerColor?: string }): void {
-    const exists = this.gameLoop.getRobots().some(p => p.id === playerScript.id);
+  addPlayer(playerScript: {
+    id: string;
+    script: string;
+    color?: string;
+    model?: string;
+    tracerColor?: string;
+  }): void {
+    const exists = this.gameLoop
+      .getRobots()
+      .some((p) => p.id === playerScript.id);
     if (!exists) {
-      let initIdx = this.initialPlayers.findIndex(p => p.id === playerScript.id);
+      let initIdx = this.initialPlayers.findIndex(
+        (p) => p.id === playerScript.id,
+      );
 
       if (initIdx === -1) {
         // Try to claim the bot-2 placeholder slot first (lobby join scenario)
-        const botSlot = this.initialPlayers.findIndex(p => p.id === 'bot-2');
+        const botSlot = this.initialPlayers.findIndex((p) => p.id === 'bot-2');
         if (botSlot !== -1) {
           initIdx = botSlot;
           this.initialPlayers[initIdx] = playerScript;
@@ -104,8 +134,21 @@ export class MatchEngine {
         }
       }
 
-      this.gameLoop.addRobot(createRobot(playerScript.id, playerScript.script, initIdx, playerScript.color, playerScript.model, playerScript.tracerColor));
-      parseAndSetLogic(playerScript.id, playerScript.script, this.deps.logicEvaluator);
+      this.gameLoop.addRobot(
+        createRobot(
+          playerScript.id,
+          playerScript.script,
+          initIdx,
+          playerScript.color,
+          playerScript.model,
+          playerScript.tracerColor,
+        ),
+      );
+      parseAndSetLogic(
+        playerScript.id,
+        playerScript.script,
+        this.deps.logicEvaluator,
+      );
     }
   }
 
@@ -115,18 +158,25 @@ export class MatchEngine {
   }
 
   updateRobotScript(robotId: string, scriptContent: string): void {
-    const exists = this.gameLoop.getRobots().some(r => r.id === robotId);
-    if (exists) parseAndSetLogic(robotId, scriptContent, this.deps.logicEvaluator);
+    const exists = this.gameLoop.getRobots().some((r) => r.id === robotId);
+    if (exists)
+      parseAndSetLogic(robotId, scriptContent, this.deps.logicEvaluator);
   }
 
   updateInitialPlayer(userId: string, script: string): void {
-    const index = this.initialPlayers.findIndex(p => p.id === userId);
+    const index = this.initialPlayers.findIndex((p) => p.id === userId);
     if (index !== -1) this.initialPlayers[index].script = script;
   }
 
   /** Commands allowed via the manual override input. */
   private static readonly MANUAL_ALLOWED = new Set([
-    'MOVE', 'MOVE_FAST', 'BACKUP', 'STOP', 'FIRE', 'BURST_FIRE', 'SCAN',
+    'MOVE',
+    'MOVE_FAST',
+    'BACKUP',
+    'STOP',
+    'FIRE',
+    'BURST_FIRE',
+    'SCAN',
   ]);
 
   /**
@@ -137,7 +187,7 @@ export class MatchEngine {
    */
   receiveManualCommand(userId: string, command: string): boolean {
     const cmd = command.toUpperCase();
-    const robot = this.gameLoop.getRobots().find(r => r.id === userId);
+    const robot = this.gameLoop.getRobots().find((r) => r.id === userId);
     if (!robot || !robot.isAlive) return false;
     if (!MatchEngine.MANUAL_ALLOWED.has(cmd)) return false;
 
@@ -145,7 +195,11 @@ export class MatchEngine {
       const scanStmt: ScanStatement = { type: NodeType.ScanStatement };
       this.deps.actionExecutor.executeAction(userId, scanStmt, {});
     } else {
-      const action: ActionExpression = { type: NodeType.ActionExpression, command: cmd, args: [] };
+      const action: ActionExpression = {
+        type: NodeType.ActionExpression,
+        command: cmd,
+        args: [],
+      };
       this.deps.actionExecutor.executeAction(userId, action, {});
     }
 
@@ -160,7 +214,7 @@ export class MatchEngine {
    * Returns the new lockVision state.
    */
   toggleLockVision(userId: string): boolean | null {
-    const robot = this.gameLoop.getRobots().find(r => r.id === userId);
+    const robot = this.gameLoop.getRobots().find((r) => r.id === userId);
     if (!robot || !robot.isAlive) return null;
     robot.lockVision = !robot.lockVision;
     // When enabling, immediately sync so there's no 1-tick lag
@@ -178,7 +232,12 @@ export class MatchEngine {
     return this.gameLoop.getGameState();
   }
 
-  getInitialPlayers(): { id: string; script: string; color?: string; model?: string }[] {
+  getInitialPlayers(): {
+    id: string;
+    script: string;
+    color?: string;
+    model?: string;
+  }[] {
     return this.initialPlayers;
   }
 

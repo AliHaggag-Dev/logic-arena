@@ -1,4 +1,4 @@
-import { PATH_CONFIG, GridCell, Vec2 } from "./types";
+import { PATH_CONFIG, GridCell, Vec2 } from './types';
 
 /**
  * Implements Bresenham's line algorithm for line-of-sight checks.
@@ -14,7 +14,7 @@ export class StringPuller {
   hasLOS(a: GridCell, b: GridCell): boolean {
     let { r: r0, c: c0 } = a;
     const { r: r1, c: c1 } = b;
-    
+
     const dr = Math.abs(r1 - r0);
     const dc = Math.abs(c1 - c0);
     const sr = r0 < r1 ? 1 : -1;
@@ -24,26 +24,26 @@ export class StringPuller {
     while (true) {
       if (this.impassable[r0]?.[c0]) return false;
       if (r0 === r1 && c0 === c1) return true;
-      
+
       const e2 = 2 * err;
-      if (e2 > -dc) { 
-        err -= dc; 
-        r0 += sr; 
+      if (e2 > -dc) {
+        err -= dc;
+        r0 += sr;
       }
-      if (e2 < dr) { 
-        err += dr; 
-        c0 += sc; 
+      if (e2 < dr) {
+        err += dr;
+        c0 += sc;
       }
     }
   }
 
   /**
-   * Optimizes a raw grid-based A* path by removing intermediate waypoints 
+   * Optimizes a raw grid-based A* path by removing intermediate waypoints
    * that have direct line-of-sight to subsequent waypoints.
    */
   smoothPath(raw: GridCell[]): Vec2[] {
     if (raw.length === 0) return [];
-    
+
     // String-pulling: convert staircase grid path into smooth straight-line segments.
     const smooth: GridCell[] = [raw[0]];
     let anchor = 0;
@@ -54,13 +54,13 @@ export class StringPuller {
         anchor = i - 1;
       }
     }
-    
+
     if (raw.length > 1) {
       smooth.push(raw[raw.length - 1]);
     }
 
     // Convert grid cells to absolute world-space coordinate centres
-    return smooth.map(n => ({
+    return smooth.map((n) => ({
       x: n.c * PATH_CONFIG.CELL + PATH_CONFIG.CELL / 2,
       y: n.r * PATH_CONFIG.CELL + PATH_CONFIG.CELL / 2,
     }));

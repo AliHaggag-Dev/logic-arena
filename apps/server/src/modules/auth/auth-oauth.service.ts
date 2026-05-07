@@ -15,7 +15,7 @@ export class AuthOAuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
-  ) { }
+  ) {}
 
   async findOrCreateOAuthUser(data: {
     provider: string;
@@ -50,7 +50,9 @@ export class AuthOAuthService {
       } else {
         // Create new user — ensure username is unique
         let username = data.username;
-        const existing = await this.prisma.user.findUnique({ where: { username } });
+        const existing = await this.prisma.user.findUnique({
+          where: { username },
+        });
         if (existing) username = `${username}_${Date.now()}`;
 
         user = await this.prisma.user.create({
@@ -74,9 +76,15 @@ export class AuthOAuthService {
 
     // Build a signed token — but we do NOT return it; the controller sets it as
     // an HttpOnly cookie so it is never exposed to JavaScript.
-    const sessionVersionRaw = await this.redis.get<number>(sessionVersionKey(user.id));
+    const sessionVersionRaw = await this.redis.get<number>(
+      sessionVersionKey(user.id),
+    );
     const sessionVersion = sessionVersionRaw ?? 0;
-    const payload: JwtPayload = { sub: user.id, username: user.username, sessionVersion };
+    const payload: JwtPayload = {
+      sub: user.id,
+      username: user.username,
+      sessionVersion,
+    };
     const token = jwt.sign(payload, secret, { expiresIn: '1h' });
 
     return { token, userId: user.id, username: user.username };

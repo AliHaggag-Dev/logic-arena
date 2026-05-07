@@ -7,7 +7,11 @@ import {
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { RedisService } from './redis.service';
-import { AUTH_COOKIE_NAME, JwtPayload, sessionVersionKey } from '../modules/auth/types';
+import {
+  AUTH_COOKIE_NAME,
+  JwtPayload,
+  sessionVersionKey,
+} from '../modules/auth/types';
 
 /**
  * HTTP guard that authenticates requests via:
@@ -19,7 +23,7 @@ import { AUTH_COOKIE_NAME, JwtPayload, sessionVersionKey } from '../modules/auth
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly redis: RedisService) { }
+  constructor(private readonly redis: RedisService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -36,7 +40,9 @@ export class AuthGuard implements CanActivate {
 
     try {
       const decoded = jwt.verify(token, secret) as JwtPayload;
-      const currentSessionVersion = await this.redis.get<number>(sessionVersionKey(decoded.sub));
+      const currentSessionVersion = await this.redis.get<number>(
+        sessionVersionKey(decoded.sub),
+      );
       if ((currentSessionVersion ?? 0) !== (decoded.sessionVersion ?? 0)) {
         throw new UnauthorizedException('Session expired or invalid');
       }
@@ -49,7 +55,9 @@ export class AuthGuard implements CanActivate {
 
   private extractToken(request: Request): string | undefined {
     // ── 1. HttpOnly cookie (preferred) ──────────────────────────────────────
-    const cookieToken = request.cookies?.[AUTH_COOKIE_NAME] as string | undefined;
+    const cookieToken = request.cookies?.[AUTH_COOKIE_NAME] as
+      | string
+      | undefined;
     if (cookieToken) return cookieToken;
 
     // ── 2. Authorization header fallback (server-to-server / WS upgrade) ───

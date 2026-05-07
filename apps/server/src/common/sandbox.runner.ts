@@ -1,4 +1,4 @@
-import { VM } from "vm2";
+import { VM } from 'vm2';
 
 export class SandboxRunner {
   execute(script: string, context: object, timeout: number = 50) {
@@ -6,9 +6,9 @@ export class SandboxRunner {
       timeout,
       sandbox: {
         ...context,
-        move: (direction: string) => ({ action: "move", payload: direction }),
-        fire: () => ({ action: "fire" }),
-        scan: () => ({ action: "scan" }),
+        move: (direction: string) => ({ action: 'move', payload: direction }),
+        fire: () => ({ action: 'fire' }),
+        scan: () => ({ action: 'scan' }),
       },
       // Restrict access to global objects
       allowAsync: false,
@@ -26,8 +26,8 @@ export class SandboxRunner {
       const result = vm.run(script);
       return result;
     } catch (error: any) {
-      if (error.message.includes("Script execution timed out")) {
-        throw new Error("Script execution exceeded the time limit.");
+      if (error.message.includes('Script execution timed out')) {
+        throw new Error('Script execution exceeded the time limit.');
       }
       // Generic error for other sandbox issues
       throw new Error(`Sandbox error: ${error.message}`);

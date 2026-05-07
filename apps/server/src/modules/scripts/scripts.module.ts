@@ -1,7 +1,7 @@
-import { Module } from "@nestjs/common";
-import { ScriptsService } from "./scripts.service";
-import { ScriptsController } from "./scripts.controller";
-import { PrismaService } from "../../common/prisma.service";
+import { Module } from '@nestjs/common';
+import { ScriptsService } from './scripts.service';
+import { ScriptsController } from './scripts.controller';
+import { PrismaService } from '../../common/prisma.service';
 
 @Module({
   providers: [ScriptsService, PrismaService],

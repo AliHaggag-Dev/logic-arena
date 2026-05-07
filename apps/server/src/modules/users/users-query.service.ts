@@ -2,11 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { RedisService } from '../../common/redis.service';
 import {
-  UserProfile, MatchSummary, UserLoadout, CombatStats,
-  ArenaPreferences, NotificationSettings, BlackMarketData,
-  profileKey, loadoutKey, PROFILE_TTL,
-  blackMarketKey, combatLoadoutKey,
-  DEFAULT_ARENA_PREFERENCES, DEFAULT_NOTIFICATION_SETTINGS,
+  UserProfile,
+  MatchSummary,
+  UserLoadout,
+  CombatStats,
+  ArenaPreferences,
+  NotificationSettings,
+  BlackMarketData,
+  profileKey,
+  loadoutKey,
+  PROFILE_TTL,
+  blackMarketKey,
+  combatLoadoutKey,
+  DEFAULT_ARENA_PREFERENCES,
+  DEFAULT_NOTIFICATION_SETTINGS,
 } from './types';
 import { DEFAULT_UNLOCKED_ITEMS } from './black-market.constants';
 
@@ -15,7 +24,7 @@ export class UsersQueryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
-  ) { }
+  ) {}
 
   async getProfile(userId: string): Promise<UserProfile | null> {
     const cached = await this.redis.get<UserProfile>(profileKey(userId));
@@ -57,7 +66,8 @@ export class UsersQueryService {
     const totalMatches = user.Match.length;
     const wins = user.Match.filter((m) => m.winnerId === userId).length;
     const losses = totalMatches - wins;
-    const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+    const winRate =
+      totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
     const matchHistory: MatchSummary[] = user.Match.map((m) => {
       const opponent = m.participants.find((p) => p.id !== userId);
@@ -71,7 +81,13 @@ export class UsersQueryService {
       };
     });
 
-    const zeroCombatStats: CombatStats = { efficiency: 0, aggression: 0, defense: 0, precision: 0, speed: 0 };
+    const zeroCombatStats: CombatStats = {
+      efficiency: 0,
+      aggression: 0,
+      defense: 0,
+      precision: 0,
+      speed: 0,
+    };
 
     const profile: UserProfile = {
       username: user.username,
@@ -81,8 +97,12 @@ export class UsersQueryService {
       memberSince: user.createdAt,
       selectedRobotId: user.selectedRobotId,
       selectedColor: user.selectedColor,
-      arenaPreferences: (user.arenaPreferences as unknown as ArenaPreferences | null) ?? DEFAULT_ARENA_PREFERENCES,
-      notificationSettings: (user.notificationSettings as unknown as NotificationSettings | null) ?? DEFAULT_NOTIFICATION_SETTINGS,
+      arenaPreferences:
+        (user.arenaPreferences as unknown as ArenaPreferences | null) ??
+        DEFAULT_ARENA_PREFERENCES,
+      notificationSettings:
+        (user.notificationSettings as unknown as NotificationSettings | null) ??
+        DEFAULT_NOTIFICATION_SETTINGS,
       totalMatches,
       wins,
       losses,
@@ -116,19 +136,33 @@ export class UsersQueryService {
   async findOne(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
-      select: { id: true, email: true, username: true, rank: true, createdAt: true },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        rank: true,
+        createdAt: true,
+      },
     });
   }
 
   async findOneByUsername(username: string) {
     return this.prisma.user.findUnique({
       where: { username },
-      select: { id: true, email: true, username: true, rank: true, createdAt: true },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        rank: true,
+        createdAt: true,
+      },
     });
   }
 
   async getBlackMarket(userId: string): Promise<BlackMarketData> {
-    const cached = await this.redis.get<BlackMarketData>(blackMarketKey(userId));
+    const cached = await this.redis.get<BlackMarketData>(
+      blackMarketKey(userId),
+    );
     if (cached) return cached;
 
     const user = await this.prisma.user.findUnique({
@@ -145,12 +179,15 @@ export class UsersQueryService {
 
     // Ensure all default items are unlocked (retro-fits existing accounts if new defaults are added)
     let unlockedItems = user.unlockedItems;
-    const missingDefaults = DEFAULT_UNLOCKED_ITEMS.filter(item => !unlockedItems.includes(item));
+    const missingDefaults = DEFAULT_UNLOCKED_ITEMS.filter(
+      (item) => !unlockedItems.includes(item),
+    );
 
     // Migrate old 'paint-crimson' default → 'paint-default' for pre-existing accounts.
     // 'paint-default' is now the starter paint; crimson must be explicitly purchased.
-    const needsPaintMigration = user.equippedPaint === 'paint-crimson'
-      && !user.unlockedItems.includes('paint-crimson');
+    const needsPaintMigration =
+      user.equippedPaint === 'paint-crimson' &&
+      !user.unlockedItems.includes('paint-crimson');
 
     let equippedPaint = user.equippedPaint;
 
@@ -164,7 +201,9 @@ export class UsersQueryService {
       await this.prisma.user.update({
         where: { id: userId },
         data: {
-          ...(missingDefaults.length > 0 ? { unlockedItems: { set: unlockedItems } } : {}),
+          ...(missingDefaults.length > 0
+            ? { unlockedItems: { set: unlockedItems } }
+            : {}),
           ...(needsPaintMigration ? { equippedPaint: 'paint-default' } : {}),
         },
       });
@@ -178,11 +217,15 @@ export class UsersQueryService {
       equippedTracer: user.equippedTracer,
     };
     await this.redis.set(blackMarketKey(userId), data, PROFILE_TTL);
-    await this.redis.set(combatLoadoutKey(userId), {
-      equippedChassis: data.equippedChassis,
-      equippedPaint: data.equippedPaint,
-      equippedTracer: data.equippedTracer,
-    }, PROFILE_TTL);
+    await this.redis.set(
+      combatLoadoutKey(userId),
+      {
+        equippedChassis: data.equippedChassis,
+        equippedPaint: data.equippedPaint,
+        equippedTracer: data.equippedTracer,
+      },
+      PROFILE_TTL,
+    );
     return data;
   }
 }

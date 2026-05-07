@@ -12,12 +12,23 @@ import {
   safeSetAliScriptProperty,
 } from '@logic-arena/engine';
 import {
-  Expression, NodeType, Identifier, NumberLiteral, StringLiteral,
-  FunctionCallExpression, ArrayLiteral, IndexExpression,
-  ObjectLiteral, MemberExpression,
+  Expression,
+  NodeType,
+  Identifier,
+  NumberLiteral,
+  StringLiteral,
+  FunctionCallExpression,
+  ArrayLiteral,
+  IndexExpression,
+  ObjectLiteral,
+  MemberExpression,
 } from '../../../../../../packages/logic-parser/src';
 import { resolveIdentifier } from './identifier-resolver';
-import { evaluateBinary, evaluateUnary, evaluateComparison } from './operator-handlers';
+import {
+  evaluateBinary,
+  evaluateUnary,
+  evaluateComparison,
+} from './operator-handlers';
 
 /** Maximum depth for recursive expression evaluation to prevent stack overflow. */
 const MAX_EVAL_DEPTH = 64;
@@ -38,7 +49,13 @@ export class ExpressionEvaluator {
     getRobots: () => Robot[],
     getObstacles: () => Obstacle[],
   ): boolean {
-    const value = this.evaluateExpression(robot, expression, memory, getRobots, getObstacles);
+    const value = this.evaluateExpression(
+      robot,
+      expression,
+      memory,
+      getRobots,
+      getObstacles,
+    );
     return typeof value === 'boolean' ? value : Boolean(value);
   }
 
@@ -61,48 +78,122 @@ export class ExpressionEvaluator {
         return enforceAliScriptStringLimit(String(expression.value));
 
       case NodeType.Identifier:
-        return resolveIdentifier(robot, expression as Identifier | NumberLiteral | StringLiteral, memory);
+        return resolveIdentifier(
+          robot,
+          expression as Identifier | NumberLiteral | StringLiteral,
+          memory,
+        );
 
       case NodeType.BinaryExpression: {
-        const left = this.evaluateExpression(robot, expression.left, memory, getRobots, getObstacles, depth + 1);
-        const right = this.evaluateExpression(robot, expression.right, memory, getRobots, getObstacles, depth + 1);
+        const left = this.evaluateExpression(
+          robot,
+          expression.left,
+          memory,
+          getRobots,
+          getObstacles,
+          depth + 1,
+        );
+        const right = this.evaluateExpression(
+          robot,
+          expression.right,
+          memory,
+          getRobots,
+          getObstacles,
+          depth + 1,
+        );
         return evaluateBinary(left, right, expression.operator);
       }
 
       case NodeType.UnaryExpression: {
-        const arg = this.evaluateExpression(robot, expression.argument, memory, getRobots, getObstacles, depth + 1);
+        const arg = this.evaluateExpression(
+          robot,
+          expression.argument,
+          memory,
+          getRobots,
+          getObstacles,
+          depth + 1,
+        );
         return evaluateUnary(arg, expression.operator);
       }
 
       case NodeType.ComparisonExpression: {
-        const lv = this.evaluateExpression(robot, expression.left, memory, getRobots, getObstacles, depth + 1);
-        const rv = this.evaluateExpression(robot, expression.right, memory, getRobots, getObstacles, depth + 1);
+        const lv = this.evaluateExpression(
+          robot,
+          expression.left,
+          memory,
+          getRobots,
+          getObstacles,
+          depth + 1,
+        );
+        const rv = this.evaluateExpression(
+          robot,
+          expression.right,
+          memory,
+          getRobots,
+          getObstacles,
+          depth + 1,
+        );
         return evaluateComparison(lv, rv, expression.operator);
       }
 
       // ── Built-in function calls: ABS(x), GET_ALL_VISIBLE_ENEMIES(), etc. ──
       case NodeType.FunctionCallExpression: {
-        const fnCall = expression as FunctionCallExpression;
-        const evaluatedArgs = fnCall.args.map(
-          a => this.evaluateExpression(robot, a, memory, getRobots, getObstacles, depth + 1),
+        const fnCall = expression;
+        const evaluatedArgs = fnCall.args.map((a) =>
+          this.evaluateExpression(
+            robot,
+            a,
+            memory,
+            getRobots,
+            getObstacles,
+            depth + 1,
+          ),
         );
-        return this.evaluateBuiltinFunction(fnCall.name, evaluatedArgs, memory, robot, getRobots, getObstacles);
+        return this.evaluateBuiltinFunction(
+          fnCall.name,
+          evaluatedArgs,
+          memory,
+          robot,
+          getRobots,
+          getObstacles,
+        );
       }
 
       // ── Array literal: [1, 2, 3] ──────────────────────────────────────────
       case NodeType.ArrayLiteral: {
-        const arrLit = expression as ArrayLiteral;
+        const arrLit = expression;
         assertAliScriptCollectionSize(arrLit.elements.length);
-        return arrLit.elements.map(
-          el => this.evaluateExpression(robot, el, memory, getRobots, getObstacles, depth + 1),
+        return arrLit.elements.map((el) =>
+          this.evaluateExpression(
+            robot,
+            el,
+            memory,
+            getRobots,
+            getObstacles,
+            depth + 1,
+          ),
         );
       }
 
       // Index access: arr[0] or obj["key"]
       case NodeType.IndexExpression: {
-        const idxExpr = expression as IndexExpression;
-        const obj = this.evaluateExpression(robot, idxExpr.object, memory, getRobots, getObstacles, depth + 1);
-        const idx = this.evaluateExpression(robot, idxExpr.index, memory, getRobots, getObstacles, depth + 1);
+        const idxExpr = expression;
+        const obj = this.evaluateExpression(
+          robot,
+          idxExpr.object,
+          memory,
+          getRobots,
+          getObstacles,
+          depth + 1,
+        );
+        const idx = this.evaluateExpression(
+          robot,
+          idxExpr.index,
+          memory,
+          getRobots,
+          getObstacles,
+          depth + 1,
+        );
         if (Array.isArray(obj) && typeof idx === 'number') {
           const i = Math.floor(idx);
           if (i >= 0 && i < obj.length) return obj[i];
@@ -118,14 +209,21 @@ export class ExpressionEvaluator {
 
       // Object literal: { mode: "HUNT", target_id: 4 }
       case NodeType.ObjectLiteral: {
-        const objLit = expression as ObjectLiteral;
+        const objLit = expression;
         assertAliScriptCollectionSize(objLit.properties.length);
         const result: Record<string, unknown> = createAliScriptDictionary();
         for (const prop of objLit.properties) {
           safeSetAliScriptProperty(
             result,
             prop.key,
-            this.evaluateExpression(robot, prop.value, memory, getRobots, getObstacles, depth + 1),
+            this.evaluateExpression(
+              robot,
+              prop.value,
+              memory,
+              getRobots,
+              getObstacles,
+              depth + 1,
+            ),
           );
         }
         return result;
@@ -133,11 +231,26 @@ export class ExpressionEvaluator {
 
       // Member (dot) access: state.mode
       case NodeType.MemberExpression: {
-        const memExpr = expression as MemberExpression;
-        const target = this.evaluateExpression(robot, memExpr.object, memory, getRobots, getObstacles, depth + 1);
-        if (target !== null && typeof target === 'object' && !Array.isArray(target)) {
-          if (isForbiddenAliScriptPropertyKey(memExpr.property)) return undefined;
-          return safeGetAliScriptProperty(target as Record<string, unknown>, memExpr.property);
+        const memExpr = expression;
+        const target = this.evaluateExpression(
+          robot,
+          memExpr.object,
+          memory,
+          getRobots,
+          getObstacles,
+          depth + 1,
+        );
+        if (
+          target !== null &&
+          typeof target === 'object' &&
+          !Array.isArray(target)
+        ) {
+          if (isForbiddenAliScriptPropertyKey(memExpr.property))
+            return undefined;
+          return safeGetAliScriptProperty(
+            target as Record<string, unknown>,
+            memExpr.property,
+          );
         }
         return undefined;
       }
@@ -161,24 +274,46 @@ export class ExpressionEvaluator {
 
     switch (name) {
       // ── Single-arg math ────────────────────────────────────────────────
-      case 'ABS': return typeof a === 'number' ? Math.abs(a) : 0;
-      case 'SQRT': return typeof a === 'number' ? Math.sqrt(Math.max(0, a)) : 0;
-      case 'SIN': return typeof a === 'number' ? Math.sin(a) : 0;
-      case 'COS': return typeof a === 'number' ? Math.cos(a) : 0;
-      case 'TAN': return typeof a === 'number' ? Math.tan(a) : 0;
-      case 'FLOOR': return typeof a === 'number' ? Math.floor(a) : 0;
-      case 'CEIL': return typeof a === 'number' ? Math.ceil(a) : 0;
-      case 'ROUND': return typeof a === 'number' ? Math.round(a) : 0;
-      case 'LOG': return typeof a === 'number' && a > 0 ? Math.log(a) : 0;
+      case 'ABS':
+        return typeof a === 'number' ? Math.abs(a) : 0;
+      case 'SQRT':
+        return typeof a === 'number' ? Math.sqrt(Math.max(0, a)) : 0;
+      case 'SIN':
+        return typeof a === 'number' ? Math.sin(a) : 0;
+      case 'COS':
+        return typeof a === 'number' ? Math.cos(a) : 0;
+      case 'TAN':
+        return typeof a === 'number' ? Math.tan(a) : 0;
+      case 'FLOOR':
+        return typeof a === 'number' ? Math.floor(a) : 0;
+      case 'CEIL':
+        return typeof a === 'number' ? Math.ceil(a) : 0;
+      case 'ROUND':
+        return typeof a === 'number' ? Math.round(a) : 0;
+      case 'LOG':
+        return typeof a === 'number' && a > 0 ? Math.log(a) : 0;
 
       // ── Two-arg math ───────────────────────────────────────────────────
-      case 'POW': return typeof a === 'number' && typeof b === 'number' ? Math.pow(a, b) : 0;
-      case 'ATAN2': return typeof a === 'number' && typeof b === 'number' ? Math.atan2(a, b) : 0;
-      case 'MIN': return typeof a === 'number' && typeof b === 'number' ? Math.min(a, b) : 0;
-      case 'MAX': return typeof a === 'number' && typeof b === 'number' ? Math.max(a, b) : 0;
+      case 'POW':
+        return typeof a === 'number' && typeof b === 'number'
+          ? Math.pow(a, b)
+          : 0;
+      case 'ATAN2':
+        return typeof a === 'number' && typeof b === 'number'
+          ? Math.atan2(a, b)
+          : 0;
+      case 'MIN':
+        return typeof a === 'number' && typeof b === 'number'
+          ? Math.min(a, b)
+          : 0;
+      case 'MAX':
+        return typeof a === 'number' && typeof b === 'number'
+          ? Math.max(a, b)
+          : 0;
 
       // ── Zero-arg ───────────────────────────────────────────────────────
-      case 'RANDOM': return Math.random();
+      case 'RANDOM':
+        return Math.random();
 
       // ── Array operations ───────────────────────────────────────────────
       case 'LENGTH': {
@@ -316,11 +451,13 @@ export class ExpressionEvaluator {
           // Deep-copy the payload to sever all object references before
           // placing it into the ally's memory sandbox.
           const safePayload: unknown = JSON.parse(JSON.stringify(payload));
-          const allyMemory = ally.memory as Record<string, unknown>;
+          const allyMemory = ally.memory;
           if (!Array.isArray(allyMemory[INBOX_KEY])) {
             allyMemory[INBOX_KEY] = [];
           }
-          assertAliScriptCollectionCanGrow((allyMemory[INBOX_KEY] as unknown[]).length);
+          assertAliScriptCollectionCanGrow(
+            (allyMemory[INBOX_KEY] as unknown[]).length,
+          );
           (allyMemory[INBOX_KEY] as unknown[]).push(safePayload);
           broadcastCount++;
         }
@@ -350,7 +487,10 @@ export class ExpressionEvaluator {
         const inbox = memory[INBOX_KEY];
         if (!Array.isArray(inbox) || inbox.length === 0) return [];
         // Shallow-copy the inbox then clear it so each message is read once.
-        const drained: unknown[] = inbox.slice(0, ALISCRIPT_MAX_COLLECTION_ELEMENTS);
+        const drained: unknown[] = inbox.slice(
+          0,
+          ALISCRIPT_MAX_COLLECTION_ELEMENTS,
+        );
         memory[INBOX_KEY] = [];
         return drained;
       }

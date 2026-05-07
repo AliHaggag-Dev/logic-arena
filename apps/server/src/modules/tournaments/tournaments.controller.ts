@@ -11,7 +11,10 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '../../common/auth.guard';
 import { TournamentsCommandService } from './tournaments-command.service';
 import { TournamentsQueryService } from './tournaments-query.service';
-import { CompleteTournamentMatchDto, CreateTournamentDto } from './tournaments.dto';
+import {
+  CompleteTournamentMatchDto,
+  CreateTournamentDto,
+} from './tournaments.dto';
 
 interface JwtPayload {
   sub: string;
@@ -30,7 +33,7 @@ export class TournamentsController {
   constructor(
     private readonly commandService: TournamentsCommandService,
     private readonly queryService: TournamentsQueryService,
-  ) { }
+  ) {}
 
   /* ────────────────────── CREATE ────────────────────── */
   @Post('create')
@@ -74,6 +77,11 @@ export class TournamentsController {
     @Body() body: CompleteTournamentMatchDto,
     @Req() req: RequestWithUser,
   ) {
-    return this.commandService.completeMatch(id, matchId, body.winnerId, req.user.sub);
+    return this.commandService.completeMatch(
+      id,
+      matchId,
+      body.winnerId,
+      req.user.sub,
+    );
   }
 }

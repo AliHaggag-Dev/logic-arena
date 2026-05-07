@@ -1,6 +1,14 @@
 import {
-  Controller, Post, Get, Param, Req, Body,
-  UseGuards, NotFoundException, ForbiddenException, BadRequestException,
+  Controller,
+  Post,
+  Get,
+  Param,
+  Req,
+  Body,
+  UseGuards,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import {
@@ -28,7 +36,7 @@ export class CampaignController {
   constructor(
     private readonly campaignService: CampaignService,
     private readonly redis: RedisService,
-  ) { }
+  ) {}
 
   /** Returns all tabs with per-level unlock/completion state for the authenticated user. */
   @Get('tabs')
@@ -51,8 +59,10 @@ export class CampaignController {
       return await this.campaignService.getLevel(req.user.sub, id);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
-      if (msg === ERR_LEVEL_LOCKED) throw new ForbiddenException('Level is locked');
-      if (msg === ERR_LEVEL_NOT_FOUND) throw new NotFoundException('Level not found');
+      if (msg === ERR_LEVEL_LOCKED)
+        throw new ForbiddenException('Level is locked');
+      if (msg === ERR_LEVEL_NOT_FOUND)
+        throw new NotFoundException('Level not found');
       throw e;
     }
   }
@@ -91,9 +101,12 @@ export class CampaignController {
       return await this.campaignService.completeLevel(userId, id);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
-      if (msg === ERR_LEVEL_LOCKED) throw new ForbiddenException('Level is locked — cannot claim reward');
-      if (msg === ERR_LEVEL_NOT_FOUND) throw new NotFoundException('Level not found');
-      if (msg === ERR_USER_NOT_FOUND) throw new NotFoundException('User not found');
+      if (msg === ERR_LEVEL_LOCKED)
+        throw new ForbiddenException('Level is locked — cannot claim reward');
+      if (msg === ERR_LEVEL_NOT_FOUND)
+        throw new NotFoundException('Level not found');
+      if (msg === ERR_USER_NOT_FOUND)
+        throw new NotFoundException('User not found');
       throw e;
     }
   }

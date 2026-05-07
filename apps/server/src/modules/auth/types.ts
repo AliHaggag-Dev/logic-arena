@@ -17,4 +17,5 @@ export interface JwtPayload {
   exp?: number;
 }
 
-export const sessionVersionKey = (userId: string) => `auth:session-version:${userId}`;
+export const sessionVersionKey = (userId: string) =>
+  `auth:session-version:${userId}`;

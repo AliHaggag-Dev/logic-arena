@@ -7,9 +7,10 @@ import { AuthOAuthService } from '../auth-oauth.service';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private authOAuthService: AuthOAuthService) {
     const isDev = process.env.NODE_ENV === 'development';
-    const callbackURL = isDev 
-      ? 'http://localhost:3001/api/auth/google/callback' 
-      : (process.env.GOOGLE_CALLBACK_URL || 'https://logicarena.dev/api/auth/google/callback');
+    const callbackURL = isDev
+      ? 'http://localhost:3001/api/auth/google/callback'
+      : process.env.GOOGLE_CALLBACK_URL ||
+        'https://logicarena.dev/api/auth/google/callback';
 
     super({
       clientID: process.env.GOOGLE_CLIENT_ID || '',
@@ -19,7 +20,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback) {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: VerifyCallback,
+  ) {
     const user = await this.authOAuthService.findOrCreateOAuthUser({
       provider: 'google',
       providerId: profile.id,

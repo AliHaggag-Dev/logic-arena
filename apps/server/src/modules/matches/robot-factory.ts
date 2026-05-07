@@ -59,7 +59,10 @@ export function parseAndSetLogic(
   try {
     const parser = new Parser(script);
     const ast = parser.parse();
-    console.log(`[RobotFactory] Parsed AST for ${id}:`, JSON.stringify(ast.body));
+    console.log(
+      `[RobotFactory] Parsed AST for ${id}:`,
+      JSON.stringify(ast.body),
+    );
     logicEvaluator.setLogic(id, ast);
   } catch (e) {
     console.error(`[RobotFactory] Error parsing script for robot ${id}:`, e);

@@ -24,7 +24,10 @@ export class EmailService {
     this.transporter.verify((err) => {
       if (err) {
         this.logger.error(`SMTP connection failed: ${err.message}`);
-        this.logger.error('❌ SMTP verify failed', err instanceof Error ? err.stack : undefined);
+        this.logger.error(
+          '❌ SMTP verify failed',
+          err instanceof Error ? err.stack : undefined,
+        );
       } else {
         this.logger.log('✅ SMTP transporter ready');
       }
@@ -49,7 +52,9 @@ export class EmailService {
       });
       this.logger.log(`Verification email sent → ${to}`);
     } catch (err: any) {
-      this.logger.error(`Failed to send verification email to ${to}: ${err.message}`);
+      this.logger.error(
+        `Failed to send verification email to ${to}: ${err.message}`,
+      );
       throw err; // re-throw so AuthService can surface the failure
     }
   }
