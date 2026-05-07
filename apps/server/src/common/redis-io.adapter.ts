@@ -1,18 +1,19 @@
 import { INestApplicationContext, Logger } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
-import Redis from 'ioredis';
+import Redis, { type RedisOptions } from 'ioredis';
 import { Server, ServerOptions } from 'socket.io';
+import type { ConnectionOptions as TlsConnectionOptions } from 'tls';
 
-function redisTlsOptions(): { tls?: Record<string, never> } {
+function redisTlsOptions(): { tls?: TlsConnectionOptions } {
   const enabled = ['1', 'true', 'yes'].includes(
     (process.env.REDIS_TLS ?? '').toLowerCase(),
   );
   return enabled ? { tls: {} } : {};
 }
 
-function createRedisClient(): Redis {
-  return new Redis({
+function createRedisClientOptions(): RedisOptions {
+  return {
     host: process.env.REDIS_HOST ?? '127.0.0.1',
     port: Number(process.env.REDIS_PORT) || 6379,
     password: process.env.REDIS_PASSWORD,
@@ -24,9 +25,8 @@ function createRedisClient(): Redis {
       return Math.min(times * 300, 3_000);
     },
     ...redisTlsOptions(),
-  });
+  };
 }
-
 /** Socket.io adapter backed by Redis pub/sub for cross-instance room broadcasts. */
 export class RedisIoAdapter extends IoAdapter {
   private readonly logger = new Logger(RedisIoAdapter.name);
@@ -38,8 +38,12 @@ export class RedisIoAdapter extends IoAdapter {
   }
 
   async connectToRedis(): Promise<void> {
-    this.pubClient = createRedisClient();
-    this.subClient = this.pubClient.duplicate();
+    // Create two independent clients — never duplicate before connecting.
+    // .duplicate() on a lazyConnect client that hasn't yet connected can copy
+    // an inconsistent internal state and cause one client to silently skip TLS.
+    const opts = createRedisClientOptions();
+    this.pubClient = new Redis(opts);
+    this.subClient = new Redis(opts);
 
     try {
       await Promise.all([this.pubClient.connect(), this.subClient.connect()]);
@@ -47,7 +51,7 @@ export class RedisIoAdapter extends IoAdapter {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error(
-        `Socket.io Redis adapter unavailable; using local adapter fallback: ${message}`,
+        `Socket.io Redis adapter unavailable; falling back to local adapter: ${message}`,
       );
       this.pubClient?.disconnect();
       this.subClient?.disconnect();
