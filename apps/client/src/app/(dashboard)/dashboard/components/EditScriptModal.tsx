@@ -6,6 +6,7 @@ import { RobotScript } from "./ScriptCard";
 import { EditScriptHeader } from "./edit-script-modal/EditScriptHeader";
 import { EditScriptEditor } from "./edit-script-modal/EditScriptEditor";
 import { EditScriptFooter, FooterStatus } from "./edit-script-modal/EditScriptFooter";
+import { useSafeTimeout } from "../../../../hooks/useSafeTimeout";
 
 interface EditScriptModalProps {
     script: RobotScript;
@@ -24,6 +25,7 @@ export const EditScriptModal = ({
     const [footerStatus, setFooterStatus] = useState<FooterStatus>("idle");
     const [errorMessage, setErrorMessage] = useState("");
     const isSaving = useRef(false);
+    const { setSafeTimeout } = useSafeTimeout();
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -49,7 +51,7 @@ export const EditScriptModal = ({
         try {
             await apiClient.put(`/scripts/${script.id}`, { content });
             setFooterStatus("success");
-            setTimeout(() => onClose(), 1500);
+            setSafeTimeout(() => onClose(), 1500);
         } catch (error: unknown) {
             const axiosError = error as { response?: { status?: number, data?: { message?: string } } };
             onRevert(script);
@@ -88,18 +90,18 @@ export const EditScriptModal = ({
                     <span className="hidden sm:block absolute bottom-2 left-3 font-mono text-base leading-none text-accent/30 pointer-events-none select-none -scale-y-100">⌐</span>
                     <span className="hidden sm:block absolute bottom-2 right-3 font-mono text-base leading-none text-accent/30 pointer-events-none select-none -scale-100">⌐</span>
 
-                    <EditScriptHeader 
-                        title={script.title} 
-                        version={script.version} 
-                        onClose={onClose} 
+                    <EditScriptHeader
+                        title={script.title}
+                        version={script.version}
+                        onClose={onClose}
                     />
 
-                    <EditScriptEditor 
-                        content={content} 
-                        setContent={setContent} 
+                    <EditScriptEditor
+                        content={content}
+                        setContent={setContent}
                     />
 
-                    <EditScriptFooter 
+                    <EditScriptFooter
                         status={footerStatus}
                         errorMessage={errorMessage}
                         formattedDate={formattedDate}

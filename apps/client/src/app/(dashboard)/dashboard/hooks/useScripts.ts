@@ -4,6 +4,7 @@ import { apiClient } from "../../../../lib/api-client";
 import { RobotScript } from "../components/ScriptCard";
 import { useAuthState } from "../../../../hooks/useAuthState";
 import { setSelectedScriptId } from "../../../../lib/client-security";
+import { useSafeTimeout } from "../../../../hooks/useSafeTimeout";
 
 export type GameMode = "COMBAT" | "RACING" | "TRAINING_SOLO";
 
@@ -25,6 +26,7 @@ export function useScripts() {
     const [editingScript, setEditingScript] = useState<RobotScript | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const router = useRouter();
+    const { clearAllSafeTimeouts, setSafeTimeout } = useSafeTimeout();
 
     // Reactive auth state — re-evaluates when token arrives after login redirect
     const { isGuest } = useAuthState();
@@ -38,11 +40,15 @@ export function useScripts() {
             return;
         }
 
+        let cancelled = false;
+
         const fetchScripts = async () => {
             try {
                 const response = await apiClient.get("/scripts");
+                if (cancelled) return;
                 setScripts(response.data);
             } catch (error: unknown) {
+                if (cancelled) return;
                 const axiosError = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
                 if (axiosError.response?.status === 401) {
                     // apiClient interceptor already cleared in-memory auth and fired auth:expired.
@@ -52,12 +58,21 @@ export function useScripts() {
                     console.error("Failed to fetch scripts:", axiosError.response?.data?.message ?? axiosError.message);
                 }
             } finally {
-                setInitialLoad(false);
+                if (!cancelled) setInitialLoad(false);
             }
         };
 
         fetchScripts();
+
+        return () => {
+            cancelled = true;
+        };
     }, [isGuest]);
+
+    const clearStatusAfter = useCallback((delay: number) => {
+        clearAllSafeTimeouts();
+        setSafeTimeout(() => setStatus({ message: "", type: null }), delay);
+    }, [clearAllSafeTimeouts, setSafeTimeout]);
 
     const handleCreateScript = async (e: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -75,7 +90,7 @@ export function useScripts() {
             setScripts((prev) => [...prev, response.data]);
             setNewScriptTitle("");
             setStatus({ message: "[SYS] SCRIPT CREATED.", type: "success" });
-            setTimeout(() => setStatus({ message: "", type: null }), 3000);
+            clearStatusAfter(3000);
         } catch (error: unknown) {
             const axiosError = error as { response?: { status?: number, data?: { message?: string } }; message?: string };
             const errMsg = axiosError.response?.status === 401
@@ -126,7 +141,7 @@ export function useScripts() {
         const snapshot = scripts.find((s) => s.id === id);
         setScripts((prev) => prev.filter((s) => s.id !== id));
         setStatus({ message: "SCRIPT DELETED", type: "error" });
-        setTimeout(() => setStatus({ message: "", type: null }), 1000);
+        clearStatusAfter(1000);
 
         try {
             await apiClient.delete(`/scripts/${id}`);
@@ -144,9 +159,9 @@ export function useScripts() {
                 });
             }
             setStatus({ message: `[ERR] TERMINATION FAILED: ${errMsg}`, type: "error" });
-            setTimeout(() => setStatus({ message: "", type: null }), 3000);
+            clearStatusAfter(3000);
         }
-    }, [scripts, isGuest]);
+    }, [scripts, isGuest, clearStatusAfter]);
 
     return {
         scripts,

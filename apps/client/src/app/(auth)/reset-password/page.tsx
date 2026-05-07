@@ -4,6 +4,7 @@ import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
+import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
 
 function ResetPasswordContent() {
   const [code, setCode] = useState("");
@@ -17,6 +18,7 @@ function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { setSafeTimeout } = useSafeTimeout();
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,7 @@ function ResetPasswordContent() {
         message: "PASSWORD UPDATED SUCCESSFULLY.",
         type: "success"
       });
-      setTimeout(() => router.push("/login"), 1500);
+      setSafeTimeout(() => router.push("/login"), 1500);
     } catch (err: any) {
       setStatus({
         message: `ERROR: ${err.response?.data?.message || err.message}`,

@@ -11,6 +11,7 @@ import { AuthSocials } from "../components/AuthSocials";
 import { AuthStatusTerminal } from "../components/AuthStatusTerminal";
 import { clearSensitiveBrowserStorage } from "../../../lib/client-security";
 import { PasswordStrengthIndicator } from "../components/PasswordStrengthIndicator";
+import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -25,6 +26,7 @@ export default function RegisterPage() {
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const router = useRouter();
+  const { setSafeTimeout } = useSafeTimeout();
 
   React.useEffect(() => {
     clearSensitiveBrowserStorage();
@@ -52,7 +54,7 @@ export default function RegisterPage() {
     try {
       await apiClient.post("/auth/register", { email, username, password });
       setStatus({ message: "ACCOUNT CREATED SUCCESSFULLY. REDIRECTING...", errors: [], type: "success" });
-      setTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(email)}`), 1500);
+      setSafeTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(email)}`), 1500);
     } catch (error: any) {
       const errs = parseApiError(error);
       setStatus({ message: "", errors: errs, type: "error" });

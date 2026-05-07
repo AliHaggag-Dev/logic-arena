@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { apiClient } from "../../../../lib/api-client";
 import { useAuthState } from "../../../../hooks/useAuthState";
+import { useSafeTimeout } from "../../../../hooks/useSafeTimeout";
 import {
   DEFAULT_LOADOUT,
   INITIAL_POINTS,
@@ -25,6 +26,7 @@ export function useBlackMarket() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const { clearAllSafeTimeouts, setSafeTimeout } = useSafeTimeout();
 
   useEffect(() => {
     if (isGuest) {
@@ -66,9 +68,10 @@ export function useBlackMarket() {
   }, [isGuest]);
 
   const showToast = useCallback((message: string, type: ToastState["type"]) => {
+    clearAllSafeTimeouts();
     setToast({ message, type });
-    setTimeout(() => setToast(null), 2800);
-  }, []);
+    setSafeTimeout(() => setToast(null), 2800);
+  }, [clearAllSafeTimeouts, setSafeTimeout]);
 
   const filteredItems = useMemo(
     () => MARKET_ITEMS.filter((item) => item.category === activeCategory),

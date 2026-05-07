@@ -10,6 +10,7 @@ import { AuthHeader } from "../components/AuthHeader";
 import { AuthSocials } from "../components/AuthSocials";
 import { AuthStatusTerminal } from "../components/AuthStatusTerminal";
 import { clearSensitiveBrowserStorage, setAuthSession } from "../../../lib/client-security";
+import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -23,6 +24,7 @@ export default function LoginPage() {
 
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { setSafeTimeout } = useSafeTimeout();
 
   // Auto-redirect to dashboard if a user session exists
   React.useEffect(() => {
@@ -42,7 +44,7 @@ export default function LoginPage() {
       setAuthSession({ userId, username: returnedUsername || username });
 
       setStatus({ message: "LOGIN SUCCESSFUL. REDIRECTING...", errors: [], type: "success" });
-      setTimeout(() => router.push("/dashboard"), 1000);
+      setSafeTimeout(() => router.push("/dashboard"), 1000);
     } catch (error: any) {
       const errs = parseApiError(error);
       setStatus({ message: "", errors: errs, type: "error" });

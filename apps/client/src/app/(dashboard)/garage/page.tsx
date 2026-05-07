@@ -5,6 +5,7 @@ import { AuthModal } from "../../../components/AuthModal";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useAuthState } from "../../../hooks/useAuthState";
+import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
 import { RobotShowroom } from "../black-market/components/RobotShowroom";
 import { MARKET_ITEMS, CATEGORY_LABELS } from "../black-market/constants";
 import { MarketItem } from "../black-market/types";
@@ -27,10 +28,9 @@ function Toast({ message, type }: ToastProps) {
         border backdrop-blur-md font-mono text-[10px] tracking-[0.18em] font-bold
         shadow-[0_8px_32px_rgba(0,0,0,0.5)]
         animate-[toastIn_0.3s_ease]
-        ${
-          type === "success"
-            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-            : "bg-red-500/10 border-red-500/30 text-red-400"
+        ${type === "success"
+          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+          : "bg-red-500/10 border-red-500/30 text-red-400"
         }
       `}
     >
@@ -68,22 +68,24 @@ export default function GaragePage() {
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
 
   const [activeCategory, setActiveCategory] = useState<"chassis" | "paint" | "tracer">("chassis");
-  
+
   // Vault Data
   const [unlockedItemIds, setUnlockedItemIds] = useState<Set<string>>(new Set());
   const [equippedChassis, setEquippedChassis] = useState<string>("chassis-unit-01");
   const [equippedPaint, setEquippedPaint] = useState<string>("paint-default");
   const [equippedTracer, setEquippedTracer] = useState<string>("tracer-pulse");
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [equippingId, setEquippingId] = useState<string | null>(null);
 
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const { clearAllSafeTimeouts, setSafeTimeout } = useSafeTimeout();
 
   const showToast = useCallback((message: string, type: "success" | "error") => {
+    clearAllSafeTimeouts();
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  }, []);
+    setSafeTimeout(() => setToast(null), 3000);
+  }, [clearAllSafeTimeouts, setSafeTimeout]);
 
   // Fetch Loadout
   useEffect(() => {
@@ -91,9 +93,12 @@ export default function GaragePage() {
       setIsLoading(false);
       return;
     }
-    
+
+    let cancelled = false;
+
     apiClient.get("/users/black-market")
       .then((res) => {
+        if (cancelled) return;
         const data = res.data;
         setUnlockedItemIds(new Set(data.unlockedItems || []));
         if (data.equippedChassis) setEquippedChassis(data.equippedChassis);
@@ -103,7 +108,13 @@ export default function GaragePage() {
       .catch(() => {
         /* 401s are handled globally by apiClient interceptor */
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isGuest]);
 
   // Derived state
@@ -136,15 +147,15 @@ export default function GaragePage() {
 
   const handleEquip = async (item: MarketItem) => {
     if (isGuest) return setShowAuthModal(true);
-    
+
     try {
       setEquippingId(item.id);
       await apiClient.post("/users/black-market/equip", { itemId: item.id, category: item.category });
-      
+
       if (item.category === "chassis") setEquippedChassis(item.id);
       if (item.category === "paint") setEquippedPaint(item.id);
       if (item.category === "tracer") setEquippedTracer(item.id);
-      
+
       showToast(`EQUIPPED: ${item.name}`, "success");
     } catch (err: any) {
       showToast(err.response?.data?.message || "FAILED TO EQUIP ITEM", "error");
@@ -212,11 +223,10 @@ export default function GaragePage() {
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-xs sm:text-[11px] tracking-widest transition-all whitespace-nowrap ${
-                      activeCategory === cat
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-xs sm:text-[11px] tracking-widest transition-all whitespace-nowrap ${activeCategory === cat
                         ? "bg-accent/20 text-accent border border-accent/50 shadow-[0_0_15px_rgba(var(--accent-rgb),0.2)]"
                         : "text-accent/50 border border-transparent hover:text-accent hover:bg-accent/5"
-                    }`}
+                      }`}
                   >
                     {cat === "chassis" && <Hexagon className="w-4 h-4" />}
                     {cat === "paint" && <PaintBucket className="w-4 h-4" />}
@@ -247,11 +257,10 @@ export default function GaragePage() {
                       return (
                         <div
                           key={item.id}
-                          className={`relative flex flex-col p-4 rounded-xl backdrop-blur-sm transition-all duration-300 border ${styles.border} ${styles.glow} ${
-                            isEquipped
+                          className={`relative flex flex-col p-4 rounded-xl backdrop-blur-sm transition-all duration-300 border ${styles.border} ${styles.glow} ${isEquipped
                               ? "bg-accent/10 ring-1 ring-accent shadow-[0_0_24px_rgba(var(--accent-rgb),0.15)]"
                               : "bg-[rgba(var(--accent-rgb),0.02)]"
-                          }`}
+                            }`}
                         >
                           {isEquipped && (
                             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent" />
@@ -299,10 +308,9 @@ export default function GaragePage() {
                                 className={`
                                   flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-[9px] font-black tracking-[0.18em]
                                   transition-all duration-200 border font-mono w-full sm:w-auto
-                                  ${
-                                    isEquipped
-                                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default"
-                                      : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
+                                  ${isEquipped
+                                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default"
+                                    : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
                                   }
                                 `}
                               >

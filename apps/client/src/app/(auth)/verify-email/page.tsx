@@ -4,6 +4,7 @@ import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
+import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
 
 function VerifyEmailContent() {
   const [code, setCode] = useState("");
@@ -16,6 +17,7 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { setSafeTimeout } = useSafeTimeout();
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +30,7 @@ function VerifyEmailContent() {
         message: "Email verified! Taking you to login...",
         type: "success"
       });
-      setTimeout(() => router.push("/login"), 1500);
+      setSafeTimeout(() => router.push("/login"), 1500);
     } catch (err: any) {
       setStatus({
         message: `ERROR: ${err.response?.data?.message || err.message}`,

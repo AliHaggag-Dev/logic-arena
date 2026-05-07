@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
+import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,7 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { setSafeTimeout } = useSafeTimeout();
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +28,7 @@ export default function ForgotPasswordPage() {
         message: "RESET LINK SENT. PLEASE CHECK YOUR EMAIL.",
         type: "success"
       });
-      setTimeout(() => router.push(`/reset-password?email=${encodeURIComponent(email)}`), 1500);
+      setSafeTimeout(() => router.push(`/reset-password?email=${encodeURIComponent(email)}`), 1500);
     } catch (err: any) {
       setStatus({
         message: `ERROR: ${err.response?.data?.message || err.message}`,

@@ -25,17 +25,28 @@ export default function CampaignLevelPage() {
   useEffect(() => {
     if (invalidLevelId) return;
 
+    let cancelled = false;
+
     apiClient
       .get(`/campaign/levels/${levelId}`)
-      .then((r) => { setLevel(r.data); })
+      .then((r) => {
+        if (!cancelled) setLevel(r.data);
+      })
       .catch((err) => {
+        if (cancelled) return;
         if (err.response?.status === 403) {
           setError("ACCESS DENIED: Level is locked.");
         } else {
           setError("404: Level not found.");
         }
       })
-      .finally(() => setFetching(false));
+      .finally(() => {
+        if (!cancelled) setFetching(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [invalidLevelId, levelId]);
 
   const handleFight = useCallback(async () => {

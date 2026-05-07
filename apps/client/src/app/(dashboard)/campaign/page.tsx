@@ -12,15 +12,26 @@ export default function CampaignPage() {
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     apiClient
       .get("/campaign/tabs")
-      .then((r) => setTabs(r.data))
+      .then((r) => {
+        if (!cancelled) setTabs(r.data);
+      })
       .catch((err) => {
+        if (cancelled) return;
         if (err.response?.status === 401 || err.response?.status === 403) {
           setIsGuest(true);
         }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
