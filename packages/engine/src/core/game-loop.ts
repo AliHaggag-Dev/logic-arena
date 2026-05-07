@@ -5,7 +5,7 @@ import { SpatialGrid } from '../physics/spatial-grid';
 import { FovCalculator } from '../fov-calculator';
 import { EnergyManager } from '../energy-manager';
 import { performance } from 'node:perf_hooks';
-import { requestAnimationFrame } from '../utils/animation-loop';
+import { cancelAnimationFrame, requestAnimationFrame } from '../utils/animation-loop';
 import { ARENA_WIDTH, ARENA_HEIGHT, DEFAULT_FOV, DEFAULT_OBSTACLES, RACING_OBSTACLES } from '../constants';
 import { updateRobotPhysics } from './robot-updater';
 
@@ -88,6 +88,15 @@ export class GameLoop {
     this.isRunning = true;
     this.lastFrameTime = performance.now();
     this.loop(this.lastFrameTime);
+  }
+
+  stop(): void {
+    this.isRunning = false;
+
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
   }
 
   private loop = (currentTime: number): void => {

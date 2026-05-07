@@ -2,6 +2,7 @@ import {
   WebSocketGateway, SubscribeMessage, MessageBody,
   ConnectedSocket, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect,
 } from '@nestjs/websockets';
+import { OnModuleDestroy } from '@nestjs/common';
 import { Server } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import { PrismaService } from '../../common/prisma.service';
@@ -24,7 +25,7 @@ import { MatchLoopManager } from './gateway/match.loop';
     credentials: true,
   },
 })
-export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy {
   @WebSocketServer()
   server!: Server;
 
@@ -35,6 +36,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private lobbyManager!: MatchLobbyManager;
   private socialManager!: MatchSocialManager;
   private loopManager!: MatchLoopManager;
+  private disconnectCleanupTimers = new Map<string, NodeJS.Timeout>();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -49,6 +51,20 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Boot up the global match tick loop
     this.loopManager.startLoop();
+  }
+
+  onModuleDestroy() {
+    this.loopManager?.stopLoop();
+
+    for (const timer of this.disconnectCleanupTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.disconnectCleanupTimers.clear();
+
+    for (const [matchId, match] of this.state.matches.entries()) {
+      match.stop();
+      this.state.cleanupMatch(matchId);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -68,6 +84,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
       client.userId = decoded.sub;
+      this.cancelDisconnectCleanup(client.userId);
       await this.redisService.set(`user:online:${client.userId}`, '1', 300);
       client.emit('authenticated', { userId: client.userId });
     } catch {
@@ -112,22 +129,9 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Clean up lobby if they hosted one
     // We delay this by 2 seconds. If they navigated to the arena, they will reconnect
     // and `isOnline` will be true again, preventing the lobby match from disappearing.
-    setTimeout(async () => {
-      if (!client.userId) return;
-      const isOnline = await this.redisService.get(`user:online:${client.userId}`);
-      if (!isOnline) {
-        let lobbyChanged = false;
-        for (const [id, lobby] of this.state.lobbyMatches.entries()) {
-          if (lobby.hostId === client.userId) {
-            this.state.lobbyMatches.delete(id);
-            lobbyChanged = true;
-          }
-        }
-        if (lobbyChanged) {
-          this.server.emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
-        }
-      }
-    }, 2000);
+    if (client.userId) {
+      this.scheduleDisconnectCleanup(client.userId);
+    }
 
     // Clean up match if no players are left
     if (client.matchId && this.state.matches.has(client.matchId)) {
@@ -148,6 +152,38 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       }
     }
+  }
+
+  private cancelDisconnectCleanup(userId: string): void {
+    const existingTimer = this.disconnectCleanupTimers.get(userId);
+    if (!existingTimer) return;
+
+    clearTimeout(existingTimer);
+    this.disconnectCleanupTimers.delete(userId);
+  }
+
+  private scheduleDisconnectCleanup(userId: string): void {
+    this.cancelDisconnectCleanup(userId);
+
+    const timer = setTimeout(async () => {
+      this.disconnectCleanupTimers.delete(userId);
+
+      const isOnline = await this.redisService.get(`user:online:${userId}`);
+      if (!isOnline) {
+        let lobbyChanged = false;
+        for (const [id, lobby] of this.state.lobbyMatches.entries()) {
+          if (lobby.hostId === userId) {
+            this.state.lobbyMatches.delete(id);
+            lobbyChanged = true;
+          }
+        }
+        if (lobbyChanged) {
+          this.server.emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
+        }
+      }
+    }, 2000);
+
+    this.disconnectCleanupTimers.set(userId, timer);
   }
 
   // ---------------------------------------------------------------------------

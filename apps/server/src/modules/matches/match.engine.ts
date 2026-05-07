@@ -22,11 +22,11 @@ export class MatchEngine {
     config?: GameConfig,
     private onEvent?: (event: string, payload: any) => void,
   ) {
-    this.matchId       = matchId;
-    this.config        = config;
-    this.gameLoop      = new GameLoop(this.config);
+    this.matchId = matchId;
+    this.config = config;
+    this.gameLoop = new GameLoop(this.config);
     this.sandboxRunner = new SandboxRunner();
-    this.deps          = createGameDependencies(this.gameLoop, this.onEvent);
+    this.deps = createGameDependencies(this.gameLoop, this.onEvent);
     this.initialPlayers = initialPlayers;
 
     initialPlayers.forEach((p, i) => {
@@ -42,7 +42,7 @@ export class MatchEngine {
   reset(): void {
     this.stop();
     this.gameLoop = new GameLoop(this.config);
-    this.deps     = createGameDependencies(this.gameLoop, this.onEvent);
+    this.deps = createGameDependencies(this.gameLoop, this.onEvent);
     this.initialPlayers.forEach((p, i) => {
       this.gameLoop.addRobot(createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor));
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
@@ -51,12 +51,15 @@ export class MatchEngine {
   }
 
   start(tickRate: number = 100): void {
+    if (this.tickInterval) return;
     this.gameLoop.start();
-    this.lastTickTime  = Date.now();
-    this.tickInterval  = setInterval(() => this.tick(), tickRate);
+    this.lastTickTime = Date.now();
+    this.tickInterval = setInterval(() => this.tick(), tickRate);
   }
 
   stop(): void {
+    this.gameLoop.stop();
+
     if (this.tickInterval) {
       clearInterval(this.tickInterval);
       this.tickInterval = null;
@@ -131,7 +134,7 @@ export class MatchEngine {
    * Returns false if blocked (stasis, unknown command, or robot not found).
    */
   receiveManualCommand(userId: string, command: string): boolean {
-    const cmd   = command.toUpperCase();
+    const cmd = command.toUpperCase();
     const robot = this.gameLoop.getRobots().find(r => r.id === userId);
     if (!robot || !robot.isAlive) return false;
     if (!MatchEngine.MANUAL_ALLOWED.has(cmd)) return false;
