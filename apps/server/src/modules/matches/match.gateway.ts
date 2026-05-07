@@ -11,7 +11,7 @@ import { AUTH_COOKIE_NAME, JwtPayload } from '../auth/types';
 
 import { AuthenticatedSocket } from './gateway/types';
 import { MatchState } from './gateway/match.state';
-import { MatchLobbyManager } from './gateway/match.lobby';
+import { LOBBY_ROOM, MatchLobbyManager } from './gateway/match.lobby';
 import { MatchSocialManager } from './gateway/match.social';
 import { MatchLoopManager } from './gateway/match.loop';
 
@@ -147,7 +147,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
 
           if (this.state.lobbyMatches.has(matchId)) {
             this.state.lobbyMatches.delete(matchId);
-            this.server.emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
+            this.server.to(LOBBY_ROOM).emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
           }
         }
       }
@@ -178,7 +178,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
           }
         }
         if (lobbyChanged) {
-          this.server.emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
+          this.server.to(LOBBY_ROOM).emit('lobbyUpdated', Array.from(this.state.lobbyMatches.values()));
         }
       }
     }, 2000);
@@ -209,6 +209,11 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect, O
   @SubscribeMessage('getLobby')
   async handleGetLobby(@ConnectedSocket() client: AuthenticatedSocket) {
     return this.lobbyManager.handleGetLobby(client);
+  }
+
+  @SubscribeMessage('leaveLobby')
+  handleLeaveLobby(@ConnectedSocket() client: AuthenticatedSocket) {
+    return this.lobbyManager.handleLeaveLobby(client);
   }
 
   @SubscribeMessage('resetGame')

@@ -10,6 +10,7 @@ import { combatLoadoutKey } from '../../users/types';
 
 const LOBBY_CACHE_KEY = 'lobby:matches';
 const LOBBY_CACHE_TTL = 120;
+export const LOBBY_ROOM = 'lobby:viewers';
 
 export class MatchLobbyManager {
   constructor(
@@ -22,7 +23,7 @@ export class MatchLobbyManager {
   private async publishLobbySnapshot(): Promise<void> {
     const snapshot = Array.from(this.state.lobbyMatches.values());
     await this.redis.set(LOBBY_CACHE_KEY, snapshot, LOBBY_CACHE_TTL);
-    this.server.emit('lobbyUpdated', snapshot);
+    this.server.to(LOBBY_ROOM).emit('lobbyUpdated', snapshot);
   }
 
   async handleJoinMatch(
@@ -202,6 +203,7 @@ export class MatchLobbyManager {
   }
 
   async handleGetLobby(client: AuthenticatedSocket) {
+    client.join(LOBBY_ROOM);
     const localLobby = Array.from(this.state.lobbyMatches.values());
     if (localLobby.length > 0) {
       client.emit('lobbyList', localLobby);
@@ -210,6 +212,10 @@ export class MatchLobbyManager {
 
     const cachedLobby = await this.redis.get<unknown[]>(LOBBY_CACHE_KEY);
     client.emit('lobbyList', cachedLobby ?? []);
+  }
+
+  handleLeaveLobby(client: AuthenticatedSocket) {
+    client.leave(LOBBY_ROOM);
   }
 
   handleResetGame(client: AuthenticatedSocket, data: { matchId: string }) {

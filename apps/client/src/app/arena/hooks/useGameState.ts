@@ -92,7 +92,11 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
       let parsed: GameState = { robots: [], projectiles: [], obstacles: [] };
 
       if (payload.type === 'delta') {
-        const diff = payload.diff as Partial<GameState> & { robots?: Partial<RobotState>[] };
+        const diff = payload.diff as {
+          robots?: Partial<RobotState>[];
+          projectiles?: ProjectileState[] | { upsert?: ProjectileState[]; remove?: string[] };
+          obstacles?: ObstacleState[];
+        };
         parsed = { ...gameStateRef.current };
 
         if (diff.robots) {
@@ -104,7 +108,18 @@ export const useGameState = (scriptId: string | null, mode: string | null) => {
           });
         }
 
-        if (diff.projectiles) parsed.projectiles = diff.projectiles;
+        if (Array.isArray(diff.projectiles)) {
+          parsed.projectiles = diff.projectiles;
+        } else if (diff.projectiles) {
+          const removeIds = new Set(diff.projectiles.remove ?? []);
+          const upsertById = new Map((diff.projectiles.upsert ?? []).map((projectile) => [projectile.id, projectile]));
+          const retained = parsed.projectiles
+            .filter((projectile) => !removeIds.has(projectile.id))
+            .map((projectile) => upsertById.get(projectile.id) ?? projectile);
+          const existingIds = new Set(retained.map((projectile) => projectile.id));
+          const created = (diff.projectiles.upsert ?? []).filter((projectile) => !existingIds.has(projectile.id));
+          parsed.projectiles = [...retained, ...created];
+        }
         if (diff.obstacles) parsed.obstacles = diff.obstacles;
 
       } else if (payload.type === 'full') {

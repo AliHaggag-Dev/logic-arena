@@ -80,6 +80,7 @@ export function useLobbySocket(): UseLobbySocketReturn {
     socket.on("matchCreated", onMatchCreated);
 
     return () => {
+      socket.emit("leaveLobby");
       socket.off("connect", onConnect);
       socket.off("connect_error", onConnectError);
       socket.off("lobbyList", onLobbyList);
@@ -90,6 +91,7 @@ export function useLobbySocket(): UseLobbySocketReturn {
 
   useEffect(() => {
     return () => {
+      socket.emit("leaveLobby");
       socket.disconnect();
     };
   }, [socket]);

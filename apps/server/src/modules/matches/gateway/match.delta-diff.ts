@@ -1,81 +1,137 @@
-import { TRACKED_ROBOT_PROPS } from './types';
+import { GameState, Projectile, Robot, Vector2 } from '@logic-arena/engine';
+import {
+  GameStateDelta,
+  ProjectileDelta,
+  RobotDelta,
+  SafeGameSnapshot,
+  SafeProjectileSnapshot,
+  SafeRobotSnapshot,
+  TRACKED_ROBOT_PROPS,
+  TrackedRobotProp,
+} from './types';
 
-const STATIC_FIELDS = ['obstacles', 'mapBoundaries'];
-
-export function computeDeltaDiff(state: any, prevState: any | null): any {
-  let delta: any = { type: 'full', state };
-
-  if (prevState) {
-    const robotsDiff = state.robots
-      .map((r: any) => {
-        const prevR = prevState.robots.find((pr: any) => pr.id === r.id);
-        if (!prevR) return r;
-
-        let rd: any = { id: r.id };
-        let changed = false;
-
-        for (const prop of TRACKED_ROBOT_PROPS) {
-          const curVal = JSON.stringify(r[prop]);
-          const prevVal = JSON.stringify((prevR as any)[prop]);
-          if (curVal !== prevVal) {
-            rd[prop] = r[prop];
-            changed = true;
-          }
-        }
-
-        if (r.isAlive) {
-          const vMag = Math.hypot(r.velocity?.x ?? 0, r.velocity?.y ?? 0);
-          if (vMag > 0.01) {
-            rd.position = r.position;
-            rd.velocity = r.velocity;
-            rd.rotation = r.rotation;
-            changed = true;
-          }
-        }
-
-        const curIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id).sort().join(',');
-        const prevIds = ((prevR as any).visibleRobotIds ?? []).slice().sort().join(',');
-        if (curIds !== prevIds) {
-          rd.visibleRobotIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id);
-          changed = true;
-        }
-
-        return changed ? rd : null;
-      })
-      .filter(Boolean);
-
-    delta = {
-      type: 'delta',
-      diff: { robots: robotsDiff, projectiles: state.projectiles },
-    };
-    // Skip diffing STATIC_FIELDS entirely
-    STATIC_FIELDS.forEach(field => {
-      if (delta.diff[field]) delete delta.diff[field];
-    });
-  }
-
-  return delta;
+function cloneVector(value?: Vector2): Vector2 | undefined {
+  return value ? { x: value.x, y: value.y } : undefined;
 }
 
-export function generateSafeSnapshot(state: any): any {
+function vectorsEqual(a?: Vector2, b?: Vector2): boolean {
+  return (a?.x ?? 0) === (b?.x ?? 0) && (a?.y ?? 0) === (b?.y ?? 0);
+}
+
+function arraysEqualUnordered(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const aSorted = [...a].sort();
+  const bSorted = [...b].sort();
+  return aSorted.every((value, index) => value === bSorted[index]);
+}
+
+function propChanged(prop: TrackedRobotProp, current: Robot, previous: SafeRobotSnapshot): boolean {
+  const currentValue = current[prop as keyof Robot];
+  const previousValue = previous[prop];
+
+  if (prop === 'position' || prop === 'velocity') {
+    return !vectorsEqual(currentValue as Vector2 | undefined, previousValue as Vector2 | undefined);
+  }
+
+  return currentValue !== previousValue;
+}
+
+function cloneTrackedValue(prop: TrackedRobotProp, robot: Robot): SafeRobotSnapshot[TrackedRobotProp] {
+  const value = robot[prop as keyof Robot];
+  if (prop === 'position' || prop === 'velocity') {
+    return cloneVector(value as Vector2 | undefined) as SafeRobotSnapshot[TrackedRobotProp];
+  }
+  return value as SafeRobotSnapshot[TrackedRobotProp];
+}
+
+function toSafeProjectile(projectile: Projectile): SafeProjectileSnapshot {
   return {
-    robots: state.robots.map((r: any) => {
-      const snap: any = { id: r.id };
+    id: projectile.id,
+    position: { ...projectile.position },
+    velocity: { ...projectile.velocity },
+    color: projectile.color,
+    ownerId: projectile.ownerId,
+  };
+}
+
+function computeProjectileDelta(
+  currentProjectiles: Projectile[],
+  previousProjectiles: SafeProjectileSnapshot[],
+): ProjectileDelta {
+  const previousById = new Map(previousProjectiles.map((p) => [p.id, p]));
+  const currentIds = new Set<string>();
+  const upsert: SafeProjectileSnapshot[] = [];
+
+  for (const projectile of currentProjectiles) {
+    currentIds.add(projectile.id);
+    const previous = previousById.get(projectile.id);
+    if (
+      !previous ||
+      !vectorsEqual(projectile.position, previous.position) ||
+      !vectorsEqual(projectile.velocity, previous.velocity) ||
+      projectile.color !== previous.color ||
+      projectile.ownerId !== previous.ownerId
+    ) {
+      upsert.push(toSafeProjectile(projectile));
+    }
+  }
+
+  const remove = previousProjectiles
+    .filter((projectile) => !currentIds.has(projectile.id))
+    .map((projectile) => projectile.id);
+
+  return { upsert, remove };
+}
+
+export function computeDeltaDiff(state: GameState, prevState: SafeGameSnapshot | null | undefined): GameStateDelta {
+  if (!prevState) return { type: 'full', state };
+
+  const previousRobotsById = new Map(prevState.robots.map((robot) => [robot.id, robot]));
+  const robotsDiff = state.robots
+    .map((robot): RobotDelta | null => {
+      const previousRobot = previousRobotsById.get(robot.id);
+      if (!previousRobot) return robot as RobotDelta;
+
+      const robotDelta: RobotDelta = { id: robot.id };
+      let changed = false;
+
       for (const prop of TRACKED_ROBOT_PROPS) {
-        const val = r[prop];
-        snap[prop] =
-          val !== null && typeof val === 'object' && !Array.isArray(val)
-            ? { ...val }
-            : val;
+        if (propChanged(prop, robot, previousRobot)) {
+          (robotDelta as Record<TrackedRobotProp, SafeRobotSnapshot[TrackedRobotProp]>)[prop] = cloneTrackedValue(prop, robot);
+          changed = true;
+        }
       }
-      snap.visibleRobotIds = (r.visibleEntities?.robots ?? []).map((vr: any) => vr.id);
+
+      const visibleRobotIds = (robot.visibleEntities?.robots ?? []).map((visibleRobot) => visibleRobot.id);
+      if (!arraysEqualUnordered(visibleRobotIds, previousRobot.visibleRobotIds ?? [])) {
+        robotDelta.visibleRobotIds = visibleRobotIds;
+        changed = true;
+      }
+
+      return changed ? robotDelta : null;
+    })
+    .filter((delta): delta is RobotDelta => delta !== null);
+
+  return {
+    type: 'delta',
+    diff: {
+      robots: robotsDiff,
+      projectiles: computeProjectileDelta(state.projectiles, prevState.projectiles),
+    },
+  };
+}
+
+export function generateSafeSnapshot(state: GameState): SafeGameSnapshot {
+  return {
+    robots: state.robots.map((r) => {
+      const snap: SafeRobotSnapshot = { id: r.id, visibleRobotIds: [] };
+      for (const prop of TRACKED_ROBOT_PROPS) {
+        (snap as Record<TrackedRobotProp, SafeRobotSnapshot[TrackedRobotProp]>)[prop] = cloneTrackedValue(prop, r);
+      }
+      snap.visibleRobotIds = (r.visibleEntities?.robots ?? []).map((vr) => vr.id);
       return snap;
     }),
-    projectiles: state.projectiles.map((p: any) => ({
-      id: p.id,
-      position: { ...p.position },
-      velocity: { ...p.velocity },
-    })),
+    projectiles: state.projectiles.map(toSafeProjectile),
     obstacles: undefined,
   };
 }

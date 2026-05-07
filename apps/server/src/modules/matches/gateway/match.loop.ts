@@ -85,7 +85,9 @@ export class MatchLoopManager {
 
         const hasChanges =
           delta.type === 'full' ||
-          (delta.diff && (delta.diff.robots.length > 0 || delta.diff.projectiles.length > 0));
+          delta.diff.robots.length > 0 ||
+          delta.diff.projectiles.upsert.length > 0 ||
+          delta.diff.projectiles.remove.length > 0;
 
         if (hasChanges) {
           const safeSnapshot = generateSafeSnapshot(state);
