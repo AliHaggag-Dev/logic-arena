@@ -63,12 +63,14 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
         {navItems.map((item) => (
           <NavLink key={item.href} href={item.href} label={item.label} iconNode={item.iconNode} />
         ))}
-        <div className="my-2 h-px bg-accent/[0.06]" />
-        <NavLink
-          href="/settings"
-          label="SETTINGS"
-          iconNode={<Settings size={13} strokeWidth={2.5} />}
-        />
+        <div className="mt-auto">
+          <div className="mb-2 mt-2 h-px bg-accent/[0.06]" />
+          <NavLink
+            href="/settings"
+            label="SETTINGS"
+            iconNode={<Settings size={13} strokeWidth={2.5} />}
+          />
+        </div>
       </nav>
 
       {/* ── USER + LOGOUT ── */}
