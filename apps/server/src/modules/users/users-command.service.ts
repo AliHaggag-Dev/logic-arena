@@ -168,13 +168,22 @@ export class UsersCommandService {
       throw new BadReq('Insufficient points');
     }
 
-    await this.prisma.user.update({
-      where: { id: userId },
+    const updateResult = await this.prisma.user.updateMany({
+      where: {
+        id: userId,
+        points: { gte: catalogItem.price },
+        NOT: { unlockedItems: { has: itemId } },
+      },
       data: {
         points: { decrement: catalogItem.price },
         unlockedItems: { push: itemId },
       },
     });
+
+    if (updateResult.count === 0) {
+      throw new ConflictException('Item purchase could not be completed — retry with latest wallet state');
+    }
+
     await this.redis.del(profileKey(userId), blackMarketKey(userId));
   }
 

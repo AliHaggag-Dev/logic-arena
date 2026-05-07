@@ -153,26 +153,36 @@ export class CampaignService {
 
     const alreadyClaimed = user.completedCampaignLevels.includes(levelId);
 
-    if (!alreadyClaimed) {
-      // Verify the user actually had this level unlocked before awarding points
-      if (!this.isLevelUnlocked(level, user.completedCampaignLevels)) {
-        throw new Error(ERR_LEVEL_LOCKED);
-      }
-
-      await this.prisma.user.update({
-        where: { id: userId },
-        data: {
-          completedCampaignLevels: {
-            push: levelId,
-          },
-          points: { increment: level.pointsReward },
-        },
-      });
-      await this.invalidateUserCampaignCache(userId);
-      await this.redis.del(`user:profile:${userId}`, `user:black-market:${userId}`);
+    if (alreadyClaimed) {
+      return { pointsAwarded: 0, alreadyClaimed: true };
     }
 
-    return { pointsAwarded: alreadyClaimed ? 0 : level.pointsReward, alreadyClaimed };
+    // Verify the user actually had this level unlocked before awarding points.
+    if (!this.isLevelUnlocked(level, user.completedCampaignLevels)) {
+      throw new Error(ERR_LEVEL_LOCKED);
+    }
+
+    // Atomic guard: only award if the level is still not present at update time.
+    // This prevents concurrent completion requests from double-awarding points.
+    const updateResult = await this.prisma.user.updateMany({
+      where: {
+        id: userId,
+        NOT: { completedCampaignLevels: { has: levelId } },
+      },
+      data: {
+        completedCampaignLevels: { push: levelId },
+        points: { increment: level.pointsReward },
+      },
+    });
+
+    if (updateResult.count === 0) {
+      return { pointsAwarded: 0, alreadyClaimed: true };
+    }
+
+    await this.invalidateUserCampaignCache(userId);
+    await this.redis.del(`user:profile:${userId}`, `user:black-market:${userId}`);
+
+    return { pointsAwarded: level.pointsReward, alreadyClaimed: false };
   }
 
   /** Convenience: all levels flat (used by matches controller for validation) */
