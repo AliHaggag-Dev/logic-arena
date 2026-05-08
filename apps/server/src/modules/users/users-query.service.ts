@@ -33,6 +33,7 @@ export class UsersQueryService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
+        id: true,
         username: true,
         email: true,
         avatarUrl: true,
@@ -90,6 +91,7 @@ export class UsersQueryService {
     };
 
     const profile: UserProfile = {
+      id: userId,
       username: user.username,
       email: user.email,
       avatarUrl: user.avatarUrl,

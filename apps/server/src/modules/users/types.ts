@@ -48,6 +48,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
 };
 
 export interface UserProfile {
+  id: string;
   username: string;
   email: string;
   avatarUrl: string | null;
