@@ -537,3 +537,47 @@ html, body {
     border-color: rgba(var(--accent-rgb), 1);
   }
 }
+
+/* ─────────────────────────────────────────────────────────
+ *  APP LOGO IMAGE — Theme-aware CSS filter
+ *
+ *  PNG has its own transparency — mix-blend-mode:screen is NOT needed.
+ *  (screen on a transparent PNG eats the robot's dark metallic parts,
+ *  making them vanish into dark backgrounds and look broken.)
+ *
+ *  Cyberpunk / default → no hue shift, cyan glow only
+ *  Light (Violet Sovereign) → hue-rotate(83°): cyan(180°)+83°=263° purple
+ *  Desert (Obsidian Ember)  → hue-rotate(220°): cyan(180°)+220°=40° amber
+ *
+ *  NOTE: class name avoids Tailwind drop-shadow-[] pattern so it is
+ *  NOT clobbered by the global light/desert glow-nullifier rules.
+ * ───────────────────────────────────────────────────────── */
+
+.app-logo-img {
+  filter: drop-shadow(0 0 10px rgba(var(--accent-rgb), 0.7));
+  transition: filter 0.35s ease;
+}
+
+/* Light (Violet Sovereign): cyan(180°) + 83° = 263° purple */
+[data-theme='light'] .app-logo-img {
+  filter: hue-rotate(83deg) saturate(1.8)
+          drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.5));
+}
+
+/* Desert (Obsidian Ember): cyan(180°) + 220° = 40° amber/gold */
+[data-theme='desert'] .app-logo-img {
+  filter: hue-rotate(220deg) saturate(1.8)
+          drop-shadow(0 0 10px rgba(var(--accent-rgb), 0.7));
+}
+
+/* ─────────────────────────────────────────────────────────
+ *  NEURAL UPLINK TERMINAL — scanning beam animation
+ *  Drives the animated sweep inside the sidebar's uplink panel.
+ * ───────────────────────────────────────────────────────── */
+
+@keyframes uplink-scan {
+  0%   { top: -1px;          opacity: 0; }
+  4%   { opacity: 1; }
+  96%  { opacity: 1; }
+  100% { top: calc(100% + 1px); opacity: 0; }
+}

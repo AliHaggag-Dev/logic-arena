@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart } from "lucide-react";
 import NavLink from "../../../../../components/ui/NavLink";
 
@@ -41,17 +42,49 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
       {/* Top accent line */}
       <div className="h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent opacity-60 shrink-0" />
 
-      {/* ── SYSTEM STATUS (Replaces Logo for more Nav room) ── */}
-      <div className="p-[20px_14px_8px] relative z-10 w-full">
-        <div className={`flex items-center gap-2.5 px-3 py-2 rounded-md shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.05)] text-[9px] tracking-[0.2em] font-bold uppercase overflow-hidden border ${username
-            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-500"
-            : "bg-yellow-500/5 border-yellow-500/20 text-yellow-500/70"
-          }`}>
-          <span className={`w-1.5 h-1.5 shrink-0 rounded-full animate-pulse ${username
-              ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"
-              : "bg-yellow-500 shadow-[0_0_8px_rgba(var(--color-yellow-500),0.6)]"
-            }`} />
-          <span className="truncate">{username ? "CONNECTED" : "GUEST MODE"}</span>
+      {/* ── NEURAL UPLINK TERMINAL ── */}
+      <div className="px-3 pt-3 pb-2 relative z-10">
+        <div
+          className="relative rounded border border-accent/[0.18] overflow-hidden"
+          style={{ background: 'linear-gradient(160deg, rgba(var(--accent-rgb),0.05) 0%, rgba(var(--accent-rgb),0.02) 50%, transparent 100%)' }}
+        >
+          {/* Animated scanning beam */}
+          <div
+            className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-accent/60 to-transparent pointer-events-none"
+            style={{ animation: 'uplink-scan 2.8s linear infinite' }}
+          />
+
+          {/* Corner bracket markers */}
+          <span className="absolute top-[5px] left-[5px] w-[9px] h-[9px] border-t border-l border-accent/70 pointer-events-none" />
+          <span className="absolute top-[5px] right-[5px] w-[9px] h-[9px] border-t border-r border-accent/70 pointer-events-none" />
+          <span className="absolute bottom-[5px] left-[5px] w-[9px] h-[9px] border-b border-l border-accent/70 pointer-events-none" />
+          <span className="absolute bottom-[5px] right-[5px] w-[9px] h-[9px] border-b border-r border-accent/70 pointer-events-none" />
+
+          <div className="p-[10px_12px_8px]">
+            {/* Status dot + label */}
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="relative flex w-[7px] h-[7px] shrink-0">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-50 ${
+                  username ? 'bg-emerald-400' : 'bg-yellow-400/80'
+                }`} />
+                <span className={`relative rounded-full w-[7px] h-[7px] ${
+                  username ? 'bg-emerald-500' : 'bg-yellow-500/80'
+                }`} />
+              </span>
+              <span className="text-[7px] font-bold tracking-[0.3em] uppercase text-accent/35 truncate">
+                {username ? 'UPLINK ACTIVE' : 'NO SIGNAL'}
+              </span>
+            </div>
+
+            {/* PILOT_ID + username */}
+            <div className="text-[6.5px] tracking-[0.35em] text-accent/20 mb-[3px] uppercase">USERNAME://</div>
+            <div
+              className="text-[11px] font-black tracking-[0.1em] text-accent uppercase truncate font-mono"
+              style={{ textShadow: '0 0 12px rgba(var(--accent-rgb), 0.7)' }}
+            >
+              {username ?? 'GUEST'}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -91,18 +124,24 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onLogout}
-          className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-red-500/5 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/60 rounded-md text-red-500/50 hover:text-red-300 text-[10px] font-bold tracking-[0.2em] font-mono cursor-pointer transition-all duration-200 group"
-        >
-          <span className="text-[11px] transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">⏻</span>
-          <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">SIGN OUT</span>
-        </button>
-
-        <div className="mt-3 text-[8px] text-accent/15 tracking-[0.15em] text-center uppercase">
-          LOGIC-ARENA © 2026
-        </div>
+        {username ? (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-red-500/5 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/60 rounded-md text-red-500/50 hover:text-red-300 text-[10px] font-bold tracking-[0.2em] font-mono cursor-pointer transition-all duration-200 group"
+          >
+            <span className="text-[11px] transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">⏻</span>
+            <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">SIGN OUT</span>
+          </button>
+        ) : (
+          <Link
+            href="/login"
+            className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-accent/5 hover:bg-accent/15 border border-accent/20 hover:border-accent/60 rounded-md text-accent/50 hover:text-accent text-[10px] font-bold tracking-[0.2em] font-mono transition-all duration-200 group"
+          >
+            <span className="text-[11px] transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]">→</span>
+            <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]">LOG IN</span>
+          </Link>
+        )}
       </div>
     </aside>
   );

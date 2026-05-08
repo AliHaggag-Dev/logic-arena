@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { ThemeSwitcher } from "./ui/ThemeSwitcher";
 import { useAuthState } from "../hooks/useAuthState";
@@ -105,12 +106,23 @@ export function MobileHeader() {
 
   return (
     <header className={`mobile-header-safe w-full ${visibilityClass} items-center justify-between px-4 border-b border-accent/8 bg-bg-primary z-40 fixed top-0 left-0 right-0 min-h-14`}>
-      <h1
+      <button
+        type="button"
         onClick={() => router.push("/dashboard")}
-        className="m-0 text-[13px] font-black tracking-[0.2em] text-accent leading-none [text-shadow:0_0_8px_rgba(var(--accent-rgb),0.8)] cursor-pointer hover:opacity-90 transition-opacity"
+        className="p-0 bg-transparent border-0 cursor-pointer hover:opacity-90 transition-opacity"
+        aria-label="Logic Arena — Go to dashboard"
       >
-        LOGIC ARENA
-      </h1>
+        <Image
+          src="/dashboard-logo.png"
+          alt="Logic Arena"
+          width={140}
+          height={40}
+          className="app-logo-img block"
+          style={{ height: "40px", width: "auto" }}
+          unoptimized
+          priority
+        />
+      </button>
       <div className="flex items-center gap-4">
         {authButtonContent}
         <ThemeSwitcher variant="minimal" />

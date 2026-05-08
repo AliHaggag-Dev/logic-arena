@@ -13,17 +13,31 @@ export function DashboardHeader({ username, avatarUrl }: DashboardHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 w-full bg-bg-primary/90 backdrop-blur-xl border-b border-accent/[0.08] p-[16px_28px] flex items-center justify-between shrink-0 shadow-[0_10px_40px_rgba(var(--accent-rgb),0.05)]">
-      <div>
-        <div className="text-[9px] tracking-[0.25em] text-accent/60 font-bold mb-1.5 uppercase">
-          // SYS_v2.2.0
+      <button
+        type="button"
+        onClick={() => router.push("/dashboard")}
+        className="p-0 bg-transparent border-0 cursor-pointer hover:opacity-90 transition-opacity flex items-center gap-3"
+        aria-label="Logic Arena — Go to dashboard"
+      >
+        <Image
+          src="/dashboard-logo.png"
+          alt="Logic Arena"
+          width={180}
+          height={48}
+          className="app-logo-img block"
+          style={{ height: "44px", width: "auto" }}
+          unoptimized
+          priority
+        />
+        <div className="flex flex-col leading-none gap-[3px]">
+          <span className="text-[17px] font-black tracking-[0.22em] text-accent [text-shadow:0_0_10px_rgba(var(--accent-rgb),0.7)] uppercase">
+            LOGIC
+          </span>
+          <span className="text-[17px] font-black tracking-[0.22em] text-accent [text-shadow:0_0_10px_rgba(var(--accent-rgb),0.7)] uppercase">
+            ARENA
+          </span>
         </div>
-        <h1
-          onClick={() => router.push("/dashboard")}
-          className="m-0 text-[18px] font-black tracking-[0.25em] text-accent leading-none [text-shadow:0_0_8px_rgba(var(--accent-rgb),0.8),0_0_15px_rgba(var(--accent-rgb),0.3)] cursor-pointer hover:opacity-90 transition-opacity"
-        >
-          LOGIC ARENA
-        </h1>
-      </div>
+      </button>
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2 px-3 py-1.5 border border-accent/20 bg-accent/5 rounded-md text-[9px] tracking-[0.2em] font-bold text-accent/60 shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.05)] uppercase max-w-[200px]">
           {avatarUrl ? (
