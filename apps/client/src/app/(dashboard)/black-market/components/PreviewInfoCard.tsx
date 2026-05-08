@@ -1,19 +1,39 @@
-import { CheckCircle, Loader2, ShoppingCart, Zap } from "lucide-react";
+import { CheckCircle, Loader2, Lock, ShoppingCart, Zap } from "lucide-react";
 
 import type { ItemCategory, MarketItem } from "../types";
+
+const GUEST_LOCK_TOOLTIP = "Create an account to equip and customise your robot.";
 
 interface PreviewInfoCardProps {
   actionLoading: boolean;
   equippedIds: Record<ItemCategory, string>;
+  isGuest: boolean;
   isOwned: boolean;
   item: MarketItem;
   points: number;
   onPurchase: (item: MarketItem) => void;
 }
 
-export function PreviewInfoCard({ actionLoading, equippedIds, isOwned, item, points, onPurchase }: PreviewInfoCardProps) {
+export function PreviewInfoCard({ actionLoading, equippedIds, isGuest, isOwned, item, points, onPurchase }: PreviewInfoCardProps) {
   const isEquipped = equippedIds[item.category] === item.id;
   const cannotAfford = item.price > points && !isOwned && item.price > 0;
+
+  const handleAction = () => {
+    if (isGuest) return;
+    onPurchase(item);
+  };
+
+  const isActionDisabled = actionLoading || isGuest || isEquipped || cannotAfford;
+
+  const buttonClass = actionLoading
+    ? "opacity-50 cursor-not-allowed bg-accent/5 border-accent/20 text-accent/50"
+    : isGuest
+      ? "opacity-50 cursor-not-allowed bg-accent/[0.03] border-accent/10 text-accent/25"
+      : isEquipped
+        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default"
+        : cannotAfford
+          ? "bg-red-500/5 border-red-500/15 text-red-500/35 cursor-not-allowed opacity-50"
+          : "bg-accent/10 border-accent/40 text-accent hover:bg-accent/20 hover:border-accent/70 hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.25)] cursor-pointer";
 
   return (
     <div className="rounded-xl border p-5" style={{ background: "rgba(var(--accent-rgb),0.03)", borderColor: "rgba(var(--accent-rgb),0.12)" }}>
@@ -37,14 +57,34 @@ export function PreviewInfoCard({ actionLoading, equippedIds, isOwned, item, poi
 
         <button
           type="button"
-          onClick={() => onPurchase(item)}
-          disabled={actionLoading || isEquipped || cannotAfford}
-          aria-label={isEquipped ? `${item.name} is currently equipped` : isOwned ? `Equip ${item.name}` : `Purchase ${item.name} for ${item.price} points`}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black tracking-[0.2em] font-mono border transition-all duration-200 ${actionLoading ? "opacity-50 cursor-not-allowed bg-accent/5 border-accent/20 text-accent/50" : isEquipped ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default" : cannotAfford ? "bg-red-500/5 border-red-500/15 text-red-500/35 cursor-not-allowed opacity-50" : "bg-accent/10 border-accent/40 text-accent hover:bg-accent/20 hover:border-accent/70 hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.25)] cursor-pointer"}`}
+          onClick={handleAction}
+          disabled={isActionDisabled}
+          title={isGuest ? GUEST_LOCK_TOOLTIP : undefined}
+          aria-label={
+            isGuest
+              ? GUEST_LOCK_TOOLTIP
+              : isEquipped
+                ? `${item.name} is currently equipped`
+                : isOwned
+                  ? `Equip ${item.name}`
+                  : `Purchase ${item.name} for ${item.price} points`
+          }
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black tracking-[0.2em] font-mono border transition-all duration-200 ${buttonClass}`}
         >
-          {actionLoading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />PROCESSING…</> : isEquipped ? <><CheckCircle className="w-3.5 h-3.5" />EQUIPPED</> : isOwned ? <><Zap className="w-3.5 h-3.5" />EQUIP NOW</> : <><ShoppingCart className="w-3.5 h-3.5" />{item.price === 0 ? "EQUIP NOW" : "PURCHASE NOW"}</>}
+          {actionLoading ? (
+            <><Loader2 className="w-3.5 h-3.5 animate-spin" />PROCESSING…</>
+          ) : isGuest ? (
+            <><Lock className="w-3.5 h-3.5" />LOCKED</>
+          ) : isEquipped ? (
+            <><CheckCircle className="w-3.5 h-3.5" />EQUIPPED</>
+          ) : isOwned ? (
+            <><Zap className="w-3.5 h-3.5" />EQUIP NOW</>
+          ) : (
+            <><ShoppingCart className="w-3.5 h-3.5" />{item.price === 0 ? "EQUIP NOW" : "PURCHASE NOW"}</>
+          )}
         </button>
       </div>
     </div>
   );
 }
+

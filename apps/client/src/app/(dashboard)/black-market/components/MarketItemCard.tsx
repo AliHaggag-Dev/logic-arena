@@ -1,12 +1,15 @@
 "use client";
 
 import React from "react";
-import { Zap, Lock, CheckCircle, ShoppingCart } from "lucide-react";
+import { Zap, Lock, CheckCircle, ShoppingCart, UserX } from "lucide-react";
 import { MarketItem } from "../types";
 import { RARITY_STYLES } from "../constants";
 
+const GUEST_LOCK_TOOLTIP = "Create an account to equip and customise your robot.";
+
 interface MarketItemCardProps {
   item: MarketItem;
+  isGuest: boolean;
   isOwned: boolean;
   isEquipped: boolean;
   isPreview: boolean;
@@ -17,6 +20,7 @@ interface MarketItemCardProps {
 
 export const MarketItemCard = React.memo(function MarketItemCard({
   item,
+  isGuest,
   isOwned,
   isEquipped,
   isPreview,
@@ -32,6 +36,27 @@ export const MarketItemCard = React.memo(function MarketItemCard({
       onPreview(item);
     }
   };
+
+  const handleAction = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isGuest) return;
+    onPurchase(item);
+  };
+
+  const isActionDisabled =
+    isGuest ||
+    (isOwned && isEquipped) ||
+    (!canAfford && item.price > 0 && !isOwned);
+
+  const buttonClass = isGuest
+    ? "bg-accent/[0.03] border-accent/10 text-accent/25 cursor-not-allowed opacity-50"
+    : isOwned && isEquipped
+      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default"
+      : isOwned && !isEquipped
+        ? "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
+        : !canAfford && item.price > 0
+          ? "bg-red-500/5 border-red-500/20 text-red-500/40 cursor-not-allowed opacity-60"
+          : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer";
 
   return (
     <div
@@ -79,7 +104,9 @@ export const MarketItemCard = React.memo(function MarketItemCard({
             </span>
           </div>
 
-          {isOwned ? (
+          {isGuest ? (
+            <UserX className="w-4 h-4" style={{ color: "rgba(var(--accent-rgb),0.25)" }} />
+          ) : isOwned ? (
             <CheckCircle className="w-4 h-4 text-emerald-400" />
           ) : item.price === 0 ? (
             <Zap className="w-4 h-4 text-accent/50" />
@@ -111,32 +138,30 @@ export const MarketItemCard = React.memo(function MarketItemCard({
 
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onPurchase(item);
-            }}
-            disabled={(isOwned && isEquipped) || (!canAfford && item.price > 0 && !isOwned)}
+            onClick={handleAction}
+            disabled={isActionDisabled}
+            title={isGuest ? GUEST_LOCK_TOOLTIP : undefined}
             aria-label={
-              isEquipped
-                ? `${item.name} is currently equipped`
-                : isOwned
-                  ? `Equip ${item.name}`
-                  : `Purchase ${item.name}`
+              isGuest
+                ? GUEST_LOCK_TOOLTIP
+                : isEquipped
+                  ? `${item.name} is currently equipped`
+                  : isOwned
+                    ? `Equip ${item.name}`
+                    : `Purchase ${item.name}`
             }
             className={`
               flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black tracking-[0.18em]
               transition-all duration-200 border font-mono
-              ${isOwned && isEquipped
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default"
-                : isOwned && !isEquipped
-                  ? "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
-                  : !canAfford && item.price > 0
-                    ? "bg-red-500/5 border-red-500/20 text-red-500/40 cursor-not-allowed opacity-60"
-                    : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
-              }
+              ${buttonClass}
             `}
           >
-            {isOwned && isEquipped ? (
+            {isGuest ? (
+              <>
+                <Lock className="w-3 h-3" />
+                LOCKED
+              </>
+            ) : isOwned && isEquipped ? (
               <>
                 <CheckCircle className="w-3 h-3" />
                 EQUIPPED
@@ -168,3 +193,4 @@ export const MarketItemCard = React.memo(function MarketItemCard({
     </div>
   );
 });
+

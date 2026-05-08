@@ -5,7 +5,7 @@ import { useAuthState } from "../../../../hooks/useAuthState";
 import { useSafeTimeout } from "../../../../hooks/useSafeTimeout";
 import {
   DEFAULT_LOADOUT,
-  INITIAL_POINTS,
+  GUEST_LOADOUT,
   MARKET_ITEMS,
   STARTER_ITEM_IDS,
 } from "../constants";
@@ -15,14 +15,15 @@ import type { BlackMarketApiData, ItemCategory, MarketItem, ToastState } from ".
 export function useBlackMarket() {
   const { isGuest } = useAuthState();
 
-  const [points, setPoints] = useState<number>(INITIAL_POINTS);
+  // Guests always see 0 points — no fake balance.
+  const [points, setPoints] = useState<number>(0);
   const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(
     () => new Set(STARTER_ITEM_IDS),
   );
   const [activeCategory, setActiveCategory] = useState<ItemCategory>("chassis");
   const [previewItem, setPreviewItem] = useState<MarketItem>(MARKET_ITEMS[0]);
-  const [previewLoadout, setPreviewLoadout] = useState(() => createLoadoutFromIds(DEFAULT_LOADOUT));
-  const [equippedIds, setEquippedIds] = useState<Record<ItemCategory, string>>(DEFAULT_LOADOUT);
+  const [previewLoadout, setPreviewLoadout] = useState(() => createLoadoutFromIds(isGuest ? GUEST_LOADOUT : DEFAULT_LOADOUT));
+  const [equippedIds, setEquippedIds] = useState<Record<ItemCategory, string>>(isGuest ? GUEST_LOADOUT : DEFAULT_LOADOUT);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -155,6 +156,7 @@ export function useBlackMarket() {
     filteredItems,
     handlePreview,
     handlePurchase,
+    isGuest,
     isOwned,
     loading,
     ownedItemIds,

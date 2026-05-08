@@ -7,6 +7,7 @@ interface MarketGridProps {
   activeCategory: ItemCategory;
   canAffordWith: number;
   equippedIds: Record<ItemCategory, string>;
+  isGuest: boolean;
   items: MarketItem[];
   loading: boolean;
   previewItemId: string;
@@ -16,7 +17,7 @@ interface MarketGridProps {
   isOwned: (itemId: string) => boolean;
 }
 
-export function MarketGrid({ activeCategory, canAffordWith, equippedIds, items, loading, previewItemId, onCategoryChange, onPreview, onPurchase, isOwned }: MarketGridProps) {
+export function MarketGrid({ activeCategory, canAffordWith, equippedIds, isGuest, items, loading, previewItemId, onCategoryChange, onPreview, onPurchase, isOwned }: MarketGridProps) {
   return (
     <div className="flex flex-col gap-6">
       <MarketCategoryTabs activeCategory={activeCategory} onCategoryChange={onCategoryChange} />
@@ -37,6 +38,7 @@ export function MarketGrid({ activeCategory, canAffordWith, equippedIds, items, 
             <MarketItemCard
               key={item.id}
               item={item}
+              isGuest={isGuest}
               isOwned={isOwned(item.id)}
               isEquipped={equippedIds[item.category] === item.id}
               isPreview={previewItemId === item.id}

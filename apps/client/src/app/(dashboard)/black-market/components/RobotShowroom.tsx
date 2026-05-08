@@ -63,8 +63,10 @@ function RobotMesh({ chassisId, paintColor, tracerColor, animate }: RobotMeshPro
   const isTitanPrimitive = chassisId.includes('titan') && !activeScene;
   const isWraithPrimitive = chassisId.includes('wraith') && !activeScene;
 
-  // Fallback for primitive models when paint is DEFAULT
-  const safePaintColor = paintColor === 'DEFAULT' ? '#888888' : paintColor;
+  // Primitive meshes need a valid hex colour — use grey when factory spec (DEFAULT).
+  // The GLB path uses useRobotColorTint which handles DEFAULT by restoring originals.
+  const PRIMITIVE_DEFAULT_COLOR = '#888888';
+  const safePaintColor = paintColor === 'DEFAULT' ? PRIMITIVE_DEFAULT_COLOR : paintColor;
 
   return (
     <group ref={groupRef} position={[0, 0.3, 0]}>
@@ -174,46 +176,6 @@ function RobotMesh({ chassisId, paintColor, tracerColor, animate }: RobotMeshPro
   );
 }
 
-// ── Glowing Pedestal ──────────────────────────────────────────────────────────
-
-interface PedestalProps {
-  glowColor: string;
-  animate: boolean;
-}
-
-function Pedestal({ glowColor, animate }: PedestalProps) {
-  const ringRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (!animate) return;
-    if (ringRef.current) {
-      const mat = ringRef.current.material as THREE.MeshStandardMaterial;
-      mat.emissiveIntensity = 0.6 + Math.sin(state.clock.elapsedTime * 2) * 0.35;
-    }
-  });
-
-  return (
-    <group position={[0, -1.0, 0]}>
-      {/* Base disc */}
-      <mesh>
-        <cylinderGeometry args={[1.1, 1.3, 0.12, 48]} />
-        <meshStandardMaterial color="#0a0a0a" metalness={0.95} roughness={0.05} />
-      </mesh>
-
-      {/* Glow ring */}
-      <mesh ref={ringRef} position={[0, 0.07, 0]}>
-        <torusGeometry args={[1.05, 0.035, 8, 60]} />
-        <meshStandardMaterial
-          color={glowColor}
-          emissive={glowColor}
-          emissiveIntensity={0.6}
-          toneMapped={false}
-        />
-      </mesh>
-    </group>
-  );
-}
-
 // ── Scene Lighting ────────────────────────────────────────────────────────────
 
 interface SceneLightsProps {
@@ -262,10 +224,12 @@ export function RobotShowroom({ chassisId, paintColor, tracerColor, quality = "m
       <SceneLights color={paintColor} highQuality={highQuality} />
       {quality !== "low" && <Environment preset="city" />}
       <RobotMesh chassisId={chassisId} paintColor={paintColor} tracerColor={tracerColor} animate={animate} />
-      <Pedestal glowColor={paintColor} animate={animate} />
       <OrbitControls
         enablePan={false}
-        enableZoom={false}
+        enableZoom={true}
+        enableRotate={true}
+        minDistance={2.0}
+        maxDistance={6.5}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI / 1.8}
         autoRotate={false}

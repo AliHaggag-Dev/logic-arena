@@ -16,6 +16,7 @@ const RobotShowroom = dynamic(
 interface ShowroomPanelProps {
   actionLoading: boolean;
   equippedIds: Record<ItemCategory, string>;
+  isGuest: boolean;
   isOwned: (itemId: string) => boolean;
   ownedCount: number;
   points: number;
@@ -24,7 +25,7 @@ interface ShowroomPanelProps {
   onPurchase: (item: MarketItem) => void;
 }
 
-export function ShowroomPanel({ actionLoading, equippedIds, isOwned, ownedCount, points, previewItem, previewLoadout, onPurchase }: ShowroomPanelProps) {
+export function ShowroomPanel({ actionLoading, equippedIds, isGuest, isOwned, ownedCount, points, previewItem, previewLoadout, onPurchase }: ShowroomPanelProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="relative rounded-2xl border overflow-hidden" style={{ background: "linear-gradient(160deg, rgba(var(--accent-rgb),0.04) 0%, rgba(0,0,0,0) 60%)", borderColor: "rgba(var(--accent-rgb),0.15)", boxShadow: "0 0 40px rgba(var(--accent-rgb),0.06), inset 0 0 40px rgba(var(--accent-rgb),0.02)", animation: "pedestalPulse 4s ease-in-out infinite" }}>
@@ -46,7 +47,7 @@ export function ShowroomPanel({ actionLoading, equippedIds, isOwned, ownedCount,
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-accent to-transparent opacity-30" />
       </div>
 
-      <PreviewInfoCard actionLoading={actionLoading} equippedIds={equippedIds} isOwned={isOwned(previewItem.id)} item={previewItem} points={points} onPurchase={onPurchase} />
+      <PreviewInfoCard actionLoading={actionLoading} equippedIds={equippedIds} isGuest={isGuest} isOwned={isOwned(previewItem.id)} item={previewItem} points={points} onPurchase={onPurchase} />
 
       <div className="rounded-lg border px-4 py-3 flex items-center justify-between" style={{ background: "rgba(var(--accent-rgb),0.02)", borderColor: "rgba(var(--accent-rgb),0.08)" }}>
         <span className="text-[9px] tracking-[0.25em] text-accent/30 uppercase font-bold">ITEMS OWNED</span>

@@ -10,6 +10,13 @@ export const DEFAULT_LOADOUT: Record<ItemCategory, string> = {
   tracer: "tracer-pulse",
 };
 
+/** Guest default: factory spec paint (no colour override) so the raw GLB colour shows through. */
+export const GUEST_LOADOUT: Record<ItemCategory, string> = {
+  chassis: "chassis-phantom",
+  paint: "paint-default",
+  tracer: "tracer-pulse",
+};
+
 export const MARKET_ITEMS: MarketItem[] = [
   // ── ROBOT CHASSIS ──────────────────────────────────────────────
   {
