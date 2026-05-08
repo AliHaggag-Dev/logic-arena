@@ -54,17 +54,16 @@ function AccordionCard({
       }}
     >
       <button
+        type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
         className="w-full flex items-center justify-between bg-transparent text-left"
         style={{ minHeight: 44, padding: "0 20px" }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-accent/70 text-xs font-mono select-none">⌐</span>
           <span className="text-[10px] font-black tracking-[0.38em] uppercase text-accent">
             {title}
           </span>
-          <span className="text-accent/70 text-xs font-mono select-none">¬</span>
         </div>
         <span className="text-accent/60 shrink-0">
           <ChevronIcon expanded={isOpen} />

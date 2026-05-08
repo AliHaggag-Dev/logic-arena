@@ -1,16 +1,12 @@
 export const NAV_LINKS = [
   { label: "Home", href: "/dashboard" },
   { label: "Leaderboard", href: "/leaderboard" },
-  { label: "Campaigns", href: "/campaign" },
-  { label: "Replay Theater", href: "/replay" },
-  { label: "Docs", href: "/docs" },
+  { label: "Black Market", href: "/black-market" },
+  { label: "AliScript Language", href: "/docs" },
 ];
 
 export const ARENA_LINKS = [
   { label: "How It Works", href: "/how-it-works" },
-  { label: "AliScript Language", href: "/docs#aliscript" },
-  { label: "Robot Builder", href: "/garage" },
-  { label: "Join Tournament", href: "/tournaments" },
   { label: "Updates", href: "/patch-notes" },
   { label: "Report an Issue", href: "/bug-report" },
   { label: "Suggest a Feature", href: "/feature-requests" },

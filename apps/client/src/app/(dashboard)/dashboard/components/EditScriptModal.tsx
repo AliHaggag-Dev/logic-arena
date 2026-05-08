@@ -85,10 +85,6 @@ export const EditScriptModal = ({
                 aria-label={`Edit script: ${script.title}`}
             >
                 <div className="relative flex flex-col w-full max-w-4xl h-[100dvh] sm:h-[min(90dvh,700px)] bg-bg-secondary border-0 sm:border sm:border-accent/25 rounded-none sm:rounded-2xl overflow-hidden shadow-[0_0_0_1px_rgba(var(--accent-rgb),0.06),0_32px_64px_rgba(0,0,0,0.7),0_0_80px_rgba(var(--accent-rgb),0.07)] animate-in zoom-in-95 fade-in duration-200">
-                    <span className="hidden sm:block absolute top-2 left-3 font-mono text-base leading-none text-accent/30 pointer-events-none select-none">⌐</span>
-                    <span className="hidden sm:block absolute top-2 right-3 font-mono text-base leading-none text-accent/30 pointer-events-none select-none -scale-x-100">⌐</span>
-                    <span className="hidden sm:block absolute bottom-2 left-3 font-mono text-base leading-none text-accent/30 pointer-events-none select-none -scale-y-100">⌐</span>
-                    <span className="hidden sm:block absolute bottom-2 right-3 font-mono text-base leading-none text-accent/30 pointer-events-none select-none -scale-100">⌐</span>
 
                     <EditScriptHeader
                         title={script.title}

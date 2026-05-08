@@ -6,9 +6,7 @@ import { GitHubIcon, LinkedinIcon, PortfolioIcon } from './Icons';
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 mb-4">
-      <span className="text-accent/70 text-xs font-mono select-none">⌐</span>
       <h3 className="text-[10px] font-black tracking-[0.4em] uppercase text-accent">{children}</h3>
-      <span className="text-accent/70 text-xs font-mono select-none">¬</span>
     </div>
   );
 }
