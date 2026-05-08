@@ -2013,17 +2013,17 @@ A colossal update transforming the game’s economy, 3D rendering pipeline, and 
   Generated 8 production-ready PWA icon sizes via `sharp-cli` and updated `manifest.json` for native app-like installation. Rewrote OpenGraph and Twitter Cards metadata to utilize high-res branding.
 
 * **Enterprise Security Audit (Phase 9 - 4 Layers):**
-  - **Perimeter:** Added `helmet` (CSP, HSTS), `@nestjs/throttler` (DDoS protection), and migrated from `localStorage` JWTs to Secure HttpOnly cookies.
-  - **Database:** Enforced global Mass Assignment protection via `ValidationPipe`, capped payloads to 100kb, and eliminated IDOR vulnerabilities.
-  - **Sandbox:** Hardened the AliScript parser against Prototype Pollution (blocked `__proto__`), OOM attacks (hardcapped arrays/dictionaries to 100 elements), and ReDoS (O(1) char-code parsing).
-  - **Frontend:** Integrated `isomorphic-dompurify` to sanitize all `dangerouslySetInnerHTML` XSS sinks and eliminated sensitive data from browser storage.
+  * **Perimeter:** Added `helmet` (CSP, HSTS), `@nestjs/throttler` (DDoS protection), and migrated from `localStorage` JWTs to Secure HttpOnly cookies.
+  * **Database:** Enforced global Mass Assignment protection via `ValidationPipe`, capped payloads to 100kb, and eliminated IDOR vulnerabilities.
+  * **Sandbox:** Hardened the AliScript parser against Prototype Pollution (blocked `__proto__`), OOM attacks (hardcapped arrays/dictionaries to 100 elements), and ReDoS (O(1) char-code parsing).
+  * **Frontend:** Integrated `isomorphic-dompurify` to sanitize all `dangerouslySetInnerHTML` XSS sinks and eliminated sensitive data from browser storage.
 
 ---
 
 ### Technical Scars and Resolutions
 
 * **Issue — "The Missing Express Module" (Strict Monorepo Pruning):**
-  Deploying Layer 2 payload limits (`express.json()`) crashed the Docker container with `Cannot find module 'express'`. 
+  Deploying Layer 2 payload limits (`express.json()`) crashed the Docker container with `Cannot find module 'express'`.
   **Resolution:** Identified that Docker's strict prune stripped hoisted modules not explicitly listed in `apps/server/package.json`. Added `express` and `cookie-parser` directly to dependencies to survive the CI/CD pipeline.
 
 * **Issue — "The React Hydration Race Condition" (Ghost Auth Desync):**
@@ -2043,3 +2043,76 @@ A colossal update transforming the game’s economy, 3D rendering pipeline, and 
 ### Current Status
 
 * Logic Arena has evolved into a visually stunning, highly secure AAA platform. The transition to GLB models and a 60-level LeetCode campaign elevates the gameplay, while the Phase 9 security audit guarantees enterprise-grade data protection and backend stability. Ready for: **Avatar Upload Integration (Phase 10) and Live Multiplayer Matchmaking.**
+
+## [2.9.0] - The Identity & Infrastructure Mastery Update — 2026-05-08
+
+Shipped a sweeping platform-wide identity overhaul — a premium image-based branding system with a Neural Uplink Terminal sidebar, legendary Cloudinary avatar pipeline with four-layer security hardening, full PWA fullscreen experience, live spectator mode with real-time viewer counts, and a deep infrastructure pass covering Redis correctness, atomic cache invalidation, and mobile UX polish across the Vault, leaderboard, and settings.
+
+---
+
+### New Features
+
+* **Legendary Branding System — Neural Uplink Terminal & Image Logo:**
+  Replaced the text-based logo with a transparent PNG (`dashboard-logo.png`) across `DashboardHeader`, `MobileHeader`, and removed the redundant duplicate from `DashboardSidebar`. Applied a theme-aware CSS filter pipeline: Cyberpunk retains native cyan glow, Violet Sovereign uses `hue-rotate(83deg)` for purple (263°), and Obsidian Ember uses `hue-rotate(220deg)` for amber/gold (40°). Added `unoptimized` prop to all logo `Image` components to bypass Next.js AVIF/WebP conversion which was filling transparent areas with black. Wrapped the desktop header logo in a flex container with `LOGIC / ARENA` stacked text lockup for a premium branded identity.
+
+  Replaced the old sidebar logo and CONNECTED badge with a legendary **Neural Uplink Terminal** panel: animated scanning beam (`uplink-scan` keyframe), corner bracket markers, pulsing status dot, UPLINK ACTIVE / NO SIGNAL label, USERNAME:// label, and pilot ID display. Compacted the panel by removing signal bars and protocol row to eliminate sidebar overflow. Made the sidebar bottom action button fully dynamic — guests see an accent-colored `LOG IN` link to `/login`, authenticated users see the red `SIGN OUT` button.
+
+* **Secure Cloudinary Avatar Upload Architecture:**
+  Built `CloudinaryService` with `upload_stream`, auto-quality, and 256×256 face-aware cropping. Engineered a **4-Layer `ImageFileValidationPipe`** — Multer size limit → MIME type check → magic-byte detection → final size cap — to eradicate MIME-spoofing and malicious upload vectors. Integrated avatar uploads into the Settings page with loading animations, hover states, and global React state propagation to Sidebar and Header. Whitelisted `res.cloudinary.com` in the Next.js config. Added cache-busting on upload to invalidate both Cloudinary CDN and browser cache simultaneously.
+
+* **PWA Fullscreen Mobile Experience:**
+  Updated the PWA manifest to request `fullscreen` display first with `standalone` as the fallback, and added `display_override: ["fullscreen"]`. Expanded the root app surface to the full dynamic mobile viewport so themed backgrounds cover the entire screen. Preserved safe-area-aware layout behavior for mobile headers, nav, and content around system UI cutouts. Fixed `theme-color` values for light and desert themes, added `mobile-web-app-capable` meta for Android PWA support, and disabled text selection, touch callout, and tap highlight in global CSS for a fully native feel.
+
+* **Live Spectator Mode & Viewer Count:**
+  Added real-time spectator infrastructure with zero extra broadcast payload overhead — spectators join the existing match room directly. Implemented `spectate` / `leaveSpectate` socket events with match room joining. Added in-match status tracking with real-time leaderboard updates so online presence reflects active matches. Added a `SpectatorHUD` with live viewer count and an exit button. Players in active matches see a spectator badge during play. The leaderboard Watch button uses the `Eye` icon from `lucide-react` and is hidden for the current user's own row.
+
+* **Mobile-First Vault Redesign & Component Architecture Refactor:**
+  Replaced the flat tab + vertical-scroll layout with a full-screen hero panel and a native-feeling **draggable bottom sheet**, positioning the Vault as a mobile-first experience adapted to desktop. Implemented segmented pill category tabs with solid accent fill on active state, 44px touch targets, and icon-only mode on narrow viewports. Replaced the vertical card scroll with a horizontal **snap-scroll carousel** using `scroll-snap-type: x mandatory` and `WebkitOverflowScrolling: touch` for true native swipe feel. Added touch gesture detection (`touchstart`/`touchend` delta) on the bottom sheet for drag-to-expand and drag-to-collapse without Framer Motion.
+
+  Decomposed the monolithic 659-line `page.tsx` into 6 focused single-responsibility components: `VaultToast`, `VaultItemCard`, `VaultCategoryTabs`, `VaultEmptyState`, `VaultMobileLayout`, and `VaultDesktopLayout`. `page.tsx` is now a pure data orchestrator under 130 lines with zero rendering logic.
+
+* **Profile Hero Avatar & Hexagonal Frame:**
+  Replaced initials-based hero placeholder with the uploaded user profile picture rendered inside the existing hexagonal profile frame. Preserved the yellow/stat-colored gameplay identity through the avatar border, glow, and overlay styling. Updated the profile loading skeleton to use the same hexagonal silhouette for visual consistency.
+
+* **Frontend Performance & Memoization Pass:**
+  Memoized `MarketItemCard`, `MobileLevelCard`, `DesktopLayout`, and `MobileLayout` with `React.memo`. Memoized `LevelVisual` SVG computations with `useMemo`. Stabilized `onClick` handlers with `useCallback` in campaign layout. Hoisted `GAME_MODE_OPTIONS` out of `CustomSelect` render. Optimized R3F Showroom to load only the active model instead of all four GLB files simultaneously. Removed canvas-level shadows and expensive lighting by default. Added `usePrefersReducedMotion` with `frameloop: "demand"` mode. Fixed `RobotViewer` loading overlay with real `useProgress` tracking.
+
+---
+
+### Technical Scars and Resolutions
+
+* **Issue — "The Transparent Logo Blackout" (Next.js Image Optimization Override):**
+  Swapping the text logo for the premium PNG branding asset produced a jarring visual regression across all three themes — the transparent areas of the logo were filled solid black. The Cyberpunk theme's cyan filter and the Desert theme's amber tint were both applied on top of a black fill, completely destroying the intended appearance. The issue only manifested in production builds, making it invisible during local development.
+
+  **Resolution:** Traced the corruption to Next.js automatically converting PNGs to AVIF/WebP during its image optimization pipeline, which does not correctly preserve alpha channel transparency in all conversion paths. Added the `unoptimized` prop to all three logo `Image` components (`DashboardHeader`, `MobileHeader`), bypassing the conversion entirely and serving the original PNG. Transparency was restored across all themes with zero visual regression.
+
+* **Issue — "The Theme Switch Lag" (Body Inline Style Override):**
+  Switching between themes produced a visible lag where the previous theme's background color persisted for one to two frames before the new theme rendered. On slower devices this flickered as a white or black flash during the transition, undermining the polish of the theme system entirely.
+
+  **Resolution:** Identified a `style` attribute applied directly to the `<body>` element that was overriding the CSS variable cascade during theme switches. Because inline styles have higher specificity than class-based CSS variables, the old color lingered until the next paint cycle cleared it. Removed the inline style override entirely, allowing the CSS variable system to take full atomic control of background color. Theme switches now transition with zero flicker.
+
+* **Issue — "The Avatar UI Flicker" (Public State Not Persisted Across Navigation):**
+  After uploading a new avatar, navigating to a different dashboard page and returning caused the Sidebar and Header to briefly flash the old avatar or initials placeholder before loading the updated image. State was correctly updated in-memory but lost on component remount, forcing a redundant round-trip to the API on every navigation event.
+
+  **Resolution:** Added persistence of the public avatar URL and username to `localStorage` as part of the upload success flow. Components now hydrate immediately from `localStorage` on mount before the API response arrives, eliminating the flicker entirely. Stored values are invalidated and refreshed on every successful upload to prevent stale state.
+
+* **Issue — "The Docker Type Erasure" (Nested node_modules Pruning):**
+  The production Docker build began failing with `Cannot find module` errors for several TypeScript types immediately after the Redis TLS fix was merged. The errors resolved correctly in local development and CI, making the failure appear non-deterministic and masking the real cause.
+
+  **Resolution:** Identified that the Docker builder stage's `COPY` instruction was not recursively copying nested `node_modules` from hoisted workspace packages. Packages resolved via workspace hoisting existed on disk locally but were absent in the Docker image layer, causing type resolution to fail at compile time inside the container. Updated the builder stage `COPY` commands to explicitly include nested `node_modules` paths, restoring correct type resolution across all packages.
+
+* **Issue — "The Leaderboard Ghost Session" (Sync Auth Race Condition):**
+  The leaderboard was incorrectly displaying the Challenge button on the current user's own row, and the LOGIN TO CHALLENGE prompt appeared for authenticated users immediately after page load. The `isGuest` flag was always `true` on initial render regardless of actual session state, causing the wrong action button to render for every row until a manual re-trigger fired.
+
+  **Resolution:** The root cause was a one-shot synchronous `getAuthUserId()` call that executed before the HttpOnly cookie session had been parsed and hydrated by the client. Replaced it with the reactive `useAuthState()` hook, which correctly subscribes to the async session loading lifecycle. Added an `auth:changed` event listener to sync `currentUserId` after the session populates. The leaderboard now correctly identifies the current user's row from the very first render.
+
+* **Issue — "The Spectator Presence Blindspot" (Incomplete Online Snapshot):**
+  The leaderboard's online presence indicators were unreliable — users connected but not in an active match showed as offline, and users who disconnected while spectating remained stuck as online indefinitely. The socket snapshot only included users currently inside a match room, leaving all other authenticated connections invisible to the presence system.
+
+  **Resolution:** Expanded the snapshot emission in `handleConnection` to include all connected authenticated users, not just those in active matches. Wired `handleDisconnect` to broadcast `isOnline: false` to the leaderboard room on every disconnection. Updated `handleSnapshot` on the client to correctly patch the `isOnline` field, and fixed `applyStatusUpdate` to set `isOnline` on all status events regardless of match participation.
+
+---
+
+### Current Status
+
+* Logic Arena now delivers a fully polished, brand-consistent identity across all platforms — native PWA fullscreen on mobile, premium image logo with theme-aware tinting, secure avatar uploads with four-layer validation, and a live spectator layer with zero infrastructure overhead. The Redis layer is TLS-correct and cache invalidation is fully atomic across all write paths. The engine, gateway, and client are all lifecycle-clean with zero memory leaks or ghost state. Ready for: **Fog of War, University Competition launch, and full multiplayer stress testing.**
