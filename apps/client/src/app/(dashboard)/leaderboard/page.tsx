@@ -10,7 +10,6 @@ import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useAuthState } from "../../../hooks/useAuthState";
 import type { LeaderboardUser } from "./types";
 import { POLL_INTERVAL_MS } from "./types";
-import { getAuthSession } from "../../../lib/client-security";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,8 +29,8 @@ const LeaderboardPage = () => {
   const [hasError, setHasError] = useState(false);
 
   // Reactive auth state — correctly handles async session load after HttpOnly cookie auth
-  const { isGuest } = useAuthState();
-  const [currentUserId, setCurrentUserId] = useState(() => getAuthSession().userId ?? "");
+  const { isGuest, userId } = useAuthState();
+  const currentUserId = userId ?? "";
 
   const { sendChallenge } = useSocket();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -122,13 +121,6 @@ const LeaderboardPage = () => {
       socketRef.current = null;
     };
   }, [applyStatusUpdate]);
-
-  // Sync currentUserId reactively whenever the auth session changes
-  useEffect(() => {
-    const sync = () => setCurrentUserId(getAuthSession().userId ?? "");
-    window.addEventListener("auth:changed", sync);
-    return () => window.removeEventListener("auth:changed", sync);
-  }, []);
 
   useEffect(() => {
     fetchLeaderboard();

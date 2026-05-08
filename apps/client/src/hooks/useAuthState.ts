@@ -2,10 +2,11 @@ import { useEffect, useState, useCallback } from "react";
 import { apiClient } from "../lib/api-client";
 import { clearAuthSession, getAuthSession, setAuthSession } from "../lib/client-security";
 
-function readAuthState(): { isGuest: boolean; username: string | null; avatarUrl: string | null } {
+function readAuthState(): { isGuest: boolean; userId: string | null; username: string | null; avatarUrl: string | null } {
   const session = getAuthSession();
   return {
     isGuest: !session.isAuthenticated,
+    userId: session.userId ?? null,
     username: session.username,
     avatarUrl: session.avatarUrl ?? null,
   };
@@ -17,6 +18,7 @@ function readAuthState(): { isGuest: boolean; username: string | null; avatarUrl
  */
 export function useAuthState(): {
   isGuest: boolean;
+  userId: string | null;
   username: string | null;
   avatarUrl: string | null;
   refresh: () => void;
