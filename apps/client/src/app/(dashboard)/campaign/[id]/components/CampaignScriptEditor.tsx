@@ -1,9 +1,9 @@
 import React, { useCallback, useRef } from "react";
 import { sanitizeHtml } from "../../../../../lib/client-security";
-import { highlightCode } from "../../../../arena/components/CommandConsole/ScriptEditor/highlight";
+import { highlightCode } from "./highlight";
 import { useParserWorker } from "../../../../arena/components/CommandConsole/ScriptEditor/useParserWorker";
-import { useAutocomplete } from "../../../../arena/components/CommandConsole/ScriptEditor/useAutocomplete";
-import { AutocompleteDropdown } from "../../../../arena/components/CommandConsole/ScriptEditor/AutocompleteDropdown";
+import { useAutocomplete } from "./useAutocomplete";
+import { AutocompleteDropdown } from "./AutocompleteDropdown";
 
 interface CampaignScriptEditorProps {
   value: string;

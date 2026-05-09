@@ -1,6 +1,6 @@
 import { Suggestion } from './types';
 
-export const LINE_HEIGHT = 20;
+export const LINE_HEIGHT = 24;
 
 export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     // Commands
@@ -83,14 +83,14 @@ export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
 ];
 
 export const DETAIL_COLORS: Record<string, string> = {
-    command:    '#22d3ee',
-    control:    '#f59e0b',
-    identifier: '#a855f7',
-    flag:       '#4ade80',
-    query:      '#06b6d4',
-    math:       '#f97316',
-    array:      '#818cf8',
-    sensor:     '#ec4899',
-    dictionary: '#f43f5e',
-    swarm:      '#34d399',
+    command:    'var(--sem-info)',
+    control:    'var(--sem-warning)',
+    identifier: 'var(--accent)',
+    flag:       'var(--sem-success)',
+    query:      'var(--sem-info)',
+    math:       'var(--sem-warning)',
+    array:      'var(--accent)',
+    sensor:     'var(--sem-danger)',
+    dictionary: 'var(--sem-danger)',
+    swarm:      'var(--sem-success)',
 };

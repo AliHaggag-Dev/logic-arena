@@ -10,7 +10,7 @@ export const useAutocomplete = (
 ) => {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [activeIdx, setActiveIdx] = useState(0);
-    const [caretXY, setCaretXY] = useState<CaretPosition>({ bottom: 0, left: 56 });
+    const [caretXY, setCaretXY] = useState<CaretPosition>({ top: 0, left: 56 });
 
     const getCurrentWord = (textarea: HTMLTextAreaElement): string => {
         const pos = textarea.selectionStart;
@@ -34,11 +34,61 @@ export const useAutocomplete = (
             setActiveIdx(0);
 
             const ta = e.target;
-            const linesBefore = ta.value.slice(0, ta.selectionStart).split('\n');
-            const totalLines = ta.value.split('\n').length;
-            const lineIdx = linesBefore.length - 1;
-            const linesBelow = totalLines - lineIdx - 1;
-            setCaretXY({ bottom: linesBelow * LINE_HEIGHT + 28 + 4, left: 56 });
+            const pos = ta.selectionStart;
+            
+            // Create shadow div to calculate precise caret coordinates
+            const div = document.createElement('div');
+            const style = window.getComputedStyle(ta);
+            
+            // Explicitly copy critical styles for perfect wrapping match
+            const propsToCopy = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'borderWidth', 'boxSizing', 'wordBreak', 'whiteSpace', 'letterSpacing', 'tabSize'];
+            for (const prop of propsToCopy) {
+                div.style[prop as any] = style[prop as any];
+            }
+            div.style.width = `${ta.offsetWidth}px`;
+            div.style.position = 'absolute';
+            div.style.visibility = 'hidden';
+            div.style.whiteSpace = 'pre-wrap';
+            div.style.wordBreak = 'break-all';
+            
+            // Replicate content up to cursor
+            const textBefore = ta.value.substring(0, pos);
+            div.textContent = textBefore;
+            
+            // Add a span to get exact coordinates
+            const span = document.createElement('span');
+            span.textContent = ta.value.substring(pos) || '.';
+            div.appendChild(span);
+            document.body.appendChild(div);
+            
+            const spanRect = span.getBoundingClientRect();
+            const divRect = div.getBoundingClientRect();
+            
+            // Calculate relative to textarea
+            const caretTopInside = spanRect.top - divRect.top;
+            const top = caretTopInside - ta.scrollTop + ta.offsetTop;
+            let left = spanRect.left - divRect.left - ta.scrollLeft + ta.offsetLeft;
+            
+            // Prevent horizontal overflow (dropdown is ~380px wide)
+            const maxLeft = ta.offsetWidth - 385;
+            if (left > maxLeft) {
+                left = Math.max(0, maxLeft);
+            }
+            
+            document.body.removeChild(div);
+            
+            // Smart vertical positioning
+            const spaceBelow = ta.offsetHeight - top;
+            const dropdownHeight = 250;
+            
+            if (spaceBelow < dropdownHeight && top > dropdownHeight) {
+                // Not enough space below, but enough space above -> Place ABOVE
+                const bottomDist = ta.offsetHeight - top + 4;
+                setCaretXY({ bottom: bottomDist, top: 'auto', left: left });
+            } else {
+                // Default: Place BELOW
+                setCaretXY({ top: top + LINE_HEIGHT + 4, bottom: 'auto', left: left });
+            }
         } else {
             setSuggestions([]);
         }
