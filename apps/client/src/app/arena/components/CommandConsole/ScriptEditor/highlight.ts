@@ -5,7 +5,7 @@ export const highlightCode = (code: string): string => {
 
     const lines = code.split('\n');
     return lines.map((line, i) => {
-        const highlighted = line.replace(regex, (match) => `<span class="text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]">${match}</span>`);
-        return `<div style="display: flex; min-height: 20px;"><span style="box-sizing: border-box; user-select: none; color: rgba(8, 145, 178, 0.5); text-align: right; width: 32px; border-right: 1px solid rgba(8, 145, 178, 0.4); padding-right: 8px; margin-right: 12px; flex-shrink: 0;">${i + 1}</span><span style="white-space: pre-wrap; word-break: break-all;">${highlighted || ' '}</span></div>`;
+    const highlighted = line.replace(regex, (match) => `<span class="text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.65)]">${match}</span>`);
+    return `<div style="display: flex; min-height: 24px; align-items: center;"><span style="box-sizing: border-box; user-select: none; color: rgba(var(--accent-rgb), 0.45); text-align: right; min-width: 40px; border-right: 1px solid rgba(var(--accent-rgb), 0.2); padding-right: 12px; margin-right: 16px; flex-shrink: 0; font-size: 11px; letter-spacing: 0.05em;">${i + 1}</span><span style="white-space: pre-wrap; word-break: break-all; tab-size: 2;">${highlighted || ' '}</span></div>`;
     }).join("");
 };

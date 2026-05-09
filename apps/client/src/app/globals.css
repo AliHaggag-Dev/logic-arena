@@ -538,13 +538,10 @@ textarea,
  *  CUSTOM SCROLLBAR (Command Console)
  * ───────────────────────────────────────────────────────── */
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.2); border-radius: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(34,211,238,0.5); }
-
-.mobile-zen-sheet .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.2); }
-.mobile-zen-sheet .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.5); }
+.custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(var(--accent-rgb), 0.08); border-radius: 6px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--accent-rgb), 0.35); border-radius: 6px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(var(--accent-rgb), 0.55); }
 
 /* ─────────────────────────────────────────────────────────
  *  SHARED KEYFRAMES — referenced via animate-[name_duration_easing]

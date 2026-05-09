@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Swords, Loader2 } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LevelDetail, ModalState } from "../types";
 import { DIFFICULTY_CONFIG } from "../../constants/difficulty.constants";
+import { CampaignScriptEditor } from "./CampaignScriptEditor";
 
 interface LevelDesktopLayoutProps {
   level: LevelDetail;
@@ -103,15 +104,11 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             </span>
           </div>
 
-          <textarea
-            aria-label="AliScript code editor"
-            id="script-editor"
+          <CampaignScriptEditor
             value={script}
-            onChange={(e) => setScript(e.target.value)}
+            onChange={setScript}
             placeholder={"// Write your AliScript here\n// Example:\nSET x = SCAN\nIF x > 0\n  FIRE\nELSE\n  MOVE RIGHT\nEND"}
-            className="w-full min-h-[380px] rounded-xl border border-accent/20 bg-bg-primary text-accent/85 p-5 text-[12px] leading-[1.7] resize-y focus:outline-none focus:border-accent/50 placeholder:text-accent/20 font-mono tracking-[0.04em]"
-            style={{ boxShadow: "inset 0 0 30px rgba(var(--accent-rgb),0.03)" }}
-            spellCheck={false}
+            className="min-h-[380px]"
           />
 
           <button
