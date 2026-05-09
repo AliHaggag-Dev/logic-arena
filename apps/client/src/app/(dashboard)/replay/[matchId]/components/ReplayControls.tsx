@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Play, Pause, SkipBack } from "lucide-react";
 
 interface Props {
   currentFrame: number;
@@ -87,7 +88,7 @@ export function ReplayControls({
               onClick={onPause}
               className="w-full md:w-auto md:inline-flex justify-center items-center gap-2 md:gap-[6px] h-[44px] md:h-auto md:p-[10px_22px] rounded-xl md:rounded-md text-[11px] font-black tracking-[0.15em] md:tracking-[0.14em] cursor-pointer font-mono transition-all duration-200 active:scale-95 md:active:scale-100 bg-accent/20 md:bg-accent/[0.22] border border-accent text-accent md:animate-[pulse-cyan_1.5s_infinite] shadow-[0_0_12px_rgba(var(--accent-rgb),0.4)] md:shadow-none"
             >
-              ⏸ PAUSE
+              <Pause className="w-3.5 h-3.5 fill-current" /> PAUSE
             </button>
           ) : (
             <button
@@ -95,7 +96,7 @@ export function ReplayControls({
               onClick={onPlay}
               className="w-full md:w-auto md:inline-flex justify-center items-center gap-2 md:gap-[6px] h-[44px] md:h-auto md:p-[10px_22px] rounded-xl md:rounded-md text-[11px] font-black tracking-[0.15em] md:tracking-[0.14em] cursor-pointer font-mono transition-all duration-200 active:scale-95 md:active:scale-100 bg-accent/10 md:bg-accent/[0.08] border border-accent/40 text-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] md:shadow-none hover:bg-accent/[0.18] hover:border-accent/70 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]"
             >
-              ▶ PLAY
+              <Play className="w-3.5 h-3.5 fill-current" /> PLAY
             </button>
           )}
           <button
@@ -103,7 +104,7 @@ export function ReplayControls({
             onClick={onReset}
             className="w-full md:w-auto md:inline-flex justify-center items-center gap-2 md:gap-[6px] h-[44px] md:h-auto md:p-[10px_22px] rounded-xl md:rounded-md text-[11px] font-black tracking-[0.15em] md:tracking-[0.14em] cursor-pointer font-mono transition-all duration-200 active:scale-95 md:active:scale-100 bg-accent/5 md:bg-accent/[0.08] border border-accent/20 md:border-accent/40 text-accent/70 md:text-accent hover:bg-accent/[0.18] hover:border-accent/70 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]"
           >
-            ⏮ RESET
+            <SkipBack className="w-3.5 h-3.5 fill-current" /> RESET
           </button>
         </div>
 

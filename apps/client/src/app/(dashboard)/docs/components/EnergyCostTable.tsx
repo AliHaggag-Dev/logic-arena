@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Hexagon, Circle, Diamond, Target } from 'lucide-react';
+import { Hexagon, Circle, Diamond, Target, ArrowUp } from 'lucide-react';
 
 // ─── Named constants (kept in sync with packages/engine/src/energy-manager.ts) ─
 export const MAX_ENERGY = 100;
@@ -11,12 +11,6 @@ export const STASIS_EXIT_THRESHOLD = 20;
 /** Largest energy cost — used to scale the mini bar (BURST_FIRE = 18). */
 const MAX_BAR_COST = 18;
 
-const GLYPH_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  '⬡': Hexagon,
-  '⦾': Circle,
-  '◈': Diamond,
-  '◉': Target,
-};
 
 interface EnergyEntry {
   command: string;
@@ -24,27 +18,27 @@ interface EnergyEntry {
   unit: string;
   category: 'movement' | 'combat' | 'sensor' | 'cognitive';
   color: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
   note?: string;
 }
 
 const ENTRIES: EnergyEntry[] = [
   // Cognitive — free
-  { command: 'IF / FOR / WHILE', cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡', note: 'Control-flow never costs energy' },
-  { command: 'FUNCTION/CALL', cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡' },
-  { command: 'SET',           cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡', note: 'Executes even during STASIS — ideal for state machine flags' },
-  { command: 'WAIT',          cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡', note: 'Costs 0 energy. Energy does NOT regenerate during WAIT — regen only occurs in STASIS.' },
-  { command: 'STOP',          cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: '⬡', note: 'Allowed during STASIS' },
+  { command: 'IF / FOR / WHILE', cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: Hexagon, note: 'Control-flow never costs energy' },
+  { command: 'FUNCTION/CALL', cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: Hexagon },
+  { command: 'SET',           cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: Hexagon, note: 'Executes even during STASIS — ideal for state machine flags' },
+  { command: 'WAIT',          cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: Hexagon, note: 'Costs 0 energy. Energy does NOT regenerate during WAIT — regen only occurs in STASIS.' },
+  { command: 'STOP',          cost: 0, unit: 'free', category: 'cognitive', color: 'var(--docs-orange)', icon: Hexagon, note: 'Allowed during STASIS' },
   // Movement
-  { command: 'MOVE',      cost: 2, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: '⦾' },
-  { command: 'BACKUP',    cost: 2, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: '⦾' },
-  { command: 'MOVE_FAST', cost: 4, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: '⦾', note: '2× speed for 2× the cost. Blocked during STASIS.' },
-  { command: 'PATHFIND',  cost: 3, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: '⦾', note: 'A* navigation toward nearest visible target. Blocked during STASIS.' },
+  { command: 'MOVE',      cost: 2, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: Circle },
+  { command: 'BACKUP',    cost: 2, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: Circle },
+  { command: 'MOVE_FAST', cost: 4, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: Circle, note: '2× speed for 2× the cost. Blocked during STASIS.' },
+  { command: 'PATHFIND',  cost: 3, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: Circle, note: 'A* navigation toward nearest visible target. Blocked during STASIS.' },
   // Sensor
-  { command: 'SCAN', cost: 3, unit: '/call', category: 'sensor', color: 'var(--docs-cyan)', icon: '◈', note: 'BLOCKED during STASIS — use WAIT to pause execution and let STASIS regen energy.' },
+  { command: 'SCAN', cost: 3, unit: '/call', category: 'sensor', color: 'var(--docs-cyan)', icon: Diamond, note: 'BLOCKED during STASIS — use WAIT to pause execution and let STASIS regen energy.' },
   // Combat
-  { command: 'FIRE',       cost: 8,  unit: '/shot',  category: 'combat', color: 'var(--docs-orange)', icon: '◉', note: '25 HP damage on hit. Only fires if an enemy is within FOV.' },
-  { command: 'BURST_FIRE', cost: 18, unit: '/burst', category: 'combat', color: 'var(--docs-red)', icon: '◉', note: '3 shots × 8 HP = up to 24 HP total. Requires enemy in FOV.' },
+  { command: 'FIRE',       cost: 8,  unit: '/shot',  category: 'combat', color: 'var(--docs-orange)', icon: Target, note: '25 HP damage on hit. Only fires if an enemy is within FOV.' },
+  { command: 'BURST_FIRE', cost: 18, unit: '/burst', category: 'combat', color: 'var(--docs-red)', icon: Target, note: '3 shots × 8 HP = up to 24 HP total. Requires enemy in FOV.' },
 ];
 
 const CATEGORY_LABELS: Record<EnergyEntry['category'], string> = {
@@ -71,7 +65,7 @@ export function EnergyCostTable({ isMobile }: { isMobile: boolean }) {
     <>
       {/* Regen banner */}
       <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl border border-indigo-400/30 bg-indigo-400/[0.06]">
-        <span className="text-indigo-400 text-lg">↑</span>
+        <ArrowUp size={18} className="text-indigo-400" />
         <div>
           <span className="text-[11px] font-black tracking-[0.2em] text-indigo-400 uppercase">Passive Regen</span>
           <span className="ml-3 text-[13px] font-black text-text-primary">+{REGEN_PER_TICK} energy / tick</span>
@@ -93,7 +87,7 @@ export function EnergyCostTable({ isMobile }: { isMobile: boolean }) {
             </div>
             <div className="flex flex-col gap-1.5">
               {entries.map(e => {
-                const Icon = GLYPH_MAP[e.icon] ?? Hexagon;
+                const Icon = e.icon;
                 return (
                   <div
                     key={e.command}

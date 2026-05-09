@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Diamond } from "lucide-react";
 
 interface Swatch {
   hex: string;
@@ -104,8 +105,8 @@ export function ColorPicker({ selected, onChange, isMobile }: ColorPickerProps) 
 
       {/* DEFAULT explanation chip */}
       {selected === "DEFAULT" && (
-        <p className="text-[8px] tracking-[0.12em] text-accent/30 uppercase font-bold px-1 italic">
-          ◈ ORIGINAL GLB MATERIALS ACTIVE — NO TINT APPLIED
+        <p className="text-[8px] tracking-[0.12em] text-accent/30 uppercase font-bold px-1 italic flex items-center gap-1">
+          <Diamond className="w-2.5 h-2.5 fill-current" /> ORIGINAL GLB MATERIALS ACTIVE — NO TINT APPLIED
         </p>
       )}
     </div>

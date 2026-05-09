@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Diamond } from "lucide-react";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { parseApiError } from "../utils/parseApiError";
@@ -64,7 +65,7 @@ export default function RegisterPage() {
 
   return (
     <AuthContainer isMobile={isMobile} nodeName="// v2.1">
-      <AuthHeader isMobile={isMobile} subtitle={isMobile ? "REGISTER" : "Sign Up"} icon="◈" />
+      <AuthHeader isMobile={isMobile} subtitle={isMobile ? "REGISTER" : "Sign Up"} icon={<Diamond className="w-5 h-5 fill-current" />} />
       <AuthSocials isMobile={isMobile} />
 
       <form onSubmit={handleRegister} className="flex flex-col gap-5">

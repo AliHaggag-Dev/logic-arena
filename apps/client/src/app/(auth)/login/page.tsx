@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Hexagon } from "lucide-react";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { parseApiError } from "../utils/parseApiError";
@@ -54,7 +55,7 @@ export default function LoginPage() {
 
   return (
     <AuthContainer isMobile={isMobile} nodeName="// v2.1">
-      <AuthHeader isMobile={isMobile} subtitle={isMobile ? "LOGIN" : "Sign In"} icon="⬡" />
+      <AuthHeader isMobile={isMobile} subtitle={isMobile ? "LOGIN" : "Sign In"} icon={<Hexagon className="w-5 h-5" />} />
       <AuthSocials isMobile={isMobile} />
 
       <form onSubmit={handleLogin} className="flex flex-col gap-6">

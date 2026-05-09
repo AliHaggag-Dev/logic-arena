@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ACCORDION_SECTIONS } from './constants';
 import { ChevronIcon, GitHubIcon, LinkedinIcon, PortfolioIcon } from './Icons';
+import { Hexagon, ChevronRight } from 'lucide-react';
 
 function MobileSocialIcons() {
   const icons = [
@@ -86,7 +87,7 @@ function AccordionCard({
               style={{ minHeight: 44, padding: "0 20px" }}
             >
               <span className="inline-block w-0 overflow-hidden group-hover:w-3 text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.8)] transition-all duration-300 ease-out">
-                ›
+                <ChevronRight size={10} />
               </span>
               <span className="group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.8)] group-hover:translate-x-0.5 transition-all duration-300">
                 {link.label}
@@ -110,7 +111,7 @@ export function MobileLayout() {
       <div className="px-5 pt-8 pb-6">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-9 h-9 border border-accent/40 rounded-lg flex items-center justify-center bg-accent/5">
-            <span className="text-accent">⬡</span>
+            <Hexagon className="w-5 h-5 text-accent" />
           </div>
           <Link href="/dashboard">
             <h2 className="footer-brand-name text-[16px] font-black tracking-[0.2em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)] cursor-pointer select-none hover:opacity-90 transition-opacity">

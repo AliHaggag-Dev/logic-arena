@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart } from "lucide-react";
+import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart, Power, LogIn } from "lucide-react";
 import NavLink from "../../../../../components/ui/NavLink";
 
 const SIDEBAR_WIDTH = 220;
@@ -113,7 +113,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
             {avatarUrl ? (
               <Image src={avatarUrl} alt="Avatar" width={24} height={24} className="w-full h-full object-cover" />
             ) : (
-              "◉"
+              <User size={14} />
             )}
           </span>
           <div className="overflow-hidden">
@@ -130,7 +130,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
             onClick={onLogout}
             className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-red-500/5 hover:bg-red-500/15 border border-red-500/20 hover:border-red-500/60 rounded-md text-red-500/50 hover:text-red-300 text-[10px] font-bold tracking-[0.2em] font-mono cursor-pointer transition-all duration-200 group"
           >
-            <span className="text-[11px] transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">⏻</span>
+            <Power size={11} className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]" />
             <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.5)]">SIGN OUT</span>
           </button>
         ) : (
@@ -138,7 +138,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
             href="/login"
             className="w-full flex items-center justify-center gap-1.5 py-[9px] px-[14px] bg-accent/5 hover:bg-accent/15 border border-accent/20 hover:border-accent/60 rounded-md text-accent/50 hover:text-accent text-[10px] font-bold tracking-[0.2em] font-mono transition-all duration-200 group"
           >
-            <span className="text-[11px] transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]">→</span>
+            <LogIn size={11} className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]" />
             <span className="transition-all group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]">LOG IN</span>
           </Link>
         )}

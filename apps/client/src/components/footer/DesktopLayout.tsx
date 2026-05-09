@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { NAV_LINKS, ARENA_LINKS, SOCIAL_LINKS, LEGAL_LINKS } from './constants';
 import { GitHubIcon, LinkedinIcon, PortfolioIcon } from './Icons';
+import { Hexagon, ChevronRight } from 'lucide-react';
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
@@ -19,7 +20,7 @@ function FooterLink({ target, href, children }: { target?: string; href: string;
       className="group flex items-center text-[11.5px] font-mono tracking-[0.15em] uppercase text-accent/40 hover:text-accent py-2 transition-all duration-300 w-fit"
     >
       <span className="inline-block w-0 overflow-hidden group-hover:w-3 text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.8)] transition-all duration-300 ease-out">
-        ›
+        <ChevronRight size={10} />
       </span>
       <span className="group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.8)] group-hover:translate-x-0.5 transition-all duration-300">
         {children}
@@ -61,7 +62,7 @@ export function DesktopLayout() {
         <div className="col-span-1">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 border border-accent/40 rounded-lg flex items-center justify-center bg-accent/5 shadow-[0_0_12px_rgba(var(--accent-rgb),0.15)]">
-              <span className="text-accent text-sm">⬡</span>
+              <span className="text-accent flex items-center justify-center"><Hexagon className="w-4 h-4" /></span>
             </div>
             <Link href="/dashboard">
               <h2 className="footer-brand-name text-[15px] font-black tracking-[0.2em] text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)] cursor-pointer select-none hover:opacity-90 transition-opacity">
