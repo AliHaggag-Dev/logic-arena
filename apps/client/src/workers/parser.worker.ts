@@ -1,17 +1,37 @@
-import { Parser } from "../../../../packages/logic-parser/src";
+import { Parser, SemanticAnalyzer, SemanticWarning } from "../../../../packages/logic-parser/src";
 
-self.onmessage = (e: MessageEvent) => {
+interface WorkerRequest {
+  code: string;
+  id: number;
+}
+
+interface WorkerSuccessResponse {
+  id: number;
+  status: "success";
+  warnings: SemanticWarning[];
+}
+
+interface WorkerErrorResponse {
+  id: number;
+  status: "error";
+  error: string;
+}
+
+const analyzer = new SemanticAnalyzer();
+
+self.onmessage = (e: MessageEvent<WorkerRequest>) => {
   const { code, id } = e.data;
-  
+
   try {
     const parser = new Parser(code);
     const ast = parser.parse();
-    
-    // Perform simple syntax checking
-    const hasSyntaxError = false; // We would catch exceptions if parser throws, but currently our parser silently ignores bad commands. We can assume if length is 0 and code isn't, there might be an error.
-    
-    self.postMessage({ id, status: "success", ast });
-  } catch (err: any) {
-    self.postMessage({ id, status: "error", error: err.message });
+
+    // Run semantic analysis after parsing
+    const warnings = analyzer.analyze(ast);
+
+    self.postMessage({ id, status: "success", warnings } satisfies WorkerSuccessResponse);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    self.postMessage({ id, status: "error", error: message } satisfies WorkerErrorResponse);
   }
 };

@@ -56,7 +56,7 @@ export const useGameState = (
 
   const lastUiUpdateRef = useRef(0);
   const tracerTimeoutRef = useRef<number | null>(null);
-  const speechTimeoutRef = useRef<number | null>(null);
+  const robotBubbleTimeoutsRef = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
     gameStateRef.current = { robots: [], projectiles: [], obstacles: [] };
@@ -179,6 +179,25 @@ export const useGameState = (
       setTrainingStats(prev => ({ ...prev, dummiesDestroyed: prev.dummiesDestroyed + 1 }));
     };
 
+    // Per-robot speech bubble: each robot has its own timeout so bubbles
+    // don't flicker or collide. The shared state only tracks the most recent
+    // bubble (existing architecture), but each robot's display duration is
+    // managed independently.
+    const setRobotBubble = (robotId: string, message: string, durationMs: number): void => {
+      const prevTimeout = robotBubbleTimeoutsRef.current.get(robotId);
+      if (prevTimeout !== undefined) {
+        window.clearTimeout(prevTimeout);
+      }
+
+      setSpeechBubble({ robotId, message });
+
+      const timeoutId = window.setTimeout(() => {
+        robotBubbleTimeoutsRef.current.delete(robotId);
+        setSpeechBubble(null);
+      }, durationMs);
+      robotBubbleTimeoutsRef.current.set(robotId, timeoutId);
+    };
+
     const handleLogicExecuted = (data: { robotId: string; action: string; message?: string }) => {
       const activeUserId = getAuthUserId() || socketUserId;
 
@@ -195,15 +214,12 @@ export const useGameState = (
           tracerTimeoutRef.current = window.setTimeout(() => setFiredTracer(null), 100);
         }
       }
-      setSpeechBubble({ robotId: data.robotId, message: data.message ?? data.action });
-      if (speechTimeoutRef.current !== null) window.clearTimeout(speechTimeoutRef.current);
-      speechTimeoutRef.current = window.setTimeout(() => setSpeechBubble(null), 1000);
+
+      setRobotBubble(data.robotId, data.message ?? data.action, 3000);
     };
 
     const handleQueryResult = (data: { robotId: string; label: string; message: string }) => {
-      setSpeechBubble({ robotId: data.robotId, message: data.label });
-      if (speechTimeoutRef.current !== null) window.clearTimeout(speechTimeoutRef.current);
-      speechTimeoutRef.current = window.setTimeout(() => setSpeechBubble(null), 2000);
+      setRobotBubble(data.robotId, data.label, 2000);
     };
 
     const handleMatchOver = (data: {
@@ -249,7 +265,10 @@ export const useGameState = (
       socket.off('spectatorCount');
       socket.disconnect();
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
-      if (speechTimeoutRef.current !== null) window.clearTimeout(speechTimeoutRef.current);
+      for (const timeoutId of robotBubbleTimeoutsRef.current.values()) {
+        window.clearTimeout(timeoutId);
+      }
+      robotBubbleTimeoutsRef.current.clear();
     };
   }, [socket, scriptId, matchIdFromUrl, mode, isSpectator]);
 

@@ -6,6 +6,13 @@ export class CooldownManager {
   private actionCooldowns: Map<string, Map<string, number>> = new Map();
   private queryEmits: Set<string> = new Set();
 
+  /** Per-robot-command last-emit timestamps for non-continuous commands. */
+  private lastNonContinuousEmit: Map<string, number> = new Map();
+
+  static readonly CONTINUOUS_COMMANDS = new Set([
+    'MOVE', 'MOVE_FAST', 'BACKUP', 'STOP',
+  ]);
+
   private readonly FIRE_COOLDOWN_MS = 500;
   private readonly ACTION_COOLDOWN_MS = 500;
 
@@ -38,26 +45,29 @@ export class CooldownManager {
     this.lastFireTime.set(robotId, Date.now());
   }
 
+  /**
+   * Continuous commands → emit only when the tracked "active" continuous
+   * command changes (tracked separately from non-continuous in markEmitted).
+   *
+   * Non-continuous commands → emit at most once per 1000ms per command.
+   * This prevents alternating spam (e.g. PATHFIND / STOP flip-flopping
+   * every 50 ms tick) while still showing each meaningful event.
+   */
   shouldEmitAction(robotId: string, actionCommand: string): boolean {
-    const lastAction = this.lastExecutedAction.get(robotId);
-    if (actionCommand !== lastAction) {
-      return true;
+    if (CooldownManager.CONTINUOUS_COMMANDS.has(actionCommand)) {
+      const lastAction = this.lastExecutedAction.get(robotId);
+      return actionCommand !== lastAction;
     }
 
-    // If the action is identical, still emit it periodically (e.g. every 1000ms)
-    // so the UI shows a "heartbeat" and the user knows the script isn't frozen.
-    const lastEmit = this.lastLogicEmitTime.get(robotId) ?? 0;
-    if (Date.now() - lastEmit >= 1000) {
-      return true;
-    }
-
-    return false;
+    const key = `${robotId}\0${actionCommand}`;
+    const lastEmit = this.lastNonContinuousEmit.get(key) ?? 0;
+    return Date.now() - lastEmit >= 1000;
   }
 
   shouldEmitQuery(robotId: string, queryName: string): boolean {
     const key = `${robotId}-${queryName}`;
     if (this.queryEmits.has(key)) {
-      return false; // Only emit once per script execution
+      return false;
     }
     return true;
   }
@@ -72,9 +82,19 @@ export class CooldownManager {
     robotCooldowns.set(`QUERY_${queryName}`, now);
   }
 
+  /**
+   * Continuous commands → update lastExecutedAction (the "active state").
+   * Non-continuous commands → only update their own per-command timestamp
+   * without polluting the continuous tracking.
+   */
   markEmitted(robotId: string, actionCommand: string): void {
+    if (CooldownManager.CONTINUOUS_COMMANDS.has(actionCommand)) {
+      this.lastExecutedAction.set(robotId, actionCommand);
+    } else {
+      const key = `${robotId}\0${actionCommand}`;
+      this.lastNonContinuousEmit.set(key, Date.now());
+    }
     this.lastLogicEmitTime.set(robotId, Date.now());
-    this.lastExecutedAction.set(robotId, actionCommand);
   }
 
   clearState(robotId: string, fullReset: boolean = true): void {
@@ -83,6 +103,11 @@ export class CooldownManager {
     }
     this.lastLogicEmitTime.delete(robotId);
     this.actionCooldowns.set(robotId, new Map());
+    for (const key of this.lastNonContinuousEmit.keys()) {
+      if (key.startsWith(`${robotId}\0`)) {
+        this.lastNonContinuousEmit.delete(key);
+      }
+    }
     for (const key of this.queryEmits) {
       if (key.startsWith(`${robotId}-`)) {
         this.queryEmits.delete(key);

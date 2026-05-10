@@ -98,6 +98,9 @@ export class MatchEngine {
       // Clear flag so logic executor can set it if an action is performed
       robot.executedCommandThisTick = false;
       this.deps.logicEvaluator.evaluate(robot.id);
+      // Flush buffered action emits after all scripts for this robot have
+      // been evaluated — prevents command alternation spam in the display.
+      this.deps.actionExecutor.flushEmits(robot.id);
     });
   }
 

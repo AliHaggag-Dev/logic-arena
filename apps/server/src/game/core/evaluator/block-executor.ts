@@ -12,6 +12,7 @@ import {
   ForStatement,
   AssignmentStatement,
   ActionStatement,
+  ActionExpression,
   CallStatement,
   WaitStatement,
   ScanStatement,
@@ -22,6 +23,7 @@ import {
 import { ActionExecutor } from '../executor';
 import { ExpressionEvaluator } from './expression-facade';
 import { CONSTANTS, OpsCounter } from './types';
+import { ActionOptimizer, BufferedAction } from './action-optimizer';
 import { executeActionIfOffCooldown } from './block-executor/action-dispatcher';
 import { executeAssignmentStatement } from './block-executor/assignment-handler';
 import {
@@ -40,12 +42,52 @@ import {
 export type { BlockResult } from './block-executor/control-flow';
 
 export class BlockExecutor {
+  /** Per-tick buffer of movement actions for this robot.
+   *  Populated during executeBlock, flushed & optimized after the block. */
+  private actionBuffer: Map<string, BufferedAction[]> = new Map();
+
   constructor(
     private gameLoop: GameLoop,
     private actionExecutor: ActionExecutor,
     private expressionEvaluator: ExpressionEvaluator,
     private functions: Map<string, Map<string, FunctionDeclaration>>,
   ) {}
+
+  /** Buffer a movement action for later optimization & execution.
+   *  Non-movement actions (FIRE, BURST_FIRE) are dispatched immediately. */
+  private bufferAction(
+    robotId: string,
+    cmd: string,
+    action: BufferedAction['action'],
+    memory: Record<string, unknown>,
+  ): void {
+    const buffer = this.actionBuffer.get(robotId) ?? [];
+    buffer.push({ cmd, action, memory: { ...memory } });
+    this.actionBuffer.set(robotId, buffer);
+  }
+
+  /** Optimize buffered actions and execute the result.
+   *  Called once per robot per tick from LogicEvaluator.evaluate(). */
+  flushOptimizedActions(robotId: string): void {
+    const buffered = this.actionBuffer.get(robotId);
+    this.actionBuffer.delete(robotId);
+    if (!buffered || buffered.length === 0) return;
+
+    const optimized = ActionOptimizer.optimize(buffered);
+
+    for (const { cmd, action, memory } of optimized) {
+      if (cmd === 'SCAN') {
+        this.actionExecutor.executeAction(robotId, action as ScanStatement, memory);
+      } else {
+        executeActionIfOffCooldown(
+          this.actionExecutor,
+          robotId,
+          action as ActionExpression,
+          memory,
+        );
+      }
+    }
+  }
 
   executeBlock(
     robotId: string,
@@ -273,12 +315,25 @@ export class BlockExecutor {
 
             if (!dispatchedActions.has(cmd)) {
               dispatchedActions.add(cmd);
-              executeActionIfOffCooldown(
-                this.actionExecutor,
-                robotId,
-                action,
-                memory,
-              );
+
+              // Movement state/event commands are buffered for the
+              // ActionOptimizer, which removes contradictions like
+              // PATHFIND followed by STOP. All other commands (FIRE,
+              // BURST_FIRE) dispatch immediately as before.
+              if (
+                cmd === 'STOP' || cmd === 'MOVE' ||
+                cmd === 'MOVE_FAST' || cmd === 'BACKUP' ||
+                cmd === 'PATHFIND'
+              ) {
+                this.bufferAction(robotId, cmd, action, memory);
+              } else {
+                executeActionIfOffCooldown(
+                  this.actionExecutor,
+                  robotId,
+                  action,
+                  memory,
+                );
+              }
             }
             break;
           }

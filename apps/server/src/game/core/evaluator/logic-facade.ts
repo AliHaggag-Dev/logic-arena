@@ -83,5 +83,10 @@ export class LogicEvaluator {
       memory,
       opsCounter,
     );
+
+    // Flush and optimize any buffered movement actions.
+    // Must happen before tick() returns so executedCommandThisTick
+    // is set before the 60fps physics loop checks it.
+    this.blockExecutor.flushOptimizedActions(robotId);
   }
 }

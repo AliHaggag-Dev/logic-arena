@@ -16,6 +16,9 @@ export class ActionExecutor {
   private combatExecutor: CombatExecutor;
   private scanExecutor: ScanExecutor;
 
+  /** Per-tick ordered action buffer: robotId → commands in execution order. */
+  private tickActionBuffer: Map<string, string[]> = new Map();
+
   constructor(
     private gameLoop: GameLoop,
     private onEvent: ((event: string, payload: any) => void) | undefined,
@@ -113,17 +116,12 @@ export class ActionExecutor {
       robot.executedCommandThisTick = true;
     }
 
-    // --- Emit logicExecuted to clients (rate-limited by cooldown) ---
-    if (this.cooldowns.shouldEmitAction(robotId, actionCommand)) {
-      if (this.onEvent) {
-        this.onEvent('logicExecuted', {
-          robotId,
-          action: actionCommand,
-          message: `Logic Triggered: ${actionCommand}`,
-        });
-      }
-      this.cooldowns.markEmitted(robotId, actionCommand);
-      console.log(`[ActionExecutor] ${robotId} → ${actionCommand}`);
+    // --- Buffer action for emit at end of tick ---
+    const buffer = this.tickActionBuffer.get(robotId);
+    if (buffer) {
+      buffer.push(actionCommand);
+    } else {
+      this.tickActionBuffer.set(robotId, [actionCommand]);
     }
 
     // --- Dispatch ---
@@ -144,6 +142,72 @@ export class ActionExecutor {
         break;
       default:
         console.warn(`[ActionExecutor] Unknown command: ${actionCommand}`);
+    }
+  }
+
+  /**
+   * Called once per tick per robot (from MatchEngine.tick()).
+   * Processes the buffered actions for this tick and emits `logicExecuted`
+   * for the **last continuous command** (the robot's settled state) plus
+   * each **unique non-continuous command**.
+   *
+   * This prevents alternating spam when a robot's script evaluates both a
+   * non-continuous command (e.g. PATHFIND) and a continuous one (e.g. STOP)
+   * in the same tick — only the settled continuous command is tracked,
+   * and non-continuous ones have independent per-command timers.
+   */
+  flushEmits(robotId: string): void {
+    const buffer = this.tickActionBuffer.get(robotId);
+    if (!buffer || buffer.length === 0) {
+      this.tickActionBuffer.delete(robotId);
+      return;
+    }
+    this.tickActionBuffer.delete(robotId);
+
+    const CONTINUOUS = CooldownManager.CONTINUOUS_COMMANDS;
+
+    // Scan from the end to find the LAST continuous command (the "settled state")
+    let lastContinuous: string | undefined;
+    for (let i = buffer.length - 1; i >= 0; i--) {
+      if (CONTINUOUS.has(buffer[i])) {
+        lastContinuous = buffer[i];
+        break;
+      }
+    }
+
+    // Collect unique non-continuous commands executed this tick
+    const nonContinuous = new Set<string>();
+    for (const cmd of buffer) {
+      if (!CONTINUOUS.has(cmd)) {
+        nonContinuous.add(cmd);
+      }
+    }
+
+    // Emit the continuous command if it changed (it won't be re-emitted
+    // until another continuous command replaces it — no alternating spam)
+    if (lastContinuous) {
+      if (this.cooldowns.shouldEmitAction(robotId, lastContinuous)) {
+        this.internalEmit(robotId, lastContinuous);
+        this.cooldowns.markEmitted(robotId, lastContinuous);
+      }
+    }
+
+    // Emit each non-continuous command (gated by per-command 1s cooldown)
+    for (const cmd of nonContinuous) {
+      if (this.cooldowns.shouldEmitAction(robotId, cmd)) {
+        this.internalEmit(robotId, cmd);
+        this.cooldowns.markEmitted(robotId, cmd);
+      }
+    }
+  }
+
+  private internalEmit(robotId: string, actionCommand: string): void {
+    if (this.onEvent) {
+      this.onEvent('logicExecuted', {
+        robotId,
+        action: actionCommand,
+        message: `Logic Triggered: ${actionCommand}`,
+      });
     }
   }
 
