@@ -1,8 +1,18 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Lightbulb } from "lucide-react";
 import { ThemeSwitcher } from "../../../../../components/ui/ThemeSwitcher";
+import { apiClient } from "../../../../../lib/api-client";
+
+const POLL_INTERVAL = 30_000;
+
+interface InsightsBadgeResponse {
+  unreadCount: number;
+}
 
 interface DashboardHeaderProps {
   username: string | null;
@@ -11,6 +21,26 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ username, avatarUrl }: DashboardHeaderProps) {
   const router = useRouter();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!username) return;
+
+    const fetchUnread = async () => {
+      try {
+        const { data } = await apiClient.get<InsightsBadgeResponse>('/ai/insights', {
+          params: { page: 1, limit: 1 },
+        });
+        setUnreadCount(data.unreadCount ?? 0);
+      } catch {
+        /* silently ignore — user may not be authed yet */
+      }
+    };
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, POLL_INTERVAL);
+    return () => clearInterval(interval);
+  }, [username]);
 
   return (
     <header className="sticky top-0 z-40 w-full bg-bg-primary/90 backdrop-blur-xl border-b border-accent/[0.08] p-[16px_28px] flex items-center justify-between shrink-0 shadow-[0_10px_40px_rgba(var(--accent-rgb),0.05)]">
@@ -39,7 +69,8 @@ export function DashboardHeader({ username, avatarUrl }: DashboardHeaderProps) {
           </span>
         </div>
       </button>
-      <div className="flex items-center gap-6">
+
+      <div className="flex items-center gap-3">
         {username ? (
           <Link
             href="/profile"
@@ -62,6 +93,22 @@ export function DashboardHeader({ username, avatarUrl }: DashboardHeaderProps) {
             </span>
           </div>
         )}
+
+        {/* ── Insights icon button ── */}
+        <Link
+          href="/insights"
+          className="relative flex items-center justify-center w-[28px] h-[28px] rounded-md border border-accent/20 bg-accent/5 text-accent hover:border-accent/40 hover:bg-accent/10 transition-colors duration-150"
+          aria-label="ARIA Insights"
+          title="ARIA Insights"
+        >
+          <Lightbulb size={14} />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[14px] h-[14px] px-[3px] rounded-full bg-accent border border-bg-primary text-[7px] font-black text-bg-primary shadow-[0_0_6px_rgba(var(--accent-rgb),0.6)]">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </Link>
+
         <ThemeSwitcher variant="minimal" />
       </div>
     </header>

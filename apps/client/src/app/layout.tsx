@@ -7,6 +7,7 @@ import { MobileHeader } from "../components/MobileHeader";
 import { MobileNav } from "../components/MobileNav";
 import PullToRefresh from "../components/PullToRefresh";
 import { ServiceWorkerRegistrar } from "../components/ServiceWorkerRegistrar";
+import { AiTutor } from "../components/AiTutor";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-geist-sans",
@@ -135,6 +136,9 @@ export default function RootLayout({
 
           {/* Mobile-only bottom nav dock (self-guards via useMediaQuery) */}
           <MobileNav />
+
+          {/* Global AI Tutor — ARIA */}
+          <AiTutor />
         </ThemeProvider>
 
         <ServiceWorkerRegistrar />

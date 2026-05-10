@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Socket } from 'socket.io-client';
 import { getAuthUsername } from '../../../lib/client-security';
+import { apiClient } from '../../../lib/api-client';
 
 interface WinnerScreenProps {
   matchResult: {
@@ -22,6 +23,10 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
   const router = useRouter();
   const { winner, draw, efficiencyScores } = matchResult;
   const username = getAuthUsername() ?? 'PLAYER';
+
+  useEffect(() => {
+    apiClient.post(`/ai/insights/generate/${matchId}`).catch(() => {});
+  }, [matchId]);
 
   const isWinner = winner?.id === currentUserId;
   const title = draw ? 'DRAW' : isWinner ? 'VICTORY' : 'DEFEATED';

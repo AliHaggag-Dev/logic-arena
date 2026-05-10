@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Bot, Send, X, Trash2 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { API_BASE_URL } from '@/lib/api-client';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Components } from 'react-markdown';
@@ -16,6 +17,9 @@ interface ChatMessage {
 
 const MAX_MESSAGE_LENGTH = 1000;
 const MAX_HISTORY = 10;
+
+/** Routes where the ARIA floating button must be hidden */
+const ARIA_SUPPRESSED_PREFIXES = ['/arena'];
 
 const SUGGESTED_QUESTIONS = [
   'What is the difference between MOVE and PATHFIND?',
@@ -83,6 +87,7 @@ function TypingIndicator() {
 }
 
 export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
+  const pathname = usePathname() ?? '';
   const isMobileDefault = useMediaQuery('(max-width: 768px)');
   const isMobile = isMobileProp ?? isMobileDefault;
   const [open, setOpen] = useState(false);
@@ -95,6 +100,11 @@ export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
   const abortRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  /** Suppress on arena and all its sub-routes (winner screen, etc.) */
+  const isSuppressed = ARIA_SUPPRESSED_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix)
+  );
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -223,13 +233,6 @@ export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
     }
   }, [status]);
 
-  const autoResize = useCallback(() => {
-    const el = inputRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
-  }, []);
-
   const handleSend = () => {
     sendMessage(input);
     if (inputRef.current) inputRef.current.style.height = 'auto';
@@ -251,7 +254,37 @@ export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
   };
 
   const isActive = status !== 'idle';
-  const charsLeft = MAX_MESSAGE_LENGTH - input.length;
+
+  /** Hidden entirely on arena routes */
+  if (isSuppressed) return null;
+
+  /**
+   * Mobile trigger button position:
+   *   - Desktop: bottom-right corner (standard)
+   *   - Mobile: left side, above the nav bar (bottom-[88px] left-4).
+   *     The mobile nav + hub fan-out live on the RIGHT side, so placing ARIA
+   *     on the LEFT avoids all overlap and gives a clean two-sided layout.
+   */
+  const triggerPositionClass = isMobile
+    ? 'fixed bottom-[88px] left-4 z-[100]'
+    : 'fixed bottom-6 right-6 z-[100]';
+
+  /**
+   * On mobile the trigger is a compact circular icon — no text label —
+   * so it occupies minimal space on the left edge.
+   */
+  const triggerContent = isMobile ? (
+    <Bot size={20} />
+  ) : (
+    <>
+      <Bot size={18} />
+      ARIA
+    </>
+  );
+
+  const triggerClass = isMobile
+    ? `${triggerPositionClass} flex items-center justify-center w-[48px] h-[48px] rounded-full border border-accent/40 bg-bg-primary text-accent hover:bg-accent/10 transition-all cursor-pointer`
+    : `${triggerPositionClass} flex items-center gap-2 px-4 py-3 rounded-xl border border-accent/40 bg-bg-primary text-accent font-mono text-[11px] tracking-[0.18em] font-bold hover:bg-accent/10 transition-all cursor-pointer`;
 
   return (
     <>
@@ -272,15 +305,14 @@ export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 px-4 py-3 rounded-xl border border-accent/40 bg-bg-primary text-accent font-mono text-[11px] tracking-[0.18em] font-bold hover:bg-accent/10 transition-all cursor-pointer"
+          className={triggerClass}
           style={{
             boxShadow: '0 0 20px rgba(var(--accent-rgb),0.2), 0 0 40px rgba(var(--accent-rgb),0.1)',
             animation: 'pulse-glow 3s ease-in-out infinite',
           }}
           aria-label="Open ARIA AI Tutor"
         >
-          <Bot size={18} />
-          ARIA
+          {triggerContent}
         </button>
       )}
 

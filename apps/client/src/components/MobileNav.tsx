@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, Wrench, Hexagon, X, Trophy } from "lucide-react";
+import { User, Settings, Wrench, Hexagon, X, Trophy, Lightbulb } from "lucide-react";
 
 const mainNavItems = [
   {
@@ -45,11 +45,12 @@ const mainNavItems = [
 const subNavItems = [
   { href: "/profile", label: "PROFILE", icon: <User size={18} /> },
   { href: "/garage", label: "GARAGE", icon: <Wrench size={18} /> },
+  { href: "/insights", label: "INSIGHTS", icon: <Lightbulb size={18} /> },
   { href: "/tournaments", label: "TOURNAMENTS", icon: <Trophy size={18} /> },
   { href: "/settings", label: "SETTINGS", icon: <Settings size={18} /> },
 ];
 
-const arcOffsets = ["mr-2", "mr-6", "mr-12", "mr-20"];
+const arcOffsets = ["mr-2", "mr-6", "mr-12", "mr-20", "mr-28"];
 
 export function MobileNav() {
   const pathname = usePathname() || "";

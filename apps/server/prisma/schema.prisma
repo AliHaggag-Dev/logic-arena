@@ -114,3 +114,16 @@ model TournamentMatch {
   // PENDING | IN_PROGRESS | COMPLETED
   createdAt    DateTime   @default(now())
 }
+
+model AriaInsight {
+  id        String   @id @default(cuid())
+  userId    String
+  matchId   String?
+  title     String
+  content   String
+  category  String   @default("general") // performance | energy | tactics | script | general
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}

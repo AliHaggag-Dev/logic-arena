@@ -107,7 +107,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
           <NavLink key={item.href} {...item} />
         ))}
         <div className="mt-auto">
-          <div className="mb-2 mt-2 h-px bg-accent/[0.06]" />
+          <div className="mb-2 h-px bg-accent/[0.06]" />
           <NavLink
             href="/settings"
             label="SETTINGS"

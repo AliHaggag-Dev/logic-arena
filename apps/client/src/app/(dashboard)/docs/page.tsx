@@ -14,7 +14,7 @@ import { EnergyCostSection } from './components/EnergyCostSection';
 import { QueryFunctionsSection } from './components/QueryFunctionsSection';
 import { IdentifierReferenceSection } from './components/IdentifierReferenceSection';
 import { AdvancedLanguageFeaturesSection } from './components/AdvancedLanguageFeaturesSection';
-import { AiTutor } from './components/AiTutor';
+import { AiTutor } from '@/components/AiTutor';
 import './docs.css';
 
 export default function DocsPage() {
