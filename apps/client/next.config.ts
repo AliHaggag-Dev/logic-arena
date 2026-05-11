@@ -4,7 +4,7 @@ import path from "path";
 const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: path.join(__dirname, "../../"),
-  transpilePackages: ["@logic-arena/engine"],
+  transpilePackages: ["@logic-arena/engine", "@logic-arena/logic-parser"],
   images: {
     remotePatterns: [
       {
