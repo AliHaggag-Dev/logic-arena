@@ -36,9 +36,12 @@ COPY --from=deps /app/apps/client/node_modules ./apps/client/node_modules
 COPY --from=deps /app/packages/engine/node_modules ./packages/engine/node_modules
 COPY --from=deps /app/packages/logic-parser/node_modules ./packages/logic-parser/node_modules
 
+# Build shared packages first so their dist/ exists for Next.js resolution
+RUN pnpm --filter @logic-arena/logic-parser run build
+RUN pnpm --filter @logic-arena/engine run build
+
 # Build Next.js client
 COPY apps/client/ ./apps/client/
-# NextJS build will handle workspace packages automatically
 RUN pnpm --filter client run build
 
 # ─── Stage 4: Production runner (Next.js standalone) ──────────────────────────
