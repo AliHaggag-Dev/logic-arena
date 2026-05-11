@@ -4,6 +4,7 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import { LevelDetail, ModalState } from "../types";
 import { DIFFICULTY_CONFIG } from "../../constants/difficulty.constants";
 import { CampaignScriptEditor } from "./CampaignScriptEditor";
+import { LevelArenaPreview } from "./LevelArenaPreview";
 
 interface LevelMobileLayoutProps {
   level: LevelDetail;
@@ -68,6 +69,16 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Live Arena Preview — compact mobile version */}
+      <div className="mb-4 shrink-0">
+        <LevelArenaPreview
+          levelId={level.id}
+          mode={modal === "loading" ? "loading" : "preview"}
+          userScript={modal === "loading" ? script : undefined}
+          compact
+        />
       </div>
 
       {/* Code Editor Full Width */}

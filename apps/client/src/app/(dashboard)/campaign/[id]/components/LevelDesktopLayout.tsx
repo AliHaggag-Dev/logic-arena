@@ -4,6 +4,7 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import { LevelDetail, ModalState } from "../types";
 import { DIFFICULTY_CONFIG } from "../../constants/difficulty.constants";
 import { CampaignScriptEditor } from "./CampaignScriptEditor";
+import { LevelArenaPreview } from "./LevelArenaPreview";
 
 interface LevelDesktopLayoutProps {
   level: LevelDetail;
@@ -51,8 +52,15 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
       <div className="grid grid-cols-[360px_1fr] xl:grid-cols-[380px_1fr] gap-7 items-start">
         {/* ── LEFT PANEL ── */}
         <div className="flex flex-col gap-5">
-          <div className="border border-accent/15 rounded-xl p-6 bg-accent/[0.02]">
-            <p className="text-[9px] tracking-[0.3em] text-accent/30 mb-3 uppercase">
+          {/* Live Arena Preview */}
+          <LevelArenaPreview
+            levelId={level.id}
+            mode={modal === "loading" ? "loading" : "preview"}
+            userScript={modal === "loading" ? script : undefined}
+          />
+
+          <div className="border border-accent/15 rounded-xl p-5 bg-accent/[0.02]">
+            <p className="text-[9px] tracking-[0.3em] text-accent/30 mb-2.5 uppercase">
               {'// '}MISSION_BRIEF
             </p>
             <p className="text-[11px] text-accent/70 tracking-[0.08em] leading-relaxed">
@@ -60,11 +68,11 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             </p>
           </div>
 
-          <div className="border border-red-500/20 rounded-xl p-6 bg-red-500/[0.03]">
-            <p className="text-[9px] tracking-[0.3em] text-red-500/50 mb-4 uppercase">
+          <div className="border border-red-500/20 rounded-xl p-5 bg-red-500/[0.03]">
+            <p className="text-[9px] tracking-[0.3em] text-red-500/50 mb-3 uppercase">
               {'// '}ENEMY_INTEL
             </p>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5">
               <div className="flex justify-between items-center text-[10px]">
                 <span className="text-accent/70 tracking-[0.15em]">DESIGNATION</span>
                 <span className="font-bold text-red-500/80 tracking-[0.12em]">{level.title}</span>
@@ -82,8 +90,8 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             </div>
           </div>
 
-          <div className="border border-accent/10 rounded-xl p-5 bg-transparent">
-            <p className="text-[9px] tracking-[0.3em] text-accent/25 mb-3 uppercase">{'// '}TACTICS</p>
+          <div className="border border-accent/10 rounded-xl p-4 bg-transparent">
+            <p className="text-[9px] tracking-[0.3em] text-accent/25 mb-2.5 uppercase">{'// '}TACTICS</p>
             <ul className="text-[10px] text-accent/35 tracking-[0.06em] leading-relaxed space-y-1.5 list-none p-0 m-0">
               <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> Use SCAN to detect proximity</li>
               <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> TIME your FIRE commands carefully</li>

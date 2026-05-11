@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import type { ApiLevelInfo } from "../types/campaign.types";
 import { DIFFICULTY_CONFIG } from "../constants/difficulty.constants";
-import { LevelVisual } from "./LevelVisual";
+import { LevelArenaPreview } from "../[id]/components/LevelArenaPreview";
 
 interface LevelDetailModalProps {
   level: ApiLevelInfo | null;
@@ -130,9 +130,9 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
         {/* Divider */}
         <div className="mx-6 h-px bg-accent/15" />
 
-        {/* Level Visual Illustration */}
+        {/* Level Arena Preview — live animated battle */}
         <div className="px-6 pt-4">
-          <LevelVisual levelId={level.id} difficulty={level.difficulty} />
+          <LevelArenaPreview levelId={level.id} mode="preview" compact />
         </div>
 
         {/* Description — ICPC riddle */}

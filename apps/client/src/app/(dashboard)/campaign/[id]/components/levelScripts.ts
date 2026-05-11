@@ -1,0 +1,84 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Level Scripts — all 60 enemy AliScript programs, keyed by level ID.
+//
+// Mirrors the server-side definitions so the client-side mini evaluator can
+// simulate both robots without needing a network roundtrip.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const LEVEL_SCRIPTS: Record<string, string> = {
+  // ── Conditionals ──────────────────────────────────────────────────────────
+  'cond-01': `SET x = SCAN\nIF x > 0\n  FIRE\n  FIRE\nELSE\n  MOVE RIGHT\nEND`,
+  'cond-02': `MOVE LEFT\nFIRE\nMOVE RIGHT\nFIRE\nMOVE RIGHT\nFIRE`,
+  'cond-03': `SET found = SCAN\nIF found > 0\n  FIRE\n  FIRE\n  FIRE\n  MOVE LEFT\nELSE\n  MOVE RIGHT\n  MOVE RIGHT\nEND`,
+  'cond-04': `SET a = SCAN\nSET b = SCAN\nIF a > 0\n  FIRE\n  FIRE\n  FIRE\nELSE\n  IF b > 0\n    MOVE LEFT\n    FIRE\n  ELSE\n    MOVE RIGHT\n    MOVE RIGHT\n    MOVE RIGHT\n  END\nEND`,
+  'cond-05': `SET a = SCAN\nSET b = SCAN\nSET threat = a + b\nIF threat > 1\n  FIRE\n  FIRE\n  FIRE\n  FIRE\nELSE\n  IF threat > 0\n    FIRE\n    MOVE LEFT\n  ELSE\n    MOVE RIGHT\n  END\nEND`,
+  'cond-06': `SET pol = 0\nSET x = SCAN\nIF x > 0\n  SET pol = 1\n  FIRE\n  FIRE\nELSE\n  SET pol = 0\n  MOVE LEFT\nEND\nIF pol > 0\n  FIRE\n  MOVE RIGHT\nEND`,
+  'cond-07': `SET alert = 0\nSET x = SCAN\nIF x > 0\n  SET alert = 1\n  SET y = SCAN\n  IF y > 0\n    SET alert = 2\n    FIRE\n    FIRE\n    SET z = SCAN\n    IF z > 0\n      FIRE\n      FIRE\n      FIRE\n    END\n  END\nELSE\n  MOVE RIGHT\n  MOVE RIGHT\nEND`,
+  'cond-08': `SET dir = 0\nSET x = SCAN\nIF x > 0\n  SET dir = 1\nEND\nIF dir > 0\n  FIRE\n  FIRE\n  FIRE\n  MOVE LEFT\n  FIRE\nELSE\n  MOVE RIGHT\n  MOVE RIGHT\n  FIRE\nEND`,
+  'cond-09': `SET m1 = SCAN\nMOVE RIGHT\nSET m2 = SCAN\nIF m1 > 0\n  IF m2 > 0\n    FIRE\n    FIRE\n    FIRE\n    FIRE\n    FIRE\n  ELSE\n    FIRE\n    MOVE LEFT\n    MOVE LEFT\n  END\nELSE\n  IF m2 > 0\n    FIRE\n    MOVE RIGHT\n  ELSE\n    MOVE RIGHT\n    MOVE RIGHT\n  END\nEND`,
+  'cond-10': `SET a = SCAN\nMOVE RIGHT\nSET b = SCAN\nMOVE LEFT\nSET c = SCAN\nSET score = a + b + c\nIF score > 2\n  FIRE\n  FIRE\n  FIRE\n  FIRE\n  FIRE\n  FIRE\nELSE\n  IF score > 1\n    FIRE\n    FIRE\n    FIRE\n    MOVE LEFT\n  ELSE\n    IF score > 0\n      FIRE\n      MOVE RIGHT\n    ELSE\n      MOVE RIGHT\n      MOVE RIGHT\n      MOVE RIGHT\n    END\n  END\nEND`,
+
+  // ── Loops ─────────────────────────────────────────────────────────────────
+  'loop-01': `SET i = 0\nWHILE i < 5\n  FIRE\n  SET i = i + 1\nEND\nMOVE LEFT`,
+  'loop-02': `SET i = 0\nWHILE i < 3\n  MOVE RIGHT\n  FIRE\n  SET i = i + 1\nEND\nSET i = 0\nWHILE i < 3\n  MOVE LEFT\n  FIRE\n  SET i = i + 1\nEND`,
+  'loop-03': `SET i = 0\nWHILE i < 3\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n    MOVE LEFT\n  ELSE\n    MOVE RIGHT\n  END\n  SET i = i + 1\nEND\nFIRE`,
+  'loop-04': `SET round = 1\nWHILE round < 4\n  SET shots = 0\n  WHILE shots < round\n    FIRE\n    SET shots = shots + 1\n  END\n  MOVE RIGHT\n  SET round = round + 1\nEND`,
+  'loop-05': `SET found = 0\nSET i = 0\nWHILE i < 5\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n    FIRE\n    SET i = 5\n  ELSE\n    MOVE RIGHT\n    SET i = i + 1\n  END\nEND`,
+  'loop-06': `SET outer = 0\nWHILE outer < 3\n  SET inner = 0\n  WHILE inner < 2\n    SET x = SCAN\n    IF x > 0\n      FIRE\n      FIRE\n    END\n    SET inner = inner + 1\n  END\n  MOVE RIGHT\n  MOVE RIGHT\n  SET outer = outer + 1\nEND`,
+  'loop-07': `SET i = 0\nWHILE i < 6\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n    FIRE\n    MOVE LEFT\n    MOVE LEFT\n    SET i = 6\n  ELSE\n    MOVE RIGHT\n    SET i = i + 1\n  END\nEND`,
+  'loop-08': `SET wave = 0\nWHILE wave < 4\n  MOVE RIGHT\n  MOVE RIGHT\n  FIRE\n  MOVE LEFT\n  MOVE LEFT\n  FIRE\n  SET wave = wave + 1\nEND`,
+  'loop-09': `SET a = 0\nSET b = 5\nWHILE a < b\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n  ELSE\n    MOVE RIGHT\n  END\n  SET a = a + 1\n  SET b = b - 1\nEND\nFIRE\nFIRE\nFIRE\nFIRE`,
+  'loop-10': `SET shots = 0\nSET i = 0\nWHILE i < 8\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    SET shots = shots + 1\n    IF shots > 4\n      FIRE\n      FIRE\n      FIRE\n      FIRE\n      SET i = 8\n    END\n  ELSE\n    MOVE RIGHT\n  END\n  SET i = i + 1\nEND`,
+
+  // ── Arrays ────────────────────────────────────────────────────────────────
+  'arr-01': `SET sensors = [1, 0, 1, 1, 0]\nSET i = 0\nWHILE i < 5\n  IF sensors[i] > 0\n    FIRE\n  END\n  SET i = i + 1\nEND\nMOVE LEFT`,
+  'arr-02': `SET cmds = [1, 1, 0, 1, 0, 0]\nSET i = 0\nWHILE i < 6\n  IF cmds[i] > 0\n    MOVE RIGHT\n  ELSE\n    FIRE\n  END\n  SET i = i + 1\nEND`,
+  'arr-03': `SET enemies = GET_ALL_VISIBLE_ENEMIES()\nSET i = 0\nWHILE i < 2\n  IF enemies[i] != -1\n    FIRE\n    FIRE\n  END\n  SET i = i + 1\nEND\nMOVE RIGHT`,
+  'arr-04': `SET bursts = [2, 1, 3, 1]\nSET cycle = 0\nWHILE cycle < 4\n  SET shots = 0\n  WHILE shots < bursts[cycle]\n    FIRE\n    SET shots = shots + 1\n  END\n  MOVE RIGHT\n  SET cycle = cycle + 1\nEND`,
+  'arr-05': `SET waypoints = [1, 2, 1, 3]\nSET w = 0\nWHILE w < 4\n  SET steps = 0\n  WHILE steps < waypoints[w]\n    MOVE RIGHT\n    SET steps = steps + 1\n  END\n  FIRE\n  SET w = w + 1\nEND`,
+  'arr-06': `SET prio = [3, 1, 2, 0, 2]\nSET i = 0\nWHILE i < 5\n  IF prio[i] > 2\n    FIRE\n    FIRE\n    FIRE\n  ELSE\n    IF prio[i] > 1\n      FIRE\n      FIRE\n    ELSE\n      IF prio[i] > 0\n        FIRE\n      ELSE\n        MOVE RIGHT\n      END\n    END\n  END\n  SET i = i + 1\nEND`,
+  'arr-07': `SET matrix = [1, 0, 1, 0, 1, 0, 1, 1, 0]\nSET i = 0\nWHILE i < 9\n  IF matrix[i] > 0\n    SET ray = RAYCAST()\n    IF ray > 0\n      FIRE\n      FIRE\n      FIRE\n    END\n  ELSE\n    MOVE RIGHT\n  END\n  SET i = i + 1\nEND`,
+  'arr-08': `SET thresh = [1, 1, 0, 1]\nSET shots = [2, 1, 3, 2]\nSET i = 0\nWHILE i < 4\n  SET x = SCAN\n  IF x > thresh[i]\n    SET s = 0\n    WHILE s < shots[i]\n      FIRE\n      SET s = s + 1\n    END\n  ELSE\n    MOVE RIGHT\n  END\n  SET i = i + 1\nEND`,
+  'arr-09': `SET buf = [0, 0, 0, 0]\nSET i = 0\nWHILE i < 4\n  SET buf[i] = SCAN\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET sum = buf[0] + buf[1] + buf[2] + buf[3]\nIF sum > 2\n  FIRE\n  FIRE\n  FIRE\n  FIRE\n  FIRE\nELSE\n  FIRE\n  MOVE LEFT\nEND`,
+  'arr-10': `SET results = [0, 0, 0, 0, 0]\nSET i = 0\nWHILE i < 5\n  SET results[i] = SCAN\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET i = 0\nWHILE i < 5\n  IF results[i] > 0\n    FIRE\n    FIRE\n    FIRE\n  ELSE\n    MOVE LEFT\n  END\n  SET i = i + 1\nEND`,
+
+  // ── Data Structures ───────────────────────────────────────────────────────
+  'ds-01': `SET state = { mode: 0, shots: 0 }\nSET i = 0\nWHILE i < 6\n  IF state.mode == 0\n    MOVE RIGHT\n    SET state.mode = 1\n  ELSE\n    IF state.mode == 1\n      FIRE\n      SET state.shots = state.shots + 1\n      IF state.shots >= 2\n        SET state.mode = 2\n      END\n    ELSE\n      MOVE LEFT\n      SET state.mode = 0\n      SET state.shots = 0\n    END\n  END\n  SET i = i + 1\nEND`,
+  'ds-02': `SET cfg = { rate: 2, scanFirst: 1, aggro: 2 }\nSET i = 0\nWHILE i < 4\n  IF cfg.scanFirst > 0\n    SET x = SCAN\n    IF x > 0\n      SET s = 0\n      WHILE s < cfg.rate\n        FIRE\n        SET s = s + 1\n      END\n    ELSE\n      MOVE RIGHT\n    END\n  END\n  SET i = i + 1\nEND`,
+  'ds-03': `SET stats = { hits: 0, misses: 0 }\nSET i = 0\nWHILE i < 3\n  SET x = SCAN\n  IF x > 0\n    SET stats.hits = stats.hits + 1\n  ELSE\n    SET stats.misses = stats.misses + 1\n  END\n  SET i = i + 1\nEND\nIF stats.hits > stats.misses\n  FIRE\n  FIRE\n  FIRE\n  FIRE\nELSE\n  MOVE LEFT\n  MOVE LEFT\n  FIRE\nEND`,
+  'ds-04': `SET data = { phase: 1, scan: 0, fired: 0 }\nSET i = 0\nWHILE i < 6\n  IF data.phase == 1\n    SET data.scan = SCAN\n    SET data.phase = 2\n  ELSE\n    IF data.phase == 2\n      IF data.scan > 0\n        FIRE\n        FIRE\n        SET data.fired = data.fired + 1\n      END\n      SET data.phase = 3\n    ELSE\n      IF data.fired > 0\n        MOVE LEFT\n      ELSE\n        MOVE RIGHT\n      END\n      SET data.phase = 1\n      SET data.fired = 0\n    END\n  END\n  SET i = i + 1\nEND`,
+  'ds-05': `SET history = { p1: 0, p2: 0, p3: 0, p4: 0 }\nSET i = 0\nWHILE i < 5\n  SET x = SCAN\n  SET history.p4 = history.p3\n  SET history.p3 = history.p2\n  SET history.p2 = history.p1\n  SET history.p1 = x\n  IF history.p1 > 0\n    FIRE\n    FIRE\n    MOVE LEFT\n  ELSE\n    MOVE RIGHT\n  END\n  SET i = i + 1\nEND`,
+  'ds-06': `SET atk = { target: 0, shots: 0 }\nSET def = { threat: 0, evade: 0 }\nSET i = 0\nWHILE i < 4\n  SET atk.target = SCAN\n  SET def.threat = SCAN\n  IF atk.target > 0\n    FIRE\n    FIRE\n    SET atk.shots = atk.shots + 1\n  END\n  IF def.threat > 0\n    MOVE LEFT\n    SET def.evade = def.evade + 1\n  ELSE\n    MOVE RIGHT\n  END\n  SET i = i + 1\nEND`,
+  'ds-07': `SET inv = { ammo: 8, kills: 0 }\nSET i = 0\nWHILE i < 6\n  IF inv.ammo > 0\n    SET x = SCAN\n    IF x > 0\n      FIRE\n      FIRE\n      SET inv.ammo = inv.ammo - 2\n    ELSE\n      MOVE RIGHT\n    END\n  ELSE\n    MOVE LEFT\n    MOVE LEFT\n  END\n  SET i = i + 1\nEND`,
+  'ds-08': `SET brain = { weight: 0, samples: 0 }\nSET i = 0\nWHILE i < 4\n  SET x = SCAN\n  IF x > 0\n    SET brain.weight = brain.weight + 1\n  END\n  SET brain.samples = brain.samples + 1\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET f = 0\nWHILE f < brain.weight\n  FIRE\n  FIRE\n  SET f = f + 1\nEND`,
+  'ds-09': `SET stack = [0, 0, 0]\nSET sp = { ptr: 0 }\nSET i = 0\nWHILE i < 3\n  SET stack[sp.ptr] = SCAN\n  SET sp.ptr = sp.ptr + 1\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET sp.ptr = sp.ptr - 1\nWHILE sp.ptr >= 0\n  IF stack[sp.ptr] > 0\n    FIRE\n    FIRE\n    FIRE\n  END\n  SET sp.ptr = sp.ptr - 1\nEND`,
+  'ds-10': `SET sys = { shield: 3, ammo: 10, pos: 0, threat: 0 }\nSET i = 0\nWHILE i < 8\n  SET sys.threat = SCAN\n  IF sys.threat > 0\n    IF sys.shield > 1\n      FIRE\n      SET sys.ammo = sys.ammo - 1\n      MOVE LEFT\n      SET sys.pos = sys.pos - 1\n    ELSE\n      FIRE\n      FIRE\n      FIRE\n      SET sys.ammo = sys.ammo - 3\n    END\n  ELSE\n    MOVE RIGHT\n    SET sys.pos = sys.pos + 1\n    SET sys.shield = sys.shield + 1\n  END\n  SET i = i + 1\nEND`,
+
+  // ── Recursion ─────────────────────────────────────────────────────────────
+  'rec-01': `SET x = SCAN\nIF x > 0\n  FIRE\nEND\nSET x = SCAN\nIF x > 0\n  FIRE\nEND\nMOVE RIGHT`,
+  'rec-02': `SET i = 0\nWHILE i < 2\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n  ELSE\n    MOVE RIGHT\n  END\n  SET i = i + 1\nEND`,
+  'rec-03': `SET depth = 3\nWHILE depth > 0\n  SET x = SCAN\n  IF x > 0\n    SET s = 0\n    WHILE s < depth\n      FIRE\n      SET s = s + 1\n    END\n  END\n  SET depth = depth - 1\n  MOVE RIGHT\nEND`,
+  'rec-04': `SET n = 1\nWHILE n < 4\n  SET s = 0\n  WHILE s < n\n    MOVE RIGHT\n    SET s = s + 1\n  END\n  FIRE\n  SET s = 0\n  WHILE s < n\n    MOVE LEFT\n    SET s = s + 1\n  END\n  FIRE\n  SET n = n + 1\nEND`,
+  'rec-05': `SET a = 1\nSET b = 1\nSET round = 0\nWHILE round < 5\n  SET s = 0\n  WHILE s < a\n    FIRE\n    SET s = s + 1\n  END\n  SET temp = a + b\n  SET a = b\n  SET b = temp\n  MOVE RIGHT\n  SET round = round + 1\nEND`,
+  'rec-06': `SET layer = 1\nWHILE layer < 4\n  SET m = 0\n  WHILE m < layer\n    MOVE RIGHT\n    SET m = m + 1\n  END\n  FIRE\n  FIRE\n  SET m = 0\n  WHILE m < layer\n    MOVE LEFT\n    SET m = m + 1\n  END\n  SET layer = layer + 1\nEND`,
+  'rec-07': `SET range = 8\nWHILE range > 0\n  SET x = SCAN\n  IF x > 0\n    SET s = 0\n    WHILE s < range\n      FIRE\n      SET s = s + 1\n    END\n  ELSE\n    MOVE RIGHT\n  END\n  SET range = range - 2\nEND`,
+  'rec-08': `SET a = 0\nWHILE a < 3\n  SET b = 0\n  WHILE b < 2\n    SET c = 0\n    WHILE c < 2\n      FIRE\n      SET c = c + 1\n    END\n    MOVE RIGHT\n    SET b = b + 1\n  END\n  MOVE LEFT\n  SET a = a + 1\nEND`,
+  'rec-09': `SET depth = 0\nWHILE depth < 4\n  MOVE RIGHT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n  END\n  SET depth = depth + 1\nEND\nWHILE depth > 0\n  FIRE\n  MOVE LEFT\n  SET depth = depth - 1\nEND`,
+  'rec-10': `SET results = [0, 0, 0, 0, 0]\nSET d = 0\nWHILE d < 5\n  SET results[d] = SCAN\n  MOVE RIGHT\n  SET d = d + 1\nEND\nSET d = 4\nWHILE d >= 0\n  IF results[d] > 0\n    FIRE\n    FIRE\n  END\n  MOVE LEFT\n  SET d = d - 1\nEND`,
+
+  // ── Graph Theory ──────────────────────────────────────────────────────────
+  'gfx-01': `SET node = 0\nWHILE node < 3\n  MOVE RIGHT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n  END\n  SET node = node + 1\nEND`,
+  'gfx-02': `SET i = 0\nWHILE i < 4\n  MOVE RIGHT\n  FIRE\n  SET i = i + 1\nEND\nSET i = 0\nWHILE i < 4\n  MOVE LEFT\n  FIRE\n  SET i = i + 1\nEND`,
+  'gfx-03': `SET level = 0\nWHILE level < 2\n  SET found = 0\n  SET x = SCAN\n  IF x > 0\n    SET found = found + 1\n  END\n  MOVE RIGHT\n  SET x = SCAN\n  IF x > 0\n    SET found = found + 1\n  END\n  MOVE LEFT\n  IF found > 0\n    FIRE\n    FIRE\n  END\n  MOVE RIGHT\n  SET level = level + 1\nEND`,
+  'gfx-04': `SET depth = 0\nWHILE depth < 4\n  MOVE RIGHT\n  SET x = SCAN\n  SET depth = depth + 1\nEND\nWHILE depth > 0\n  FIRE\n  MOVE LEFT\n  SET depth = depth - 1\nEND`,
+  'gfx-05': `SET cycle = 0\nWHILE cycle < 2\n  MOVE RIGHT\n  MOVE RIGHT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n    FIRE\n  END\n  MOVE LEFT\n  MOVE LEFT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n  END\n  SET cycle = cycle + 1\nEND`,
+  'gfx-06': `SET step = 0\nWHILE step < 5\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n    MOVE RIGHT\n  ELSE\n    MOVE RIGHT\n    MOVE RIGHT\n  END\n  SET step = step + 1\nEND`,
+  'gfx-07': `SET level = 0\nWHILE level < 3\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n  END\n  MOVE RIGHT\n  MOVE RIGHT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n  END\n  MOVE LEFT\n  MOVE LEFT\n  MOVE LEFT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n  END\n  MOVE RIGHT\n  SET level = level + 1\nEND`,
+  'gfx-08': `SET order = [0, 0, 0, 0]\nSET i = 0\nWHILE i < 4\n  SET order[i] = SCAN\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET i = 3\nWHILE i >= 0\n  IF order[i] > 0\n    FIRE\n    FIRE\n  ELSE\n    MOVE LEFT\n  END\n  SET i = i - 1\nEND`,
+  'gfx-09': `SET dist = [0, 0, 0, 0, 0]\nSET i = 0\nWHILE i < 5\n  SET dist[i] = SCAN\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET i = 0\nSET weight = 5\nWHILE i < 5\n  IF dist[i] > 0\n    SET s = 0\n    WHILE s < weight\n      FIRE\n      SET s = s + 1\n    END\n  END\n  SET weight = weight - 1\n  SET i = i + 1\nEND`,
+  'gfx-10': `SET net = [0, 0, 0, 0, 0, 0]\nSET i = 0\nWHILE i < 6\n  SET net[i] = SCAN\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET total = net[0] + net[1] + net[2] + net[3] + net[4] + net[5]\nIF total > 3\n  SET s = 0\n  WHILE s < total\n    FIRE\n    FIRE\n    SET s = s + 1\n  END\nELSE\n  IF total > 1\n    FIRE\n    FIRE\n    FIRE\n  ELSE\n    FIRE\n    MOVE LEFT\n  END\nEND`,
+};
+
+export function getEnemyScript(levelId: string): string | undefined {
+  return LEVEL_SCRIPTS[levelId];
+}
