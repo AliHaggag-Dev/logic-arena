@@ -12,10 +12,11 @@ interface LevelDesktopLayoutProps {
   setScript: (s: string) => void;
   modal: ModalState;
   handleFight: () => void;
+  onBattleEnd: (winner: 'player' | 'enemy' | 'draw') => void;
   router: AppRouterInstance;
 }
 
-export function LevelDesktopLayout({ level, script, setScript, modal, handleFight, router }: LevelDesktopLayoutProps) {
+export function LevelDesktopLayout({ level, script, setScript, modal, handleFight, onBattleEnd, router }: LevelDesktopLayoutProps) {
   const dc = DIFFICULTY_CONFIG[level.difficulty];
 
   return (
@@ -57,6 +58,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             levelId={level.id}
             mode={modal === "loading" ? "loading" : "preview"}
             userScript={modal === "loading" ? script : undefined}
+            onBattleEnd={onBattleEnd}
           />
 
           <div className="border border-accent/15 rounded-xl p-5 bg-accent/[0.02]">

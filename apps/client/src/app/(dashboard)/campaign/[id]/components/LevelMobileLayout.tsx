@@ -12,10 +12,11 @@ interface LevelMobileLayoutProps {
   setScript: (s: string) => void;
   modal: ModalState;
   handleFight: () => void;
+  onBattleEnd: (winner: 'player' | 'enemy' | 'draw') => void;
   router: AppRouterInstance;
 }
 
-export function LevelMobileLayout({ level, script, setScript, modal, handleFight, router }: LevelMobileLayoutProps) {
+export function LevelMobileLayout({ level, script, setScript, modal, handleFight, onBattleEnd, router }: LevelMobileLayoutProps) {
   const dc = DIFFICULTY_CONFIG[level.difficulty];
 
   return (
@@ -77,6 +78,7 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
           levelId={level.id}
           mode={modal === "loading" ? "loading" : "preview"}
           userScript={modal === "loading" ? script : undefined}
+          onBattleEnd={onBattleEnd}
           compact
         />
       </div>

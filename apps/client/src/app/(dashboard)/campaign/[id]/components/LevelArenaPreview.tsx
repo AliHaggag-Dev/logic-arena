@@ -21,6 +21,7 @@ interface LevelArenaPreviewProps {
   compact?: boolean;
   userScript?: string;
   enemyScript?: string;
+  onBattleEnd?: (winner: 'player' | 'enemy' | 'draw') => void;
 }
 
 export const LevelArenaPreview = memo(function LevelArenaPreview({
@@ -29,6 +30,7 @@ export const LevelArenaPreview = memo(function LevelArenaPreview({
   compact = false,
   userScript,
   enemyScript,
+  onBattleEnd,
 }: LevelArenaPreviewProps) {
   const scene = getSceneForLevel(levelId);
 
@@ -82,6 +84,7 @@ export const LevelArenaPreview = memo(function LevelArenaPreview({
         levelId={levelId}
         userScript={userScript}
         enemyScript={enemyScript}
+        onBattleEnd={onBattleEnd}
         aspectRatio={compact ? 16 / 6 : 16 / 7}
       />
 

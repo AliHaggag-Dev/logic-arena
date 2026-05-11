@@ -49,47 +49,53 @@ export default function CampaignLevelPage() {
     };
   }, [invalidLevelId, levelId]);
 
-  const handleFight = useCallback(async () => {
+  // ── Step 1: User clicks DEPLOY — just start the canvas simulation ──────────
+  const handleFight = useCallback(() => {
     if (!script.trim()) return;
     setModal("loading");
+  }, [script]);
 
+  // ── Step 2: Canvas fires this when the battle concludes ────────────────────
+  const handleBattleEnd = useCallback(async (winner: 'player' | 'enemy' | 'draw') => {
+    if (winner === 'draw') {
+      setModal("draw");
+      return;
+    }
+
+    if (winner === 'enemy') {
+      setModal("defeat");
+      return;
+    }
+
+    // Player won — show victory immediately, then validate with server in bg
+    setModal("victory");
+
+    // Fire-and-forget: server validation + point awarding
     try {
       const fightRes = await apiClient.post("/matches/campaign", {
         levelId,
         userScript: script,
       });
 
-      if (fightRes.data.won) {
-        const completionToken = fightRes.data.completionToken;
-
-        if (!completionToken) {
-          setModal("defeat");
-          return;
-        }
-
+      const completionToken = fightRes.data.completionToken;
+      if (completionToken) {
         try {
           const completionRes = await apiClient.post(`/campaign/levels/${levelId}/complete`, {
             completionToken,
           });
-
           const pointsAwarded =
             completionRes.data?.pointsAwarded ??
             level?.pointsReward ??
             0;
-
           setReward(pointsAwarded);
-          setModal("victory");
           window.dispatchEvent(new Event("global-refresh"));
         } catch {
-          setModal("defeat");
+          setReward(level?.pointsReward ?? 0);
         }
-      } else if (fightRes.data.draw) {
-        setModal("draw");
-      } else {
-        setModal("defeat");
       }
     } catch {
-      setModal("defeat");
+      // Server unreachable — victory already shown, points handled on next sync
+      setReward(0);
     }
   }, [script, levelId, level]);
 
@@ -141,6 +147,7 @@ export default function CampaignLevelPage() {
           setScript={setScript}
           modal={modal}
           handleFight={handleFight}
+          onBattleEnd={handleBattleEnd}
           router={router}
         />
       ) : (
@@ -150,6 +157,7 @@ export default function CampaignLevelPage() {
           setScript={setScript}
           modal={modal}
           handleFight={handleFight}
+          onBattleEnd={handleBattleEnd}
           router={router}
         />
       )}

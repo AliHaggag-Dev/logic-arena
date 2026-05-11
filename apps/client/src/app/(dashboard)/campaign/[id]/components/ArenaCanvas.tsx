@@ -30,24 +30,29 @@ interface ArenaCanvasProps {
   levelId: string;
   userScript?: string;
   enemyScript?: string;
+  onBattleEnd?: (winner: 'player' | 'enemy' | 'draw') => void;
   aspectRatio?: number;
   className?: string;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const FIRE_DAMAGE    = 25;
-const BURST_DAMAGE   = 8;
-const BURST_SPREAD   = 0.12;
-const PROJ_SPEED     = 0.014;
-const PROJ_LIFE      = 70;
-const ROBOT_SIZE     = 0.035;
-const RESPAWN_DELAY  = 90;
-const INVULN_TICKS   = 30;
-const ENERGY_REGEN   = 0.5;
-const FOV_HALF       = 0.9;   // radians — half-angle of FOV cone
-const FOV_RANGE      = 0.55;  // normalised
-const FLASH_DURATION = 24;    // frames of white kill-flash
+const FIRE_DAMAGE          = 25;
+const BURST_DAMAGE         = 8;
+const BURST_SPREAD         = 0.12;
+const PROJ_SPEED           = 0.014;
+const PROJ_LIFE            = 70;
+const ROBOT_SIZE           = 0.035;
+const RESPAWN_DELAY        = 90;
+const INVULN_TICKS         = 30;
+const ENERGY_REGEN         = 0.5;
+const FOV_HALF             = 0.9;    // radians — half-angle of FOV cone
+const FOV_RANGE            = 0.55;   // normalised
+const FLASH_DURATION       = 24;     // frames of white kill-flash
+const PREVIEW_EVAL_INTERVAL = 6;     // preview: eval every 6 frames ≈ 10 Hz
+const BATTLE_EVAL_INTERVAL  = 18;    // battle: eval every 18 frames ≈ 3.3 Hz (matches 3D arena)
+const MAX_BATTLE_EVAL_TICKS = 300;   // ≈90 s at ~3.3 Hz → draw
+const BATTLE_END_DELAY_MS   = 800;   // ms after kill-flash before showing result
 
 // ── Drawing helpers ──────────────────────────────────────────────────────────
 
@@ -273,6 +278,7 @@ export const ArenaCanvas = memo(function ArenaCanvas({
   levelId,
   userScript,
   enemyScript: enemyScriptProp,
+  onBattleEnd,
   aspectRatio = 16/7,
   className = "",
 }: ArenaCanvasProps) {
@@ -291,6 +297,12 @@ export const ArenaCanvas = memo(function ArenaCanvas({
   const fovScanTimerRef = useRef(0);  // frames since scan started (counts up)
   const fovFadeRef      = useRef(0);  // frames into scan fade-out
 
+  // Battle-mode state
+  const battleEndedRef   = useRef(false);  // prevents double-firing onBattleEnd
+  const battleEvalTickRef = useRef(0);     // draw-timeout counter
+  const onBattleEndRef   = useRef(onBattleEnd);
+  useEffect(() => { onBattleEndRef.current = onBattleEnd; }, [onBattleEnd]);
+
   const previewMode = !userScript;
 
   useEffect(() => {
@@ -300,6 +312,8 @@ export const ArenaCanvas = memo(function ArenaCanvas({
     nextIdRef.current.current = 0;
     fovTimerRef.current = 0;
     flashTimerRef.current = 0;
+    battleEndedRef.current = false;
+    battleEvalTickRef.current = 0;
 
     if (scene.script) {
       scriptStateRef.current = { phaseIdx: 0, phaseTick: 0, script: scene.script };
@@ -358,8 +372,10 @@ export const ArenaCanvas = memo(function ArenaCanvas({
 
       let scanAlpha = 0;
 
-      // ── Scene tick ──────────────────────────────────────────────────────────
-      scene.tick(state);
+      // ── Scene tick (preview only — in battle, evaluator controls both robots)
+      if (previewMode) {
+        scene.tick(state);
+      }
       state.tick++;
 
       // ── Script tick (every frame, preview mode) ────────────────────────────
@@ -404,29 +420,33 @@ export const ArenaCanvas = memo(function ArenaCanvas({
         }
       }
 
-      // ── Evaluator tick (every 6 frames ≈10Hz, fallback when no script) ────
+      // ── Evaluator tick ─────────────────────────────────────────────────────
+      const evalInterval = previewMode ? PREVIEW_EVAL_INTERVAL : BATTLE_EVAL_INTERVAL;
       evalTick++;
-      if (evalTick >= 6) {
+      if (evalTick >= evalInterval) {
         evalTick = 0;
         const useEval = !previewMode || !scene.script;
+
+        // Battle-mode draw timeout
+        if (!previewMode && !battleEndedRef.current) {
+          battleEvalTickRef.current++;
+          if (battleEvalTickRef.current >= MAX_BATTLE_EVAL_TICKS) {
+            battleEndedRef.current = true;
+            onBattleEndRef.current?.('draw');
+          }
+        }
+
         for (const robot of state.robots) {
           if (previewMode && robot.id === 'player') continue;
           if (!robot.isAlive) {
             if (robot.respawnTimer > 0) {
               robot.respawnTimer--;
-              if (robot.respawnTimer === 0) {
-                robot.health = robot.maxHealth;
-                robot.energy = robot.maxEnergy;
-                robot.isAlive = true;
-                robot.invulnerableTimer = INVULN_TICKS;
-                robot.x = robot.id==='player' ? 0.2 : 0.75;
-                robot.y = 0.5;
-                const scr = robot.id==='player' ? (userScript??'') : (enemyScriptProp||getEnemyScript(levelId)||'');
-                evals.set(robot.id, createEvalState(scr));
-              }
             }
             continue;
           }
+          // Stop running evals once battle is decided
+          if (!previewMode && battleEndedRef.current) continue;
+
           if (robot.invulnerableTimer > 0) robot.invulnerableTimer--;
           if (robot.energy < robot.maxEnergy) robot.energy = Math.min(robot.maxEnergy, robot.energy+ENERGY_REGEN);
 
@@ -460,6 +480,7 @@ export const ArenaCanvas = memo(function ArenaCanvas({
           if (robot.id===p.ownerId || !robot.isAlive || robot.invulnerableTimer>0) continue;
           if (hitCheck(p,robot)) {
             if (previewMode && robot.id==='player') {
+              // Preview mode: player is immune, just remove projectile
               state.projectiles.splice(i,1);
               hit=true;
               break;
@@ -472,6 +493,19 @@ export const ArenaCanvas = memo(function ArenaCanvas({
               flashTimerRef.current=FLASH_DURATION;
               robot.respawnTimer=RESPAWN_DELAY;
               robot.energy=0;
+
+              // ── Battle mode: first kill ends the match ─────────────────
+              if (!previewMode && !battleEndedRef.current) {
+                battleEndedRef.current = true;
+                const otherRobot = state.robots.find(r => r.id !== robot.id);
+                const winner: 'player' | 'enemy' | 'draw' =
+                  (otherRobot && !otherRobot.isAlive) ? 'draw'
+                  : robot.id === 'player' ? 'enemy'
+                  : 'player';
+                // Brief pause after kill-flash so player sees the death
+                const delay = BATTLE_END_DELAY_MS;
+                setTimeout(() => onBattleEndRef.current?.(winner), delay);
+              }
             }
             break;
           }
