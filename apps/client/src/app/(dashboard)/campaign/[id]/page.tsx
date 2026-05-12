@@ -24,6 +24,8 @@ export default function CampaignLevelPage() {
   const [modal, setModal] = useState<ModalState>("idle");
   const [reward, setReward] = useState<number>(0);
   const [replayFrames, setReplayFrames] = useState<any[]>([]);
+  const [pendingWinner, setPendingWinner] = useState<'player' | 'enemy' | 'draw' | null>(null);
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
   const { fight, status: fightStatus, result: fightResult } = useCampaignFight();
 
   useEffect(() => {
@@ -64,27 +66,30 @@ export default function CampaignLevelPage() {
   useEffect(() => {
     if (fightStatus === 'done' && fightResult) {
       setReplayFrames(fightResult.replayFrames ?? []);
-      const { winner, completionToken } = fightResult;
-
-      if (winner === 'draw') { setModal("draw"); return; }
-      if (winner === 'enemy') { setModal("defeat"); return; }
-
-      setModal("victory");
-
-      if (completionToken) {
-        apiClient.post(`/campaign/levels/${levelId}/complete`, { completionToken })
-          .then((res) => {
-            const pts = res.data?.pointsAwarded ?? level?.pointsReward ?? 0;
-            setReward(pts);
-            window.dispatchEvent(new Event("global-refresh"));
-          })
-          .catch(() => setReward(level?.pointsReward ?? 0));
-      }
+      setPendingWinner(fightResult.winner);
+      setPendingToken(fightResult.completionToken ?? null);
     }
     if (fightStatus === 'error') {
       setModal("defeat");
     }
-  }, [fightStatus, fightResult, levelId, level]);
+  }, [fightStatus, fightResult]);
+
+  const handleBattleEnd = useCallback(() => {
+    if (!pendingWinner) return;
+    if (pendingWinner === 'draw') { setModal("draw"); return; }
+    if (pendingWinner === 'enemy') { setModal("defeat"); return; }
+    setModal("victory");
+
+    if (pendingToken) {
+      apiClient.post(`/campaign/levels/${levelId}/complete`, { completionToken: pendingToken })
+        .then((res) => {
+          const pts = res.data?.pointsAwarded ?? level?.pointsReward ?? 0;
+          setReward(pts);
+          window.dispatchEvent(new Event("global-refresh"));
+        })
+        .catch(() => setReward(level?.pointsReward ?? 0));
+    }
+  }, [pendingWinner, pendingToken, levelId, level]);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const waitingForReplay = modal === 'loading' && replayFrames.length === 0;
@@ -135,7 +140,7 @@ export default function CampaignLevelPage() {
           setScript={setScript}
           modal={modal}
           handleFight={handleFight}
-          onBattleEnd={() => {}}
+          onBattleEnd={handleBattleEnd}
           replayFrames={replayFrames}
           waitingForReplay={waitingForReplay}
           router={router}
@@ -147,7 +152,7 @@ export default function CampaignLevelPage() {
           setScript={setScript}
           modal={modal}
           handleFight={handleFight}
-          onBattleEnd={() => {}}
+          onBattleEnd={handleBattleEnd}
           replayFrames={replayFrames}
           waitingForReplay={waitingForReplay}
           router={router}

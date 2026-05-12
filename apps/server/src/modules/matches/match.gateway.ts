@@ -477,11 +477,11 @@ export class MatchGateway
     // Robots face each other from 250 units apart (well within the 300-unit FOV range).
     // Player spawns on the left, enemy on the right, both horizontally centred vertically.
     const CAMPAIGN_PLAYER_SPAWN = { x: 275, y: 300 };
-    const CAMPAIGN_ENEMY_SPAWN  = { x: 525, y: 300 };
+    const CAMPAIGN_ENEMY_SPAWN = { x: 525, y: 300 };
     // Pre-aim each robot's FOV cone directly at the opponent on tick 0.
     const playerFacing = Math.atan2(
-      CAMPAIGN_ENEMY_SPAWN.y  - CAMPAIGN_PLAYER_SPAWN.y,
-      CAMPAIGN_ENEMY_SPAWN.x  - CAMPAIGN_PLAYER_SPAWN.x,
+      CAMPAIGN_ENEMY_SPAWN.y - CAMPAIGN_PLAYER_SPAWN.y,
+      CAMPAIGN_ENEMY_SPAWN.x - CAMPAIGN_PLAYER_SPAWN.x,
     );
     const enemyFacing = Math.atan2(
       CAMPAIGN_PLAYER_SPAWN.y - CAMPAIGN_ENEMY_SPAWN.y,
@@ -494,8 +494,8 @@ export class MatchGateway
       id: `scene-obs-${Math.random().toString(36).slice(2, 7)}`,
       type: o.type ?? 'SOLID',
       position: { x: o.x * ARENA_W, y: o.y * ARENA_H },
-      width:    o.w * ARENA_W,
-      height:   o.h * ARENA_H,
+      width: o.w * ARENA_W,
+      height: o.h * ARENA_H,
       rotation: 0,
     }));
 
@@ -633,6 +633,8 @@ export class MatchGateway
         damageReceived: 100 - r.health,
       })),
     });
+    console.log('[Campaign] Replay frames:', replayFrames.length);
+    console.log('[Campaign] Obstacles received:', JSON.stringify(obstacles));
 
     let completionToken: string | null = null;
     if (winner === 'player') {

@@ -94,17 +94,6 @@ export const LevelArenaPreview = memo(function LevelArenaPreview({
         waitingForReplay={waitingForReplay}
       />
 
-      {/* Deploy badge — minimal overlay, arena visible underneath */}
-      {mode === "loading" && (
-        <div className="absolute top-2 right-2 flex items-center gap-2 px-2.5 py-1 rounded-full border border-accent/30 pointer-events-none z-10"
-          style={{ background: 'rgba(3,7,18,0.55)', backdropFilter: 'blur(3px)' }}
-        >
-          <Loader2 className="w-3 h-3 text-accent animate-spin" />
-          <span className="text-[9px] font-mono font-bold tracking-[0.2em] text-accent/80 uppercase">
-            FIGHT IN PROGRESS
-          </span>
-        </div>
-      )}
 
       {/* Bottom chrome */}
       <div

@@ -56,14 +56,27 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
         {/* ── LEFT PANEL ── */}
         <div className="flex flex-col gap-5">
           {/* Live Arena Preview */}
-          <LevelArenaPreview
-            levelId={level.id}
-            mode={modal === "loading" ? "loading" : "preview"}
-            userScript={modal === "loading" ? script : undefined}
-            onBattleEnd={onBattleEnd}
-            replayFrames={replayFrames}
-            waitingForReplay={waitingForReplay}
-          />
+          <div className="relative">
+            <LevelArenaPreview
+              levelId={level.id}
+              mode={modal === "loading" ? "loading" : "preview"}
+              userScript={modal === "loading" ? script : undefined}
+              onBattleEnd={onBattleEnd}
+              replayFrames={replayFrames}
+              waitingForReplay={waitingForReplay}
+            />
+            {modal === "loading" && (
+              <div
+                className="mt-2 w-full flex items-center justify-center gap-2.5 py-2.5 rounded-lg border border-accent/20"
+                style={{ background: 'rgba(var(--accent-rgb),0.04)' }}
+              >
+                <Loader2 className="w-3 h-3 text-accent animate-spin" />
+                <span className="text-[9px] font-mono font-black tracking-[0.3em] text-accent/70 uppercase">
+                  COMBAT IN PROGRESS
+                </span>
+              </div>
+            )}
+          </div>
 
           <div className="border border-accent/15 rounded-xl p-5 bg-accent/[0.02]">
             <p className="text-[9px] tracking-[0.3em] text-accent/30 mb-2.5 uppercase">

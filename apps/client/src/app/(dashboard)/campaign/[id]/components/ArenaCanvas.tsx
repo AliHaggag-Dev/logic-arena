@@ -345,6 +345,7 @@ export const ArenaCanvas = memo(function ArenaCanvas({
   const previewMode = !userScript;
   const replayMode = !!replayFrames && replayFrames.length > 0;
   const replayIndexRef = useRef(0);
+  const replayFrameCounterRef = useRef(0);
 
   useEffect(() => {
     const s = scene.init();
@@ -355,6 +356,8 @@ export const ArenaCanvas = memo(function ArenaCanvas({
     flashTimerRef.current = 0;
     battleEndedRef.current = false;
     battleEvalTickRef.current = 0;
+    replayFrameCounterRef.current = 0;
+    replayIndexRef.current = 0;
 
     if (scene.script) {
       scriptStateRef.current = { phaseIdx: 0, phaseTick: 0, script: scene.script };
@@ -450,11 +453,15 @@ export const ArenaCanvas = memo(function ArenaCanvas({
             damage: 0,
           }));
         }
-        if (replayIndexRef.current < replayFrames.length - 1) {
-          replayIndexRef.current++;
-        } else if (!battleEndedRef.current) {
-          battleEndedRef.current = true;
-          // winner already signalled by server — no action needed here
+        replayFrameCounterRef.current++;
+        if (replayFrameCounterRef.current >= 6) {
+          replayFrameCounterRef.current = 0;
+          if (replayIndexRef.current < replayFrames.length - 1) {
+            replayIndexRef.current++;
+          } else if (!battleEndedRef.current) {
+            battleEndedRef.current = true;
+            setTimeout(() => onBattleEndRef.current?.('player'), BATTLE_END_DELAY_MS);
+          }
         }
       }
 
