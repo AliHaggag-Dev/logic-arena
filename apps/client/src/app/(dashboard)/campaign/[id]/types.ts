@@ -2,4 +2,4 @@ import type { ApiLevelInfo } from '../types/campaign.types';
 
 export type LevelDetail = ApiLevelInfo;
 
-export type ModalState = "idle" | "loading" | "victory" | "defeat" | "draw";
+export type ModalState = "idle" | "loading" | "fighting" | "victory" | "defeat" | "draw";

@@ -33,6 +33,7 @@ const ROBOT_FILES: Record<string, string> = {
   'chassis-unit-02': '/robots/robot2.glb',
   'chassis-wraith': '/robots/bunny.glb',
   'chassis-titan': '/robots/armored-robot.glb',
+  'chassis-sandman': '/robots/sandman.glb',
 };
 
 const ArenaPageContent = () => {

@@ -38,6 +38,7 @@ import {
   ALLOWED_NODE_TYPES,
   STASIS_BLOCKED_ACTION_CMDS,
 } from './block-executor/sandbox-rules';
+import { YieldInterrupt } from './yield-interrupt';
 
 export type { BlockResult } from './block-executor/control-flow';
 
@@ -51,7 +52,7 @@ export class BlockExecutor {
     private actionExecutor: ActionExecutor,
     private expressionEvaluator: ExpressionEvaluator,
     private functions: Map<string, Map<string, FunctionDeclaration>>,
-  ) {}
+  ) { }
 
   /** Buffer a movement action for later optimization & execution.
    *  Non-movement actions (FIRE, BURST_FIRE) are dispatched immediately. */
@@ -62,7 +63,18 @@ export class BlockExecutor {
     memory: Record<string, unknown>,
   ): void {
     const buffer = this.actionBuffer.get(robotId) ?? [];
-    buffer.push({ cmd, action, memory: { ...memory } });
+    // Keep the original memory reference.
+    //
+    // Movement executors are allowed to write system feedback back into
+    // AliScript memory. Campaign graph levels rely on this for the internal
+    // rail handshake:
+    //   enemy script sets _SYS_TARGET_X/Y -> MOVE
+    //   MovementExecutor snaps at the node and sets _SYS_AT_TARGET = 1
+    //   next logic tick reads _SYS_AT_TARGET and advances to the next node
+    //
+    // Cloning memory here silently wrote _SYS_AT_TARGET into a throwaway copy,
+    // so the red campaign robot kept targeting node 0 forever after deploy.
+    buffer.push({ cmd, action, memory });
     this.actionBuffer.set(robotId, buffer);
   }
 
@@ -178,22 +190,22 @@ export class BlockExecutor {
             );
             const result = cond
               ? this.executeBlock(
+                robotId,
+                robot,
+                ifStmt.consequence,
+                memory,
+                opsCounter,
+                dispatchedActions,
+              )
+              : ifStmt.alternate
+                ? this.executeBlock(
                   robotId,
                   robot,
-                  ifStmt.consequence,
+                  ifStmt.alternate,
                   memory,
                   opsCounter,
                   dispatchedActions,
                 )
-              : ifStmt.alternate
-                ? this.executeBlock(
-                    robotId,
-                    robot,
-                    ifStmt.alternate,
-                    memory,
-                    opsCounter,
-                    dispatchedActions,
-                  )
                 : {};
 
             // Propagate control flow signals (BREAK, CONTINUE, RETURN) up through IF
@@ -356,12 +368,12 @@ export class BlockExecutor {
                     const argValue =
                       i < callStmt.args.length
                         ? this.expressionEvaluator.evaluateExpression(
-                            robot,
-                            callStmt.args[i],
-                            memory,
-                            () => this.gameLoop.getRobots(),
-                            () => this.gameLoop.getGameState().obstacles,
-                          )
+                          robot,
+                          callStmt.args[i],
+                          memory,
+                          () => this.gameLoop.getRobots(),
+                          () => this.gameLoop.getGameState().obstacles,
+                        )
                         : undefined;
                     scopedMemory[paramName] = argValue;
                   }
@@ -398,8 +410,7 @@ export class BlockExecutor {
 
           case NodeType.WaitStatement: {
             const ticks = (stmt as WaitStatement).ticks.value;
-            memory['___waitTicks'] = ticks;
-            return {}; // Stop current block execution
+            throw new YieldInterrupt(ticks);
           }
 
           case NodeType.ScanStatement: {

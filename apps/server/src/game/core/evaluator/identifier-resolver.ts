@@ -64,7 +64,7 @@ export function resolveIdentifier(
   }
 
   // --- FOV / Visibility identifiers ---
-  const visibleRobots = robot.visibleEntities?.robots ?? [];
+  const visibleRobots = getVisibleRobotsForIdentifier(robot, memory);
 
   switch (name) {
     case 'CAN_SEE_ENEMY':
@@ -160,6 +160,21 @@ function getNearestVisible(robot: Robot): Robot | null {
     }
   }
   return nearest;
+}
+
+function getVisibleRobotsForIdentifier(
+  robot: Robot,
+  memory: Record<string, unknown>,
+): Robot[] {
+  const visible = robot.visibleEntities?.robots ?? [];
+  if (Number(memory['_SYS_SCAN_SWEEP_DEG'] ?? 0) < 360) return visible;
+
+  const range = robot.fov?.range ?? 300;
+  return visible.filter((candidate) => {
+    const dx = candidate.position.x - robot.position.x;
+    const dy = candidate.position.y - robot.position.y;
+    return Math.hypot(dx, dy) <= range;
+  });
 }
 
 function getNearestVisibleObstacle(robot: Robot) {

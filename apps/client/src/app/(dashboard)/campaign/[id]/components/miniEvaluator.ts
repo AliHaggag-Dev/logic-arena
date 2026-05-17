@@ -42,6 +42,35 @@ const ENERGY_COST: Record<string, number> = {
 const SCAN_RANGE = 0.55;
 const SCAN_FOV = 1.8;
 const MAX_OPS_PER_TICK = 20;
+const TWO_PI = Math.PI * 2;
+
+function wrapAngle(angle: number): number {
+  let a = angle;
+  while (a > Math.PI) a -= TWO_PI;
+  while (a < -Math.PI) a += TWO_PI;
+  return a;
+}
+
+function canSeeEnemy(
+  vars: Record<string, unknown>,
+  self: ArenaRobot,
+  enemy: ArenaRobot,
+): boolean {
+  if (!enemy.isAlive) return false;
+  const dx = enemy.x - self.x;
+  const dy = enemy.y - self.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist >= SCAN_RANGE) return false;
+
+  // Internal campaign scripts can request a 360° system scan. This is not a
+  // user-facing command; it lets mission robots scan around a graph node while
+  // still using normal AliScript control flow.
+  if (Number(vars['_SYS_SCAN_SWEEP_DEG'] ?? 0) >= 360) return true;
+
+  const angle = Math.atan2(dy, dx);
+  const diff = wrapAngle(angle - self.angle);
+  return Math.abs(diff) < SCAN_FOV;
+}
 
 // ── Eval Context ────────────────────────────────────────────────────────────
 
@@ -71,7 +100,8 @@ export function createEvalState(script: string): EvalState | null {
       waitRemaining: 0,
       done: false,
     };
-  } catch {
+  } catch (err) {
+    console.error(`[EVAL-INIT] ❌ PARSE FAILED:`, err, `script starts: "${script.slice(0, 80)}..."`);
     return null;
   }
 }
@@ -90,15 +120,9 @@ function evalExpr(
       if (name === 'MY_ENERGY') return self.energy;
       if (name === 'ENERGY_PCT') return (self.energy / self.maxEnergy) * 100;
       if (name === 'IN_STASIS') return self.energy <= 0;
-      if (name === 'CAN_SEE_ENEMY' || name === 'spotted') {
-        const dx = enemy.x - self.x;
-        const dy = enemy.y - self.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const angle = Math.atan2(dy, dx);
-        const diff = Math.abs(angle - self.angle);
-        return dist < SCAN_RANGE && (diff < SCAN_FOV || diff > Math.PI * 2 - SCAN_FOV) ? 1 : 0;
+      if (name === 'CAN_SEE_ENEMY' || name === 'spotted' || name === 'VISIBLE_ENEMY_COUNT') {
+        return canSeeEnemy(vars, self, enemy) ? 1 : 0;
       }
-      if (name === 'VISIBLE_ENEMY_COUNT') return 1;
       if (name === 'health') return self.health;
       if (name === 'rotation' || name === 'angle' || name === 'rot') return self.angle;
       if (name === 'fovDirection') return self.angle;
@@ -122,8 +146,9 @@ function evalExpr(
       }
     }
     case 'UnaryExpression': {
-      const a = Number(evalExpr(expr.argument, vars, self, enemy));
-      return expr.operator === '-' ? -a : a;
+      const a = evalExpr(expr.argument, vars, self, enemy);
+      if (expr.operator === 'NOT' || expr.operator === '!') return !a;
+      return expr.operator === '-' ? -Number(a) : Number(a);
     }
     case 'ComparisonExpression': {
       const l = evalExpr(expr.left, vars, self, enemy);
@@ -184,9 +209,7 @@ function evalExpr(
           const dx = enemy.x - self.x;
           const dy = enemy.y - self.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          const angle = Math.atan2(dy, dx);
-          const diff = Math.abs(angle - self.angle);
-          const visible = dist < SCAN_RANGE && (diff < SCAN_FOV || diff > Math.PI * 2 - SCAN_FOV);
+          const visible = canSeeEnemy(vars, self, enemy);
           if (visible && enemy.isAlive) {
             return [[dist, enemy.x, enemy.y, enemy.health]];
           }
@@ -196,9 +219,7 @@ function evalExpr(
           const dx = enemy.x - self.x;
           const dy = enemy.y - self.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          const angle = Math.atan2(dy, dx);
-          const diff = Math.abs(angle - self.angle);
-          const visible = dist < SCAN_RANGE && (diff < SCAN_FOV || diff > Math.PI * 2 - SCAN_FOV);
+          const visible = canSeeEnemy(vars, self, enemy);
           if (visible && enemy.isAlive) return dist;
           return 0;
         }
@@ -244,7 +265,6 @@ export function tickEvaluator(
     // Auto-restart when program finishes (continuous loop)
     if (state.frames.length === 0) {
       state.frames = [{ body: state.ast.body, pc: 0 }];
-      state.vars = {};
       state.waitRemaining = 0;
     }
 
@@ -291,18 +311,41 @@ function executeStatement(
           const aimAngle = Math.atan2(dy, dx);
           return { type: 'fire', value: aimAngle, fast: false };
         }
-        case 'MOVE': {
+        case 'MOVE':
+        case 'MOVE_FAST': {
+          // --- SECRET RAIL SYSTEM FOR CAMPAIGN ROBOT ---
+          // _SYS_TARGET_X/Y are in pixel space (0-800, 0-600)
+          // robot.x/y are in normalized space (0-1), so we divide
+          if (state.vars['_SYS_TARGET_X'] !== undefined && state.vars['_SYS_TARGET_Y'] !== undefined) {
+            const tx = Number(state.vars['_SYS_TARGET_X']) / 800;
+            const ty = Number(state.vars['_SYS_TARGET_Y']) / 600;
+            const dx = tx - robot.x;
+            const dy = ty - robot.y;
+            const dist = Math.hypot(dx, dy);
+            const RAIL_SNAP = 0.02; // ~16px in normalized space — forgiving enough to snap reliably
+
+            if (dist < RAIL_SNAP) {
+              robot.x = tx;
+              robot.y = ty;
+              state.vars['_SYS_AT_TARGET'] = 1;
+              return { type: 'stop', value: 0 };
+            } else {
+              robot.angle = Math.atan2(dy, dx);
+              state.vars['_SYS_AT_TARGET'] = 0;
+              return { type: 'move', fast: cmd === 'MOVE_FAST', value: 0 };
+            }
+          }
+
           const dir = action.consequence.args?.[0];
           if (dir && 'value' in dir) {
             const d = String(dir.value).toUpperCase();
-            if (d === 'LEFT')    return { type: 'move', value: -1, fast: false };
-            if (d === 'RIGHT')   return { type: 'move', value:  1, fast: false };
-            if (d === 'BACKUP')  return { type: 'move', value: -2, fast: false };
+            if (d === 'LEFT') return { type: 'move', value: -1, fast: cmd === 'MOVE_FAST' };
+            if (d === 'RIGHT') return { type: 'move', value: 1, fast: cmd === 'MOVE_FAST' };
+            if (d === 'BACKUP') return { type: 'move', value: -2, fast: cmd === 'MOVE_FAST' };
           }
-          return { type: 'move', value: 0, fast: false }; // FORWARD default
+          return { type: 'move', value: 0, fast: cmd === 'MOVE_FAST' }; // FORWARD default
         }
-        case 'MOVE_FAST':
-          return { type: 'move', value: 0, fast: true };
+
         case 'BACKUP':
           return { type: 'move', value: -1, fast: false };
         case 'STOP':
@@ -316,10 +359,9 @@ function executeStatement(
         case 'SCAN': {
           const dx = enemy.x - robot.x;
           const dy = enemy.y - robot.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
           const angle = Math.atan2(dy, dx);
-          const diff = Math.abs(angle - robot.angle);
-          const visible = dist < SCAN_RANGE && (diff < SCAN_FOV || diff > Math.PI * 2 - SCAN_FOV);
+          if (Number(state.vars['_SYS_SCAN_SWEEP_DEG'] ?? 0) >= 360) robot.angle = angle;
+          const visible = canSeeEnemy(state.vars, robot, enemy);
           const lastScan = visible ? 1 : 0;
           const lastVar = findLastScanVar(state);
           if (lastVar) state.vars[lastVar] = lastScan;
@@ -336,10 +378,9 @@ function executeStatement(
       robot.energy -= cost;
       const dx = enemy.x - robot.x;
       const dy = enemy.y - robot.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
       const angle = Math.atan2(dy, dx);
-      const diff = Math.abs(angle - robot.angle);
-      const visible = dist < SCAN_RANGE && (diff < SCAN_FOV || diff > Math.PI * 2 - SCAN_FOV);
+      if (Number(state.vars['_SYS_SCAN_SWEEP_DEG'] ?? 0) >= 360) robot.angle = angle;
+      const visible = canSeeEnemy(state.vars, robot, enemy);
       const resultVar = findLastScanVar(state);
       if (resultVar) state.vars[resultVar] = visible ? 1 : 0;
       return { type: 'scan', value: visible ? 1 : 0 };
@@ -382,12 +423,9 @@ function executeStatement(
         robot.energy -= cost;
         const dx = enemy.x - robot.x;
         const dy = enemy.y - robot.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
         const angle = Math.atan2(dy, dx);
-        const diff = Math.abs(angle - robot.angle);
-        const visible =
-          dist < SCAN_RANGE &&
-          (diff < SCAN_FOV || diff > Math.PI * 2 - SCAN_FOV);
+        if (Number(state.vars['_SYS_SCAN_SWEEP_DEG'] ?? 0) >= 360) robot.angle = angle;
+        const visible = canSeeEnemy(state.vars, robot, enemy);
         state.vars[name] = visible ? 1 : 0;
         return { type: 'scan', value: visible ? 1 : 0 };
       }
@@ -403,10 +441,8 @@ function executeStatement(
         const dy = enemy.y - robot.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const angle = Math.atan2(dy, dx);
-        const diff = Math.abs(angle - robot.angle);
-        const visible =
-          dist < SCAN_RANGE &&
-          (diff < SCAN_FOV || diff > Math.PI * 2 - SCAN_FOV);
+        if (Number(state.vars['_SYS_SCAN_SWEEP_DEG'] ?? 0) >= 360) robot.angle = angle;
+        const visible = canSeeEnemy(state.vars, robot, enemy);
         state.vars[name] = visible && enemy.isAlive ? dist : 0;
         return null;
       }

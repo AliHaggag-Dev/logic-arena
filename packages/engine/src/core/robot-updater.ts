@@ -77,7 +77,18 @@ export function updateRobotPhysics(
 
   // Update facing rotation from velocity direction.
   const vMag = Math.hypot(robot.velocity.x, robot.velocity.y);
-  if ((isCoolingDown && vMag > 0.001) || (!wasManualRotation && !hitWallThisTick && vMag > 0.001)) {
+  const facingDirection = robot.facingDirection ?? robot.rotation;
+  const movingBackward =
+    robot.isBackingUp === true &&
+    vMag > 0.001 &&
+    Math.cos(facingDirection) * robot.velocity.x +
+      Math.sin(facingDirection) * robot.velocity.y < -0.001;
+  const shouldUpdateRotationFromVelocity =
+    vMag > 0.001 &&
+    !movingBackward &&
+    (isCoolingDown || (!wasManualRotation && !hitWallThisTick));
+
+  if (shouldUpdateRotationFromVelocity) {
     robot.rotation = Math.atan2(robot.velocity.y, robot.velocity.x);
   }
 }

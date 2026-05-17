@@ -99,6 +99,12 @@ export class EnergyManager {
   deduct(robot: Robot, command: string): boolean {
     const cmd = command.toUpperCase();
 
+    if (robot.ignoreEnergyCost) {
+      robot.inStasis = false;
+      robot.energy = robot.maxEnergy ?? DEFAULT_MAX_ENERGY;
+      return true;
+    }
+
     // Block locomotion/combat during stasis
     if (robot.inStasis && STASIS_BLOCKED_COMMANDS.has(cmd)) {
       return false;

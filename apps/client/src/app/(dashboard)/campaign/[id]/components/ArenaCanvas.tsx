@@ -1,29 +1,35 @@
 "use client";
-// ─────────────────────────────────────────────────────────────────────────────
-// ArenaCanvas — 2D canvas mini-arena renderer.
-//
-// Preview mode (no userScript):
-//   • Blue robot is a static dummy — it never moves or fires.
-//   • Red enemy runs its scene tick() function which directly encodes the
-//     problem's described behaviour (phase-state machine per level).
-//   • When blue's health reaches 0 → death flash → scene resets → loops.
-//
-// Battle mode (userScript provided):
-//   • Both robots run their evaluators normally.
-//   • Standard respawn logic applies.
-//
-// Visual extras:
-//   • FOV cone drawn during scan actions (from scene tick signal).
-//   • Smooth 60fps, IntersectionObserver pause when off-screen.
-//   • Zero React re-renders during animation.
-// ─────────────────────────────────────────────────────────────────────────────
 import React, { useEffect, useRef, memo } from "react";
 import type { SceneDef, SceneState, ArenaRobot, ArenaProjectile, ArenaObstacle } from "./arenaScenes";
 import { createEvalState, tickEvaluator } from "./miniEvaluator";
 import type { EvalState, EvalAction } from "./miniEvaluator";
 import { getEnemyScript } from "./levelScripts";
-import type { ScriptState } from "./sceneScriptEngine";
-import { tickScript } from "./sceneScriptEngine";
+
+interface CampaignFrameRobot {
+  id: 'player' | 'enemy';
+  position?: { x?: number; y?: number };
+  rotation?: number;
+  health?: number;
+  energy?: number;
+  isAlive?: boolean;
+  scanActive?: boolean;
+}
+
+interface CampaignFrameProjectile {
+  id: number;
+  position?: { x?: number; y?: number };
+  color?: string;
+  ownerId?: 'player' | 'enemy';
+}
+
+interface CampaignFrame {
+  robots?: CampaignFrameRobot[];
+  projectiles?: CampaignFrameProjectile[];
+}
+
+type RuntimeArenaRobot = ArenaRobot & {
+  _fireCooldown?: number;
+};
 
 interface ArenaCanvasProps {
   scene: SceneDef;
@@ -31,32 +37,34 @@ interface ArenaCanvasProps {
   userScript?: string;
   enemyScript?: string;
   onBattleEnd?: (winner: 'player' | 'enemy' | 'draw') => void;
-  replayFrames?: any[];
+  latestFrameRef?: React.MutableRefObject<CampaignFrame | null>;
+  isReplaying?: boolean;
+  fightResult?: { winner: string; completionToken: string | null } | null;
   aspectRatio?: number;
   className?: string;
   waitingForReplay?: boolean;
 }
 
-// ── Constants ────────────────────────────────────────────────────────────────
-
 const FIRE_DAMAGE = 15;
 const BURST_DAMAGE = 5;
 const BURST_SPREAD = 0.12;
-const PROJ_SPEED = 0.006;  // slower, more readable projectiles
-const PROJ_LIFE = 70;     // shorter life = fewer bullets on screen
+const PROJ_SPEED = 0.006;
+const PROJ_LIFE = 70;
 const ROBOT_SIZE = 0.035;
 const RESPAWN_DELAY = 90;
 const INVULN_TICKS = 30;
 const ENERGY_REGEN = 0.5;
-const FOV_HALF = 0.9;    // radians — half-angle of FOV cone
-const FOV_RANGE = 0.55;   // normalised
-const FLASH_DURATION = 24;     // frames of white kill-flash
-const PREVIEW_EVAL_INTERVAL = 6;     // preview: eval every 6 frames ≈ 10 Hz
-const BATTLE_EVAL_INTERVAL = 6;     // battle: eval every 6 frames ≈ 10 Hz
-const MAX_BATTLE_EVAL_TICKS = 180;   // ≈90 s at ~2 Hz → draw
-const BATTLE_END_DELAY_MS = 800;   // ms after kill-flash before showing result
+const FOV_HALF = 0.9;
+const FOV_RANGE = 0.55;
+const FLASH_DURATION = 24;
+const PREVIEW_EVAL_INTERVAL = 6;
+const BATTLE_EVAL_INTERVAL = 6;
+const MAX_BATTLE_EVAL_TICKS = 180;
+const BATTLE_END_DELAY_MS = 800;
+const FOV_SWEEP_FRAMES = 90;
 
-// ── Drawing helpers ──────────────────────────────────────────────────────────
+const ARENA_W = 800;
+const ARENA_H = 600;
 
 function drawGrid(ctx: CanvasRenderingContext2D, W: number, H: number, rgb: string): void {
   ctx.save();
@@ -107,20 +115,24 @@ function drawFovCone(
   if (!robot.isAlive || alpha <= 0) return;
   const px = robot.x * W, py = robot.y * H;
   const range = FOV_RANGE * Math.min(W, H);
+
+  // As alpha goes from 1.0 down to 0, spin goes from 0 to 2PI (360 deg)
+  const spinAngle = Math.PI * 2 * (1.0 - alpha);
+  const currentAngle = robot.angle + spinAngle;
+
   ctx.save();
   ctx.globalAlpha = alpha * 0.18;
   ctx.beginPath();
   ctx.moveTo(px, py);
-  ctx.arc(px, py, range, robot.angle - FOV_HALF, robot.angle + FOV_HALF);
+  ctx.arc(px, py, range, currentAngle - FOV_HALF, currentAngle + FOV_HALF);
   ctx.closePath();
   ctx.fillStyle = robot.color;
   ctx.fill();
-  // Outline arc
   ctx.globalAlpha = alpha * 0.45;
   ctx.strokeStyle = robot.color;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.arc(px, py, range, robot.angle - FOV_HALF, robot.angle + FOV_HALF);
+  ctx.arc(px, py, range, currentAngle - FOV_HALF, currentAngle + FOV_HALF);
   ctx.stroke();
   ctx.restore();
 }
@@ -138,14 +150,12 @@ function drawRobot(
   const invPulse = robot.invulnerableTimer > 0 ? 0.3 + Math.sin(tick * 0.3) * 0.3 : 0;
   const a = robot.invulnerableTimer > 0 ? 0.4 + invPulse : 1;
 
-  // FOV cone first (behind robot)
   drawFovCone(ctx, robot, W, H, fovAlpha);
 
   ctx.save();
   ctx.translate(px, py);
   ctx.globalAlpha = a;
 
-  // Glow
   const glowR = r * (1.8 + Math.sin(tick * 0.05) * 0.15);
   const grd = ctx.createRadialGradient(0, 0, r * 0.3, 0, 0, glowR);
   grd.addColorStop(0, `${robot.color}30`);
@@ -153,7 +163,6 @@ function drawRobot(
   ctx.fillStyle = grd;
   ctx.beginPath(); ctx.arc(0, 0, glowR, 0, Math.PI * 2); ctx.fill();
 
-  // Hull
   ctx.rotate(robot.angle);
   ctx.beginPath();
   for (let i = 0; i < 6; i++) {
@@ -167,24 +176,20 @@ function drawRobot(
   ctx.lineWidth = 1.5;
   ctx.fill(); ctx.stroke();
 
-  // Barrel
   ctx.strokeStyle = robot.color;
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(r * 0.2, 0); ctx.lineTo(r * 1.4, 0); ctx.stroke();
 
-  // Core
   ctx.fillStyle = robot.color;
   ctx.beginPath(); ctx.arc(0, 0, r * 0.28, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 
-  // Health bar
   const bw = r * 3, bh = 3, bx = px - bw / 2, by = py - r * 2 - bh;
   const hp = robot.health / robot.maxHealth;
   ctx.save(); ctx.globalAlpha = a;
   ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(bx, by, bw, bh);
   ctx.fillStyle = hp > 0.5 ? '#22d3ee' : hp > 0.25 ? '#f59e0b' : '#ef4444';
   ctx.fillRect(bx, by, bw * hp, bh);
-  // Energy bar
   const ep = robot.energy / robot.maxEnergy;
   ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(bx, by - 5, bw, 2);
   ctx.fillStyle = ep > 0.5 ? '#a78bfa' : ep > 0.25 ? '#f59e0b' : '#ef4444';
@@ -206,17 +211,35 @@ function drawProjectile(ctx: CanvasRenderingContext2D, p: ArenaProjectile, W: nu
   ctx.restore();
 }
 
-function drawGraphNet(ctx: CanvasRenderingContext2D, W: number, H: number, tick: number, rgb: string): void {
-  const nodes = [{ x: 0.5, y: 0.5 }, { x: 0.65, y: 0.3 }, { x: 0.8, y: 0.55 }, { x: 0.7, y: 0.75 }, { x: 0.55, y: 0.8 }, { x: 0.75, y: 0.2 }];
-  ctx.save();
-  ctx.strokeStyle = `rgba(${rgb},0.08)`; ctx.lineWidth = 0.8;
-  for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
-    ctx.beginPath(); ctx.moveTo(nodes[i].x * W, nodes[i].y * H); ctx.lineTo(nodes[j].x * W, nodes[j].y * H); ctx.stroke();
+function drawGraphNet(ctx: CanvasRenderingContext2D, W: number, H: number, tick: number, rgb: string, levelId: string): void {
+  const allNodes = [{ x: 0.5, y: 0.5 }, { x: 0.65, y: 0.3 }, { x: 0.8, y: 0.55 }, { x: 0.7, y: 0.75 }, { x: 0.55, y: 0.8 }, { x: 0.75, y: 0.2 }];
+  let activeNodes = [0, 1, 2, 3, 4, 5];
+  let activeEdges = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 4], [0, 3], [1, 5], [5, 2]];
+
+  switch (levelId) {
+    case 'gfx-01': activeNodes = [0, 1, 2]; activeEdges = [[0, 1], [1, 2]]; break;
+    case 'gfx-02': activeNodes = [0, 1, 2, 3]; activeEdges = [[0, 1], [1, 2], [2, 3]]; break;
+    case 'gfx-03': activeNodes = [0, 1, 2, 3, 4, 5]; activeEdges = [[0, 1], [1, 5], [5, 2], [2, 3], [3, 4], [4, 0]]; break;
+    case 'gfx-04': activeNodes = [0, 1, 2, 5]; activeEdges = [[0, 1], [1, 2], [2, 5]]; break;
+    case 'gfx-05': activeNodes = [0, 1, 2, 3, 4]; activeEdges = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]]; break;
+    case 'gfx-06':
+    case 'gfx-07':
+    case 'gfx-08':
+    case 'gfx-09':
+    case 'gfx-10':
+      activeNodes = [0, 1, 2, 3, 4, 5]; activeEdges = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0], [0, 3], [1, 5], [5, 2]]; break;
   }
-  nodes.forEach((n, i) => {
+
+  ctx.save();
+  ctx.strokeStyle = `rgba(${rgb},0.15)`; ctx.lineWidth = 1.2;
+  activeEdges.forEach(([u, v]) => {
+    ctx.beginPath(); ctx.moveTo(allNodes[u].x * W, allNodes[u].y * H); ctx.lineTo(allNodes[v].x * W, allNodes[v].y * H); ctx.stroke();
+  });
+  activeNodes.forEach((idx, i) => {
+    const n = allNodes[idx];
     const p = 0.5 + Math.sin(tick * 0.04 + i * 1.2) * 0.3;
-    ctx.strokeStyle = `rgba(${rgb},${p * 0.4})`; ctx.beginPath(); ctx.arc(n.x * W, n.y * H, 4, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = `rgba(${rgb},${0.5 + Math.sin(tick * 0.04) * 0.3})`; ctx.fill();
+    ctx.strokeStyle = `rgba(${rgb},${p * 0.6})`; ctx.beginPath(); ctx.arc(n.x * W, n.y * H, 4.5, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = `rgba(${rgb},${0.6 + Math.sin(tick * 0.04) * 0.4})`; ctx.fill();
   });
   ctx.restore();
 }
@@ -230,12 +253,16 @@ function drawLabel(ctx: CanvasRenderingContext2D, label: string, W: number, H: n
   ctx.restore();
 }
 
-// ── Physics helpers ──────────────────────────────────────────────────────────
-
 function hitCheck(p: ArenaProjectile, robot: ArenaRobot): boolean {
   if (!robot.isAlive) return false;
   const dx = p.x - robot.x, dy = p.y - robot.y;
   return Math.sqrt(dx * dx + dy * dy) < ROBOT_SIZE * 2;
+}
+
+function startFovSweep(timers: Map<string, number>, robotId: string): void {
+  if ((timers.get(robotId) ?? 0) <= 0) {
+    timers.set(robotId, FOV_SWEEP_FRAMES);
+  }
 }
 
 function applyAction(
@@ -244,10 +271,11 @@ function applyAction(
   projs: ArenaProjectile[],
   nextId: { current: number },
 ): void {
+  const runtimeRobot = robot as RuntimeArenaRobot;
   switch (action.type) {
     case 'fire': {
-      if ((robot as any)._fireCooldown > 0) break;
-      (robot as any)._fireCooldown = 30;
+      if ((runtimeRobot._fireCooldown ?? 0) > 0) break;
+      runtimeRobot._fireCooldown = 30;
       const a = action.value, d = robot.size * 2;
       projs.push({
         id: nextId.current++,
@@ -263,8 +291,8 @@ function applyAction(
       break;
     }
     case 'burst': {
-      if ((robot as any)._fireCooldown > 0) break;
-      (robot as any)._fireCooldown = 50;
+      if ((runtimeRobot._fireCooldown ?? 0) > 0) break;
+      runtimeRobot._fireCooldown = 50;
       const d = robot.size * 2;
       for (let i = -1; i <= 1; i++) {
         const a = action.value + BURST_SPREAD * i;
@@ -285,19 +313,19 @@ function applyAction(
     case 'move': {
       const spd = action.fast ? 0.025 : 0.012;
       switch (action.value) {
-        case -2: // BACKUP
+        case -2:
           robot.x -= Math.cos(robot.angle) * spd;
           robot.y -= Math.sin(robot.angle) * spd;
           break;
-        case -1: // LEFT strafe
+        case -1:
           robot.x -= Math.cos(robot.angle + Math.PI / 2) * spd;
           robot.y -= Math.sin(robot.angle + Math.PI / 2) * spd;
           break;
-        case 1: // RIGHT strafe
+        case 1:
           robot.x += Math.cos(robot.angle + Math.PI / 2) * spd;
           robot.y += Math.sin(robot.angle + Math.PI / 2) * spd;
           break;
-        default: // FORWARD
+        default:
           robot.x += Math.cos(robot.angle) * spd;
           robot.y += Math.sin(robot.angle) * spd;
       }
@@ -308,15 +336,15 @@ function applyAction(
   }
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
-
 export const ArenaCanvas = memo(function ArenaCanvas({
   scene,
   levelId,
   userScript,
   enemyScript: enemyScriptProp,
   onBattleEnd,
-  replayFrames,
+  latestFrameRef,
+  isReplaying = false,
+  fightResult,
   aspectRatio = 16 / 7,
   className = "",
   waitingForReplay = false,
@@ -328,61 +356,67 @@ export const ArenaCanvas = memo(function ArenaCanvas({
   const visibleRef = useRef(true);
   const nextIdRef = useRef({ current: 0 });
   const errRef = useRef<Set<string>>(new Set());
-  const scriptStateRef = useRef<ScriptState | null>(null);
 
-  // Preview-mode state (enemy FOV + blue-death reset loop)
-  const fovTimerRef = useRef(0);   // frames remaining to show FOV cone
-  const flashTimerRef = useRef(0);   // kill-flash frames remaining
-  const fovScanTimerRef = useRef(0);  // frames since scan started (counts up)
-  const fovFadeRef = useRef(0);  // frames into scan fade-out
+  const fovTimerRef = useRef<Map<string, number>>(new Map());
+  const flashTimerRef = useRef(0);
 
-  // Battle-mode state
-  const battleEndedRef = useRef(false);  // prevents double-firing onBattleEnd
-  const battleEvalTickRef = useRef(0);     // draw-timeout counter
+  const battleEndedRef = useRef(false);
+  const battleEvalTickRef = useRef(0);
   const onBattleEndRef = useRef(onBattleEnd);
   useEffect(() => { onBattleEndRef.current = onBattleEnd; }, [onBattleEnd]);
 
+  const fightResultRef = useRef(fightResult);
+  useEffect(() => { fightResultRef.current = fightResult; }, [fightResult]);
+
+  // Keep latest scripts in refs so they can be read without triggering re-init
+  const userScriptRef = useRef(userScript);
+  useEffect(() => { userScriptRef.current = userScript; }, [userScript]);
+  const enemyScriptPropRef = useRef(enemyScriptProp);
+  useEffect(() => { enemyScriptPropRef.current = enemyScriptProp; }, [enemyScriptProp]);
+
+  // Keep previewMode in a ref so the render loop can read it without being in deps
   const previewMode = !userScript;
-  const replayMode = !!replayFrames && replayFrames.length > 0;
-  const replayIndexRef = useRef(0);
-  const replayFrameCounterRef = useRef(0);
+  const prevPreviewMode = useRef(previewMode);
+  const previewModeRef = useRef(previewMode);
+  useEffect(() => {
+    previewModeRef.current = previewMode;
+  }, [previewMode]);
 
   useEffect(() => {
+    // Only re-init when scene/level changes, or battle mode flips (preview <-> fight)
+    const modeChanged = previewMode !== prevPreviewMode.current;
+    prevPreviewMode.current = previewMode;
+
     const s = scene.init();
     if (!s.local) s.local = {};
     stateRef.current = s;
     nextIdRef.current.current = 0;
-    fovTimerRef.current = 0;
+    fovTimerRef.current = new Map();
     flashTimerRef.current = 0;
     battleEndedRef.current = false;
     battleEvalTickRef.current = 0;
-    replayFrameCounterRef.current = 0;
-    replayIndexRef.current = 0;
 
-    if (scene.script) {
-      scriptStateRef.current = { phaseIdx: 0, phaseTick: 0, script: scene.script };
-    } else {
-      scriptStateRef.current = null;
-    }
+    const enemyScr = enemyScriptPropRef.current || getEnemyScript(levelId) || '';
 
     const evals = new Map<string, EvalState | null>();
     const errors = new Set<string>();
 
     if (!previewMode) {
-      const playerState = createEvalState(userScript ?? '');
+      const playerState = createEvalState(userScriptRef.current ?? '');
       if (!playerState) errors.add('player');
       evals.set('player', playerState);
     }
-    if (!previewMode || !scene.script) {
-      const enemyScr = enemyScriptProp || getEnemyScript(levelId) || '';
+    if (enemyScr) {
       const enemyState = createEvalState(enemyScr);
       if (!enemyState) errors.add('enemy');
       evals.set('enemy', enemyState);
     }
 
+    void modeChanged; // used for clarity — mode flip is implicit from previewMode dep
     evalRef.current = evals;
     errRef.current = errors;
-  }, [scene, levelId, userScript, enemyScriptProp, previewMode, replayFrames]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene, levelId, previewMode]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -415,108 +449,57 @@ export const ArenaCanvas = memo(function ArenaCanvas({
       const css = getComputedStyle(document.documentElement);
       const rgb = css.getPropertyValue('--accent-rgb').trim() || '34,211,238';
 
-      let scanAlpha = 0;
+      const streamingFrame = isReplaying ? latestFrameRef?.current ?? null : null;
+      const streamingMode = streamingFrame !== null;
 
-      // ── Scene tick (preview only — in battle, evaluator controls both robots)
-      if (previewMode) {
+      // Scene tick — only in preview mode without streaming
+      if (previewModeRef.current && !streamingMode) {
         scene.tick(state);
       }
       state.tick++;
 
-      // ── Replay mode — play back server frames ──────────────────────────────
-      if (replayMode && replayFrames) {
-        const idx = Math.min(replayIndexRef.current, replayFrames.length - 1);
-        const frame = replayFrames[idx];
-        const arenaW = 800, arenaH = 600;
-        if (frame?.robots) {
-          for (const robot of state.robots) {
-            const src = frame.robots.find((r: any) => r.id === robot.id);
-            if (!src) continue;
-            robot.x = (src.position?.x ?? 0) / arenaW;
-            robot.y = (src.position?.y ?? 0) / arenaH;
-            robot.angle = src.rotation ?? robot.angle;
-            robot.health = src.health ?? robot.health;
-            robot.energy = src.energy ?? robot.energy;
-            robot.isAlive = (src.health ?? 0) > 0;
+      // Streaming mode — apply latest server frame
+      if (streamingMode) {
+        const frame = streamingFrame;
+        for (const robot of state.robots) {
+          const src = frame.robots?.find((r: CampaignFrameRobot) => r.id === robot.id);
+          if (!src) continue;
+          robot.x = (src.position?.x ?? 0) / ARENA_W;
+          robot.y = (src.position?.y ?? 0) / ARENA_H;
+          robot.angle = src.rotation ?? robot.angle;
+          robot.health = src.health ?? robot.health;
+          robot.energy = src.energy ?? robot.energy;
+          robot.isAlive = src.health != null ? src.health > 0 : src.isAlive ?? robot.isAlive;
+          if (src.scanActive) {
+            startFovSweep(fovTimerRef.current, robot.id);
           }
         }
-        if (frame?.projectiles) {
-          state.projectiles = frame.projectiles.map((p: any) => ({
-            id: p.id,
-            x: (p.position?.x ?? 0) / arenaW,
-            y: (p.position?.y ?? 0) / arenaH,
-            vx: 0,
-            vy: 0,
-            color: p.color ?? '#ffffff',
-            ownerId: p.ownerId ?? '',
-            life: 99,
-            damage: 0,
-          }));
-        }
-        replayFrameCounterRef.current++;
-        if (replayFrameCounterRef.current >= 6) {
-          replayFrameCounterRef.current = 0;
-          if (replayIndexRef.current < replayFrames.length - 1) {
-            replayIndexRef.current++;
-          } else if (!battleEndedRef.current) {
-            battleEndedRef.current = true;
-            setTimeout(() => onBattleEndRef.current?.('player'), BATTLE_END_DELAY_MS);
-          }
+        state.projectiles = (frame.projectiles ?? []).map((p: CampaignFrameProjectile) => ({
+          id: p.id,
+          x: (p.position?.x ?? 0) / ARENA_W,
+          y: (p.position?.y ?? 0) / ARENA_H,
+          vx: 0, vy: 0,
+          color: p.color ?? '#ffffff',
+          ownerId: p.ownerId ?? 'enemy',
+          life: 99,
+          damage: 0,
+        }));
+
+        if (!battleEndedRef.current && fightResultRef.current) {
+          battleEndedRef.current = true;
+          const winner = fightResultRef.current.winner as 'player' | 'enemy' | 'draw';
+          setTimeout(() => onBattleEndRef.current?.(winner), BATTLE_END_DELAY_MS);
         }
       }
 
-      // ── Script tick (every frame, preview mode) ────────────────────────────
-      if (previewMode && scriptStateRef.current) {
-        const enemy = state.robots.find(r => r.id === 'enemy');
-        const player = state.robots.find(r => r.id === 'player');
-        if (enemy && player && enemy.isAlive) {
-          tickScript(scriptStateRef.current, enemy, player, state.projectiles, nextId, state.local ?? {});
-          scanAlpha = state.local?.scanning ?? 0;
-          if (state.local) state.local.scanning = 0;
-        }
-      }
-
-      // ── FOV cone animation (fade in 10f, hold, fade out 15f) ──────────────
-      if (scanAlpha === 1) {
-        if (fovFadeRef.current > 0) {
-          fovFadeRef.current = 0;
-          fovScanTimerRef.current = 0;
-        } else if (fovScanTimerRef.current === 0) {
-          fovScanTimerRef.current = 1;
-        } else {
-          fovScanTimerRef.current++;
-        }
-      } else if (fovScanTimerRef.current > 0) {
-        fovFadeRef.current++;
-      }
-
-      if (fovFadeRef.current > 0) {
-        const t = fovFadeRef.current / 15;
-        if (t >= 1) {
-          fovFadeRef.current = 0;
-          fovScanTimerRef.current = 0;
-          scanAlpha = 0;
-        } else {
-          scanAlpha = 0.3 * (1 - t);
-        }
-      } else if (fovScanTimerRef.current > 0) {
-        if (fovScanTimerRef.current <= 10) {
-          scanAlpha = (fovScanTimerRef.current / 10) * 0.3;
-        } else {
-          scanAlpha = 0.3 + Math.sin(state.tick * 0.12) * 0.03;
-        }
-      }
-
-      // ── Evaluator tick ─────────────────────────────────────────────────────
-      if (!replayMode) {
-        const evalInterval = previewMode ? PREVIEW_EVAL_INTERVAL : BATTLE_EVAL_INTERVAL;
+      // Evaluator tick — skipped in streaming mode
+      if (!streamingMode) {
+        const evalInterval = previewModeRef.current ? PREVIEW_EVAL_INTERVAL : BATTLE_EVAL_INTERVAL;
         evalTick++;
         if (evalTick >= evalInterval) {
           evalTick = 0;
-          const useEval = !previewMode || !scene.script;
-
-          // Battle-mode draw timeout
-          if (!previewMode && !battleEndedRef.current) {
+          const isPreview = previewModeRef.current;
+          if (!isPreview && !battleEndedRef.current) {
             battleEvalTickRef.current++;
             if (battleEvalTickRef.current >= MAX_BATTLE_EVAL_TICKS) {
               battleEndedRef.current = true;
@@ -525,28 +508,25 @@ export const ArenaCanvas = memo(function ArenaCanvas({
           }
 
           for (const robot of state.robots) {
-            if (previewMode && robot.id === 'player') continue;
+            if (isPreview && robot.id === 'player') continue;
             if (!robot.isAlive) {
-              if (robot.respawnTimer > 0) {
-                robot.respawnTimer--;
-              }
+              if (robot.respawnTimer > 0) robot.respawnTimer--;
               continue;
             }
-            // Stop running evals once battle is decided
-            if (!previewMode && battleEndedRef.current) continue;
+            if (!isPreview && battleEndedRef.current) continue;
 
             if (robot.invulnerableTimer > 0) robot.invulnerableTimer--;
             if (robot.energy < robot.maxEnergy) robot.energy = Math.min(robot.maxEnergy, robot.energy + ENERGY_REGEN);
 
-            if (useEval) {
-              const es = evals.get(robot.id);
-              const hasErr = errors.has(robot.id);
-              if (es && !hasErr) {
-                const foe = state.robots.find(r => r.id !== robot.id)!;
+            const es = evals.get(robot.id);
+            const hasErr = errors.has(robot.id);
+            if (es && !hasErr) {
+              const foe = state.robots.find(r => r.id !== robot.id);
+              if (foe) {
                 const action = tickEvaluator(es, robot, foe, state.projectiles, nextId);
                 if (action) {
-                  if (action.type === 'scan' && robot.id === 'enemy') {
-                    fovTimerRef.current = 30;
+                  if (action.type === 'scan') {
+                    startFovSweep(fovTimerRef.current, robot.id);
                   }
                   applyAction(action, robot, state.projectiles, nextId);
                 }
@@ -556,78 +536,75 @@ export const ArenaCanvas = memo(function ArenaCanvas({
         }
       }
 
-      // ── Fire cooldown decay ───────────────────────────────────────────────────
       for (const robot of state.robots) {
-        if ((robot as any)._fireCooldown > 0) {
-          (robot as any)._fireCooldown--;
+        const runtimeRobot = robot as RuntimeArenaRobot;
+        if ((runtimeRobot._fireCooldown ?? 0) > 0) {
+          runtimeRobot._fireCooldown = (runtimeRobot._fireCooldown ?? 0) - 1;
         }
       }
 
-      // ── FOV timer decay ─────────────────────────────────────────────────────
-      if (fovTimerRef.current > 0) fovTimerRef.current--;
+      for (const [id, t] of fovTimerRef.current) {
+        if (t > 0) fovTimerRef.current.set(id, t - 1);
+      }
       if (flashTimerRef.current > 0) flashTimerRef.current--;
 
-      // ── Projectile physics ────────────────────────────────────────────────
-      for (let i = state.projectiles.length - 1; i >= 0; i--) {
-        const p = state.projectiles[i];
-        p.x += p.vx; p.y += p.vy; p.life--;
-        let hit = false;
-        for (const robot of state.robots) {
-          if (robot.id === p.ownerId || !robot.isAlive || robot.invulnerableTimer > 0) continue;
-          if (hitCheck(p, robot)) {
-            if (previewMode && robot.id === 'player') {
-              // Preview mode: player is immune, just remove projectile
+      // Projectile physics — skipped in streaming mode
+      if (!streamingMode) {
+        for (let i = state.projectiles.length - 1; i >= 0; i--) {
+          const p = state.projectiles[i];
+          p.x += p.vx; p.y += p.vy; p.life--;
+          let hit = false;
+          for (const robot of state.robots) {
+            if (robot.id === p.ownerId || !robot.isAlive || robot.invulnerableTimer > 0) continue;
+            if (hitCheck(p, robot)) {
+              if (previewModeRef.current && robot.id === 'player') {
+                state.projectiles.splice(i, 1);
+                hit = true;
+                break;
+              }
+              robot.health = Math.max(0, robot.health - (p.damage ?? FIRE_DAMAGE));
               state.projectiles.splice(i, 1);
               hit = true;
+              if (robot.health <= 0) {
+                robot.isAlive = false;
+                flashTimerRef.current = FLASH_DURATION;
+                robot.respawnTimer = RESPAWN_DELAY;
+                robot.energy = 0;
+
+                if (!previewModeRef.current && !battleEndedRef.current) {
+                  battleEndedRef.current = true;
+                  const otherRobot = state.robots.find(r => r.id !== robot.id);
+                  const winner: 'player' | 'enemy' | 'draw' =
+                    (otherRobot && !otherRobot.isAlive) ? 'draw'
+                      : robot.id === 'player' ? 'enemy'
+                        : 'player';
+                  setTimeout(() => onBattleEndRef.current?.(winner), BATTLE_END_DELAY_MS);
+                }
+              }
               break;
             }
-            robot.health = Math.max(0, robot.health - (p.damage ?? FIRE_DAMAGE));
-            state.projectiles.splice(i, 1);
-            hit = true;
-            if (robot.health <= 0) {
-              robot.isAlive = false;
-              flashTimerRef.current = FLASH_DURATION;
-              robot.respawnTimer = RESPAWN_DELAY;
-              robot.energy = 0;
-
-              // ── Battle mode: first kill ends the match ─────────────────
-              if (!previewMode && !battleEndedRef.current) {
-                battleEndedRef.current = true;
-                const otherRobot = state.robots.find(r => r.id !== robot.id);
-                const winner: 'player' | 'enemy' | 'draw' =
-                  (otherRobot && !otherRobot.isAlive) ? 'draw'
-                    : robot.id === 'player' ? 'enemy'
-                      : 'player';
-                // Brief pause after kill-flash so player sees the death
-                const delay = BATTLE_END_DELAY_MS;
-                setTimeout(() => onBattleEndRef.current?.(winner), delay);
+          }
+          if (!hit) {
+            for (const obs of state.obstacles) {
+              if (obs.type !== 'SOLID') continue;
+              const left = obs.x - obs.w / 2;
+              const right = obs.x + obs.w / 2;
+              const top = obs.y - obs.h / 2;
+              const bottom = obs.y + obs.h / 2;
+              if (p.x >= left && p.x <= right && p.y >= top && p.y <= bottom) {
+                state.projectiles.splice(i, 1);
+                hit = true;
+                break;
               }
             }
-            break;
           }
-        }
-        if (!hit) {
-          // Check obstacle collision (SOLID only)
-          for (const obs of state.obstacles) {
-            if (obs.type !== 'SOLID') continue;
-            const left   = obs.x - obs.w / 2;
-            const right  = obs.x + obs.w / 2;
-            const top    = obs.y - obs.h / 2;
-            const bottom = obs.y + obs.h / 2;
-            if (p.x >= left && p.x <= right && p.y >= top && p.y <= bottom) {
-              state.projectiles.splice(i, 1);
-              hit = true;
-              break;
-            }
-          }
-        }
 
-        if (!hit && (p.life <= 0 || p.x < -0.05 || p.x > 1.05 || p.y < -0.05 || p.y > 1.05)) {
-          state.projectiles.splice(i, 1);
+          if (!hit && (p.life <= 0 || p.x < -0.05 || p.x > 1.05 || p.y < -0.05 || p.y > 1.05)) {
+            state.projectiles.splice(i, 1);
+          }
         }
       }
 
-      // ── Render ────────────────────────────────────────────────────────────
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = 'rgba(3,7,18,0.92)';
       ctx.fillRect(0, 0, W, H);
@@ -635,40 +612,21 @@ export const ArenaCanvas = memo(function ArenaCanvas({
       drawScanLine(ctx, W, H, state.tick, rgb);
 
       if (/PATHFIND|gfx|GRAPH|NODE|EDGE|BREADTH|DEPTH|CYCLE|SPANNING|TOPOLOGICAL|DIJKSTRA|ORACLE/.test(scene.label)) {
-        drawGraphNet(ctx, W, H, state.tick, rgb);
+        drawGraphNet(ctx, W, H, state.tick, rgb, levelId);
       }
 
       state.obstacles.forEach(obs => drawObstacle(ctx, obs, W, H));
-
-      // Preview FOV cone (red, 60°, drawn before robots)
-      if (previewMode) {
-        const enemy = state.robots.find(r => r.id === 'enemy');
-        if (enemy && enemy.isAlive && scanAlpha > 0) {
-          const px = enemy.x * W, py = enemy.y * H;
-          const range = 0.45 * Math.min(W, H);
-          const halfAngle = Math.PI / 6;
-          ctx.save();
-          ctx.globalAlpha = Math.min(1, scanAlpha) * 0.2;
-          ctx.beginPath();
-          ctx.moveTo(px, py);
-          ctx.arc(px, py, range, enemy.angle - halfAngle, enemy.angle + halfAngle);
-          ctx.closePath();
-          ctx.fillStyle = 'rgba(239, 68, 68, 1)';
-          ctx.fill();
-          ctx.restore();
-        }
-      }
 
       state.projectiles.forEach(p => drawProjectile(ctx, p, W, H));
 
       const enemy = state.robots.find(r => r.id === 'enemy');
       const player = state.robots.find(r => r.id === 'player');
-      const fovA = fovTimerRef.current / 30;
+      const enemyFov = (fovTimerRef.current.get('enemy') ?? 0) / FOV_SWEEP_FRAMES;
+      const playerFov = (fovTimerRef.current.get('player') ?? 0) / FOV_SWEEP_FRAMES;
 
-      if (enemy) drawRobot(ctx, enemy, W, H, state.tick, fovA);
-      if (player) drawRobot(ctx, player, W, H, state.tick, 0);
+      if (enemy) drawRobot(ctx, enemy, W, H, state.tick, enemyFov);
+      if (player) drawRobot(ctx, player, W, H, state.tick, playerFov);
 
-      // Kill flash
       if (flashTimerRef.current > 0) {
         const fa = (flashTimerRef.current / FLASH_DURATION) * 0.35;
         ctx.save();
@@ -678,8 +636,7 @@ export const ArenaCanvas = memo(function ArenaCanvas({
         ctx.restore();
       }
 
-      // Error indicators
-      if (errors.has('player') && !previewMode) {
+      if (errors.has('player') && !previewModeRef.current) {
         ctx.save(); ctx.fillStyle = '#f59e0b';
         ctx.font = `bold ${Math.max(10, W * 0.022)}px monospace`;
         ctx.textAlign = 'left'; ctx.globalAlpha = 0.5 + Math.sin(state.tick * 0.08) * 0.3;
@@ -697,7 +654,7 @@ export const ArenaCanvas = memo(function ArenaCanvas({
 
     rafRef.current = requestAnimationFrame(render);
     return () => { cancelAnimationFrame(rafRef.current); io.disconnect(); };
-  }, [scene, levelId, userScript, enemyScriptProp, previewMode, replayMode, replayFrames]);
+  }, [scene, levelId, isReplaying]);
 
   return (
     <div
@@ -712,12 +669,10 @@ export const ArenaCanvas = memo(function ArenaCanvas({
         aria-hidden="true"
         style={{ imageRendering: 'crisp-edges' }}
       />
-      {/* Corner accents */}
       <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-accent/30 pointer-events-none" />
       <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-accent/30 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-accent/30 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-accent/30 pointer-events-none" />
-      {/* Live badge */}
       <div className="absolute top-2 left-2 flex items-center gap-1.5 pointer-events-none">
         <span
           className="w-1.5 h-1.5 rounded-full bg-accent"

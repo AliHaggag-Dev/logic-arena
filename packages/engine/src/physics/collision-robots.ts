@@ -10,20 +10,25 @@ export function checkRobotRobotCollision(r1: Robot, r2: Robot): void {
   const distance = Math.hypot(dx, dy);
 
   if (distance < ROBOT_RADIUS * 2) {
-    // Simple elastic collision
-    const tempVx = r1.velocity.x;
-    const tempVy = r1.velocity.y;
-    r1.velocity.x = r2.velocity.x;
-    r1.velocity.y = r2.velocity.y;
-    r2.velocity.x = tempVx;
-    r2.velocity.y = tempVy;
+    const nx = distance === 0 ? 1 : dx / distance;
+    const ny = distance === 0 ? 0 : dy / distance;
 
-    // Resolve overlap
     const overlap = ROBOT_RADIUS * 2 - distance + 1;
-    const angle = Math.atan2(dy, dx);
-    r1.position.x -= (overlap / 2) * Math.cos(angle);
-    r1.position.y -= (overlap / 2) * Math.sin(angle);
-    r2.position.x += (overlap / 2) * Math.cos(angle);
-    r2.position.y += (overlap / 2) * Math.sin(angle);
+    r1.position.x -= (overlap / 2) * nx;
+    r1.position.y -= (overlap / 2) * ny;
+    r2.position.x += (overlap / 2) * nx;
+    r2.position.y += (overlap / 2) * ny;
+
+    const r1IntoR2 = r1.velocity.x * nx + r1.velocity.y * ny;
+    if (r1IntoR2 > 0) {
+      r1.velocity.x -= r1IntoR2 * nx;
+      r1.velocity.y -= r1IntoR2 * ny;
+    }
+
+    const r2IntoR1 = r2.velocity.x * nx + r2.velocity.y * ny;
+    if (r2IntoR1 < 0) {
+      r2.velocity.x -= r2IntoR1 * nx;
+      r2.velocity.y -= r2IntoR1 * ny;
+    }
   }
 }

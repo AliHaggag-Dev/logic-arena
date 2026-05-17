@@ -20,6 +20,8 @@ export class MatchEngine {
     color?: string;
     model?: string;
     tracerColor?: string;
+    spawnPosition?: { x: number; y: number };
+    initialFovDirection?: number;
   }[] = [];
   private tickInterval: NodeJS.Timeout | null = null;
   private matchId: string;
@@ -67,7 +69,7 @@ export class MatchEngine {
     this.deps = createGameDependencies(this.gameLoop, this.onEvent);
     this.initialPlayers.forEach((p, i) => {
       this.gameLoop.addRobot(
-        createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor),
+        createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor, p.spawnPosition, p.initialFovDirection),
       );
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
@@ -232,6 +234,15 @@ export class MatchEngine {
   // ---------------------------------------------------------------------------
   // State access
   // ---------------------------------------------------------------------------
+
+  getGameLoop(): GameLoop {
+    return this.gameLoop;
+  }
+
+  /** Enable headless simulation mode for campaign — cooldowns use virtual time. */
+  setVirtualTime(ms: number): void {
+    this.deps.actionExecutor.setVirtualTime(ms);
+  }
 
   getState() {
     return this.gameLoop.getGameState();

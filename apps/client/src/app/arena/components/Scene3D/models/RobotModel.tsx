@@ -246,19 +246,21 @@ RobotModelInner.displayName = 'RobotModelInner';
 /* ── GLTF wrappers ──────────────────────────────────────────────────────────────── */
 
 const ROBOT_FILES: Record<string, string> = {
-  'unit-01':         '/robots/robot.glb',
-  'unit-02':         '/robots/robot2.glb',
+  'unit-01': '/robots/robot.glb',
+  'unit-02': '/robots/robot2.glb',
   'chassis-unit-01': '/robots/robot.glb',
   'chassis-unit-02': '/robots/robot2.glb',
-  'chassis-wraith':  '/robots/bunny.glb',
-  'chassis-titan':   '/robots/armored-robot.glb',
+  'chassis-wraith': '/robots/bunny.glb',
+  'chassis-titan': '/robots/armored-robot.glb',
+  'chassis-sandman': '/robots/sandman.glb',
 };
 
 const ROBOT_SCALES: Record<string, number> = {
-  '/robots/robot.glb':          2,
-  '/robots/robot2.glb':         0.8,
-  '/robots/bunny.glb':          1.5,
-  '/robots/armored-robot.glb':  1.7,
+  '/robots/robot.glb': 2,
+  '/robots/robot2.glb': 0.8,
+  '/robots/bunny.glb': 1.5,
+  '/robots/armored-robot.glb': 1.7,
+  '/robots/sandman.glb': 5,
 };
 
 const BotModel = memo((props: RobotModelProps & { file: string }) => {
@@ -299,3 +301,4 @@ useGLTF.preload('/robots/robot.glb');
 useGLTF.preload('/robots/robot2.glb');
 useGLTF.preload('/robots/bunny.glb');
 useGLTF.preload('/robots/armored-robot.glb');
+useGLTF.preload('/robots/sandman.glb');

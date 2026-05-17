@@ -62,6 +62,9 @@ export interface Robot {
    */
   facingDirection?: number;
 
+  /** True while BACKUP is the active movement command. */
+  isBackingUp?: boolean;
+
   /**
    * If set to true by AliScript (`SET lockVision = TRUE`),
    * the fovDirection will automatically match robot.rotation every physics tick,
@@ -107,6 +110,8 @@ export interface Robot {
   totalDamageDealt?: number;
   /** Tracks if an active command was executed this tick, disabling regen. */
   executedCommandThisTick?: boolean;
+  /** Internal NPC flag: commands execute without energy deduction or STASIS. */
+  ignoreEnergyCost?: boolean;
 
   // --- Field of View (Feature 1) ---
   /**
@@ -178,4 +183,4 @@ export interface GameConfig {
   mode?: GameMode;
   disableProjectiles?: boolean;
   obstacles?: Obstacle[];
-}
+}

@@ -13,7 +13,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'It visits 3 nodes in a line: move right, scan, fire if found. A simple linear traversal. No branches, no backtracking. Pure BFS on a chain.',
     hint: 'Three predictable scan points. Stay out of range at each one.',
-    enemyScript: `SET node = 0\nWHILE node < 3\n  MOVE RIGHT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n  END\n  SET node = node + 1\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [0, 1, 2, 1]
+  SET num_nodes = 4
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
   {
     id: 'gfx-02',
@@ -25,7 +52,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'It traverses edges between 4 nodes. At each edge it fires once. After reaching the end, it reverses and fires again. A round-trip edge traversal.',
     hint: 'It fires at the end of each edge traversal. Dodge after each move.',
-    enemyScript: `SET i = 0\nWHILE i < 4\n  MOVE RIGHT\n  FIRE\n  SET i = i + 1\nEND\nSET i = 0\nWHILE i < 4\n  MOVE LEFT\n  FIRE\n  SET i = i + 1\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [0, 1, 2, 3, 2, 1]
+  SET num_nodes = 6
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
   {
     id: 'gfx-03',
@@ -37,7 +91,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'BFS-style: it scans all neighbors (left, right, center) before moving to the next level. Level 1: 3 scans. Level 2: 3 more. If any scan in a level returns positive, it fires before proceeding.',
     hint: 'It scans in groups of 3. If you dodge all 3 scans in a level, it skips firing entirely.',
-    enemyScript: `SET level = 0\nWHILE level < 2\n  SET found = 0\n  SET x = SCAN\n  IF x > 0\n    SET found = found + 1\n  END\n  MOVE RIGHT\n  SET x = SCAN\n  IF x > 0\n    SET found = found + 1\n  END\n  MOVE LEFT\n  IF found > 0\n    FIRE\n    FIRE\n  END\n  MOVE RIGHT\n  SET level = level + 1\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [0, 1, 5, 2, 3, 4]
+  SET num_nodes = 6
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
   {
     id: 'gfx-04',
@@ -49,7 +130,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'DFS-style: it goes deep first — 4 moves right, scanning each step. Then backtracks completely. At each backtrack step, it fires once. A depth-first search that punishes on return.',
     hint: 'The descent is scan-only. The ascent is fire-only. Attack during descent.',
-    enemyScript: `SET depth = 0\nWHILE depth < 4\n  MOVE RIGHT\n  SET x = SCAN\n  SET depth = depth + 1\nEND\nWHILE depth > 0\n  FIRE\n  MOVE LEFT\n  SET depth = depth - 1\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [0, 1, 2, 5, 2, 1, 0]
+  SET num_nodes = 7
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
   {
     id: 'gfx-05',
@@ -61,7 +169,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'It moves in a cycle: right-right-down(scan)-left-left-up(scan). If it detects you at any scan point in the cycle, it fires 3 times. It repeats the cycle twice. A closed-loop hunter.',
     hint: 'Two full cycles. If you stay outside the cycle path entirely, it wastes all its time patrolling.',
-    enemyScript: `SET cycle = 0\nWHILE cycle < 2\n  MOVE RIGHT\n  MOVE RIGHT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n    FIRE\n  END\n  MOVE LEFT\n  MOVE LEFT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n  END\n  SET cycle = cycle + 1\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [0, 1, 2, 3, 4, 0]
+  SET num_nodes = 6
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
   {
     id: 'gfx-06',
@@ -73,7 +208,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'It calculates the shortest path to you: scan, determine direction, advance. Repeat 5 times. Each step fires if contact is made. A greedy pathfinding bot that always moves toward the threat.',
     hint: 'It always moves toward positive scans. Lead it away, then circle back to attack its flank.',
-    enemyScript: `SET step = 0\nWHILE step < 5\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n    MOVE RIGHT\n  ELSE\n    MOVE RIGHT\n    MOVE RIGHT\n  END\n  SET step = step + 1\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [0, 3, 4, 0, 1, 5, 2, 1]
+  SET num_nodes = 8
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
   {
     id: 'gfx-07',
@@ -85,7 +247,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'It visits nodes in a tree pattern: root (scan+fire), left child (scan+fire), right child (scan+fire), then returns to root. 3 levels deep. A minimum spanning tree of coverage.',
     hint: 'It returns to root between branches. The root position is its weakness — it pauses there.',
-    enemyScript: `SET level = 0\nWHILE level < 3\n  SET x = SCAN\n  IF x > 0\n    FIRE\n    FIRE\n  END\n  MOVE RIGHT\n  MOVE RIGHT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n  END\n  MOVE LEFT\n  MOVE LEFT\n  MOVE LEFT\n  SET x = SCAN\n  IF x > 0\n    FIRE\n  END\n  MOVE RIGHT\n  SET level = level + 1\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [0, 1, 0, 4, 3, 2, 1]
+  SET num_nodes = 7
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
   {
     id: 'gfx-08',
@@ -97,7 +286,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'It processes targets in topological order: dependencies first. It scans 4 positions, records results, then fires in reverse dependency order. Later scans have priority. A dependency-aware weapon.',
     hint: 'It fires based on the last scans first. Make yourself invisible in the later scan positions.',
-    enemyScript: `SET order = [0, 0, 0, 0]\nSET i = 0\nWHILE i < 4\n  SET order[i] = SCAN\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET i = 3\nWHILE i >= 0\n  IF order[i] > 0\n    FIRE\n    FIRE\n  ELSE\n    MOVE LEFT\n  END\n  SET i = i - 1\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [5, 1, 2, 3, 4, 0, 1]
+  SET num_nodes = 7
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
   {
     id: 'gfx-09',
@@ -109,7 +325,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'It maintains a distance table and updates weights as it scans. Closest detected target gets maximum fire. Further targets get reduced fire. A weighted shortest-path assassination algorithm.',
     hint: 'Stay far from its initial position. Its fire weight decreases with iterations — survive early rounds.',
-    enemyScript: `SET dist = [0, 0, 0, 0, 0]\nSET i = 0\nWHILE i < 5\n  SET dist[i] = SCAN\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET i = 0\nSET weight = 5\nWHILE i < 5\n  IF dist[i] > 0\n    SET s = 0\n    WHILE s < weight\n      FIRE\n      SET s = s + 1\n    END\n  END\n  SET weight = weight - 1\n  SET i = i + 1\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [0, 1, 5, 2, 3, 4, 0]
+  SET num_nodes = 7
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
   {
     id: 'gfx-10',
@@ -121,6 +364,33 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     description:
       'The Oracle maps the entire arena as a graph. It scans 6 nodes, stores connections in a results array, then processes the network: connected nodes trigger cascading fire, isolated nodes are skipped. Full graph awareness.',
     hint: 'It scans 6 positions then acts. If you are detected in 3+ nodes, it fires 9+ times. Stay in 2 or fewer scan zones.',
-    enemyScript: `SET net = [0, 0, 0, 0, 0, 0]\nSET i = 0\nWHILE i < 6\n  SET net[i] = SCAN\n  MOVE RIGHT\n  SET i = i + 1\nEND\nSET total = net[0] + net[1] + net[2] + net[3] + net[4] + net[5]\nIF total > 3\n  SET s = 0\n  WHILE s < total\n    FIRE\n    FIRE\n    SET s = s + 1\n  END\nELSE\n  IF total > 1\n    FIRE\n    FIRE\n    FIRE\n  ELSE\n    FIRE\n    MOVE LEFT\n  END\nEND`,
+    enemyScript: `IF NOT init THEN
+  SET nodes_x = [400, 520, 640, 560, 440, 600]
+  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET path = [0, 4, 3, 2, 5, 1, 0]
+  SET num_nodes = 7
+  SET i = 0
+  SET init = 1
+END
+
+SET target_idx = path[i]
+SET _SYS_TARGET_X = nodes_x[target_idx]
+SET _SYS_TARGET_Y = nodes_y[target_idx]
+
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_SCAN_SWEEP_DEG = 360
+  SCAN
+  SET _SYS_SCAN_SWEEP_DEG = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    FIRE
+  END
+  SET i = i + 1
+  SET _SYS_AT_TARGET = 0
+  IF i >= num_nodes THEN
+    SET i = 0
+  END
+ELSE
+  MOVE
+END`,
   },
 ];

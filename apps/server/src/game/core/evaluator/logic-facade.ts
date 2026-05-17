@@ -10,6 +10,7 @@ import {
   syncEnergyToMemory,
 } from './memory-sync';
 import { OpsCounter } from './types';
+import { YieldInterrupt, isYieldInterrupt } from './yield-interrupt';
 
 export class LogicEvaluator {
   private registry: LogicRegistry;
@@ -76,13 +77,21 @@ export class LogicEvaluator {
     syncEnergyToMemory(robot, memory);
 
     const opsCounter: OpsCounter = { count: 0 };
-    this.blockExecutor.executeBlock(
-      robotId,
-      robot,
-      program.body,
-      memory,
-      opsCounter,
-    );
+    try {
+      this.blockExecutor.executeBlock(
+        robotId,
+        robot,
+        program.body,
+        memory,
+        opsCounter,
+      );
+    } catch (err) {
+      if (isYieldInterrupt(err)) {
+        memory['___waitTicks'] = err.waitTicks;
+        return;
+      }
+      throw err;
+    }
 
     // Flush and optimize any buffered movement actions.
     // Must happen before tick() returns so executedCommandThisTick

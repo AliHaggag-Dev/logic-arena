@@ -13,12 +13,14 @@ interface LevelDesktopLayoutProps {
   modal: ModalState;
   handleFight: () => void;
   onBattleEnd: (winner: 'player' | 'enemy' | 'draw') => void;
-  replayFrames?: any[];
+  latestFrameRef?: React.MutableRefObject<any>;
+  isReplaying?: boolean;
+  fightResult?: { winner: string; completionToken: string | null } | null;
   waitingForReplay?: boolean;
   router: AppRouterInstance;
 }
 
-export function LevelDesktopLayout({ level, script, setScript, modal, handleFight, onBattleEnd, replayFrames, waitingForReplay, router }: LevelDesktopLayoutProps) {
+export function LevelDesktopLayout({ level, script, setScript, modal, handleFight, onBattleEnd, latestFrameRef, isReplaying, fightResult, waitingForReplay, router }: LevelDesktopLayoutProps) {
   const dc = DIFFICULTY_CONFIG[level.difficulty];
 
   return (
@@ -59,10 +61,12 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
           <div className="relative">
             <LevelArenaPreview
               levelId={level.id}
-              mode={modal === "loading" ? "loading" : "preview"}
-              userScript={modal === "loading" ? script : undefined}
+              mode={modal === "loading" || modal === "fighting" ? "loading" : "preview"}
+              userScript={modal === "loading" || modal === "fighting" ? script : undefined}
               onBattleEnd={onBattleEnd}
-              replayFrames={replayFrames}
+              latestFrameRef={latestFrameRef}
+              isReplaying={isReplaying}
+              fightResult={fightResult}
               waitingForReplay={waitingForReplay}
             />
             {modal === "loading" && (

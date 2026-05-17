@@ -4,24 +4,54 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { API_BASE_URL } from '../../../../lib/api-client';
 
-export type FightStatus = 'idle' | 'connecting' | 'fighting' | 'done' | 'error';
+export type FightStatus = 'idle' | 'connecting' | 'fighting' | 'streaming' | 'done' | 'error';
 
 export type FightResult = {
   winner: 'player' | 'enemy' | 'draw';
-  replayFrames: any[];
   completionToken: string | null;
+};
+
+export type CampaignRobotSpawn = {
+  x: number;
+  y: number;
+  /** Initial body/FOV angle in radians, copied from the 2D scene definition. */
+  angle?: number;
+};
+
+export type CampaignFrameRobot = {
+  id: 'player' | 'enemy';
+  position?: { x?: number; y?: number };
+  rotation?: number;
+  health?: number;
+  energy?: number;
+  isAlive?: boolean;
+  scanActive?: boolean;
+};
+
+export type CampaignFrameProjectile = {
+  id: number;
+  position?: { x?: number; y?: number };
+  color?: string;
+  ownerId?: 'player' | 'enemy';
+};
+
+export type CampaignFrame = {
+  robots?: CampaignFrameRobot[];
+  projectiles?: CampaignFrameProjectile[];
 };
 
 export function useCampaignFight() {
   const socketRef = useRef<Socket | null>(null);
   const [status, setStatus] = useState<FightStatus>('idle');
   const [result, setResult] = useState<FightResult | null>(null);
+  const latestFrameRef = useRef<CampaignFrame | null>(null);
 
-  const fight = useCallback((levelId: string, userScript: string, obstacles: any[]) => {
+  const fight = useCallback((levelId: string, userScript: string, obstacles: unknown[], playerSpawn?: CampaignRobotSpawn, enemySpawn?: CampaignRobotSpawn) => {
     if (socketRef.current) {
       socketRef.current.disconnect();
     }
 
+    latestFrameRef.current = null;
     setStatus('connecting');
     setResult(null);
 
@@ -39,7 +69,12 @@ export function useCampaignFight() {
 
     socket.on('connect', () => {
       setStatus('fighting');
-      socket.emit('campaignFight', { levelId, userScript, obstacles });
+      socket.emit('campaignFight', { levelId, userScript, obstacles, playerSpawn, enemySpawn });
+    });
+
+    socket.on('campaignFrame', (frame: CampaignFrame) => {
+      latestFrameRef.current = frame;
+      setStatus('streaming');
     });
 
     socket.on('campaignFightResult', (data: FightResult) => {
@@ -65,5 +100,5 @@ export function useCampaignFight() {
     };
   }, []);
 
-  return { fight, status, result };
+  return { fight, status, result, latestFrameRef };
 }

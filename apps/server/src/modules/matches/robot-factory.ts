@@ -36,6 +36,7 @@ export function createRobot(
     tracerColor: tracerColorOverride || '#ff0000',
     velocity: { x: 0, y: 0 },
     rotation: facing,
+    facingDirection: facing,
     isAlive: true,
     team: index % 2 === 0 ? 'A' : 'B',
     lastActionTime: 0,
@@ -63,10 +64,6 @@ export function parseAndSetLogic(
   try {
     const parser = new Parser(script);
     const ast = parser.parse();
-    console.log(
-      `[RobotFactory] Parsed AST for ${id}:`,
-      JSON.stringify(ast.body),
-    );
     logicEvaluator.setLogic(id, ast);
   } catch (e) {
     console.error(`[RobotFactory] Error parsing script for robot ${id}:`, e);

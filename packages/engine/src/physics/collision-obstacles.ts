@@ -43,12 +43,17 @@ export function checkObstacleCollision(robot: Robot, obstacle: Obstacle): void {
       // Calculate perfect incident reflection (Deflection Bounce)
       // v' = v - 2(v·n)n  with 0.85 damping to bleed off excess kinetic energy
       const dot = robot.velocity.x * nx + robot.velocity.y * ny;
-      const BOUNCE_DAMPING = 0.85;
-      robot.velocity.x = (robot.velocity.x - 2 * dot * nx) * BOUNCE_DAMPING;
-      robot.velocity.y = (robot.velocity.y - 2 * dot * ny) * BOUNCE_DAMPING;
+      if (robot.isBackingUp) {
+        robot.velocity.x -= dot * nx;
+        robot.velocity.y -= dot * ny;
+      } else {
+        const BOUNCE_DAMPING = 0.85;
+        robot.velocity.x = (robot.velocity.x - 2 * dot * nx) * BOUNCE_DAMPING;
+        robot.velocity.y = (robot.velocity.y - 2 * dot * ny) * BOUNCE_DAMPING;
+      }
 
       // Soft override: force chassis rotation to match new reflected velocity
-      if (Math.hypot(robot.velocity.x, robot.velocity.y) > 0.001) {
+      if (!robot.isBackingUp && Math.hypot(robot.velocity.x, robot.velocity.y) > 0.001) {
         robot.rotation = Math.atan2(robot.velocity.y, robot.velocity.x);
       }
       
@@ -79,4 +84,4 @@ export function checkObstacleCollision(robot: Robot, obstacle: Obstacle): void {
     // Reset to false at the START of each robot's tick.
     robot.insideLava = true;
   }
-}
+}

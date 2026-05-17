@@ -22,7 +22,9 @@ interface LevelArenaPreviewProps {
   userScript?: string;
   enemyScript?: string;
   onBattleEnd?: (winner: 'player' | 'enemy' | 'draw') => void;
-  replayFrames?: any[];
+  latestFrameRef?: React.MutableRefObject<any>;
+  isReplaying?: boolean;
+  fightResult?: { winner: string; completionToken: string | null } | null;
   waitingForReplay?: boolean;
 }
 
@@ -33,7 +35,9 @@ export const LevelArenaPreview = memo(function LevelArenaPreview({
   userScript,
   enemyScript,
   onBattleEnd,
-  replayFrames,
+  latestFrameRef,
+  isReplaying,
+  fightResult,
   waitingForReplay,
 }: LevelArenaPreviewProps) {
   const scene = getSceneForLevel(levelId);
@@ -89,7 +93,9 @@ export const LevelArenaPreview = memo(function LevelArenaPreview({
         userScript={userScript}
         enemyScript={enemyScript}
         onBattleEnd={onBattleEnd}
-        replayFrames={replayFrames}
+        latestFrameRef={latestFrameRef}
+        isReplaying={isReplaying}
+        fightResult={fightResult}
         aspectRatio={compact ? 16 / 6 : 16 / 7}
         waitingForReplay={waitingForReplay}
       />

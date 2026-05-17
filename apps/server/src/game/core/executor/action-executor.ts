@@ -2,6 +2,7 @@ import { GameLoop, EnergyManager } from '@logic-arena/engine';
 import { Socket } from 'socket.io';
 import {
   ActionExpression,
+  NodeType,
   ScanStatement,
 } from '../../../../../../packages/logic-parser/src';
 import { Pathfinder } from '../pathfinder/index';
@@ -134,9 +135,16 @@ export class ActionExecutor {
       case 'STOP':
       case 'MOVE':
       case 'MOVE_FAST':
-      case 'BACKUP':
-        this.movementExecutor.execute(robotId, actionCommand, memory);
+      case 'BACKUP': {
+        const movementAction = action as ActionExpression;
+        const dirArg = movementAction.args?.[0];
+        const direction =
+          dirArg?.type === NodeType.Identifier
+            ? (dirArg as { value: string }).value.toUpperCase() as 'FORWARD' | 'LEFT' | 'RIGHT'
+            : 'FORWARD';
+        this.movementExecutor.execute(robotId, actionCommand, memory, direction);
         break;
+      }
       case 'SCAN':
         this.scanExecutor.execute(robotId, memory);
         break;
@@ -213,5 +221,10 @@ export class ActionExecutor {
 
   clearState(robotId: string, fullReset: boolean = true): void {
     this.cooldowns.clearState(robotId, fullReset);
+  }
+
+  /** Enable headless simulation mode — cooldowns use virtual time instead of Date.now(). */
+  setVirtualTime(ms: number): void {
+    this.cooldowns.setVirtualTime(ms);
   }
 }

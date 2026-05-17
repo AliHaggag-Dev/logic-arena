@@ -23,10 +23,9 @@ export default function CampaignLevelPage() {
   const [script, setScript] = useState("");
   const [modal, setModal] = useState<ModalState>("idle");
   const [reward, setReward] = useState<number>(0);
-  const [replayFrames, setReplayFrames] = useState<any[]>([]);
   const [pendingWinner, setPendingWinner] = useState<'player' | 'enemy' | 'draw' | null>(null);
   const [pendingToken, setPendingToken] = useState<string | null>(null);
-  const { fight, status: fightStatus, result: fightResult } = useCampaignFight();
+  const { fight, status: fightStatus, result: fightResult, latestFrameRef } = useCampaignFight();
 
   useEffect(() => {
     if (invalidLevelId) return;
@@ -59,20 +58,29 @@ export default function CampaignLevelPage() {
     if (!script.trim()) return;
     setModal("loading");
     const scene = getSceneForLevel(levelId);
-    const obstacles = scene?.init().obstacles ?? [];
-    fight(levelId, script, obstacles);
+    const s = scene?.init();
+    const obstacles = s?.obstacles ?? [];
+
+    const p = s?.robots.find(r => r.id === 'player');
+    const e = s?.robots.find(r => r.id === 'enemy');
+    const playerSpawn = p ? { x: p.x * 800, y: p.y * 600, angle: p.angle } : undefined;
+    const enemySpawn = e ? { x: e.x * 800, y: e.y * 600, angle: e.angle } : undefined;
+
+    fight(levelId, script, obstacles, playerSpawn, enemySpawn);
   }, [script, levelId, fight]);
 
   useEffect(() => {
+    if (fightStatus === 'streaming' && modal === 'loading') {
+      setModal('fighting');
+    }
     if (fightStatus === 'done' && fightResult) {
-      setReplayFrames(fightResult.replayFrames ?? []);
       setPendingWinner(fightResult.winner);
       setPendingToken(fightResult.completionToken ?? null);
     }
     if (fightStatus === 'error') {
       setModal("defeat");
     }
-  }, [fightStatus, fightResult]);
+  }, [fightStatus, fightResult, modal]);
 
   const handleBattleEnd = useCallback(() => {
     if (!pendingWinner) return;
@@ -92,7 +100,8 @@ export default function CampaignLevelPage() {
   }, [pendingWinner, pendingToken, levelId, level]);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const waitingForReplay = modal === 'loading' && replayFrames.length === 0;
+  const isReplaying = fightStatus === 'streaming' || fightStatus === 'done';
+  const waitingForReplay = modal === 'loading' && !isReplaying;
 
   const displayError = invalidLevelId ? "Invalid level ID." : error;
 
@@ -141,7 +150,9 @@ export default function CampaignLevelPage() {
           modal={modal}
           handleFight={handleFight}
           onBattleEnd={handleBattleEnd}
-          replayFrames={replayFrames}
+          latestFrameRef={latestFrameRef}
+          isReplaying={isReplaying}
+          fightResult={fightResult}
           waitingForReplay={waitingForReplay}
           router={router}
         />
@@ -153,7 +164,9 @@ export default function CampaignLevelPage() {
           modal={modal}
           handleFight={handleFight}
           onBattleEnd={handleBattleEnd}
-          replayFrames={replayFrames}
+          latestFrameRef={latestFrameRef}
+          isReplaying={isReplaying}
+          fightResult={fightResult}
           waitingForReplay={waitingForReplay}
           router={router}
         />

@@ -11,9 +11,6 @@
 //   • The canvas engine handles projectile physics, collision, death/respawn.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { SceneScript } from './sceneScriptEngine';
-import { SCRIPTS } from './sceneScripts';
-
 export interface ArenaRobot {
   id: 'player' | 'enemy';
   x: number;
@@ -75,7 +72,6 @@ export interface SceneDef {
   label: string;
   init: () => SceneState;
   tick: (state: SceneState) => void;
-  script?: SceneScript;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1028,7 +1024,7 @@ const sc_gfx01: SceneDef = {
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.65, y: 0.3, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.5, angle: 0, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1046,7 +1042,7 @@ const sc_gfx02: SceneDef = {
       { x: 0.5, y: 0.7, w: 0.4, h: 0.02, type: 'SOLID' },
     ], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.75, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.5, angle: 0, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1063,7 +1059,7 @@ const sc_gfx03: SceneDef = {
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'SOLID' },
     ], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.72, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.5, angle: 0, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1081,7 +1077,7 @@ const sc_gfx04: SceneDef = {
       { x: 0.5, y: 0.8, w: 0.5, h: 0.02, type: 'SOLID' },
     ], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.65, y: 0.3, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.5, angle: 0, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1098,7 +1094,7 @@ const sc_gfx05: SceneDef = {
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'SOLID' },
     ], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.7, y: 0.35, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.65, angle: 0.3, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1115,7 +1111,7 @@ const sc_gfx06: SceneDef = {
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'TRAP' },
     ], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.78, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.5, angle: 0, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1134,7 +1130,7 @@ const sc_gfx07: SceneDef = {
       { x: 0.7, y: 0.75, w: 0.02, h: 0.02, type: 'SOLID' },
     ], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.72, y: 0.3, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.7, angle: 0.2, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1152,7 +1148,7 @@ const sc_gfx08: SceneDef = {
       { x: 0.65, y: 0.5, w: 0.02, h: 0.35, type: 'LAVA' },
     ], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.78, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.75, y: 0.2, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.5, angle: 0, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1169,7 +1165,7 @@ const sc_gfx09: SceneDef = {
       { x: 0.5, y: 0.5, w: 0.06, h: 0.06, type: 'SOLID' },
     ], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.82, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.5, angle: 0, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1191,7 +1187,7 @@ const sc_gfx10: SceneDef = {
       { x: 0.65, y: 0.65, w: 0.02, h: 0.02, type: 'SOLID' },
     ], projectiles: [],
     robots: [
-      makeRobot({ id: 'enemy', x: 0.85, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
+      makeRobot({ id: 'enemy', x: 0.75, y: 0.2, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
       makeRobot({ id: 'player', x: 0.38, y: 0.5, angle: 0, color: '#22d3ee', trailColor: '#22d3ee' }),
     ],
   }),
@@ -1243,9 +1239,6 @@ export function getSceneForLevel(levelId: string): SceneDef | null {
       'ds': sc_ds01, 'rec': sc_rec01, 'gfx': sc_gfx01,
     };
     def = fallback[prefix] ?? null;
-  }
-  if (def && SCRIPTS[levelId]) {
-    return { ...def, script: SCRIPTS[levelId] };
   }
   return def;
 }

@@ -69,6 +69,16 @@ export const MARKET_ITEMS: MarketItem[] = [
     rarity: "LEGENDARY",
     description: "Military-grade armored mech. Extreme durability and mass.",
   },
+  {
+    id: "chassis-sandman",
+    name: "SANDMAN",
+    category: "chassis",
+    price: 2400,
+    color: "#a3a3a3",
+    glowColor: "#ffffff",
+    rarity: "LEGENDARY",
+    description: "D.Va's mech from Overwatch. ",
+  },
 
   // ── NEON PAINTS ────────────────────────────────────────────────
   {
