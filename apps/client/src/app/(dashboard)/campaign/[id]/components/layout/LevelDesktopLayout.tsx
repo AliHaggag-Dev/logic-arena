@@ -40,7 +40,8 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             </span>
             <h1 className="m-0 text-3xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-none uppercase">
               {level.title}
-            </h1>
+            </h1>p;]|
+            +
           </div>
         </div>
 

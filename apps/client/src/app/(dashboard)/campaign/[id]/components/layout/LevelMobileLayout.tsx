@@ -1,7 +1,7 @@
 import React from "react";
 import { ArrowLeft, Swords, Loader2 } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { LevelDetail, ModalState } from "../types";
+import { LevelDetail, ModalState } from "../../types";
 import { DIFFICULTY_CONFIG } from "../../../constants/difficulty.constants";
 import { CampaignScriptEditor } from "../editor/CampaignScriptEditor";
 import { LevelArenaPreview } from "../arena/LevelArenaPreview";

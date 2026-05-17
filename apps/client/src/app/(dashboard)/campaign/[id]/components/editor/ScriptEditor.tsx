@@ -4,7 +4,7 @@ import { highlightCode } from "./highlight";
 import { useParserWorker } from "./useParserWorker";
 import { useAutocomplete } from "./useAutocomplete";
 import { AutocompleteDropdown } from "./AutocompleteDropdown";
-import { sanitizeHtml } from "../../../../../lib/client-security";
+import { sanitizeHtml } from "../../../../../../lib/client-security";
 
 export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScriptInput, handleDeployBrain, toggleLibrary, clearPrebuilt }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);

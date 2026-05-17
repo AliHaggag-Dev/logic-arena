@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Trophy, Skull, Swords } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { ModalState } from '../types';
+import { ModalState } from '../../types';
 
 interface LevelModalProps {
   modal: ModalState;
