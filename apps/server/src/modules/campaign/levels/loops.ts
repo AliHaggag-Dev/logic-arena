@@ -11,17 +11,27 @@ export const LOOPS_LEVELS: CampaignLevel[] = [
     difficulty: 'EASY',
     pointsReward: D.EASY,
     description:
-      'Five pulses. Always five. A mechanical heartbeat of destruction. It cannot adapt — it only repeats. Interrupt the rhythm before the fifth beat.',
-    hint: 'It fires 5 times without scanning. Rush it by the 3rd pulse.',
+      'Five pulses, then a pause. The drum fires exactly 5 shots in sequence (one per tick), then moves right for 3 ticks before resetting. A mechanical heartbeat with a fixed period of 8 ticks. Count the beats to find the silence.',
+    hint: 'The 3-tick movement pause after 5 shots is your attack window. Time your assault for ticks 6-8 of each cycle.',
     enemyScript: `IF NOT init THEN
   SET i = 0
   SET init = 1
 END
 IF i < 5 THEN
-  FIRE
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
+  ELSE
+    SCAN
+  END
   SET i = i + 1
 ELSE
-  MOVE LEFT
+  IF i < 8 THEN
+    MOVE RIGHT
+    SET i = i + 1
+  ELSE
+    SET i = 0
+  END
 END`,
   },
   {
@@ -32,23 +42,37 @@ END`,
     difficulty: 'EASY',
     pointsReward: D.EASY,
     description:
-      'It walks a fixed circuit — right, right, right, left, left, left — firing once per step. A predictable patrol loop. Ambush it at the turning point.',
-    hint: 'It reverses direction halfway through. Position yourself at the turning point.',
+      'It patrols a fixed circuit using waypoints: moves to point A (200, 300), then B (600, 300), then back to A, firing whenever it reaches a waypoint and detects you. A predictable back-and-forth loop with known fire positions.',
+    hint: 'It fires only at the two waypoint positions. Stay away from (200,300) and (600,300) to avoid all shots.',
     enemyScript: `IF NOT init THEN
-  SET i = 0
+  SET phase = 0
   SET init = 1
 END
-IF i < 3 THEN
-  MOVE RIGHT
-  FIRE
-  SET i = i + 1
-ELSE
-  IF i < 6 THEN
-    MOVE LEFT
-    FIRE
-    SET i = i + 1
+IF phase == 0 THEN
+  SET _SYS_TARGET_X = 200
+  SET _SYS_TARGET_Y = 300
+  IF _SYS_AT_TARGET == 1 THEN
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+      FIRE
+    END
+    SET phase = 1
+    SET _SYS_AT_TARGET = 0
   ELSE
-    SET i = 0
+    MOVE
+  END
+ELSE
+  SET _SYS_TARGET_X = 600
+  SET _SYS_TARGET_Y = 300
+  IF _SYS_AT_TARGET == 1 THEN
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+      FIRE
+    END
+    SET phase = 0
+    SET _SYS_AT_TARGET = 0
+  ELSE
+    MOVE
   END
 END`,
   },
@@ -60,24 +84,38 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'Three cycles. Each cycle it scans. Signal triggers a double burst and lateral shift. Silence returns it to advance. Three rotations of this deadly waltz.',
-    hint: 'Use the lateral drift — predict its position after each cycle.',
+      'It orbits the arena center in a circle. Every 8 ticks it reverses orbit direction. During clockwise rotation it fires on sight. During counter-clockwise it only scans. The vortex switches direction like a spinning top — you must time strikes to the correct spin phase.',
+    hint: 'Counter-clockwise phase (no firing) is your safe window. Count 8 ticks to know when it swaps.',
     enemyScript: `IF NOT init THEN
-  SET i = 0
+  SET tick = 0
+  SET orbitDir = 1
   SET init = 1
 END
-IF i < 3 THEN
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
-    MOVE LEFT
-  ELSE
-    MOVE RIGHT
-  END
-  SET i = i + 1
+SET tick = tick + 1
+IF tick > 8 THEN
+  SET tick = 0
+  SET orbitDir = orbitDir * -1
+END
+IF orbitDir > 0 THEN
+  SET _SYS_ORBIT_X = 400
+  SET _SYS_ORBIT_Y = 300
+  SET _SYS_ORBIT_R = 150
 ELSE
-  FIRE
-  SET i = 0
-END`,
+  SET _SYS_ORBIT_X = 400
+  SET _SYS_ORBIT_Y = 300
+  SET _SYS_ORBIT_R = -150
+END
+SET _SYS_FACE_X = 400
+SET _SYS_FACE_Y = 300
+IF orbitDir > 0 THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
+  END
+ELSE
+  SCAN
+END
+MOVE`,
   },
   {
     id: 'loop-04',
@@ -87,18 +125,24 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'Each iteration fires one more shot than the last. Iteration 1: one shot. Iteration 2: two. Iteration 3: three. A ramping crescendo of violence that peaks at 6 total rounds.',
-    hint: 'Kill it before iteration 3 — the damage curve accelerates exponentially.',
+      'Each round fires an increasing number of shots: round 1 fires 1 shot, round 2 fires 2, round 3 fires 3, then resets. Between rounds it moves to the next waypoint. A ramping crescendo: 1+2+3 = 6 shots per full cycle, with the heaviest burst last.',
+    hint: 'Round 3 fires 3 rapid shots — the most dangerous. Destroy it before round 3 or hide during it. The movement between rounds is your opening.',
     enemyScript: `IF NOT init THEN
   SET round = 1
   SET shots = 0
   SET init = 1
 END
 IF shots < round THEN
-  FIRE
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
+  ELSE
+    SCAN
+  END
   SET shots = shots + 1
 ELSE
-  MOVE RIGHT
+  SET _SYS_STRAFE = 1
+  MOVE
   SET round = round + 1
   SET shots = 0
   IF round > 3 THEN
@@ -114,12 +158,51 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'It scans in a loop. When it finds you, it fires 3 times and breaks. When it does not, it moves right and continues scanning. A hunter that never stops searching until contact.',
-    hint: 'It exits the loop on contact. Stay hidden for the first 4 iterations then strike while it is moving right.',
-    enemyScript: `IF VISIBLE_ENEMY_COUNT > 0 THEN
+      'A search loop: it patrols between 4 waypoints. At each waypoint it scans 360 degrees. If it detects you, it locks on and fires 3 times before continuing to the next waypoint. If it does not detect you, it moves on immediately. You must break the search pattern.',
+    hint: 'Hide during its scan at each waypoint. It only fires when it finds you — if all scans miss, it is harmless.',
+    enemyScript: `IF NOT init THEN
+  SET wp = 0
+  SET burstLeft = 0
+  SET init = 1
+END
+IF burstLeft > 0 THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  END
   FIRE
+  SET burstLeft = burstLeft - 1
 ELSE
-  MOVE RIGHT
+  IF wp == 0 THEN
+    SET _SYS_TARGET_X = 200
+    SET _SYS_TARGET_Y = 150
+  END
+  IF wp == 1 THEN
+    SET _SYS_TARGET_X = 600
+    SET _SYS_TARGET_Y = 150
+  END
+  IF wp == 2 THEN
+    SET _SYS_TARGET_X = 600
+    SET _SYS_TARGET_Y = 450
+  END
+  IF wp == 3 THEN
+    SET _SYS_TARGET_X = 200
+    SET _SYS_TARGET_Y = 450
+  END
+  IF _SYS_AT_TARGET == 1 THEN
+    SET _SYS_SCAN_SWEEP_DEG = 360
+    SCAN
+    SET _SYS_SCAN_SWEEP_DEG = 0
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET burstLeft = 3
+    END
+    SET wp = wp + 1
+    SET _SYS_AT_TARGET = 0
+    IF wp > 3 THEN
+      SET wp = 0
+    END
+  ELSE
+    MOVE
+  END
 END`,
   },
   {
@@ -130,23 +213,34 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'A nested loop: outer runs 3 times, inner runs 2 times. Each inner iteration scans and fires. Between outer iterations, it repositions. 6 total engagement windows compressed into a cage of echoes.',
-    hint: 'During the reposition between outer loops, it is defenseless. Strike then.',
+      'Nested loops: an outer loop runs 3 cycles. Each outer cycle, an inner loop fires a number of shots equal to the outer index + 1 (1, 2, 3 shots). Between outer cycles, it strafes to reposition. 6 total shots compressed into a cage of echoes with variable intensity.',
+    hint: 'The third outer cycle fires 3 shots — the heaviest burst. The strafe reposition between cycles is your attack window.',
     enemyScript: `IF NOT init THEN
   SET outer = 0
   SET inner = 0
+  SET repos = 0
   SET init = 1
 END
 IF outer < 3 THEN
-  IF inner < 2 THEN
-    IF VISIBLE_ENEMY_COUNT > 0 THEN
-      FIRE
-    END
-    SET inner = inner + 1
+  IF repos > 0 THEN
+    SET _SYS_STRAFE = -1
+    MOVE
+    SET repos = repos - 1
   ELSE
-    MOVE RIGHT
-    SET inner = 0
-    SET outer = outer + 1
+    SET maxInner = outer + 1
+    IF inner < maxInner THEN
+      IF VISIBLE_ENEMY_COUNT > 0 THEN
+        SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+        FIRE
+      ELSE
+        SCAN
+      END
+      SET inner = inner + 1
+    ELSE
+      SET inner = 0
+      SET outer = outer + 1
+      SET repos = 2
+    END
   END
 ELSE
   SET outer = 0
@@ -160,13 +254,40 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'Six iterations. Each scans for targets. A confirmed hit triggers a triple burst and sets the loop counter to max — an instant kill-switch. It learns to end wars faster.',
-    hint: 'Strike with overwhelming firepower in the first two iterations before it calibrates.',
-    enemyScript: `IF VISIBLE_ENEMY_COUNT > 0 THEN
-  FIRE
-  MOVE LEFT
+      'It runs a damage-tracking loop. It fires each tick it sees you and counts successful shots. After accumulating 4 confirmed sightings, it enters overdrive: speed doubles and it switches to burst fire for 5 ticks. Overdrive resets the counter. A bot that accelerates with engagement — the longer you are visible, the deadlier it becomes.',
+    hint: 'Break line-of-sight frequently to prevent the counter from reaching 4. Stay hidden for 2+ ticks between engagements to keep it in normal mode.',
+    enemyScript: `IF NOT init THEN
+  SET sightCount = 0
+  SET overdrive = 0
+  SET init = 1
+END
+IF overdrive > 0 THEN
+  SET _SYS_SPEED_MULT = 2
+  SET _SYS_FACE_X = NEAREST_VISIBLE_X
+  SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
+  END
+  MOVE
+  SET overdrive = overdrive - 1
+  IF overdrive == 0 THEN
+    SET _SYS_SPEED_MULT = 1
+  END
 ELSE
-  MOVE RIGHT
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
+    SET sightCount = sightCount + 1
+    IF sightCount >= 4 THEN
+      SET overdrive = 5
+      SET sightCount = 0
+    END
+    MOVE
+  ELSE
+    SCAN
+    MOVE RIGHT
+  END
 END`,
   },
   {
@@ -177,23 +298,38 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'It oscillates: right-right-fire, left-left-fire, repeated 4 times. A sine wave of movement and destruction. Each oscillation covers more ground. Time your strikes at the wave crests.',
-    hint: 'The fire commands happen at the extremes of each oscillation. Position yourself at the center.',
+      'It moves in a sine wave pattern using a tick counter modulo 10. Phases 0-2: strafe right. Phase 3: fire. Phases 4-6: strafe left. Phase 7: fire. Phases 8-9: orbit center. A wave oscillation with precisely timed fire peaks at the extremes of each oscillation.',
+    hint: 'Fires happen exactly at phases 3 and 7. Position yourself at the center of the wave — its strafing carries it away from you at fire time.',
     enemyScript: `IF NOT init THEN
   SET tick = 0
   SET init = 1
 END
-SET phase = tick % 6
-IF phase < 2 THEN
-  MOVE RIGHT
+SET phase = tick % 10
+IF phase < 3 THEN
+  SET _SYS_STRAFE = 1
+  MOVE
 ELSE
-  IF phase == 2 THEN
-    FIRE
-  ELSE
-    IF phase < 5 THEN
-      MOVE LEFT
-    ELSE
+  IF phase == 3 THEN
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
       FIRE
+    END
+  ELSE
+    IF phase < 7 THEN
+      SET _SYS_STRAFE = -1
+      MOVE
+    ELSE
+      IF phase == 7 THEN
+        IF VISIBLE_ENEMY_COUNT > 0 THEN
+          SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+          FIRE
+        END
+      ELSE
+        SET _SYS_ORBIT_X = 400
+        SET _SYS_ORBIT_Y = 300
+        SET _SYS_ORBIT_R = 100
+        MOVE
+      END
     END
   END
 END
@@ -207,25 +343,45 @@ SET tick = tick + 1`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'Two counters converge from opposite ends. Counter A starts at 0 going up. Counter B starts at 5 going down. When they meet, maximum firepower. A countdown to annihilation.',
-    hint: 'The peak danger is when both counters equal 2-3 (the midpoint). Destroy it before convergence.',
+      'Two counters converge: A starts at 0 going up, B starts at 6 going down. Each tick both advance. When A < B: it patrols and fires single shots. When A == B (convergence): it triggers a 3-tick BURST_FIRE frenzy with speed boost. After convergence it resets. The convergence point is tick 3 — a countdown to maximum violence.',
+    hint: 'Convergence happens at tick 3. The burst frenzy lasts 3 ticks. Either kill it before tick 3 or survive ticks 3-5, then attack during the reset.',
     enemyScript: `IF NOT init THEN
   SET a = 0
-  SET b = 5
+  SET b = 6
+  SET frenzy = 0
   SET init = 1
 END
-IF a < b THEN
+IF frenzy > 0 THEN
+  SET _SYS_SPEED_MULT = 2
+  SET _SYS_FACE_X = NEAREST_VISIBLE_X
+  SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
   IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
-  ELSE
-    MOVE RIGHT
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
   END
-  SET a = a + 1
-  SET b = b - 1
+  SET _SYS_STRAFE = 1
+  MOVE
+  SET frenzy = frenzy - 1
+  IF frenzy == 0 THEN
+    SET _SYS_SPEED_MULT = 1
+    SET a = 0
+    SET b = 6
+  END
 ELSE
-  FIRE
-  SET a = 0
-  SET b = 5
+  IF a < b THEN
+    SET a = a + 1
+    SET b = b - 1
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+      FIRE
+      MOVE
+    ELSE
+      SCAN
+      MOVE RIGHT
+    END
+  ELSE
+    SET frenzy = 3
+  END
 END`,
   },
   {
@@ -236,19 +392,47 @@ END`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'A pseudo-infinite loop with an internal kill condition. It scans, fires if found, repositions if not — but it also tracks total shots fired. At 8 shots, it enters berserker mode: 4 rapid-fire rounds. An enemy that gets more dangerous the longer you survive.',
-    hint: 'End the fight before it reaches 8 shots fired. Aggressive early play is the only viable strategy.',
+      'A perpetual loop with an internal evolution counter. It tracks total damage dealt via a hit counter. Every 3 hits, it evolves: evolution 0 = normal fire, evolution 1 = strafe + fire, evolution 2 = orbit + burst fire, evolution 3 = speed-boosted orbit + FOV lock + burst. Each evolution is permanent — the longer the fight, the more lethal it becomes. There is no reset.',
+    hint: 'It evolves every 3 hits — not shots, HITS. If you can dodge consistently, it stays in evolution 0. Alternatively, rush it down before it evolves past 1.',
     enemyScript: `IF NOT init THEN
-  SET shots = 0
+  SET hitCounter = 0
+  SET evolution = 0
+  SET prevEnemyHp = 100
   SET init = 1
 END
 IF VISIBLE_ENEMY_COUNT > 0 THEN
-  FIRE
-  SET shots = shots + 1
-  IF shots > 4 THEN
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  IF evolution == 0 THEN
     FIRE
+    MOVE
+  ELSE
+    IF evolution == 1 THEN
+      SET _SYS_STRAFE = 1
+      FIRE
+      MOVE
+    ELSE
+      IF evolution == 2 THEN
+        SET _SYS_ORBIT_X = NEAREST_VISIBLE_X
+        SET _SYS_ORBIT_Y = NEAREST_VISIBLE_Y
+        SET _SYS_ORBIT_R = 120
+        SET _SYS_FACE_X = NEAREST_VISIBLE_X
+        SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+        BURST_FIRE
+        MOVE
+      ELSE
+        SET _SYS_SPEED_MULT = 1.8
+        SET _SYS_ORBIT_X = NEAREST_VISIBLE_X
+        SET _SYS_ORBIT_Y = NEAREST_VISIBLE_Y
+        SET _SYS_ORBIT_R = -80
+        SET _SYS_FACE_X = NEAREST_VISIBLE_X
+        SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+        BURST_FIRE
+        MOVE
+      END
+    END
   END
 ELSE
+  SCAN
   MOVE RIGHT
 END`,
   },

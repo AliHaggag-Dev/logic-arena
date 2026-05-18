@@ -1,7 +1,7 @@
 import { SceneDef, makeRobot } from './types';
 
 const sc_ds01: SceneDef = {
-  label: 'STATE MACHINE — mode: 0/1/2',
+  label: 'STATE MACHINE — mode: PATROL / ENGAGE',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'SOLID' },
@@ -19,6 +19,7 @@ const sc_ds02: SceneDef = {
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.2, w: 0.4, h: 0.02, type: 'SOLID' },
+      { x: 0.5, y: 0.8, w: 0.4, h: 0.02, type: 'SOLID' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.7, y: 0.6, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -29,10 +30,12 @@ const sc_ds02: SceneDef = {
 };
 
 const sc_ds03: SceneDef = {
-  label: 'COUNTER MAP — hits vs misses',
+  label: 'COUNTER MAP — sighting ratio',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
-      { x: 0.5, y: 0.5, w: 0.06, h: 0.3, type: 'TRAP' },
+      { x: 0.35, y: 0.35, w: 0.04, h: 0.04, type: 'SOLID' },
+      { x: 0.65, y: 0.65, w: 0.04, h: 0.04, type: 'SOLID' },
+      { x: 0.5, y: 0.5, w: 0.04, h: 0.3, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.78, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -43,11 +46,13 @@ const sc_ds03: SceneDef = {
 };
 
 const sc_ds04: SceneDef = {
-  label: 'PHASE SHIFTER — 3-phase dict',
+  label: 'PHASE SHIFTER — lock, travel, burst',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.35, y: 0.5, w: 0.02, h: 0.3, type: 'LAVA' },
       { x: 0.65, y: 0.5, w: 0.02, h: 0.3, type: 'LAVA' },
+      { x: 0.5, y: 0.15, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.5, y: 0.85, w: 0.02, h: 0.02, type: 'SOLID' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.75, y: 0.4, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -58,10 +63,12 @@ const sc_ds04: SceneDef = {
 };
 
 const sc_ds05: SceneDef = {
-  label: 'NEMESIS PROTOCOL — position history',
+  label: 'NEMESIS PROTOCOL — velocity delta',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'SOLID' },
+      { x: 0.3, y: 0.3, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.7, y: 0.7, w: 0.02, h: 0.02, type: 'LAVA' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.8, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -72,11 +79,12 @@ const sc_ds05: SceneDef = {
 };
 
 const sc_ds06: SceneDef = {
-  label: 'DUAL REGISTER — offense + defense',
+  label: 'DUAL REGISTER — atk + def dicts',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.3, y: 0.2, w: 0.02, h: 0.02, type: 'SOLID' },
       { x: 0.7, y: 0.8, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.75, y: 0.6, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -87,10 +95,11 @@ const sc_ds06: SceneDef = {
 };
 
 const sc_ds07: SceneDef = {
-  label: 'INVENTORY SYSTEM — ammo tracking',
+  label: 'INVENTORY SYSTEM — ammo + heat',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.06, h: 0.06, type: 'TRAP' },
+      { x: 0.3, y: 0.5, w: 0.02, h: 0.3, type: 'LAVA' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.72, y: 0.35, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -101,11 +110,14 @@ const sc_ds07: SceneDef = {
 };
 
 const sc_ds08: SceneDef = {
-  label: 'NEURAL MAP — weighted learning',
+  label: 'NEURAL MAP — quadrant learning',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
-      { x: 0.5, y: 0.35, w: 0.35, h: 0.02, type: 'SOLID' },
-      { x: 0.5, y: 0.65, w: 0.35, h: 0.02, type: 'SOLID' },
+      { x: 0.25, y: 0.25, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.75, y: 0.25, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.25, y: 0.75, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.75, y: 0.75, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.5, y: 0.5, w: 0.03, h: 0.03, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.78, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -116,12 +128,13 @@ const sc_ds08: SceneDef = {
 };
 
 const sc_ds09: SceneDef = {
-  label: 'COMMAND STACK — LIFO execution',
+  label: 'COMMAND STACK — task queue dict',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'SOLID' },
-      { x: 0.4, y: 0.4, w: 0.02, h: 0.02, type: 'LAVA' },
-      { x: 0.6, y: 0.6, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.35, y: 0.35, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.65, y: 0.65, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.5, y: 0.15, w: 0.3, h: 0.02, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.75, y: 0.4, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -132,7 +145,7 @@ const sc_ds09: SceneDef = {
 };
 
 const sc_ds10: SceneDef = {
-  label: 'OVERLORD SYSTEM — full dict warfare',
+  label: 'OVERLORD SYSTEM — subsystems fail',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.3, y: 0.3, w: 0.03, h: 0.03, type: 'SOLID' },

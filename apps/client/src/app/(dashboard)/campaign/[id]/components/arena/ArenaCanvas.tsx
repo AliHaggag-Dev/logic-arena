@@ -29,6 +29,9 @@ interface CampaignFrame {
 
 type RuntimeArenaRobot = ArenaRobot & {
   _fireCooldown?: number;
+  _lastMoveAngle?: number;
+  _lastMoveValue?: number;
+  _lastMoveFast?: boolean;
 };
 
 interface ArenaCanvasProps {
@@ -463,7 +466,10 @@ export const ArenaCanvas = memo(function ArenaCanvas({
           robot.health = src.health ?? robot.health;
           robot.energy = src.energy ?? robot.energy;
           robot.isAlive = src.health != null ? src.health > 0 : src.isAlive ?? robot.isAlive;
-          if (src.scanActive) {
+          const hasProjectile = (frame.projectiles ?? []).some(
+            (p: CampaignFrameProjectile) => p.ownerId === robot.id,
+          );
+          if (src.scanActive || hasProjectile) {
             startFovSweep(fovTimerRef.current, robot.id);
           }
         }
@@ -517,8 +523,15 @@ export const ArenaCanvas = memo(function ArenaCanvas({
               if (foe) {
                 const action = tickEvaluator(es, robot, foe, state.projectiles, nextId);
                 if (action) {
-                  if (action.type === 'scan') {
+                  if (action.type === 'scan' || action.type === 'fire' || action.type === 'burst') {
                     startFovSweep(fovTimerRef.current, robot.id);
+                  }
+                  if (action.type === 'move') {
+                    (robot as RuntimeArenaRobot)._lastMoveAngle = robot.angle;
+                    (robot as RuntimeArenaRobot)._lastMoveValue = action.value;
+                    (robot as RuntimeArenaRobot)._lastMoveFast = action.fast;
+                  } else if (action.type === 'stop') {
+                    (robot as RuntimeArenaRobot)._lastMoveAngle = undefined;
                   }
                   applyAction(action, robot, state.projectiles, nextId);
                 }
@@ -533,10 +546,29 @@ export const ArenaCanvas = memo(function ArenaCanvas({
         if ((runtimeRobot._fireCooldown ?? 0) > 0) {
           runtimeRobot._fireCooldown = (runtimeRobot._fireCooldown ?? 0) - 1;
         }
+        // Smooth per-frame movement between eval ticks
+        if (robot.isAlive && runtimeRobot._lastMoveAngle !== undefined) {
+          const PER_FRAME_SPD = runtimeRobot._lastMoveFast ? 0.004 : 0.002;
+          const v = runtimeRobot._lastMoveValue ?? 0;
+          if (v === -2) {
+            robot.x -= Math.cos(robot.angle) * PER_FRAME_SPD;
+            robot.y -= Math.sin(robot.angle) * PER_FRAME_SPD;
+          } else {
+            robot.x += Math.cos(robot.angle) * PER_FRAME_SPD;
+            robot.y += Math.sin(robot.angle) * PER_FRAME_SPD;
+          }
+          robot.x = Math.max(ROBOT_SIZE, Math.min(1 - ROBOT_SIZE, robot.x));
+          robot.y = Math.max(ROBOT_SIZE, Math.min(1 - ROBOT_SIZE, robot.y));
+        }
       }
 
       for (const [id, t] of fovTimerRef.current) {
         if (t > 0) fovTimerRef.current.set(id, t - 1);
+      }
+      for (const robot of state.robots) {
+        if (robot.id === 'enemy' && robot.isAlive && (fovTimerRef.current.get(robot.id) ?? 0) === 0) {
+          fovTimerRef.current.set(robot.id, FOV_SWEEP_FRAMES);
+        }
       }
       if (flashTimerRef.current > 0) flashTimerRef.current--;
 

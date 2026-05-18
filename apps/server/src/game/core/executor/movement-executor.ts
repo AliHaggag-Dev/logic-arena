@@ -54,7 +54,13 @@ export class MovementExecutor {
     }
 
     const slowMult = robot.speedMultiplier ?? 1.0;
-    const targetSpeed = this.MOVE_SPEED * slowMult;
+
+    // --- _SYS_SPEED_MULT: script-controlled speed multiplier ---
+    const sysSpeedMult =
+      typeof memory._SYS_SPEED_MULT === 'number'
+        ? (memory._SYS_SPEED_MULT as number)
+        : 1;
+    const targetSpeed = this.MOVE_SPEED * slowMult * sysSpeedMult;
 
     if (actionCommand === 'BACKUP') {
       if (robot.facingDirection === undefined) {
@@ -71,6 +77,85 @@ export class MovementExecutor {
     const speedMultiplier =
       actionCommand === 'MOVE_FAST' ? this.MOVE_FAST_MULTIPLIER : 1;
     const speed = targetSpeed * speedMultiplier;
+
+    // --- _SYS_FACE_X / _SYS_FACE_Y: independent FOV aiming ---
+    // Apply before any movement branch so FOV tracks the target point
+    // regardless of which movement mode is active. Does NOT return early.
+    if (
+      typeof memory._SYS_FACE_X === 'number' &&
+      typeof memory._SYS_FACE_Y === 'number'
+    ) {
+      const fx = memory._SYS_FACE_X as number;
+      const fy = memory._SYS_FACE_Y as number;
+      const dx = fx - robot.position.x;
+      const dy = fy - robot.position.y;
+      robot.fovDirection = Math.atan2(dy, dx);
+    }
+
+    // --- _SYS_ORBIT_X / _SYS_ORBIT_Y / _SYS_ORBIT_R: circular orbit ---
+    if (
+      typeof memory._SYS_ORBIT_X === 'number' &&
+      typeof memory._SYS_ORBIT_Y === 'number' &&
+      typeof memory._SYS_ORBIT_R === 'number'
+    ) {
+      const cx = memory._SYS_ORBIT_X as number;
+      const cy = memory._SYS_ORBIT_Y as number;
+      const orbitR = memory._SYS_ORBIT_R as number;
+      const radius = Math.abs(orbitR);
+      const clockwise = orbitR >= 0;
+
+      // Current angle from center to robot
+      const currentAngle = Math.atan2(
+        robot.position.y - cy,
+        robot.position.x - cx,
+      );
+
+      // Compute tangent direction (perpendicular to radius)
+      const ORBIT_STEP = 0.15; // radians per tick advance
+      const stepDir = clockwise ? ORBIT_STEP : -ORBIT_STEP;
+      const nextAngle = currentAngle + stepDir;
+
+      // Target point on the orbit circle ahead of current position
+      const tx = cx + Math.cos(nextAngle) * radius;
+      const ty = cy + Math.sin(nextAngle) * radius;
+
+      const dx = tx - robot.position.x;
+      const dy = ty - robot.position.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist > 1) {
+        const moveAngle = Math.atan2(dy, dx);
+        robot.velocity.x = Math.cos(moveAngle) * speed;
+        robot.velocity.y = Math.sin(moveAngle) * speed;
+        robot.rotation = moveAngle;
+        robot.isManualRotation = true;
+      } else {
+        robot.velocity.x = 0;
+        robot.velocity.y = 0;
+      }
+
+      robot.isBackingUp = false;
+      robot.facingDirection = robot.rotation;
+      return;
+    }
+
+    // --- _SYS_STRAFE: perpendicular lateral movement ---
+    if (
+      typeof memory._SYS_STRAFE === 'number' &&
+      memory._SYS_STRAFE !== 0
+    ) {
+      const strafeDir = (memory._SYS_STRAFE as number) > 0 ? 1 : -1;
+      // Perpendicular to current rotation: +π/2 = right, -π/2 = left
+      const HALF_PI = Math.PI / 2;
+      const strafeAngle = robot.rotation + strafeDir * HALF_PI;
+      robot.velocity.x = Math.cos(strafeAngle) * speed;
+      robot.velocity.y = Math.sin(strafeAngle) * speed;
+      // Body rotation stays fixed — only movement direction changes
+      robot.isManualRotation = true;
+      robot.isBackingUp = false;
+      robot.facingDirection = robot.rotation;
+      return;
+    }
 
     // --- SECRET RAIL SYSTEM FOR CAMPAIGN ROBOT ---
     // _SYS_TARGET_X/Y are in pixel space (0-800, 0-600), same as robot.position

@@ -11,22 +11,29 @@ export const ARRAYS_LEVELS: CampaignLevel[] = [
     difficulty: 'EASY',
     pointsReward: D.EASY,
     description:
-      'It processes a fixed sensor array of five readings. Fires once for every positive value. Rigid silicon logic — carved before the battle began.',
-    hint: 'The array is static. Its fire pattern is [1,0,1,1,0] — predictable. Dodge the 3 fire slots.',
+      'It processes a hardcoded movement array: [1, 0, -1, 0]. Positive means move forward, negative means backup, zero means stop and fire. A fixed sequence of physical actions you must decode.',
+    hint: 'The pattern is move, shoot, backup, shoot. It repeats every 4 ticks. Exploit the backup phase.',
     enemyScript: `IF NOT init THEN
-  SET sensors = [1, 0, 1, 1, 0]
+  SET cmds = [1, 0, -1, 0]
   SET i = 0
   SET init = 1
 END
-IF i < 5 THEN
-  IF sensors[i] > 0 THEN
-    FIRE
-  ELSE
-    MOVE RIGHT
-  END
-  SET i = i + 1
+SET cmd = cmds[i]
+IF cmd == 1 THEN
+  MOVE
 ELSE
-  MOVE LEFT
+  IF cmd == -1 THEN
+    BACKUP
+  ELSE
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+      FIRE
+    END
+    STOP
+  END
+END
+SET i = i + 1
+IF i > 3 THEN
   SET i = 0
 END`,
   },
@@ -38,21 +45,23 @@ END`,
     difficulty: 'EASY',
     pointsReward: D.EASY,
     description:
-      'It reads a movement array: positive = move right, zero = fire. A choreographed dance of death encoded in a list of commands.',
-    hint: 'The movement array is [1,1,0,1,0,0]. It fires at indices 2, 4, 5. Strike during the moves.',
+      'It reads from a strafe direction array: [1, 1, -1, -1]. It strafes right twice, then left twice, firing if you are visible. A choreographed lateral dance.',
+    hint: 'The array dictates its strafe. Follow its lateral movement and anticipate the reversal.',
     enemyScript: `IF NOT init THEN
-  SET cmds = [1, 1, 0, 1, 0, 0]
+  SET strafes = [1, 1, -1, -1]
   SET i = 0
   SET init = 1
 END
-IF i < 6 THEN
-  IF cmds[i] > 0 THEN
-    MOVE RIGHT
-  ELSE
-    FIRE
-  END
-  SET i = i + 1
+SET _SYS_STRAFE = strafes[i]
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  FIRE
 ELSE
+  SCAN
+END
+MOVE
+SET i = i + 1
+IF i > 3 THEN
   SET i = 0
 END`,
   },
@@ -64,17 +73,31 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'It queries all visible enemies and processes the first two entries. Each confirmed target receives a double burst. A systematic predator that hunts by index.',
-    hint: 'If it has multiple targets, it splits attention. Use that distraction window.',
-    enemyScript: `SET enemies = GET_ALL_VISIBLE_ENEMIES()
-IF LENGTH(enemies) > 1 THEN
-  FIRE
-ELSE
-  IF LENGTH(enemies) > 0 THEN
-    FIRE
-  END
+      'It fetches ALL visible enemies into an array and iterates over them. It targets the one with the lowest health. You must act as the lowest-health target to manipulate its aggro.',
+    hint: 'Use \`GET_ALL_VISIBLE_ENEMIES()\` mechanics. It always attacks the weakest. If you are weak, it will lock onto you with a speed-boosted advance.',
+    enemyScript: `IF NOT init THEN
+  SET init = 1
 END
-MOVE RIGHT`,
+SET enemies = GET_ALL_VISIBLE_ENEMIES()
+SET len = LENGTH(enemies)
+IF len > 0 THEN
+  SET best = enemies[0]
+  SET i = 1
+  WHILE i < len DO
+    SET e = enemies[i]
+    IF e[3] < best[3] THEN
+      SET best = e
+    END
+    SET i = i + 1
+  END
+  SET rotation = ATAN2(best[2] - POSITION_Y, best[1] - POSITION_X)
+  SET _SYS_SPEED_MULT = 1.5
+  FIRE
+  MOVE
+ELSE
+  SCAN
+  MOVE RIGHT
+END`,
   },
   {
     id: 'arr-04',
@@ -84,7 +107,7 @@ MOVE RIGHT`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'Its fire pattern is encoded in an array: [2,1,3,1]. Each value is how many shots it fires per cycle. Four cycles, variable intensity. A rhythm you must decode.',
+      'Its fire pattern is encoded in an array: [2, 1, 3, 1]. Each value is the number of shots it fires per cycle. Four cycles, variable intensity. It locks FOV and strafes while bursting.',
     hint: 'Cycle 3 fires 3 shots — the heaviest burst. Dodge during cycle 3, attack during cycles 2 and 4.',
     enemyScript: `IF NOT init THEN
   SET bursts = [2, 1, 3, 1]
@@ -92,17 +115,25 @@ MOVE RIGHT`,
   SET shots = 0
   SET init = 1
 END
-IF cycle < 4 THEN
-  IF shots < bursts[cycle] THEN
+IF shots < bursts[cycle] THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET _SYS_FACE_X = NEAREST_VISIBLE_X
+    SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
     FIRE
-    SET shots = shots + 1
   ELSE
-    MOVE RIGHT
-    SET shots = 0
-    SET cycle = cycle + 1
+    SCAN
   END
+  SET _SYS_STRAFE = 1
+  MOVE
+  SET shots = shots + 1
 ELSE
-  SET cycle = 0
+  SET shots = 0
+  SET cycle = cycle + 1
+  IF cycle > 3 THEN
+    SET cycle = 0
+  END
+  MOVE RIGHT
 END`,
   },
   {
@@ -113,25 +144,30 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'It follows a waypoint array: each value encodes how many steps right to take before firing. Waypoints: [1,2,1,3]. It will always fire at exact coordinates.',
-    hint: 'Calculate the fire positions: step 1, step 3, step 4, step 7. Avoid those coordinates.',
+      'It follows a waypoint coordinates array: [[200, 200], [600, 200], [600, 400], [200, 400]]. It uses the exact rail system to navigate. Upon reaching each waypoint, it executes a burst fire.',
+    hint: 'The coordinates form a rectangle. It stops and fires at the corners. Attack while it transits the edges.',
     enemyScript: `IF NOT init THEN
-  SET waypoints = [1, 2, 1, 3]
-  SET w = 0
-  SET steps = 0
+  SET wpx = [200, 600, 600, 200]
+  SET wpy = [200, 200, 400, 400]
+  SET wp = 0
   SET init = 1
 END
-IF w < 4 THEN
-  IF steps < waypoints[w] THEN
-    MOVE RIGHT
-    SET steps = steps + 1
+SET _SYS_TARGET_X = wpx[wp]
+SET _SYS_TARGET_Y = wpy[wp]
+IF _SYS_AT_TARGET == 1 THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
   ELSE
-    FIRE
-    SET steps = 0
-    SET w = w + 1
+    SCAN
   END
+  SET wp = wp + 1
+  IF wp > 3 THEN
+    SET wp = 0
+  END
+  SET _SYS_AT_TARGET = 0
 ELSE
-  SET w = 0
+  MOVE
 END`,
   },
   {
@@ -142,30 +178,34 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'It maintains a priority array: [3,1,2,0,2]. It processes highest first. Priority 3 = triple burst. Priority 2 = double. Priority 1 = single. Priority 0 = reposition. Threat triage.',
-    hint: 'It processes [3,2,2,1,0] in sorted order. The heaviest fire comes first. Survive the opening salvo.',
+      'It processes targets by maintaining an internal priority array of threats based on distance. It loops through all visible enemies, sorting them into a pseudo-priority queue. Closest target receives an orbital strike.',
+    hint: 'It always orbits and fires at the absolute closest target. Manipulate your distance to control its orbit center.',
     enemyScript: `IF NOT init THEN
-  SET prio = [3, 1, 2, 0, 2]
-  SET i = 0
   SET init = 1
 END
-IF i < 5 THEN
-  IF prio[i] > 2 THEN
-    FIRE
-  ELSE
-    IF prio[i] > 1 THEN
-      FIRE
-    ELSE
-      IF prio[i] > 0 THEN
-        FIRE
-      ELSE
-        MOVE RIGHT
-      END
+SET enemies = GET_ALL_VISIBLE_ENEMIES()
+SET len = LENGTH(enemies)
+IF len > 0 THEN
+  SET best = enemies[0]
+  SET i = 1
+  WHILE i < len DO
+    SET e = enemies[i]
+    IF e[0] < best[0] THEN
+      SET best = e
     END
+    SET i = i + 1
   END
-  SET i = i + 1
+  SET _SYS_ORBIT_X = best[1]
+  SET _SYS_ORBIT_Y = best[2]
+  SET _SYS_ORBIT_R = 100
+  SET _SYS_FACE_X = best[1]
+  SET _SYS_FACE_Y = best[2]
+  SET rotation = ATAN2(best[2] - POSITION_Y, best[1] - POSITION_X)
+  FIRE
+  MOVE
 ELSE
-  SET i = 0
+  SCAN
+  MOVE RIGHT
 END`,
   },
   {
@@ -176,25 +216,38 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'A 9-cell fire matrix. Each non-zero cell triggers a RAYCAST. A confirmed ray triggers 3 shots. Empty cells trigger repositioning. It maps the arena before you blink.',
-    hint: 'Use early cells (when it raycasts empty zones) to build attack position. By cell 6, it has you.',
+      'A multi-dimensional speed multiplier matrix: [0.5, 1.0, 2.0, 1.0]. It iterates this array to modulate its target speed. At 2.0 speed, it also activates burst fire. You must survive the overdrive cycle.',
+    hint: 'Cycle 3 is speed 2.0 + burst fire. Predict the tempo changes and prepare for the sudden rush.',
     enemyScript: `IF NOT init THEN
-  SET matrix = [1, 0, 1, 0, 1, 0, 1, 1, 0]
-  SET i = 0
+  SET mults = [0.5, 1, 2, 1]
+  SET tick = 0
+  SET idx = 0
   SET init = 1
 END
-IF i < 9 THEN
-  IF matrix[i] > 0 THEN
-    SET ray = RAYCAST(0)
-    IF ray < 300 THEN
-      FIRE
-    END
+SET _SYS_SPEED_MULT = mults[idx]
+IF mults[idx] == 2 THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
   ELSE
-    MOVE RIGHT
+    SCAN
   END
-  SET i = i + 1
 ELSE
-  SET i = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
+  ELSE
+    SCAN
+  END
+END
+MOVE
+SET tick = tick + 1
+IF tick > 5 THEN
+  SET tick = 0
+  SET idx = idx + 1
+  IF idx > 3 THEN
+    SET idx = 0
+  END
 END`,
   },
   {
@@ -205,30 +258,36 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'It cross-references two arrays: one for scan thresholds, one for fire counts. If scan exceeds the threshold at that index, it fires the corresponding count. Parallel data, parallel destruction.',
-    hint: 'The threshold array has a 0 at index 2 — it always fires 3 shots there regardless of scan. Dodge index 2.',
+      'It cross-references two arrays: one for orbit radii [80, -100, 150, -80] and one for burst counts [1, 2, 1, 3]. Positive radius means clockwise, negative means counter-clockwise. Parallel data structures driving complex movement and attack.',
+    hint: 'Index 3 has radius -80 (tight counter-clockwise orbit) and fires 3 shots. Break line of sight when it tightens the circle.',
     enemyScript: `IF NOT init THEN
-  SET thresh = [1, 1, 0, 1]
-  SET target_shots = [2, 1, 3, 2]
-  SET i = 0
-  SET s = 0
+  SET radii = [80, -100, 150, -80]
+  SET counts = [1, 2, 1, 3]
+  SET idx = 0
+  SET shots = 0
   SET init = 1
 END
-IF i < 4 THEN
-  IF VISIBLE_ENEMY_COUNT > thresh[i] THEN
-    IF s < target_shots[i] THEN
-      FIRE
-      SET s = s + 1
-    ELSE
-      SET s = 0
-      SET i = i + 1
-    END
+IF shots < counts[idx] THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET _SYS_ORBIT_X = NEAREST_VISIBLE_X
+    SET _SYS_ORBIT_Y = NEAREST_VISIBLE_Y
+    SET _SYS_ORBIT_R = radii[idx]
+    SET _SYS_FACE_X = NEAREST_VISIBLE_X
+    SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
   ELSE
-    MOVE RIGHT
-    SET i = i + 1
+    SCAN
   END
+  MOVE
+  SET shots = shots + 1
 ELSE
-  SET i = 0
+  SET shots = 0
+  SET idx = idx + 1
+  IF idx > 3 THEN
+    SET idx = 0
+  END
+  MOVE RIGHT
 END`,
   },
   {
@@ -239,25 +298,48 @@ END`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'It stores the last 4 scan results in a circular buffer. When the buffer fills, it counts positives. If 3 or more are positive, maximum barrage. Under 3, cautious fire. It remembers your recent movements.',
-    hint: 'Alternate between visible and hidden across the 4 scan cycles to keep its positive count under 3.',
+      'It stores your last 5 detected distances in a circular buffer array. It computes the average. If the average is decreasing (you are approaching), it reverses polarity and orbits outwards. If you are fleeing, it speeds up to chase. A sliding-window temporal analysis algorithm.',
+    hint: 'It calculates average distance over time. Approach erratically to corrupt its ring buffer and prevent it from adopting an optimal combat stance.',
     enemyScript: `IF NOT init THEN
-  SET buf = [0, 0, 0, 0]
-  SET i = 0
+  SET buf = [0, 0, 0, 0, 0]
+  SET head = 0
+  SET filled = 0
+  SET prev_avg = 0
   SET init = 1
 END
-IF i < 4 THEN
-  SET buf[i] = VISIBLE_ENEMY_COUNT
-  MOVE RIGHT
-  SET i = i + 1
-ELSE
-  SET sum = buf[0] + buf[1] + buf[2] + buf[3]
-  IF sum > 2 THEN
-    FIRE
-  ELSE
-    MOVE LEFT
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET buf[head] = distance
+  SET head = head + 1
+  IF head > 4 THEN
+    SET head = 0
   END
-  SET i = 0
+  IF filled < 5 THEN
+    SET filled = filled + 1
+  END
+  
+  SET sum = buf[0] + buf[1] + buf[2] + buf[3] + buf[4]
+  SET avg = sum / 5
+  
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  IF filled == 5 THEN
+    IF avg < prev_avg THEN
+      SET _SYS_ORBIT_X = NEAREST_VISIBLE_X
+      SET _SYS_ORBIT_Y = NEAREST_VISIBLE_Y
+      SET _SYS_ORBIT_R = -120
+      SET _SYS_SPEED_MULT = 1.5
+      BURST_FIRE
+    ELSE
+      SET _SYS_SPEED_MULT = 2
+      FIRE
+    END
+  ELSE
+    FIRE
+  END
+  SET prev_avg = avg
+  MOVE
+ELSE
+  SCAN
+  MOVE RIGHT
 END`,
   },
   {
@@ -268,35 +350,40 @@ END`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'It constructs a dynamic fire plan from sensor data. Scans 5 positions, stores results, then iterates the results array firing proportional to each value. A full-spectrum area denial system.',
-    hint: 'Its fire intensity scales with how many scans detect you. Minimize scan exposure — hide for 4 of 5 scans.',
+      'It uses \`GET_ALL_VISIBLE_ENEMIES\` and constructs an array of threats. It then iterates the array, applies RAYCAST to check for line-of-sight on each, and caches valid targets into a secondary array. It then pops from this target array to unleash a relentless barrage while strafing dynamically. O(N) array filtering in real-time.',
+    hint: 'It explicitly uses RAYCAST to filter out blocked targets. Hide behind obstacles; if the raycast hits the wall first, it removes you from its target array and ignores you.',
     enemyScript: `IF NOT init THEN
-  SET results = [0, 0, 0, 0, 0]
-  SET i = 0
-  SET phase = 0
+  SET targets = []
   SET init = 1
 END
-IF phase == 0 THEN
-  IF i < 5 THEN
-    SET results[i] = VISIBLE_ENEMY_COUNT
-    MOVE RIGHT
-    SET i = i + 1
-  ELSE
-    SET phase = 1
-    SET i = 0
-  END
-ELSE
-  IF i < 5 THEN
-    IF results[i] > 0 THEN
-      FIRE
-    ELSE
-      MOVE LEFT
+SET enemies = GET_ALL_VISIBLE_ENEMIES()
+SET len = LENGTH(enemies)
+IF len > 0 THEN
+  SET i = 0
+  WHILE i < len DO
+    SET e = enemies[i]
+    SET absAim = ATAN2(e[2] - POSITION_Y, e[1] - POSITION_X)
+    SET relAim = absAim - rotation
+    SET losHit = RAYCAST(relAim)
+    IF losHit >= e[0] THEN
+      SET tmp = PUSH(targets, e)
     END
     SET i = i + 1
-  ELSE
-    SET phase = 0
-    SET i = 0
   END
+END
+
+SET tLen = LENGTH(targets)
+IF tLen > 0 THEN
+  SET focus = POP(targets)
+  SET _SYS_FACE_X = focus[1]
+  SET _SYS_FACE_Y = focus[2]
+  SET rotation = ATAN2(focus[2] - POSITION_Y, focus[1] - POSITION_X)
+  SET _SYS_STRAFE = 1
+  BURST_FIRE
+  MOVE
+ELSE
+  SCAN
+  MOVE RIGHT
 END`,
   },
 ];

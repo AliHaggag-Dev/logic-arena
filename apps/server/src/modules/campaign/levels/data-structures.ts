@@ -11,27 +11,35 @@ export const DATA_STRUCTURES_LEVELS: CampaignLevel[] = [
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'It maintains internal state via a dictionary. Mode 0: advance. Mode 1: fire. Mode 2: retreat and reset. An adversary with memory.',
-    hint: 'Mode 2 (retreat) leaves it defenseless. Bait it into mode 1, then strike during mode 2.',
+      'It maintains an internal state via a dictionary: { mode: "PATROL", shots: 0 }. mode "PATROL" orbits the center. When it sees you, it swaps to "ENGAGE" mode, firing until shots reach 3, then transitions back. An adversary with a formal state dictionary.',
+    hint: 'Watch the transition. After 3 shots in ENGAGE mode, it drops aggro and returns to PATROL mode briefly.',
     enemyScript: `IF NOT init THEN
-  SET state = { mode: 0, shots: 0 }
+  SET state = { mode: "PATROL", shots: 0 }
   SET init = 1
 END
-IF state.mode == 0 THEN
-  MOVE RIGHT
-  SET state.mode = 1
-ELSE
-  IF state.mode == 1 THEN
-    FIRE
-    SET state.shots = state.shots + 1
-    IF state.shots >= 2 THEN
-      SET state.mode = 2
-    END
-  ELSE
-    MOVE LEFT
-    SET state.mode = 0
+IF state.mode == "PATROL" THEN
+  SET _SYS_ORBIT_X = 400
+  SET _SYS_ORBIT_Y = 300
+  SET _SYS_ORBIT_R = 100
+  MOVE
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET state.mode = "ENGAGE"
     SET state.shots = 0
   END
+ELSE
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET _SYS_FACE_X = NEAREST_VISIBLE_X
+    SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
+    SET state.shots = state.shots + 1
+    IF state.shots >= 3 THEN
+      SET state.mode = "PATROL"
+    END
+  ELSE
+    SCAN
+  END
+  MOVE RIGHT
 END`,
   },
   {
@@ -42,26 +50,25 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'It loads its combat parameters from a config dictionary: fire rate, scan range flag, and aggression level. A bot that reads its own instructions from data, not code.',
-    hint: 'Its aggression is set to 2 — moderate. It fires twice per contact. Outgun it with 3+ shots.',
+      'It loads its combat parameters from a config dictionary: { speed: 1.5, strafe: -1, burst: 1 }. It acts purely on these dictionary values. A bot that reads its own runtime parameters to move.',
+    hint: 'Its config dictates a constant left-strafe (-1) with a 1.5x speed multiplier. Aim where its strafe will carry it.',
     enemyScript: `IF NOT init THEN
-  SET cfg = { rate: 2, scanFirst: 1, aggro: 2 }
-  SET s = 0
+  SET cfg = { speed: 1.5, strafe: -1, burst: 1 }
   SET init = 1
 END
-IF cfg.scanFirst > 0 THEN
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    IF s < cfg.rate THEN
-      FIRE
-      SET s = s + 1
-    ELSE
-      SET s = 0
-    END
+SET _SYS_SPEED_MULT = cfg.speed
+SET _SYS_STRAFE = cfg.strafe
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  IF cfg.burst == 1 THEN
+    BURST_FIRE
   ELSE
-    MOVE RIGHT
-    SET s = 0
+    FIRE
   END
-END`,
+ELSE
+  SCAN
+END
+MOVE`,
   },
   {
     id: 'ds-03',
@@ -71,30 +78,29 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'It tracks hits and misses in a dictionary. After 3 scans, if hits outnumber misses, it goes aggressive. Otherwise it retreats. A bot that adapts its strategy to your behavior.',
-    hint: 'Stay hidden for 2 of 3 scans. Force misses > hits to trigger its retreat branch.',
+      'It tracks its own accuracy stats in a dictionary: { sightings: 0, ticks: 0 }. It calculates a threat ratio. If you remain visible for a high percentage of ticks, it enters orbit mode. If you hide, it defaults to erratic strafing.',
+    hint: 'Keep its sighting ratio low. Hide behind cover frequently so it remains in its less accurate strafe mode.',
     enemyScript: `IF NOT init THEN
-  SET stats = { hits: 0, misses: 0 }
-  SET i = 0
+  SET stats = { sightings: 0, ticks: 0 }
   SET init = 1
 END
-IF i < 3 THEN
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    SET stats.hits = stats.hits + 1
-  ELSE
-    SET stats.misses = stats.misses + 1
-  END
-  SET i = i + 1
+SET stats.ticks = stats.ticks + 1
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET stats.sightings = stats.sightings + 1
+END
+SET ratio = stats.sightings / stats.ticks
+IF ratio > 0.5 THEN
+  SET _SYS_ORBIT_X = 400
+  SET _SYS_ORBIT_Y = 300
+  SET _SYS_ORBIT_R = -120
 ELSE
-  IF stats.hits > stats.misses THEN
-    FIRE
-  ELSE
-    MOVE LEFT
-  END
-  SET i = 0
-  SET stats.hits = 0
-  SET stats.misses = 0
-END`,
+  SET _SYS_STRAFE = 1
+END
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  FIRE
+END
+MOVE`,
   },
   {
     id: 'ds-04',
@@ -104,30 +110,35 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'It stores phase data in a dictionary and cycles through phases. Phase 1: scan. Phase 2: fire based on stored scan. Phase 3: reposition based on stored results. A delayed-reaction engine.',
-    hint: 'Phase 2 uses the stored scan from Phase 1. If you dodge Phase 1 scan, Phase 2 does nothing.',
+      'It stores multi-phase data in a dictionary: { phase: 1, targetX: 0, targetY: 0 }. Phase 1 locks coordinates. Phase 2 navigates to them perfectly. Phase 3 unleashes a payload at that exact spot. A delayed-execution coordinate system.',
+    hint: 'It locks your coordinates in Phase 1, then travels there. Move away from your old position; it will fire at a ghost.',
     enemyScript: `IF NOT init THEN
-  SET data = { phase: 1, scan: 0, fired: 0 }
+  SET data = { phase: 1, targetX: 0, targetY: 0 }
   SET init = 1
 END
 IF data.phase == 1 THEN
-  SET data.scan = VISIBLE_ENEMY_COUNT
-  SET data.phase = 2
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET data.targetX = NEAREST_VISIBLE_X
+    SET data.targetY = NEAREST_VISIBLE_Y
+    SET data.phase = 2
+  ELSE
+    SCAN
+    MOVE RIGHT
+  END
 ELSE
   IF data.phase == 2 THEN
-    IF data.scan > 0 THEN
-      FIRE
-      SET data.fired = data.fired + 1
-    END
-    SET data.phase = 3
-  ELSE
-    IF data.fired > 0 THEN
-      MOVE LEFT
+    SET _SYS_TARGET_X = data.targetX
+    SET _SYS_TARGET_Y = data.targetY
+    IF _SYS_AT_TARGET == 1 THEN
+      SET data.phase = 3
     ELSE
-      MOVE RIGHT
+      MOVE
     END
-    SET data.phase = 1
-    SET data.fired = 0
+  ELSE
+    IF data.phase == 3 THEN
+      BURST_FIRE
+      SET data.phase = 1
+    END
   END
 END`,
   },
@@ -139,20 +150,35 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'A hash map of your last four positions, weighted by recency. It predicts your next move and fires preemptively at where you will be. Escape the prediction lattice.',
-    hint: 'Break your movement pattern. Alternate left-right unpredictably — its predictions become noise.',
+      'It uses a history dictionary { p1: 0, p2: 0, p3: 0 } to store your distances over time. By comparing p1 to p3, it calculates your velocity delta. If you are rushing it, it backs up fast. If you are fleeing, it boosts forward. A differential equation bot.',
+    hint: 'It reacts to your approach speed. Move laterally (strafe) to keep your distance delta near zero, confusing its velocity checks.',
     enemyScript: `IF NOT init THEN
-  SET history = { p1: 0, p2: 0, p3: 0, p4: 0 }
+  SET hist = { p1: 0, p2: 0, p3: 0 }
   SET init = 1
 END
-SET history.p4 = history.p3
-SET history.p3 = history.p2
-SET history.p2 = history.p1
-SET history.p1 = VISIBLE_ENEMY_COUNT
-IF history.p1 > 0 THEN
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET hist.p3 = hist.p2
+  SET hist.p2 = hist.p1
+  SET hist.p1 = distance
+  
+  SET delta = hist.p3 - hist.p1
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  
+  IF delta > 20 THEN
+    SET _SYS_SPEED_MULT = 1.5
+    BACKUP
+  ELSE
+    IF delta < -20 THEN
+      SET _SYS_SPEED_MULT = 1.5
+      MOVE
+    ELSE
+      SET _SYS_STRAFE = 1
+      MOVE
+    END
+  END
   FIRE
-  MOVE LEFT
 ELSE
+  SCAN
   MOVE RIGHT
 END`,
   },
@@ -164,23 +190,48 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'Two dictionaries — one for offense, one for defense. Offense tracks targets. Defense tracks incoming threats. It cross-references both to decide: fire, dodge, or hold. A two-brain combatant.',
-    hint: 'Its defense register needs SCAN > 0 to trigger evasion. If you fire from outside scan range, it never dodges.',
+      'Two dictionaries — atk { aggro: 0 } and def { evade: 0 }. When your health is low, it boosts aggro (orbit + burst). When its own health drops, it boosts evade (backup + strafe). It blends two separate concerns into a singular threat matrix.',
+    hint: 'It evaluates both your health and its health. If you damage it, the def register takes over, making it defensive. Press the attack.',
     enemyScript: `IF NOT init THEN
-  SET atk = { target: 0, shots: 0 }
-  SET def = { threat: 0, evade: 0 }
+  SET atk = { aggro: 0 }
+  SET def = { evade: 0 }
   SET init = 1
 END
-SET atk.target = VISIBLE_ENEMY_COUNT
-SET def.threat = VISIBLE_ENEMY_COUNT
-IF atk.target > 0 THEN
-  FIRE
-  SET atk.shots = atk.shots + 1
+SET enemies = GET_ALL_VISIBLE_ENEMIES()
+IF LENGTH(enemies) > 0 THEN
+  SET e = enemies[0]
+  IF e[3] < 50 THEN
+    SET atk.aggro = 1
+  ELSE
+    SET atk.aggro = 0
+  END
 END
-IF def.threat > 0 THEN
-  MOVE LEFT
-  SET def.evade = def.evade + 1
+IF health < 50 THEN
+  SET def.evade = 1
 ELSE
+  SET def.evade = 0
+END
+
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  IF def.evade == 1 THEN
+    SET _SYS_STRAFE = -1
+    FIRE
+    BACKUP
+  ELSE
+    IF atk.aggro == 1 THEN
+      SET _SYS_ORBIT_X = NEAREST_VISIBLE_X
+      SET _SYS_ORBIT_Y = NEAREST_VISIBLE_Y
+      SET _SYS_ORBIT_R = 100
+      BURST_FIRE
+      MOVE
+    ELSE
+      FIRE
+      MOVE
+    END
+  END
+ELSE
+  SCAN
   MOVE RIGHT
 END`,
   },
@@ -192,21 +243,36 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'It manages an ammo inventory. Starting with 8 rounds, it fires only when scan is positive and ammo is available. When ammo runs out, it retreats permanently. Resource-aware warfare.',
-    hint: 'Bait its scans to drain ammo on misses. After 8 shots it becomes harmless.',
+      'It manages a literal ammo dictionary: { bullets: 15, heat: 0 }. Firing consumes bullets and generates heat. If heat > 10, it must stop and cool down. If bullets hit 0, it flees permanently. A resource-constrained combat simulation.',
+    hint: 'Survive its 15 shots. Make it fire rapidly to build up heat and force a cooldown window.',
     enemyScript: `IF NOT init THEN
-  SET inv = { ammo: 8, kills: 0 }
+  SET inv = { bullets: 15, heat: 0 }
   SET init = 1
 END
-IF inv.ammo > 0 THEN
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
-    SET inv.ammo = inv.ammo - 2
+IF inv.heat > 0 THEN
+  SET inv.heat = inv.heat - 1
+END
+IF inv.bullets > 0 THEN
+  IF inv.heat < 10 THEN
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+      FIRE
+      SET inv.bullets = inv.bullets - 1
+      SET inv.heat = inv.heat + 3
+    ELSE
+      SCAN
+    END
+    SET _SYS_ORBIT_X = 400
+    SET _SYS_ORBIT_Y = 300
+    SET _SYS_ORBIT_R = 180
+    MOVE
   ELSE
-    MOVE RIGHT
+    SET _SYS_STRAFE = 1
+    MOVE
   END
 ELSE
-  MOVE LEFT
+  SET _SYS_SPEED_MULT = 1.5
+  BACKUP
 END`,
   },
   {
@@ -217,26 +283,51 @@ END`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'It builds a neural response map: scan results feed into a weight dictionary. Positive scans increase the fire weight. After 4 samples, it fires proportional to accumulated weight. A bot that learns to fight you.',
-    hint: 'Keep scan detections to a minimum. The fire weight directly scales its output burst.',
+      'It tracks quadrants in a dictionary map: { q1: 0, q2: 0, q3: 0, q4: 0 }. It increments the quadrant you are detected in. Over time, it biases its movement to orbit the quadrant with the highest score. It learns where you like to hide.',
+    hint: 'If you camp one area, it will lock its orbit onto that zone. Move across the arena to split its neural weights.',
     enemyScript: `IF NOT init THEN
-  SET brain = { weight: 0, samples: 0 }
+  SET brain = { q1: 0, q2: 0, q3: 0, q4: 0 }
   SET init = 1
 END
-IF brain.samples < 4 THEN
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    SET brain.weight = brain.weight + 1
-  END
-  SET brain.samples = brain.samples + 1
-  MOVE RIGHT
-ELSE
-  IF brain.weight > 0 THEN
-    FIRE
-    SET brain.weight = brain.weight - 1
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  IF NEAREST_VISIBLE_X < 400 THEN
+    IF NEAREST_VISIBLE_Y < 300 THEN
+      SET brain.q1 = brain.q1 + 1
+    ELSE
+      SET brain.q3 = brain.q3 + 1
+    END
   ELSE
-    SET brain.samples = 0
+    IF NEAREST_VISIBLE_Y < 300 THEN
+      SET brain.q2 = brain.q2 + 1
+    ELSE
+      SET brain.q4 = brain.q4 + 1
+    END
   END
-END`,
+  FIRE
+END
+SET max = brain.q1
+SET tgtX = 200
+SET tgtY = 150
+IF brain.q2 > max THEN
+  SET max = brain.q2
+  SET tgtX = 600
+  SET tgtY = 150
+END
+IF brain.q3 > max THEN
+  SET max = brain.q3
+  SET tgtX = 200
+  SET tgtY = 450
+END
+IF brain.q4 > max THEN
+  SET max = brain.q4
+  SET tgtX = 600
+  SET tgtY = 450
+END
+SET _SYS_ORBIT_X = tgtX
+SET _SYS_ORBIT_Y = tgtY
+SET _SYS_ORBIT_R = 150
+MOVE`,
   },
   {
     id: 'ds-09',
@@ -246,33 +337,49 @@ END`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'It uses a command array as a stack, paired with a state dict tracking the stack pointer. Push scan results, then pop them to execute fire commands. Last-in-first-out combat logic.',
-    hint: 'The stack reverses scan order. The last scan drives the first fire. Control what it scans last.',
+      'It stores pending actions in a dictionary that simulates a task queue: { task: "NONE", arg: 0 }. If the task is NONE, it evaluates visibility and pushes a task ("BURST" or "STRAFE"). It then executes the task for \`arg\` ticks. An asynchronous event loop.',
+    hint: 'When it commits to a task (like BURST for 3 ticks), it cannot abort. Exploit its locked state during long task executions.',
     enemyScript: `IF NOT init THEN
-  SET stack = [0, 0, 0]
-  SET sp = 0
-  SET phase = 0
+  SET q = { task: "NONE", arg: 0 }
   SET init = 1
 END
-IF phase == 0 THEN
-  IF sp < 3 THEN
-    SET stack[sp] = VISIBLE_ENEMY_COUNT
-    SET sp = sp + 1
-    MOVE RIGHT
-  ELSE
-    SET phase = 1
-    SET sp = 2
-  END
-ELSE
-  IF sp >= 0 THEN
-    IF stack[sp] > 0 THEN
-      FIRE
+IF q.task == "NONE" THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    IF distance < 200 THEN
+      SET q.task = "BURST"
+      SET q.arg = 3
+    ELSE
+      SET q.task = "STRAFE"
+      SET q.arg = 5
     END
-    SET sp = sp - 1
   ELSE
-    SET phase = 0
-    SET sp = 0
+    SET q.task = "PATROL"
+    SET q.arg = 4
   END
+END
+
+IF q.task == "BURST" THEN
+  SET _SYS_FACE_X = NEAREST_VISIBLE_X
+  SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  BURST_FIRE
+  SET _SYS_STRAFE = 1
+  MOVE
+END
+IF q.task == "STRAFE" THEN
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  SET _SYS_STRAFE = -1
+  FIRE
+  MOVE
+END
+IF q.task == "PATROL" THEN
+  SCAN
+  MOVE RIGHT
+END
+
+SET q.arg = q.arg - 1
+IF q.arg <= 0 THEN
+  SET q.task = "NONE"
 END`,
   },
   {
@@ -283,27 +390,53 @@ END`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'The Overlord operates a full tactical command system. Shield integrity, ammo reserves, positional encoding, threat scores — all stored in a single dictionary. It adapts shields, conserves ammo, and repositions on calculated vectors. A war machine with a soul.',
-    hint: 'When shield > 1, it plays conservatively. Deplete shield fast before berserk mode overwhelms you.',
+      'The Overlord maintains a central registry dictionary for its subsystems: { sensors: 1, weapon: 1, drive: 1 }. As its health drops, subsystems fail. < 70 HP: drive = 0 (no speed boost). < 40 HP: sensors = 0 (blind sweeps). < 15 HP: weapon overdrive (constant bursts). A boss fight with progressive destruction.',
+    hint: 'Subsystems break as it takes damage. Exploit the blind sweeps when health < 40, but beware the weapon overdrive at < 15 HP.',
     enemyScript: `IF NOT init THEN
-  SET sys = { shield: 3, ammo: 10, pos: 0, threat: 0 }
+  SET sys = { sensors: 1, weapon: 1, drive: 1 }
   SET init = 1
 END
-SET sys.threat = VISIBLE_ENEMY_COUNT
-IF sys.threat > 0 THEN
-  IF sys.shield > 1 THEN
-    FIRE
-    SET sys.ammo = sys.ammo - 1
-    MOVE LEFT
-    SET sys.pos = sys.pos - 1
+IF health < 70 THEN
+  SET sys.drive = 0
+END
+IF health < 40 THEN
+  SET sys.sensors = 0
+END
+IF health < 15 THEN
+  SET sys.weapon = 2
+END
+
+IF sys.drive == 1 THEN
+  SET _SYS_SPEED_MULT = 1.8
+ELSE
+  SET _SYS_SPEED_MULT = 1.0
+END
+
+IF sys.sensors == 1 THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET _SYS_FACE_X = NEAREST_VISIBLE_X
+    SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    IF sys.weapon == 2 THEN
+      BURST_FIRE
+    ELSE
+      FIRE
+    END
   ELSE
-    FIRE
-    SET sys.ammo = sys.ammo - 3
+    SCAN
   END
 ELSE
-  MOVE RIGHT
-  SET sys.pos = sys.pos + 1
-  SET sys.shield = sys.shield + 1
-END`,
+  SET rotation = rotation + 0.2
+  IF sys.weapon == 2 THEN
+    BURST_FIRE
+  ELSE
+    FIRE
+  END
+END
+
+SET _SYS_ORBIT_X = 400
+SET _SYS_ORBIT_Y = 300
+SET _SYS_ORBIT_R = 140
+MOVE`,
   },
 ];

@@ -11,12 +11,33 @@ export const RECURSION_LEVELS: CampaignLevel[] = [
     difficulty: 'EASY',
     pointsReward: D.EASY,
     description:
-      'A simple repeat: scan, fire if found, scan again. The same pattern nested within itself — a flat recursion. Predictable because it never changes depth.',
-    hint: 'It scans twice and fires once per detection. Two dodge windows per cycle.',
-    enemyScript: `IF VISIBLE_ENEMY_COUNT > 0 THEN
-  FIRE
+      'A simulated recursive depth of 2. It tracks a depth counter. At depth 1: advance. At depth 2: burst fire. Then it unwinds back to depth 1. A two-step wind-up and release pattern.',
+    hint: 'It only fires at depth 2 (every other tick). You can advance freely on its movement ticks.',
+    enemyScript: `IF NOT init THEN
+  SET depth = 1
+  SET ddir = 1
+  SET init = 1
 END
-MOVE RIGHT`,
+IF depth == 1 THEN
+  MOVE RIGHT
+END
+IF depth == 2 THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
+  ELSE
+    SCAN
+  END
+END
+SET depth = depth + ddir
+IF depth > 2 THEN
+  SET depth = 1
+  SET ddir = -1
+END
+IF depth < 1 THEN
+  SET depth = 2
+  SET ddir = 1
+END`,
   },
   {
     id: 'rec-02',
@@ -26,21 +47,35 @@ MOVE RIGHT`,
     difficulty: 'EASY',
     pointsReward: D.EASY,
     description:
-      'It runs its scan-fire routine twice. Each run has a scan and a double fire. Like calling the same function twice — identical behavior, repeated execution.',
-    hint: 'Four shots total, perfectly spaced. Strike between the two "calls".',
+      'It simulates recursion with depth 3. Wind up: moves left, then right, then reaches base case (depth 3) to FIRE. Unwind: fires again, moves right, moves left. A perfectly mirrored execution stack.',
+    hint: 'The base case at depth 3 is the only time it fires. It fires twice in a row (once winding in, once winding out).',
     enemyScript: `IF NOT init THEN
-  SET i = 0
+  SET depth = 1
+  SET ddir = 1
   SET init = 1
 END
-IF i < 2 THEN
+IF depth == 3 THEN
   IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
     FIRE
+  ELSE
+    SCAN
+  END
+ELSE
+  IF ddir == 1 THEN
+    MOVE LEFT
   ELSE
     MOVE RIGHT
   END
-  SET i = i + 1
-ELSE
-  SET i = 0
+END
+SET depth = depth + ddir
+IF depth > 3 THEN
+  SET depth = 2
+  SET ddir = -1
+END
+IF depth < 1 THEN
+  SET depth = 2
+  SET ddir = 1
 END`,
   },
   {
@@ -51,29 +86,37 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'A depth counter starts at 3. Each level scans and fires depth-many times. Then decreases depth and repeats. 3+2+1 = 6 shots in a decaying cascade.',
-    hint: 'The first burst is the heaviest (3 shots). Dodge early, attack later when depth is 1.',
+      'Dynamic recursion depth. It starts with max depth = 2. It winds up (strafe), hits max depth (fires), and unwinds. Then max depth increments. The deeper the recursion, the longer the strafe before the fire. Depth grows to 5 then resets.',
+    hint: 'The time between shots grows as max depth increases. Exploit the long wind-up times on depths 4 and 5.',
     enemyScript: `IF NOT init THEN
-  SET depth = 3
-  SET s = 0
+  SET depth = 1
+  SET maxD = 2
+  SET ddir = 1
   SET init = 1
 END
-IF depth > 0 THEN
+IF depth == maxD THEN
   IF VISIBLE_ENEMY_COUNT > 0 THEN
-    IF s < depth THEN
-      FIRE
-      SET s = s + 1
-    ELSE
-      SET s = 0
-      SET depth = depth - 1
-      MOVE RIGHT
-    END
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
   ELSE
-    SET depth = depth - 1
-    MOVE RIGHT
+    SCAN
   END
 ELSE
-  SET depth = 3
+  SET _SYS_STRAFE = ddir
+  MOVE
+END
+SET depth = depth + ddir
+IF depth > maxD THEN
+  SET depth = maxD - 1
+  SET ddir = -1
+END
+IF depth < 1 THEN
+  SET depth = 2
+  SET ddir = 1
+  SET maxD = maxD + 1
+  IF maxD > 5 THEN
+    SET maxD = 2
+  END
 END`,
   },
   {
@@ -84,37 +127,34 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'It moves right N times, fires, then moves left N times and fires again — a symmetric expansion. N starts at 1 and increases to 3. The pattern mirrors itself perfectly.',
-    hint: 'Attack at the center point where it fires. It is always stationary during fire commands.',
+      'At each depth level it performs work: fires one shot. It dives 3 levels deep (3 shots), pauses at the base case, then unwinds 3 levels up (3 more shots). A symmetrical recursive tree of firepower.',
+    hint: 'It fires continuously during both wind-up and unwind. The only safe moment is the base case pause when it reaches depth 4.',
     enemyScript: `IF NOT init THEN
-  SET n = 1
-  SET phase = 0
-  SET s = 0
+  SET depth = 1
+  SET ddir = 1
   SET init = 1
 END
-IF n < 4 THEN
-  IF phase == 0 THEN
-    IF s < n THEN
-      MOVE RIGHT
-      SET s = s + 1
-    ELSE
-      FIRE
-      SET s = 0
-      SET phase = 1
-    END
+IF depth < 4 THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
   ELSE
-    IF s < n THEN
-      MOVE LEFT
-      SET s = s + 1
-    ELSE
-      FIRE
-      SET s = 0
-      SET phase = 0
-      SET n = n + 1
-    END
+    SCAN
   END
+  SET _SYS_STRAFE = 1
+  MOVE
 ELSE
-  SET n = 1
+  SET _SYS_SPEED_MULT = 0
+  MOVE
+END
+SET depth = depth + ddir
+IF depth > 4 THEN
+  SET depth = 3
+  SET ddir = -1
+END
+IF depth < 1 THEN
+  SET depth = 2
+  SET ddir = 1
 END`,
   },
   {
@@ -125,31 +165,36 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'It fires in a Fibonacci pattern: 1, 1, 2, 3, 5 shots per round. Each round builds on the last two. A mathematical crescendo where the final burst is devastating.',
-    hint: 'Total: 12 shots. The last round fires 5 times. Kill it before round 5.',
+      'It computes Fibonacci values iteratively and uses them as a recursive iteration limit. It strafes `fib(N)` times, then fires once. N increases from 1 to 5. The spacing between shots grows according to the Fibonacci sequence.',
+    hint: 'Spacing sequence: 1, 1, 2, 3, 5 ticks between shots. The gaps get larger. Wait for the 3 and 5 gaps to counterattack.',
     enemyScript: `IF NOT init THEN
+  SET n = 1
   SET a = 1
   SET b = 1
-  SET round = 0
-  SET s = 0
+  SET step = 0
   SET init = 1
 END
-IF round < 5 THEN
-  IF s < a THEN
-    FIRE
-    SET s = s + 1
-  ELSE
-    SET temp = a + b
-    SET a = b
-    SET b = temp
-    MOVE RIGHT
-    SET round = round + 1
-    SET s = 0
-  END
+IF step < b THEN
+  SET _SYS_STRAFE = -1
+  MOVE
+  SET step = step + 1
 ELSE
-  SET a = 1
-  SET b = 1
-  SET round = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
+  ELSE
+    SCAN
+  END
+  SET tmp = a + b
+  SET a = b
+  SET b = tmp
+  SET n = n + 1
+  SET step = 0
+  IF n > 5 THEN
+    SET n = 1
+    SET a = 1
+    SET b = 1
+  END
 END`,
   },
   {
@@ -160,36 +205,40 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'Inspired by Tower of Hanoi: it processes 3 layers. Each layer requires moving, then firing, then returning. Deeper layers require more moves. Total moves: 7. A nested complexity puzzle.',
-    hint: 'Layer 3 is the deepest and involves 3 moves each direction. Attack during layer 1 transitions.',
+      'Simulates the Call Stack. Depth goes from 1 to 4. As it descends (push), it accumulates "pointers" by stepping closer. At base case (depth 4) it executes the payload: burst fire. As it unwinds (pop), it steps away. A stack frame execution model.',
+    hint: 'It only fires at depth 4, but it closes the distance during depths 1-3. Retreat as it pushes frames, attack as it pops them.',
     enemyScript: `IF NOT init THEN
-  SET layer = 1
-  SET phase = 0
-  SET m = 0
+  SET depth = 1
+  SET ddir = 1
   SET init = 1
 END
-IF layer < 4 THEN
-  IF phase == 0 THEN
-    IF m < layer THEN
-      MOVE RIGHT
-      SET m = m + 1
-    ELSE
-      FIRE
-      SET m = 0
-      SET phase = 1
-    END
+IF depth == 4 THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET _SYS_FACE_X = NEAREST_VISIBLE_X
+    SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
   ELSE
-    IF m < layer THEN
-      MOVE LEFT
-      SET m = m + 1
-    ELSE
-      SET m = 0
-      SET phase = 0
-      SET layer = layer + 1
-    END
+    SCAN
   END
 ELSE
-  SET layer = 1
+  IF ddir == 1 THEN
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    END
+    MOVE
+  ELSE
+    BACKUP
+  END
+END
+SET depth = depth + ddir
+IF depth > 4 THEN
+  SET depth = 3
+  SET ddir = -1
+END
+IF depth < 1 THEN
+  SET depth = 2
+  SET ddir = 1
 END`,
   },
   {
@@ -200,28 +249,29 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'It divides its scan range by 2 each iteration. Starting with range 8, then 4, then 2, then 1. At each level it scans and fires proportionally. A binary search of destruction.',
-    hint: 'The narrowing range means its accuracy increases each level. Dodge early, then retaliate at range 1.',
+      'It divides its logic into branches: Left Branch and Right Branch. It maintains a branch array stack. It executes Left (strafe left + fire), then Right (strafe right + fire). A binary tree traversal of destruction.',
+    hint: 'It alternates strict left and right strafing while firing. The pattern zig-zags predictably. Lead your shots to the opposite side.',
     enemyScript: `IF NOT init THEN
-  SET range = 8
-  SET s = 0
+  SET stack = [1, 2, 1, 2]
+  SET sp = 0
   SET init = 1
 END
-IF range > 0 THEN
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    IF s < range THEN
-      FIRE
-      SET s = s + 1
-    ELSE
-      SET s = 0
-      SET range = range - 2
-    END
-  ELSE
-    MOVE RIGHT
-    SET range = range - 2
-  END
+SET branch = stack[sp]
+IF branch == 1 THEN
+  SET _SYS_STRAFE = -1
 ELSE
-  SET range = 8
+  SET _SYS_STRAFE = 1
+END
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  FIRE
+ELSE
+  SCAN
+END
+MOVE
+SET sp = sp + 1
+IF sp >= 4 THEN
+  SET sp = 0
 END`,
   },
   {
@@ -232,23 +282,34 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'A fractal-like pattern: outer loop runs 3 times, inner 2 times, innermost 2 times. Each innermost fires once. 12 total shots in a fractal tree of combat. Self-similar at every scale.',
-    hint: 'Strikes are evenly distributed. There are no safe gaps — you must outpace its DPS with your own.',
+      'It orbits in a fractal pattern: 3 large steps clockwise, 1 small step counter-clockwise, repeat. The recursive definition of its movement creates a jagged orbit that throws off predictive targeting.',
+    hint: 'Every 4th tick it reverses direction briefly. Hold fire during the reversal tick.',
     enemyScript: `IF NOT init THEN
-  SET tick = 0
+  SET step = 0
   SET init = 1
 END
-SET phase = tick % 3
-IF phase == 0 THEN
+IF step < 3 THEN
+  SET _SYS_ORBIT_R = 120
+  SET _SYS_SPEED_MULT = 1.5
+ELSE
+  SET _SYS_ORBIT_R = -80
+  SET _SYS_SPEED_MULT = 1.0
+END
+SET _SYS_ORBIT_X = 400
+SET _SYS_ORBIT_Y = 300
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET _SYS_FACE_X = NEAREST_VISIBLE_X
+  SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
   FIRE
 ELSE
-  IF phase == 1 THEN
-    MOVE RIGHT
-  ELSE
-    MOVE LEFT
-  END
+  SCAN
 END
-SET tick = tick + 1`,
+MOVE
+SET step = step + 1
+IF step > 3 THEN
+  SET step = 0
+END`,
   },
   {
     id: 'rec-09',
@@ -258,30 +319,40 @@ SET tick = tick + 1`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'It simulates a call stack using nested loops and a depth counter. At depth 4, it fires. As it unwinds, it fires at each return level. A recursive descent that explodes on the way back up. 4 shots down, 4 shots up.',
-    hint: 'Total: ~8 shots in two phases. The descent is pure movement. The ascent is pure fire. Attack during descent.',
+      'It simulates a recursive algorithm that builds up state until a stack overflow limit (5). It pushes your position onto an array. At depth 5, it pops them all off, firing a burst at every historical coordinate. A deferred execution model.',
+    hint: 'It records your ghost trail for 5 ticks, then shoots the trail. Keep moving — by the time it executes the stack, you should be far away from your past positions.',
     enemyScript: `IF NOT init THEN
+  SET histX = [0,0,0,0,0]
+  SET histY = [0,0,0,0,0]
   SET depth = 0
-  SET phase = 0
+  SET phase = "PUSH"
   SET init = 1
 END
-IF phase == 0 THEN
-  IF depth < 4 THEN
-    MOVE RIGHT
-    IF VISIBLE_ENEMY_COUNT > 0 THEN
-      FIRE
-    END
-    SET depth = depth + 1
-  ELSE
-    SET phase = 1
+IF phase == "PUSH" THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET histX[depth] = NEAREST_VISIBLE_X
+    SET histY[depth] = NEAREST_VISIBLE_Y
+  END
+  SET depth = depth + 1
+  SET _SYS_STRAFE = 1
+  MOVE
+  IF depth >= 5 THEN
+    SET phase = "POP"
+    SET depth = 4
   END
 ELSE
-  IF depth > 0 THEN
-    FIRE
-    MOVE LEFT
-    SET depth = depth - 1
-  ELSE
-    SET phase = 0
+  SET tx = histX[depth]
+  SET ty = histY[depth]
+  SET _SYS_FACE_X = tx
+  SET _SYS_FACE_Y = ty
+  SET rotation = ATAN2(ty - POSITION_Y, tx - POSITION_X)
+  BURST_FIRE
+  SET _SYS_SPEED_MULT = 0
+  MOVE
+  SET depth = depth - 1
+  IF depth < 0 THEN
+    SET phase = "PUSH"
+    SET depth = 0
   END
 END`,
   },
@@ -293,33 +364,40 @@ END`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'The ultimate recursive adversary. It builds a counter to 5, scanning at each level. Then it unwinds: for every positive scan in its history, it fires 2 shots. Maximum payload: 10 shots. A recursion that remembers everything.',
-    hint: 'It records 5 scans then acts on them all at once. Minimize scan detections during the build-up phase to reduce the unwinding burst.',
+      'A dual-recursive function simulation: Ackermann-lite. It scales its target speed and burst count based on two deeply entangled variables. As the variables intertwine and grow, its movement becomes hyper-erratic and its fire rate spikes massively before collapsing. The ultimate chaotic attractor.',
+    hint: 'The chaos is cyclical. It reaches a peak intensity where speed and burst count are maxed, then it resets to a slow baseline. Strike during the reset.',
     enemyScript: `IF NOT init THEN
-  SET results = [0, 0, 0, 0, 0]
-  SET d = 0
-  SET phase = 0
+  SET m = 0
+  SET n = 0
   SET init = 1
 END
-IF phase == 0 THEN
-  IF d < 5 THEN
-    SET results[d] = VISIBLE_ENEMY_COUNT
-    MOVE RIGHT
-    SET d = d + 1
-  ELSE
-    SET phase = 1
-    SET d = 4
+SET _SYS_SPEED_MULT = 1 + (n * 0.5)
+IF m == 2 THEN
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET _SYS_FACE_X = NEAREST_VISIBLE_X
+    SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
   END
 ELSE
-  IF d >= 0 THEN
-    IF results[d] > 0 THEN
-      FIRE
-    END
-    MOVE LEFT
-    SET d = d - 1
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
   ELSE
-    SET phase = 0
-    SET d = 0
+    SCAN
+  END
+END
+SET _SYS_ORBIT_X = 400
+SET _SYS_ORBIT_Y = 300
+SET _SYS_ORBIT_R = 100 + (m * 20)
+MOVE
+
+SET n = n + 1
+IF n > 3 THEN
+  SET n = 0
+  SET m = m + 1
+  IF m > 2 THEN
+    SET m = 0
   END
 END`,
   },

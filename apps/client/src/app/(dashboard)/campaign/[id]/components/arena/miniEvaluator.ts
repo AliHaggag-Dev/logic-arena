@@ -104,6 +104,17 @@ function evalExpr(
       if (name === 'rotation' || name === 'angle' || name === 'rot') return self.angle;
       if (name === 'fovDirection') return self.angle;
       if (name === 'lockVision') return true;
+      if (name === 'POSITION_X') return self.x * 800;
+      if (name === 'POSITION_Y') return self.y * 600;
+      if (name === 'NEAREST_VISIBLE_X') {
+        const _inRange = enemy.isAlive && Math.hypot(enemy.x - self.x, enemy.y - self.y) < SCAN_RANGE;
+        return _inRange ? enemy.x * 800 : 0;
+      }
+      if (name === 'NEAREST_VISIBLE_Y') {
+        const _inRange = enemy.isAlive && Math.hypot(enemy.x - self.x, enemy.y - self.y) < SCAN_RANGE;
+        return _inRange ? enemy.y * 600 : 0;
+      }
+      if (name === 'distance') { const _dx = enemy.x - self.x; const _dy = enemy.y - self.y; return Math.hypot(_dx, _dy) * 800; }
       if (name in vars) return vars[name];
       return 0;
     }
@@ -303,15 +314,15 @@ function executeStatement(
           const dir = action.consequence.args?.[0];
           if (dir && 'value' in dir) {
             const d = String(dir.value).toUpperCase();
-            if (d === 'LEFT') return { type: 'move', value: -1, fast: cmd === 'MOVE_FAST' };
-            if (d === 'RIGHT') return { type: 'move', value: 1, fast: cmd === 'MOVE_FAST' };
+            if (d === 'LEFT') { robot.angle = Math.PI; return { type: 'move', value: 0, fast: cmd === 'MOVE_FAST' }; }
+            if (d === 'RIGHT') { robot.angle = 0; return { type: 'move', value: 0, fast: cmd === 'MOVE_FAST' }; }
             if (d === 'BACKUP') return { type: 'move', value: -2, fast: cmd === 'MOVE_FAST' };
           }
           return { type: 'move', value: 0, fast: cmd === 'MOVE_FAST' };
         }
 
         case 'BACKUP':
-          return { type: 'move', value: -1, fast: false };
+          return { type: 'move', value: -2, fast: false };
         case 'STOP':
           return { type: 'stop', value: 0 };
         case 'BURST_FIRE': {

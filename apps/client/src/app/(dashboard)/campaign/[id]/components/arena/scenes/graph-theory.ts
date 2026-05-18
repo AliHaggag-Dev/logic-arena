@@ -1,5 +1,4 @@
 import { SceneDef, makeRobot } from './types';
-import type { SceneState } from './types';
 
 const NODES_6 = [
   { x: 0.5, y: 0.5 }, { x: 0.65, y: 0.3 }, { x: 0.8, y: 0.55 },
@@ -7,7 +6,7 @@ const NODES_6 = [
 ];
 
 const sc_gfx01: SceneDef = {
-  label: 'NODE WALKER — linear 3-node',
+  label: 'NODE WALKER — linear DAG chain',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [], projectiles: [],
     robots: [
@@ -19,7 +18,7 @@ const sc_gfx01: SceneDef = {
 };
 
 const sc_gfx02: SceneDef = {
-  label: 'EDGE CRAWLER — 4-edge traversal',
+  label: 'EDGE CRAWLER — Hamiltonian cycle',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.3, w: 0.4, h: 0.02, type: 'SOLID' },
@@ -34,10 +33,14 @@ const sc_gfx02: SceneDef = {
 };
 
 const sc_gfx03: SceneDef = {
-  label: 'BREADTH SCANNER — BFS style',
+  label: 'BREADTH SCANNER — star graph',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'SOLID' },
+      { x: 0.3, y: 0.25, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.7, y: 0.25, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.3, y: 0.75, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.7, y: 0.75, w: 0.02, h: 0.02, type: 'LAVA' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
@@ -48,11 +51,12 @@ const sc_gfx03: SceneDef = {
 };
 
 const sc_gfx04: SceneDef = {
-  label: 'DEPTH PROBE — DFS descent',
+  label: 'DEPTH PROBE — DFS with RAYCAST',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.2, w: 0.5, h: 0.02, type: 'SOLID' },
       { x: 0.5, y: 0.8, w: 0.5, h: 0.02, type: 'SOLID' },
+      { x: 0.8, y: 0.5, w: 0.02, h: 0.4, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
@@ -63,10 +67,12 @@ const sc_gfx04: SceneDef = {
 };
 
 const sc_gfx05: SceneDef = {
-  label: 'CYCLE DETECTOR — patrol loop',
+  label: 'CYCLE DETECTOR — figure-8 graph',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'SOLID' },
+      { x: 0.35, y: 0.25, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.65, y: 0.75, w: 0.02, h: 0.02, type: 'LAVA' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
@@ -77,10 +83,12 @@ const sc_gfx05: SceneDef = {
 };
 
 const sc_gfx06: SceneDef = {
-  label: 'SHORTEST PATH — greedy approach',
+  label: 'SHORTEST PATH — greedy grid approach',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'TRAP' },
+      { x: 0.3, y: 0.3, w: 0.03, h: 0.03, type: 'SOLID' },
+      { x: 0.7, y: 0.7, w: 0.03, h: 0.03, type: 'SOLID' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
@@ -91,12 +99,13 @@ const sc_gfx06: SceneDef = {
 };
 
 const sc_gfx07: SceneDef = {
-  label: 'SPANNING TREE — root + children',
+  label: 'SPANNING TREE — perimeter collapse',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.03, h: 0.5, type: 'SOLID' },
       { x: 0.3, y: 0.25, w: 0.02, h: 0.02, type: 'SOLID' },
       { x: 0.7, y: 0.75, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.5, y: 0.15, w: 0.04, h: 0.04, type: 'LAVA' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
@@ -107,11 +116,13 @@ const sc_gfx07: SceneDef = {
 };
 
 const sc_gfx08: SceneDef = {
-  label: 'TOPOLOGICAL STRIKE — reverse deps',
+  label: 'TOPOLOGICAL STRIKE — tiered unlocks',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
-      { x: 0.35, y: 0.5, w: 0.02, h: 0.35, type: 'LAVA' },
-      { x: 0.65, y: 0.5, w: 0.02, h: 0.35, type: 'LAVA' },
+      { x: 0.25, y: 0.5, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.5, y: 0.2, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.75, y: 0.5, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.5, y: 0.5, w: 0.03, h: 0.03, type: 'SOLID' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.75, y: 0.2, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -126,6 +137,9 @@ const sc_gfx09: SceneDef = {
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.06, h: 0.06, type: 'SOLID' },
+      { x: 0.3, y: 0.3, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.7, y: 0.7, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.5, y: 0.15, w: 0.3, h: 0.02, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.5, y: 0.5, angle: 0, color: '#ef4444', trailColor: '#ff6060' }),
@@ -136,7 +150,7 @@ const sc_gfx09: SceneDef = {
 };
 
 const sc_gfx10: SceneDef = {
-  label: 'NETWORK ORACLE — full graph awareness',
+  label: 'NETWORK ORACLE — 3x3 grid prediction',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.35, y: 0.35, w: 0.02, h: 0.02, type: 'SOLID' },
@@ -145,6 +159,7 @@ const sc_gfx10: SceneDef = {
       { x: 0.35, y: 0.65, w: 0.02, h: 0.02, type: 'SOLID' },
       { x: 0.5, y: 0.7, w: 0.02, h: 0.02, type: 'SOLID' },
       { x: 0.65, y: 0.65, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.75, y: 0.2, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),

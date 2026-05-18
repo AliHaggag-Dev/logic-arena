@@ -11,33 +11,34 @@ export const GRAPH_THEORY_LEVELS: CampaignLevel[] = [
     difficulty: 'EASY',
     pointsReward: D.EASY,
     description:
-      'It visits 3 nodes in a line: move right, scan, fire if found. A simple linear traversal. No branches, no backtracking. Pure BFS on a chain.',
-    hint: 'Three predictable scan points. Stay out of range at each one.',
+      'It traverses a directed acyclic graph (DAG) of 4 nodes: A → B → C → D. At each node, it scans and fires. Pure Breadth-First Search on a linear chain. The graph is hardcoded into its memory.',
+    hint: 'It travels from (100, 300) to (700, 300). It only fires when it snaps to a node. Attack it while it moves between nodes.',
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440, 600]
-  SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [0, 1, 2, 1]
-  SET num_nodes = 4
+  SET nodes_x = [400, 520, 640]
+  SET nodes_y = [300, 180, 330]
   SET i = 0
+  SET dir = 1
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
+SET _SYS_TARGET_X = nodes_x[i]
+SET _SYS_TARGET_Y = nodes_y[i]
 IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
   IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
     FIRE
+  ELSE
+    SCAN
   END
-  SET i = i + 1
+  SET i = i + dir
+  IF i > 2 THEN
+    SET dir = -1
+    SET i = 1
+  END
+  IF i < 0 THEN
+    SET dir = 1
+    SET i = 1
+  END
   SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
-    SET i = 0
-  END
 ELSE
   MOVE
 END`,
@@ -50,34 +51,28 @@ END`,
     difficulty: 'EASY',
     pointsReward: D.EASY,
     description:
-      'It traverses edges between 4 nodes. At each edge it fires once. After reaching the end, it reverses and fires again. A round-trip edge traversal.',
-    hint: 'It fires at the end of each edge traversal. Dodge after each move.',
+      'It patrols a cyclic graph representing a square: A → B → C → D → A. It fires continuously along the edges, but must pause at the nodes to re-orient. A Hamiltonian cycle execution.',
+    hint: 'It is dangerous along the edges. It stops at the corners (nodes) to turn. Attack the corners.',
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440, 600]
-  SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [0, 1, 2, 3, 2, 1]
-  SET num_nodes = 6
+  SET nodes_x = [400, 520, 640, 560]
+  SET nodes_y = [300, 180, 330, 450]
   SET i = 0
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
+SET _SYS_TARGET_X = nodes_x[i]
+SET _SYS_TARGET_Y = nodes_y[i]
 IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
-  END
   SET i = i + 1
-  SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
+  IF i > 3 THEN
     SET i = 0
   END
+  SET _SYS_AT_TARGET = 0
+  SCAN
 ELSE
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
+  END
   MOVE
 END`,
   },
@@ -89,33 +84,35 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'BFS-style: it scans all neighbors (left, right, center) before moving to the next level. Level 1: 3 scans. Level 2: 3 more. If any scan in a level returns positive, it fires before proceeding.',
-    hint: 'It scans in groups of 3. If you dodge all 3 scans in a level, it skips firing entirely.',
+      'It stands at the center node and sweeps its FOV to three branch nodes. If a branch node has line of sight to you, it takes that edge, fires a burst, and returns to center. A star graph topology.',
+    hint: 'It always returns to the center node (400, 300) after investigating a branch. Place your fire on the center node.',
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440, 600]
-  SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [0, 1, 5, 2, 3, 4]
-  SET num_nodes = 6
-  SET i = 0
+  SET state = "CENTER"
+  SET tgtX = 400
+  SET tgtY = 300
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
+SET _SYS_TARGET_X = tgtX
+SET _SYS_TARGET_Y = tgtY
 IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
+  IF state == "CENTER" THEN
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET tgtX = NEAREST_VISIBLE_X
+      SET tgtY = NEAREST_VISIBLE_Y
+      SET state = "ATTACK"
+    ELSE
+      SCAN
+    END
+  ELSE
+    IF VISIBLE_ENEMY_COUNT > 0 THEN
+      SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+      BURST_FIRE
+    END
+    SET tgtX = 400
+    SET tgtY = 300
+    SET state = "CENTER"
   END
-  SET i = i + 1
   SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
-    SET i = 0
-  END
 ELSE
   MOVE
 END`,
@@ -128,33 +125,34 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'DFS-style: it goes deep first — 4 moves right, scanning each step. Then backtracks completely. At each backtrack step, it fires once. A depth-first search that punishes on return.',
-    hint: 'The descent is scan-only. The ascent is fire-only. Attack during descent.',
+      'It performs a Depth-First Search into your territory. It pushes target nodes into its path stack, walking deeper until it hits a wall (RAYCAST), then pops the stack to backtrack. Graph traversal constrained by arena physics.',
+    hint: 'When it hits a wall or arena boundary, it is forced to backtrack along the exact same path. Trap it against a wall.',
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440, 600]
-  SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [0, 1, 2, 5, 2, 1, 0]
-  SET num_nodes = 7
+  SET nodes_x = [400, 520, 640, 600]
+  SET nodes_y = [300, 180, 330, 120]
   SET i = 0
+  SET dir = 1
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
+SET _SYS_TARGET_X = nodes_x[i]
+SET _SYS_TARGET_Y = nodes_y[i]
 IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
   IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
+  ELSE
+    SCAN
   END
-  SET i = i + 1
+  SET i = i + dir
+  IF i > 3 THEN
+    SET dir = -1
+    SET i = 2
+  END
+  IF i < 0 THEN
+    SET dir = 1
+    SET i = 1
+  END
   SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
-    SET i = 0
-  END
 ELSE
   MOVE
 END`,
@@ -167,34 +165,34 @@ END`,
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
     description:
-      'It moves in a cycle: right-right-down(scan)-left-left-up(scan). If it detects you at any scan point in the cycle, it fires 3 times. It repeats the cycle twice. A closed-loop hunter.',
-    hint: 'Two full cycles. If you stay outside the cycle path entirely, it wastes all its time patrolling.',
+      'It traverses a figure-8 graph. Two cycles joined at a central node. The central node is the bottleneck. It fires rapidly while traversing the loops, but slows down at the intersection.',
+    hint: 'The intersection is at (400, 300). It must pass through here repeatedly to switch loops. Wait at the bottleneck.',
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440, 600]
-  SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [0, 1, 2, 3, 4, 0]
-  SET num_nodes = 6
+  SET nodes_x = [400, 520, 640, 560, 440]
+  SET nodes_y = [300, 180, 330, 450, 480]
   SET i = 0
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
+SET _SYS_TARGET_X = nodes_x[i]
+SET _SYS_TARGET_Y = nodes_y[i]
 IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
-  END
   SET i = i + 1
-  SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
+  IF i > 4 THEN
     SET i = 0
   END
+  SET _SYS_AT_TARGET = 0
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
+  ELSE
+    SCAN
+  END
 ELSE
+  SET _SYS_SPEED_MULT = 1.5
+  IF VISIBLE_ENEMY_COUNT > 0 THEN
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    FIRE
+  END
   MOVE
 END`,
   },
@@ -206,36 +204,40 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'It calculates the shortest path to you: scan, determine direction, advance. Repeat 5 times. Each step fires if contact is made. A greedy pathfinding bot that always moves toward the threat.',
-    hint: 'It always moves toward positive scans. Lead it away, then circle back to attack its flank.',
+      'A greedy pathfinding bot. It constantly updates its target node to whichever of its 4 neighboring nodes is closest to YOU. It solves the shortest path to your location dynamically across an invisible grid.',
+    hint: 'It moves on a rigid invisible grid (steps of 100). Because it is greedy, you can kite it into corners where its grid path is suboptimal.',
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440, 600]
-  SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [0, 3, 4, 0, 1, 5, 2, 1]
-  SET num_nodes = 8
-  SET i = 0
+  SET cx = 400
+  SET cy = 300
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
-IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
+IF _SYS_AT_TARGET == 1 OR init == 1 THEN
   IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
+    SET dx = NEAREST_VISIBLE_X - cx
+    SET dy = NEAREST_VISIBLE_Y - cy
+    IF ABS(dx) > ABS(dy) THEN
+      IF dx > 0 THEN
+        SET cx = cx + 100
+      ELSE
+        SET cx = cx - 100
+      END
+    ELSE
+      IF dy > 0 THEN
+        SET cy = cy + 100
+      ELSE
+        SET cy = cy - 100
+      END
+    END
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
+  ELSE
+    SCAN
   END
-  SET i = i + 1
   SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
-    SET i = 0
-  END
-ELSE
-  MOVE
-END`,
+END
+SET _SYS_TARGET_X = cx
+SET _SYS_TARGET_Y = cy
+MOVE`,
   },
   {
     id: 'gfx-07',
@@ -245,36 +247,48 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'It visits nodes in a tree pattern: root (scan+fire), left child (scan+fire), right child (scan+fire), then returns to root. 3 levels deep. A minimum spanning tree of coverage.',
-    hint: 'It returns to root between branches. The root position is its weakness — it pauses there.',
+      'It creates a spanning tree to trap you. It traverses outer nodes to draw a perimeter. If you cross into the inner radius, it drops the tree traversal and collapses straight onto you with maximum speed. A structural enclosure.',
+    hint: 'Do not stay in the center. Break out of the spanning tree perimeter before it finishes drawing the bounds.',
     enemyScript: `IF NOT init THEN
   SET nodes_x = [400, 520, 640, 560, 440, 600]
   SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [0, 1, 0, 4, 3, 2, 1]
-  SET num_nodes = 7
   SET i = 0
+  SET dir = 1
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
-IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  IF distance < 250 THEN
+    SET _SYS_TARGET_X = NEAREST_VISIBLE_X
+    SET _SYS_TARGET_Y = NEAREST_VISIBLE_Y
+    SET _SYS_SPEED_MULT = 2
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+    BURST_FIRE
+  ELSE
+    SET _SYS_SPEED_MULT = 1
+    SET _SYS_TARGET_X = nodes_x[i]
+    SET _SYS_TARGET_Y = nodes_y[i]
+    SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
     FIRE
   END
-  SET i = i + 1
-  SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
-    SET i = 0
-  END
 ELSE
-  MOVE
-END`,
+  SET _SYS_SPEED_MULT = 1
+  SET _SYS_TARGET_X = nodes_x[i]
+  SET _SYS_TARGET_Y = nodes_y[i]
+  SCAN
+END
+IF _SYS_AT_TARGET == 1 THEN
+  SET i = i + dir
+  IF i > 5 THEN
+    SET dir = -1
+    SET i = 4
+  END
+  IF i < 0 THEN
+    SET dir = 1
+    SET i = 1
+  END
+  SET _SYS_AT_TARGET = 0
+END
+MOVE`,
   },
   {
     id: 'gfx-08',
@@ -284,36 +298,34 @@ END`,
     difficulty: 'HARD',
     pointsReward: D.HARD,
     description:
-      'It processes targets in topological order: dependencies first. It scans 4 positions, records results, then fires in reverse dependency order. Later scans have priority. A dependency-aware weapon.',
-    hint: 'It fires based on the last scans first. Make yourself invisible in the later scan positions.',
+      'It visits dependency nodes. Node 1 unlocks Node 2. Node 2 unlocks Node 3. It must visit them in order. As it unlocks higher nodes, its weapon power increases from single to burst to sustained barrage. A directed progression of power.',
+    hint: 'Node 3 is its maximum power state (at coordinates 600, 300). Ambush it at Node 1 (200, 300) before it scales up.',
     enemyScript: `IF NOT init THEN
   SET nodes_x = [400, 520, 640, 560, 440, 600]
   SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [5, 1, 2, 3, 4, 0, 1]
-  SET num_nodes = 7
-  SET i = 0
+  SET tier = 0
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
+SET _SYS_TARGET_X = nodes_x[tier]
+SET _SYS_TARGET_Y = nodes_y[tier]
 IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
+  SET tier = tier + 1
+  IF tier > 5 THEN
+    SET tier = 0
   END
-  SET i = i + 1
   SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
-    SET i = 0
+END
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  IF tier < 2 THEN
+    FIRE
+  ELSE
+    BURST_FIRE
   END
 ELSE
-  MOVE
-END`,
+  SCAN
+END
+MOVE`,
   },
   {
     id: 'gfx-09',
@@ -323,36 +335,42 @@ END`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'It maintains a distance table and updates weights as it scans. Closest detected target gets maximum fire. Further targets get reduced fire. A weighted shortest-path assassination algorithm.',
-    hint: 'Stay far from its initial position. Its fire weight decreases with iterations — survive early rounds.',
+      'It maintains a network of 5 nodes. It calculates edge weights based on your position: the node closest to you gets the highest weight. It always traverses the heaviest edge, orbiting that node while firing continuously until you move. It dynamically rewires its path based on your location.',
+    hint: 'It anchors to whichever of its 5 nodes is closest to you. Lead it to a node near an obstacle, then use the obstacle as cover against its orbital fire.',
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440, 600]
-  SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [0, 1, 5, 2, 3, 4, 0]
-  SET num_nodes = 7
-  SET i = 0
+  SET nx = [200, 600, 400, 200, 600]
+  SET ny = [150, 150, 300, 450, 450]
+  SET bestNode = 2
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
-IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET bestDist = 9999
+  SET i = 0
+  WHILE i < 5 DO
+    SET dx = NEAREST_VISIBLE_X - nx[i]
+    SET dy = NEAREST_VISIBLE_Y - ny[i]
+    SET d = SQRT(dx*dx + dy*dy)
+    IF d < bestDist THEN
+      SET bestDist = d
+      SET bestNode = i
+    END
+    SET i = i + 1
   END
-  SET i = i + 1
-  SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
-    SET i = 0
-  END
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  BURST_FIRE
 ELSE
-  MOVE
-END`,
+  SCAN
+END
+SET _SYS_TARGET_X = nx[bestNode]
+SET _SYS_TARGET_Y = ny[bestNode]
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_ORBIT_X = nx[bestNode]
+  SET _SYS_ORBIT_Y = ny[bestNode]
+  SET _SYS_ORBIT_R = 80
+ELSE
+  SET _SYS_SPEED_MULT = 1.8
+END
+MOVE`,
   },
   {
     id: 'gfx-10',
@@ -362,35 +380,52 @@ END`,
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
     description:
-      'The Oracle maps the entire arena as a graph. It scans 6 nodes, stores connections in a results array, then processes the network: connected nodes trigger cascading fire, isolated nodes are skipped. Full graph awareness.',
-    hint: 'It scans 6 positions then acts. If you are detected in 3+ nodes, it fires 9+ times. Stay in 2 or fewer scan zones.',
+      'The Oracle is an adversarial graph processor. It maps the arena into a 3x3 grid. It assigns a "threat probability" to each grid cell based on your previous movements. It then jumps to the highest probability cell, locks it down with a tight orbit, and unleashes its maximum payload. If it guesses wrong, it immediately repositions. You cannot hide; you can only out-think its probability map.',
+    hint: 'It predicts where you will be based on where you have been. Reverse your momentum. If you move left for 2 seconds, it will target the left grid. Snap back right.',
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440, 600]
-  SET nodes_y = [300, 180, 330, 450, 480, 120]
-  SET path = [0, 4, 3, 2, 5, 1, 0]
-  SET num_nodes = 7
-  SET i = 0
+  SET grid = [0,0,0,0,0,0,0,0,0]
+  SET cx = 400
+  SET cy = 300
   SET init = 1
 END
-
-SET target_idx = path[i]
-SET _SYS_TARGET_X = nodes_x[target_idx]
-SET _SYS_TARGET_Y = nodes_y[target_idx]
-
-IF _SYS_AT_TARGET == 1 THEN
-  SET _SYS_SCAN_SWEEP_DEG = 360
-  SCAN
-  SET _SYS_SCAN_SWEEP_DEG = 0
-  IF VISIBLE_ENEMY_COUNT > 0 THEN
-    FIRE
+IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET gx = FLOOR(NEAREST_VISIBLE_X / 266)
+  SET gy = FLOOR(NEAREST_VISIBLE_Y / 200)
+  SET idx = gy * 3 + gx
+  IF idx >= 0 AND idx < 9 THEN
+    SET grid[idx] = grid[idx] + 1
   END
-  SET i = i + 1
-  SET _SYS_AT_TARGET = 0
-  IF i >= num_nodes THEN
-    SET i = 0
+  
+  SET max = -1
+  SET best = 4
+  SET i = 0
+  WHILE i < 9 DO
+    IF grid[i] > max THEN
+      SET max = grid[i]
+      SET best = i
+    END
+    SET i = i + 1
   END
+  
+  SET cx = (best % 3) * 266 + 133
+  SET cy = FLOOR(best / 3) * 200 + 100
+  
+  SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
+  BURST_FIRE
 ELSE
-  MOVE
-END`,
+  SCAN
+END
+
+SET _SYS_TARGET_X = cx
+SET _SYS_TARGET_Y = cy
+IF _SYS_AT_TARGET == 1 THEN
+  SET _SYS_ORBIT_X = cx
+  SET _SYS_ORBIT_Y = cy
+  SET _SYS_ORBIT_R = -90
+  SET _SYS_SPEED_MULT = 2
+ELSE
+  SET _SYS_SPEED_MULT = 1.5
+END
+MOVE`,
   },
 ];

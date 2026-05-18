@@ -1,7 +1,7 @@
 import { SceneDef, makeRobot } from './types';
 
 const sc_arr01: SceneDef = {
-  label: 'ECHO LATTICE — fixed sensor array',
+  label: 'ECHO LATTICE — command array cycle',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.3, y: 0.2, w: 0.02, h: 0.06, type: 'SOLID' },
@@ -19,7 +19,7 @@ const sc_arr01: SceneDef = {
 };
 
 const sc_arr02: SceneDef = {
-  label: 'SEQUENCE WALKER — command array',
+  label: 'SEQUENCE WALKER — strafe direction array',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [], projectiles: [],
     robots: [
@@ -31,11 +31,12 @@ const sc_arr02: SceneDef = {
 };
 
 const sc_arr03: SceneDef = {
-  label: 'SWARM VECTOR — visible enemy list',
+  label: 'SWARM VECTOR — lowest-health targeting',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.3, y: 0.5, w: 0.02, h: 0.3, type: 'SOLID' },
       { x: 0.7, y: 0.5, w: 0.02, h: 0.3, type: 'SOLID' },
+      { x: 0.5, y: 0.2, w: 0.02, h: 0.02, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.78, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -46,10 +47,12 @@ const sc_arr03: SceneDef = {
 };
 
 const sc_arr04: SceneDef = {
-  label: 'BURST TABLE — fire count array',
+  label: 'BURST TABLE — [2,1,3,1] fire pattern',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'TRAP' },
+      { x: 0.3, y: 0.3, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.7, y: 0.7, w: 0.02, h: 0.02, type: 'LAVA' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.75, y: 0.4, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -60,12 +63,13 @@ const sc_arr04: SceneDef = {
 };
 
 const sc_arr05: SceneDef = {
-  label: 'WAYPOINT RUNNER — step waypoints',
+  label: 'WAYPOINT RUNNER — rectangle corners',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
-      { x: 0.4, y: 0.3, w: 0.02, h: 0.02, type: 'LAVA' },
-      { x: 0.55, y: 0.3, w: 0.02, h: 0.02, type: 'LAVA' },
-      { x: 0.7, y: 0.3, w: 0.02, h: 0.02, type: 'LAVA' },
+      { x: 0.25, y: 0.25, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.75, y: 0.25, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.75, y: 0.75, w: 0.02, h: 0.02, type: 'SOLID' },
+      { x: 0.25, y: 0.75, w: 0.02, h: 0.02, type: 'SOLID' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.72, y: 0.6, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -76,11 +80,12 @@ const sc_arr05: SceneDef = {
 };
 
 const sc_arr06: SceneDef = {
-  label: 'PRIORITY QUEUE — sorted threats',
+  label: 'PRIORITY QUEUE — closest target orbit',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.5, y: 0.25, w: 0.3, h: 0.02, type: 'SOLID' },
       { x: 0.5, y: 0.75, w: 0.3, h: 0.02, type: 'SOLID' },
+      { x: 0.35, y: 0.5, w: 0.02, h: 0.3, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.78, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -91,7 +96,7 @@ const sc_arr06: SceneDef = {
 };
 
 const sc_arr07: SceneDef = {
-  label: 'OVERDRIVE MATRIX — 9-cell grid',
+  label: 'OVERDRIVE MATRIX — speed multiplier array',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.35, y: 0.35, w: 0.02, h: 0.02, type: 'SOLID' },
@@ -113,11 +118,13 @@ const sc_arr07: SceneDef = {
 };
 
 const sc_arr08: SceneDef = {
-  label: 'TWIN ARRAYS — cross-reference',
+  label: 'TWIN ARRAYS — radii + burst counts',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
-      { x: 0.4, y: 0.5, w: 0.02, h: 0.35, type: 'SOLID' },
-      { x: 0.6, y: 0.5, w: 0.02, h: 0.35, type: 'SOLID' },
+      { x: 0.35, y: 0.5, w: 0.02, h: 0.35, type: 'SOLID' },
+      { x: 0.65, y: 0.5, w: 0.02, h: 0.35, type: 'SOLID' },
+      { x: 0.5, y: 0.2, w: 0.04, h: 0.04, type: 'LAVA' },
+      { x: 0.5, y: 0.8, w: 0.04, h: 0.04, type: 'LAVA' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.75, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -128,10 +135,12 @@ const sc_arr08: SceneDef = {
 };
 
 const sc_arr09: SceneDef = {
-  label: 'RING BUFFER — circular memory',
+  label: 'RING BUFFER — sliding window analysis',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
-      { x: 0.5, y: 0.5, w: 0.06, h: 0.06, type: 'SOLID' },
+      { x: 0.5, y: 0.35, w: 0.3, h: 0.02, type: 'SOLID' },
+      { x: 0.5, y: 0.65, w: 0.3, h: 0.02, type: 'SOLID' },
+      { x: 0.5, y: 0.5, w: 0.04, h: 0.04, type: 'TRAP' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.78, y: 0.3, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
@@ -142,11 +151,13 @@ const sc_arr09: SceneDef = {
 };
 
 const sc_arr10: SceneDef = {
-  label: 'ARRAY OVERLORD — dynamic fire plan',
+  label: 'ARRAY OVERLORD — RAYCAST filter + POP',
   init: () => ({
     tick: 0, nextProjId: 0, obstacles: [
       { x: 0.3, y: 0.5, w: 0.02, h: 0.4, type: 'LAVA' },
       { x: 0.7, y: 0.5, w: 0.02, h: 0.4, type: 'LAVA' },
+      { x: 0.5, y: 0.15, w: 0.4, h: 0.02, type: 'SOLID' },
+      { x: 0.5, y: 0.85, w: 0.4, h: 0.02, type: 'SOLID' },
     ], projectiles: [],
     robots: [
       makeRobot({ id: 'enemy', x: 0.82, y: 0.5, angle: Math.PI, color: '#ef4444', trailColor: '#ff6060' }),
