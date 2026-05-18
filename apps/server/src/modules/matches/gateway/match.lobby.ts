@@ -5,8 +5,7 @@ import { MatchState } from './match.state';
 import { AuthenticatedSocket } from './types';
 import { MatchEngine } from '../match.engine';
 import * as crypto from 'crypto';
-import { BLACK_MARKET_ITEMS } from '../../users/black-market.constants';
-import { combatLoadoutKey } from '../../users/types';
+import { loadPlayerScriptAndLoadout, createAndStartMatch } from './match.lobby-init';
 
 const LOBBY_CACHE_KEY = 'lobby:matches';
 const LOBBY_CACHE_TTL = 120;
@@ -36,9 +35,7 @@ export class MatchLobbyManager {
     },
   ) {
     if (!client.userId) {
-      client.emit('error', {
-        message: 'Unauthorized: User not authenticated.',
-      });
+      client.emit('error', { message: 'Unauthorized: User not authenticated.' });
       return;
     }
     if (!data.scriptId) {
@@ -46,57 +43,13 @@ export class MatchLobbyManager {
       return;
     }
 
-    let scriptContent = '';
-    let selectedColor = '#22d3ee';
-    let selectedTracerColor = '#22d3ee';
-    let selectedRobotId = 'unit-01';
-
-    if (client.isGuest) {
-      scriptContent =
-        '// Guest Mode active\n// You can write temporary logic here';
-    } else {
-      const script = await this.prisma.robotScript.findUnique({
-        where: { id: data.scriptId, userId: client.userId },
-      });
-      if (!script) {
-        client.emit('error', { message: 'Script not found or unauthorized.' });
-        return;
-      }
-      scriptContent = script.content;
-
-      const cachedLoadout = await this.redis.get<{
-        equippedChassis: string;
-        equippedPaint: string;
-        equippedTracer: string;
-      }>(combatLoadoutKey(client.userId));
-      const user =
-        cachedLoadout ??
-        (await this.prisma.user.findUnique({
-          where: { id: client.userId },
-          select: {
-            equippedChassis: true,
-            equippedPaint: true,
-            equippedTracer: true,
-          },
-        }));
-      if (user) {
-        selectedRobotId = user.equippedChassis || 'chassis-phantom';
-        const paint = BLACK_MARKET_ITEMS.find(
-          (i) => i.id === user.equippedPaint,
-        );
-        if (paint?.color) selectedColor = paint.color;
-        const tracer = BLACK_MARKET_ITEMS.find(
-          (i) => i.id === user.equippedTracer,
-        );
-        if (tracer?.color) selectedTracerColor = tracer.color;
-      }
-    }
+    const loadout = await loadPlayerScriptAndLoadout(this.prisma, this.redis, client, data.scriptId);
+    if (!loadout) return;
 
     let match = this.state.matches.get(data.matchId);
     const currentMode = this.state.matchModes.get(data.matchId);
     const mode = data.mode || 'COMBAT';
 
-    // If mode changed, tear down the old match instance
     if (match && currentMode && currentMode !== mode) {
       match.stop();
       this.state.cleanupMatch(data.matchId);
@@ -104,75 +57,33 @@ export class MatchLobbyManager {
     }
 
     if (!match) {
-      const playerToken = {
-        id: client.userId,
-        script: scriptContent,
-        color: selectedColor,
-        model: selectedRobotId,
-        tracerColor: selectedTracerColor,
-      };
-
-      const initialPlayers =
-        mode === 'RACING'
-          ? [playerToken]
-          : mode === 'TRAINING_SOLO'
-            ? [
-                playerToken,
-                { id: 'dummy-1', script: '', color: '#ef4444', model: 'dummy' },
-                { id: 'dummy-2', script: '', color: '#eab308', model: 'dummy' },
-                { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
-              ]
-            : [
-                playerToken,
-                { id: 'bot-2', script: '', color: '#ff00ff', model: 'unit-02' },
-              ];
-
-      match = new MatchEngine(
+      match = await createAndStartMatch(
+        this.state,
+        this.server,
+        this.prisma,
         data.matchId,
-        initialPlayers,
         {
-          mode,
-          disableProjectiles: mode === 'RACING',
+          id: client.userId,
+          script: loadout.scriptContent,
+          color: loadout.selectedColor,
+          model: loadout.selectedRobotId,
+          tracerColor: loadout.selectedTracerColor,
         },
-        (event, payload) => {
-          this.server.to(data.matchId).emit(event, payload);
-        },
+        mode,
       );
-      this.state.matches.set(data.matchId, match);
-      this.state.matchModes.set(data.matchId, mode);
-      this.state.matchStartTime.set(data.matchId, Date.now());
-      match.start();
-
-      // update match status to in_progress and set startedAt
-      await this.prisma.match.upsert({
-        where: { id: data.matchId },
-        create: {
-          id: data.matchId,
-          type: 'Friendly',
-          status: 'in_progress',
-          startedAt: new Date(),
-          duration: 0,
-        },
-        update: {
-          status: 'in_progress',
-          startedAt: new Date(),
-        },
-      });
     } else {
       if (this.state.lobbyMatches.has(data.matchId)) {
         match.removePlayer('bot-2');
         match.addPlayer({
           id: client.userId,
-          script: scriptContent,
-          color: selectedColor,
-          model: selectedRobotId,
+          script: loadout.scriptContent,
+          color: loadout.selectedColor,
+          model: loadout.selectedRobotId,
         });
         this.state.lobbyMatches.delete(data.matchId);
         await this.publishLobbySnapshot();
       } else {
-        const isReconnect = match
-          .getState()
-          .robots.some((r) => r.id === client.userId);
+        const isReconnect = match.getState().robots.some((r) => r.id === client.userId);
         if (!isReconnect) {
           match.removePlayer('bot-2');
         } else {
@@ -180,11 +91,11 @@ export class MatchLobbyManager {
         }
         match.addPlayer({
           id: client.userId,
-          script: scriptContent,
-          color: selectedColor,
-          model: selectedRobotId,
+          script: loadout.scriptContent,
+          color: loadout.selectedColor,
+          model: loadout.selectedRobotId,
         });
-        match.updateInitialPlayer(client.userId, scriptContent);
+        match.updateInitialPlayer(client.userId, loadout.scriptContent);
       }
     }
 
@@ -193,7 +104,6 @@ export class MatchLobbyManager {
     client.emit('matchJoinedInfo', { mode });
     this.server.to(data.matchId).emit('gameState', match.getState());
 
-    // Broadcast user in-match status to leaderboard viewers
     if (client.userId && !client.isGuest) {
       this.state.userStatus.set(client.userId, {
         status: 'in-match',
