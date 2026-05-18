@@ -9,7 +9,10 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '../../common/auth.guard';
-import { TournamentsCommandService } from './tournaments-command.service';
+import { TournamentsCreateService } from './commands/tournaments-create.service';
+import { TournamentsJoinService } from './commands/tournaments-join.service';
+import { TournamentsStartService } from './commands/tournaments-start.service';
+import { TournamentsCompleteService } from './commands/tournaments-complete.service';
 import { TournamentsQueryService } from './tournaments-query.service';
 import {
   CompleteTournamentMatchDto,
@@ -31,7 +34,10 @@ interface RequestWithUser {
 @Controller('tournaments')
 export class TournamentsController {
   constructor(
-    private readonly commandService: TournamentsCommandService,
+    private readonly createService: TournamentsCreateService,
+    private readonly joinService: TournamentsJoinService,
+    private readonly startService: TournamentsStartService,
+    private readonly completeMatchService: TournamentsCompleteService,
     private readonly queryService: TournamentsQueryService,
   ) {}
 
@@ -39,21 +45,21 @@ export class TournamentsController {
   @Post('create')
   @UseGuards(AuthGuard)
   async create(@Body() body: CreateTournamentDto, @Req() req: RequestWithUser) {
-    return this.commandService.create(body.name, req.user.sub);
+    return this.createService.create(body.name, req.user.sub);
   }
 
   /* ────────────────────── JOIN ──────────────────────── */
   @Post(':id/join')
   @UseGuards(AuthGuard)
   async join(@Param('id') id: string, @Req() req: RequestWithUser) {
-    return this.commandService.join(id, req.user.sub);
+    return this.joinService.join(id, req.user.sub);
   }
 
   /* ────────────────────── START ─────────────────────── */
   @Post(':id/start')
   @UseGuards(AuthGuard)
   async start(@Param('id') id: string, @Req() req: RequestWithUser) {
-    return this.commandService.start(id, req.user.sub);
+    return this.startService.start(id, req.user.sub);
   }
 
   /* ────────────────────── LIST ALL ──────────────────── */
@@ -77,7 +83,7 @@ export class TournamentsController {
     @Body() body: CompleteTournamentMatchDto,
     @Req() req: RequestWithUser,
   ) {
-    return this.commandService.completeMatch(
+    return this.completeMatchService.completeMatch(
       id,
       matchId,
       body.winnerId,
