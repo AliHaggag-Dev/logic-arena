@@ -1,14 +1,9 @@
 import {
-    ArrayLiteral,
     BinaryExpression,
-    BooleanLiteral,
     Expression,
-    FunctionCallExpression,
     IndexExpression,
     MemberExpression,
     NodeType,
-    ObjectLiteral,
-    ObjectProperty,
     TokenType,
     UnaryExpression,
 } from "../../types";
@@ -16,19 +11,16 @@ import type { Parser } from "../parser";
 import { currentTokenIs, peekTokenIs } from "../token-guards";
 import {
     ADDITIVE_OPERATORS,
-    BUILTIN_FUNCTION_NAMES,
     COMPARISON_OPERATORS,
-    FORBIDDEN_OBJECT_KEYS,
-    MAX_LITERAL_COLLECTION_ELEMENTS,
     MULTIPLICATIVE_OPERATORS,
 } from "./expression.constants";
+import { parsePrimary } from "./primary-parser";
 
 type ExpressionReader = () => Expression | null;
 
 export class ExpressionParser {
     constructor(private readonly parser: Parser) { }
 
-    /** Precedence tower: OR, AND, comparison, arithmetic, unary, postfix, primary. */
     public parseExpression(): Expression | null {
         return this.parseOrExpression();
     }
@@ -117,7 +109,8 @@ export class ExpressionParser {
     }
 
     private parsePostfix(): Expression | null {
-        let expression = this.parsePrimary();
+        const parseOrExpression = () => this.parseOrExpression();
+        let expression = parsePrimary(this.parser, parseOrExpression);
         if (!expression) return null;
 
         while (peekTokenIs(this.parser, TokenType.LBRACKET) || peekTokenIs(this.parser, TokenType.DOT)) {
@@ -150,135 +143,6 @@ export class ExpressionParser {
         return { type: NodeType.MemberExpression, object, property: this.parser.currentToken.value };
     }
 
-    private parsePrimary(): Expression | null {
-        const { currentToken } = this.parser;
-
-        if (currentTokenIs(this.parser, TokenType.LPAREN)) return this.parseGroupedExpression();
-        if (currentTokenIs(this.parser, TokenType.LBRACE)) return this.parseObjectLiteral();
-        if (currentTokenIs(this.parser, TokenType.LBRACKET)) return this.parseArrayLiteral();
-
-        if (currentTokenIs(this.parser, TokenType.KEYWORD) && currentToken.value === "TRUE") {
-            return { type: NodeType.BooleanLiteral, value: true } as BooleanLiteral;
-        }
-
-        if (currentTokenIs(this.parser, TokenType.KEYWORD) && currentToken.value === "FALSE") {
-            return { type: NodeType.BooleanLiteral, value: false } as BooleanLiteral;
-        }
-
-        if (currentTokenIs(this.parser, TokenType.IDENTIFIER)) {
-            return this.parseIdentifierOrBuiltInCall(currentToken.value);
-        }
-
-        if (currentTokenIs(this.parser, TokenType.NUMBER)) {
-            return { type: NodeType.NumberLiteral, value: parseFloat(currentToken.value) };
-        }
-
-        if (currentTokenIs(this.parser, TokenType.STRING)) {
-            return { type: NodeType.StringLiteral, value: currentToken.value };
-        }
-
-        return null;
-    }
-
-    private parseGroupedExpression(): Expression | null {
-        this.parser.nextToken();
-        const innerExpression = this.parseOrExpression();
-        if (!innerExpression) return null;
-
-        this.consumeIfPeek(TokenType.RPAREN);
-        return innerExpression;
-    }
-
-    private parseIdentifierOrBuiltInCall(name: string): Expression | null {
-        const normalizedName = name.toUpperCase();
-
-        if (BUILTIN_FUNCTION_NAMES.has(normalizedName) && peekTokenIs(this.parser, TokenType.LPAREN)) {
-            return this.parseFunctionCallExpression(normalizedName);
-        }
-
-        return { type: NodeType.Identifier, value: name };
-    }
-
-    private parseFunctionCallExpression(name: string): FunctionCallExpression {
-        this.parser.nextToken();
-
-        return {
-            type: NodeType.FunctionCallExpression,
-            name,
-            args: this.parseDelimitedExpressions(TokenType.RPAREN),
-        };
-    }
-
-    private parseArrayLiteral(): ArrayLiteral {
-        return {
-            type: NodeType.ArrayLiteral,
-            elements: this.parseDelimitedExpressions(TokenType.RBRACKET, "array literals"),
-        };
-    }
-
-    private parseDelimitedExpressions(closeToken: TokenType, label = "argument lists"): Expression[] {
-        const expressions: Expression[] = [];
-
-        if (this.consumeIfPeek(closeToken)) return expressions;
-
-        this.parser.nextToken();
-        const firstExpression = this.parseOrExpression();
-        if (firstExpression) expressions.push(firstExpression);
-
-        while (peekTokenIs(this.parser, TokenType.COMMA)) {
-            this.parser.nextToken();
-            this.parser.nextToken();
-
-            const expression = this.parseOrExpression();
-            if (expression) expressions.push(expression);
-
-            this.assertCollectionSize(expressions.length, label);
-        }
-
-        this.consumeIfPeek(closeToken);
-        return expressions;
-    }
-
-    private parseObjectLiteral(): ObjectLiteral {
-        const properties: ObjectProperty[] = [];
-        if (this.consumeIfPeek(TokenType.RBRACE)) return { type: NodeType.ObjectLiteral, properties };
-
-        const firstProperty = this.parseObjectProperty();
-        if (firstProperty) properties.push(firstProperty);
-
-        while (peekTokenIs(this.parser, TokenType.COMMA)) {
-            this.parser.nextToken();
-            const property = this.parseObjectProperty();
-            if (property) properties.push(property);
-
-            this.assertCollectionSize(properties.length, "dictionary literals");
-        }
-
-        this.consumeIfPeek(TokenType.RBRACE);
-        return { type: NodeType.ObjectLiteral, properties };
-    }
-
-    private parseObjectProperty(): ObjectProperty | null {
-        this.parser.nextToken();
-
-        if (!currentTokenIs(this.parser, TokenType.IDENTIFIER) && !currentTokenIs(this.parser, TokenType.STRING)) {
-            return null;
-        }
-
-        const key = this.parser.currentToken.value;
-        if (FORBIDDEN_OBJECT_KEYS.has(key)) {
-            throw new Error(`Forbidden AliScript dictionary key: ${key}`);
-        }
-
-        if (!peekTokenIs(this.parser, TokenType.COLON)) return null;
-
-        this.parser.nextToken();
-        this.parser.nextToken();
-
-        const value = this.parseOrExpression();
-        return value ? { key, value } : null;
-    }
-
     private peekOperatorIs(operators: ReadonlySet<string>): boolean {
         return peekTokenIs(this.parser, TokenType.OPERATOR) && operators.has(this.parser.peekToken.value);
     }
@@ -288,11 +152,5 @@ export class ExpressionParser {
 
         this.parser.nextToken();
         return true;
-    }
-
-    private assertCollectionSize(size: number, label: string): void {
-        if (size > MAX_LITERAL_COLLECTION_ELEMENTS) {
-            throw new Error(`AliScript ${label} are capped at ${MAX_LITERAL_COLLECTION_ELEMENTS} elements`);
-        }
     }
 }
