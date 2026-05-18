@@ -1,20 +1,39 @@
 import { Module } from '@nestjs/common';
-import { UsersController } from './users.controller';
-import { UsersQueryService } from './users-query.service';
-import { UsersCommandService } from './users-command.service';
+import { ProfileController } from './controllers/profile.controller';
+import { SocialController } from './controllers/social.controller';
+import { MarketController } from './controllers/market.controller';
+import { ProfileQueryService } from './queries/profile-query.service';
+import { SocialQueryService } from './queries/social-query.service';
+import { MarketQueryService } from './queries/market-query.service';
+import { ProfileCommandService } from './commands/profile-command.service';
+import { PreferencesCommandService } from './commands/preferences-command.service';
+import { MarketCommandService } from './commands/market-command.service';
 import { PrismaService } from '../../common/prisma.service';
 import { CloudinaryService } from '../../common/cloudinary.service';
 
-// RedisService is provided globally via RedisModule (imported in AppModule)
-
 @Module({
-  controllers: [UsersController],
+  controllers: [
+    ProfileController,
+    SocialController,
+    MarketController,
+  ],
   providers: [
-    UsersQueryService,
-    UsersCommandService,
+    ProfileQueryService,
+    SocialQueryService,
+    MarketQueryService,
+    ProfileCommandService,
+    PreferencesCommandService,
+    MarketCommandService,
     PrismaService,
     CloudinaryService,
   ],
-  exports: [UsersQueryService, UsersCommandService],
+  exports: [
+    ProfileQueryService,
+    SocialQueryService,
+    MarketQueryService,
+    ProfileCommandService,
+    PreferencesCommandService,
+    MarketCommandService,
+  ],
 })
 export class UsersModule {}
