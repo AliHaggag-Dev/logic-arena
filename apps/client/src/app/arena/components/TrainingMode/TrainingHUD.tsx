@@ -2,6 +2,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { RobotState } from "../../types/scene.types";
 import { Socket } from "socket.io-client";
+import { StatItem } from "./shared/StatItem";
+import { StasisWarning } from "./shared/StasisWarning";
+import { ANIM_DURATION_MS } from "./shared/constants";
 
 interface TrainingHUDProps {
   playerRobot?: RobotState;
@@ -12,8 +15,6 @@ interface TrainingHUDProps {
   socket: Socket | null;
   dummies: RobotState[];
 }
-
-const ANIM_DURATION_MS = 2500;
 
 export const TrainingHUD = ({
   playerRobot,
@@ -156,11 +157,11 @@ export const TrainingHUD = ({
             </div>
 
             <div className="flex w-full justify-between">
-              <StatItem label="SHOTS" value={shotsFired} accent={false} />
-              <StatItem label="ACCURACY" value={`${accuracy}%`} accent={false} />
-              <StatItem label="DAMAGE" value={damage} accent={false} />
-              <StatItem label="ENERGY" value={energyConsumed} accent={false} />
-              <StatItem label="KILLS" value={dummiesDestroyed} accent />
+              <StatItem label="SHOTS" value={shotsFired} accent={false} brandColor="#00ffff" />
+              <StatItem label="ACCURACY" value={`${accuracy}%`} accent={false} brandColor="#00ffff" />
+              <StatItem label="DAMAGE" value={damage} accent={false} brandColor="#00ffff" />
+              <StatItem label="ENERGY" value={energyConsumed} accent={false} brandColor="#00ffff" />
+              <StatItem label="KILLS" value={dummiesDestroyed} accent brandColor="#ff0055" />
             </div>
 
             <div className="mt-3 pt-2.5 border-t border-[#00ffff]/15 flex justify-center pointer-events-auto">
@@ -202,48 +203,9 @@ export const TrainingHUD = ({
         </div>
       )}
 
-      {/* ── Stasis warning ── */}
-      {isInStasis && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none text-center">
-          <div className="text-[#ffcc00] font-mono font-black text-2xl tracking-[0.3em] drop-shadow-[0_0_10px_#ffcc00] animate-pulse">
-            ENERGY DEPLETED
-          </div>
-          <div className="text-[#ffcc00] font-mono font-bold text-sm tracking-[0.2em] mt-2 opacity-80">
-            SYSTEM RECHARGING
-          </div>
-        </div>
-      )}
+      <StasisWarning isInStasis={isInStasis} />
 
-      <style>{`
-        @keyframes fadeInOut {
-          0%   { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-          12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-          80%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-          100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-        }
-        @keyframes sweep {
-          0%   { left: -50%; }
-          100% { left: 150%; }
-        }
-      `}</style>
     </>
   );
 };
 
-const StatItem = ({ label, value, accent, isMobile }: { label: string; value: string | number; accent: boolean; isMobile?: boolean }) => (
-  <div className={`flex flex-col items-center ${isMobile ? "min-w-[32px]" : "min-w-[48px]"}`}>
-    {!isMobile && (
-      <span className={`font-mono text-[8px] tracking-widest mb-1 ${accent ? "text-[#ff0055]/70" : "text-[#00ffff]/50"}`}>
-        {label}
-      </span>
-    )}
-    <span className={`font-mono font-bold tabular-nums ${isMobile ? "text-[8px]" : "text-sm"} ${accent ? "text-[#ff0055]" : "text-white"}`}>
-      {value}
-    </span>
-    {isMobile && (
-      <span className={`font-mono text-[5px] uppercase mt-0.5 opacity-50 ${accent ? "text-[#ff0055]" : "text-[#00ffff]"}`}>
-        {label}
-      </span>
-    )}
-  </div>
-);
