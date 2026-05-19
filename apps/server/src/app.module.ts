@@ -14,6 +14,7 @@ import { MatchGateway } from './modules/matches/match.gateway';
 import { TournamentsModule } from './modules/tournaments/tournaments.module';
 import { CampaignModule } from './modules/campaign/campaign.module';
 import { AiModule } from './modules/ai/ai.module';
+import { FeedbackModule } from './modules/feedback/feedback.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AiModule } from './modules/ai/ai.module';
     TournamentsModule,
     CampaignModule,
     AiModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [
