@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { apiClient } from "../../../../lib/api-client";
-import { RobotScript } from "./ScriptCard";
+import { RobotScript } from "./script-card/types";
 import { EditScriptHeader } from "./edit-script-modal/EditScriptHeader";
 import { EditScriptEditor } from "./edit-script-modal/EditScriptEditor";
 import { EditScriptFooter, FooterStatus } from "./edit-script-modal/EditScriptFooter";

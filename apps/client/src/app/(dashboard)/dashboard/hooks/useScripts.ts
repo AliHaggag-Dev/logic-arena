@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../../lib/api-client";
-import { RobotScript } from "../components/ScriptCard";
+import { RobotScript } from "../components/script-card/types";
 import { useAuthState } from "../../../../hooks/useAuthState";
 import { setSelectedScriptId } from "../../../../lib/client-security";
 import { useSafeTimeout } from "../../../../hooks/useSafeTimeout";

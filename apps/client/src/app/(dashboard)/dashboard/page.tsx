@@ -4,7 +4,7 @@ import React from "react";
 import { useScripts } from "./hooks/useScripts";
 import { CustomSelect } from "./components/CustomSelect";
 import { ScriptSkeleton } from "./components/ScriptSkeleton";
-import { ScriptCard } from "./components/ScriptCard";
+import { ScriptCard } from "./components/script-card/ScriptCard";
 import { ProtocolForm } from "./components/ProtocolForm";
 import dynamic from "next/dynamic";
 import { Terminal, Box } from "lucide-react";
