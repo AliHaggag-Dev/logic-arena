@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { SectionHeader, Toggle, useFeedback } from "./Shared";
+import { SectionHeader, Toggle, useFeedback } from "./shared";
 import { apiClient } from "../../../../lib/api-client";
 
 interface NotificationSettings {

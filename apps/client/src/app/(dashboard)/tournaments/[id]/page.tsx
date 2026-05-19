@@ -3,7 +3,7 @@
 import React from "react";
 import { useParams } from "next/navigation";
 import { TournamentHeader } from "./components/TournamentHeader";
-import { BracketSVG } from "./components/BracketSVG";
+import { BracketSVG } from "./components/bracket/BracketSVG";
 import { MatchSidebar } from "./components/MatchSidebar";
 import { useMediaQuery } from "../../../../hooks/useMediaQuery";
 import { AuthModal } from "../../../../components/AuthModal";

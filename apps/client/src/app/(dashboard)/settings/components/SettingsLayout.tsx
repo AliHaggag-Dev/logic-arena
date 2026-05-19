@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Lock, User, Shield, Palette, Settings, Bell, LucideIcon } from "lucide-react";
-import { SectionId, SECTIONS } from "./Shared";
+import { SectionId, SECTIONS } from "./shared";
 
 interface SettingsLayoutProps {
   activeSection: SectionId | null;

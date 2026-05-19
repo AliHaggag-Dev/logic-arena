@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { SectionHeader } from "./Shared";
+import { SectionHeader } from "./shared";
 
 const THEME_CARDS = [
   {

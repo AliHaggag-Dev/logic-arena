@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../../lib/api-client";
 import { AlertTriangle } from "lucide-react";
-import { useFeedback, SectionHeader, SettingsInput, SaveButton, PasswordStrength } from "./Shared";
+import { useFeedback, SectionHeader, SettingsInput, SaveButton, PasswordStrength } from "./shared";
 import { clearAuthSession, clearSensitiveBrowserStorage, getAuthUsername } from "../../../../lib/client-security";
 
 export function SecuritySection({ isGuest = false }: { isGuest?: boolean }) {

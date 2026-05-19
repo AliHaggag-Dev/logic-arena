@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useAuthState } from "../../../hooks/useAuthState";
 
-import { SectionId } from "./components/Shared";
+import { SectionId } from "./components/shared";
 import { SettingsLayout } from "./components/SettingsLayout";
-import { IdentitySection } from "./components/IdentitySection";
+import { IdentitySection } from "./components/identity/IdentitySection";
 import { SecuritySection } from "./components/SecuritySection";
 import { AppearanceSection } from "./components/AppearanceSection";
 import { PreferencesSection } from "./components/PreferencesSection";

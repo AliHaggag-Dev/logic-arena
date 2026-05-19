@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Bot, Lock } from "lucide-react";
-import { SectionHeader, Toggle, useFeedback } from "./Shared";
+import { SectionHeader, Toggle, useFeedback } from "./shared";
 import { apiClient } from "../../../../lib/api-client";
 
 interface ArenaPreferences {
