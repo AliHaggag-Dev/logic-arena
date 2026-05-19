@@ -15,6 +15,7 @@ import { TournamentsModule } from './modules/tournaments/tournaments.module';
 import { CampaignModule } from './modules/campaign/campaign.module';
 import { AiModule } from './modules/ai/ai.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { FeedbackModule } from './modules/feedback/feedback.module';
     CampaignModule,
     AiModule,
     FeedbackModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
