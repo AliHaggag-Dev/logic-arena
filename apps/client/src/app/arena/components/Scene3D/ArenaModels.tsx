@@ -8,7 +8,8 @@ import {
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useSceneAnimation } from '../../hooks/useSceneAnimation';
-import { RobotModel, RobotErrorBoundary, FallbackRobot } from './models/RobotModel';
+import { RobotModel } from './models/RobotModelLoaders';
+import { RobotErrorBoundary, FallbackRobot } from './models/RobotModel';
 import { ObstaclesInstanced } from './models/ObstacleModel';
 import { LaserModel } from './models/ProjectileModel';
 import { LaserBeam } from './models/LaserBeam';
