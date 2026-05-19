@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { io, Socket } from 'socket.io-client';
 import { useSearchParams } from 'next/navigation';
-import { API_BASE_URL } from '../../../lib/api-client';
-import { getAuthUserId } from '../../../lib/client-security';
 import {
   GameState, RobotState, ProjectileState, ObstacleState,
-  FiredTracer, SpeechBubbleState,
-} from '../types';
+  FiredTracer,
+} from '../../types';
+import { getAuthUserId } from '../../../../lib/client-security';
+import { useSocket } from './useSocket';
+import { useSpeechBubbles } from './useSpeechBubbles';
 
 export const useGameState = (
   scriptId: string | null,
@@ -18,21 +18,14 @@ export const useGameState = (
   const searchParams = useSearchParams();
   const matchIdFromUrl = searchParams.get('matchId');
 
-  const socket: Socket = useMemo(() => {
-    // Rely on HttpOnly cookies for auth
-    const wsUrl = API_BASE_URL
-      .replace('https://', 'wss://')
-      .replace('http://', 'ws://')
-      .replace(/\/api$/, '');
-    return io(wsUrl, { autoConnect: false, withCredentials: true });
-  }, []);
+  const socket = useSocket();
+  const { speechBubble, setRobotBubble, cleanupBubbles } = useSpeechBubbles();
 
-  // Core game state — ref for zero-re-render R3F reads, state for UI
+  // Core game state — ref for zero-render R3F reads, state for UI
   const gameStateRef = useRef<GameState>({ robots: [], projectiles: [], obstacles: [] });
   const obstaclesRef = useRef<ObstacleState[]>([]);
   const [uiState, setUiState] = useState<GameState>({ robots: [], projectiles: [], obstacles: [] });
   const [firedTracer, setFiredTracer] = useState<FiredTracer | null>(null);
-  const [speechBubble, setSpeechBubble] = useState<SpeechBubbleState | null>(null);
   const [selectedRobotId, setSelectedRobotId] = useState<string>('');
   const [socketUserId, setSocketUserId] = useState<string | null>(null);
 
@@ -56,7 +49,6 @@ export const useGameState = (
 
   const lastUiUpdateRef = useRef(0);
   const tracerTimeoutRef = useRef<number | null>(null);
-  const robotBubbleTimeoutsRef = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
     gameStateRef.current = { robots: [], projectiles: [], obstacles: [] };
@@ -179,25 +171,6 @@ export const useGameState = (
       setTrainingStats(prev => ({ ...prev, dummiesDestroyed: prev.dummiesDestroyed + 1 }));
     };
 
-    // Per-robot speech bubble: each robot has its own timeout so bubbles
-    // don't flicker or collide. The shared state only tracks the most recent
-    // bubble (existing architecture), but each robot's display duration is
-    // managed independently.
-    const setRobotBubble = (robotId: string, message: string, durationMs: number): void => {
-      const prevTimeout = robotBubbleTimeoutsRef.current.get(robotId);
-      if (prevTimeout !== undefined) {
-        window.clearTimeout(prevTimeout);
-      }
-
-      setSpeechBubble({ robotId, message });
-
-      const timeoutId = window.setTimeout(() => {
-        robotBubbleTimeoutsRef.current.delete(robotId);
-        setSpeechBubble(null);
-      }, durationMs);
-      robotBubbleTimeoutsRef.current.set(robotId, timeoutId);
-    };
-
     const handleLogicExecuted = (data: { robotId: string; action: string; message?: string }) => {
       const activeUserId = getAuthUserId() || socketUserId;
 
@@ -265,12 +238,9 @@ export const useGameState = (
       socket.off('spectatorCount');
       socket.disconnect();
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
-      for (const timeoutId of robotBubbleTimeoutsRef.current.values()) {
-        window.clearTimeout(timeoutId);
-      }
-      robotBubbleTimeoutsRef.current.clear();
+      cleanupBubbles();
     };
-  }, [socket, scriptId, matchIdFromUrl, mode, isSpectator]);
+  }, [socket, scriptId, matchIdFromUrl, mode, isSpectator, setRobotBubble, cleanupBubbles]);
 
   const availableRobots = useMemo(() => uiState.robots.map(r => r.id), [uiState.robots]);
 
