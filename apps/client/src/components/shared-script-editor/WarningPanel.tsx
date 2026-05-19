@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SemanticWarning } from '../../../../../workers/parser.worker.types';
+import type { SemanticWarning } from '../../workers/parser.worker.types';
 import { AlertTriangle, X, Zap, RefreshCw, Skull } from 'lucide-react';
 
 interface WarningPanelProps {
@@ -7,7 +7,6 @@ interface WarningPanelProps {
   onClose: () => void;
 }
 
-/** Warning code → user-friendly icon / color mapping */
 const WARNING_ICONS: Record<string, React.ReactNode> = {
   'contradictory-command': <Zap size={14} />,
   'redundant-assignment': <RefreshCw size={14} />,
@@ -17,7 +16,6 @@ const WARNING_ICONS: Record<string, React.ReactNode> = {
 export const WarningPanel: React.FC<WarningPanelProps> = ({ warnings, onClose }) => {
   return (
     <div className="absolute bottom-0 left-0 right-0 z-30 max-h-[45%] overflow-y-auto rounded-b-lg border-t border-amber-500/30 bg-black/90 backdrop-blur-xl">
-      {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-amber-900/30 sticky top-0 bg-black/95 backdrop-blur-xl z-10">
         <span className="flex items-center gap-1.5 text-amber-400 text-[9px] font-black tracking-[0.25em] uppercase">
           <AlertTriangle size={12} /> Semantic Warnings ({warnings.length})
@@ -32,7 +30,6 @@ export const WarningPanel: React.FC<WarningPanelProps> = ({ warnings, onClose })
         </button>
       </div>
 
-      {/* Warning list */}
       <div className="flex flex-col">
         {warnings.map((w, i) => (
           <div

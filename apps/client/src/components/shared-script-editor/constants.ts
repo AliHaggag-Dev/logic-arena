@@ -1,6 +1,7 @@
-import { Suggestion } from './types';
+import type { Suggestion } from './types';
 
-export const LINE_HEIGHT = 20;
+export const LINE_HEIGHT_CAMPAIGN = 24;
+export const LINE_HEIGHT_ARENA = 20;
 
 export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     // Commands
@@ -82,7 +83,20 @@ export const AUTOCOMPLETE_SUGGESTIONS: Suggestion[] = [
     { label: 'RECEIVE()', detail: 'swarm', hint: 'Returns Array of all messages received since last tick. Clears inbox after read.' },
 ];
 
-export const DETAIL_COLORS: Record<string, string> = {
+export const DETAIL_COLORS_CSS: Record<string, string> = {
+    command:    'var(--sem-info)',
+    control:    'var(--sem-warning)',
+    identifier: 'var(--accent)',
+    flag:       'var(--sem-success)',
+    query:      'var(--sem-info)',
+    math:       'var(--sem-warning)',
+    array:      'var(--accent)',
+    sensor:     'var(--sem-danger)',
+    dictionary: 'var(--sem-danger)',
+    swarm:      'var(--sem-success)',
+};
+
+export const DETAIL_COLORS_HEX: Record<string, string> = {
     command:    '#22d3ee',
     control:    '#f59e0b',
     identifier: '#a855f7',

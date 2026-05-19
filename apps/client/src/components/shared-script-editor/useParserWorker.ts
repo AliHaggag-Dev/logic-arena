@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { SemanticWarning } from '../../../../../workers/parser.worker.types';
+import type { SemanticWarning } from '../../workers/parser.worker.types';
 
 export const useParserWorker = () => {
     const workerRef = useRef<Worker | null>(null);
@@ -7,7 +7,7 @@ export const useParserWorker = () => {
     const [warnings, setWarnings] = useState<SemanticWarning[]>([]);
 
     useEffect(() => {
-        workerRef.current = new Worker(new URL('../../../../../workers/parser.worker.ts', import.meta.url));
+        workerRef.current = new Worker(new URL('../../workers/parser.worker.ts', import.meta.url));
         workerRef.current.onmessage = (e: MessageEvent<{ status: string; warnings?: SemanticWarning[] }>) => {
             if (e.data.status === "success") {
                 setSyntaxValid(true);

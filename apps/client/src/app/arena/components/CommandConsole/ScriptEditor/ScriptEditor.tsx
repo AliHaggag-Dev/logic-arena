@@ -1,10 +1,11 @@
 import React, { useRef, useCallback, useState } from "react";
-import { ScriptEditorProps } from "./types";
-import { highlightCode } from "./highlight";
-import { useParserWorker } from "./useParserWorker";
-import { useAutocomplete } from "./useAutocomplete";
-import { AutocompleteDropdown } from "./AutocompleteDropdown";
-import { WarningPanel } from "./WarningPanel";
+import type { ScriptEditorProps } from "../../../../../components/shared-script-editor";
+import { highlightCode } from "../../../../../components/shared-script-editor";
+import { useParserWorker } from "../../../../../components/shared-script-editor";
+import { useAutocompleteFast } from "../../../../../components/shared-script-editor";
+import { AutocompleteDropdown } from "../../../../../components/shared-script-editor";
+import { WarningPanel } from "../../../../../components/shared-script-editor";
+import { DETAIL_COLORS_HEX, LINE_HEIGHT_ARENA } from "../../../../../components/shared-script-editor";
 import { sanitizeHtml } from "../../../../../lib/client-security";
 
 export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScriptInput, handleDeployBrain, toggleLibrary, clearPrebuilt }) => {
@@ -12,7 +13,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
     const highlightRef = useRef<HTMLDivElement>(null);
     const { syntaxValid, validateSyntax, warnings } = useParserWorker();
     const [showWarnings, setShowWarnings] = useState(false);
-    const { suggestions, activeIdx, caretXY, handleChange, handleKeyDown, acceptSuggestion, clearSuggestions } = useAutocomplete(
+    const { suggestions, activeIdx, caretXY, handleChange, handleKeyDown, acceptSuggestion, clearSuggestions } = useAutocompleteFast(
         setScriptInput, clearPrebuilt, textareaRef, validateSyntax
     );
 
@@ -29,7 +30,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
         <div className="relative flex flex-col gap-3 grow overflow-visible">
             <div className="relative grow flex flex-col border border-cyan-900/40 bg-black/50 rounded-lg overflow-visible group min-h-0">
                 <div className="flex-1 min-h-0 relative overflow-hidden rounded-lg">
-                    <div ref={highlightRef} className="absolute inset-0 p-3 pt-4 pointer-events-none font-mono text-[13px] leading-5 text-cyan-300 overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlightCode(scriptInput)) }} />
+                    <div ref={highlightRef} className="absolute inset-0 p-3 pt-4 pointer-events-none font-mono text-[13px] leading-5 text-cyan-300 overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlightCode(scriptInput, { keywordClass: 'text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]', lineNumberColor: 'rgba(8, 145, 178, 0.5)', lineNumberWidth: '32px', lineHeight: LINE_HEIGHT_ARENA, lineNumberPaddingRight: '8px', lineNumberMarginRight: '12px', borderColor: 'rgba(8, 145, 178, 0.4)' })) }} />
                     <textarea title="script editor" ref={textareaRef} onScroll={handleScroll} className="relative w-full h-full p-3 pt-4 font-mono text-[13px] leading-5 text-transparent caret-purple-500 bg-transparent resize-none outline-none group-focus-within:border-cyan-500/50 transition-colors custom-scrollbar" style={{ paddingLeft: "56px" }} spellCheck={false} value={scriptInput} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={() => setTimeout(clearSuggestions, 150)} />
                 </div>
                 <div className="absolute top-2 right-4 flex items-center gap-2 text-[10px] tracking-[0.3em] font-black pointer-events-none select-none">
@@ -49,7 +50,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                         </button>
                     )}
                 </div>
-                <AutocompleteDropdown suggestions={suggestions} activeIdx={activeIdx} caretXY={caretXY} onAccept={acceptSuggestion} />
+                <AutocompleteDropdown suggestions={suggestions} activeIdx={activeIdx} caretXY={caretXY} onAccept={acceptSuggestion} detailColors={DETAIL_COLORS_HEX} useTop={false} />
                 {showWarnings && warningCount > 0 && (
                     <WarningPanel warnings={warnings} onClose={() => setShowWarnings(false)} />
                 )}

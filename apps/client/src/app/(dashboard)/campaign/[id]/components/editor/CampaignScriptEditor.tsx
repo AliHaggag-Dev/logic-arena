@@ -1,10 +1,11 @@
 import React, { useCallback, useRef, useState } from "react";
 import { sanitizeHtml } from "../../../../../../lib/client-security";
-import { highlightCode } from "./highlight";
-import { useParserWorker } from "./useParserWorker";
-import { useAutocomplete } from "./useAutocomplete";
-import { AutocompleteDropdown } from "./AutocompleteDropdown";
-import { WarningPanel } from "../../../../../arena/components/CommandConsole/ScriptEditor/WarningPanel";
+import { highlightCode } from "../../../../../../components/shared-script-editor";
+import { useParserWorker } from "../../../../../../components/shared-script-editor";
+import { useAutocomplete } from "../../../../../../components/shared-script-editor";
+import { AutocompleteDropdown } from "../../../../../../components/shared-script-editor";
+import { WarningPanel } from "../../../../../../components/shared-script-editor";
+import { DETAIL_COLORS_CSS } from "../../../../../../components/shared-script-editor";
 
 interface CampaignScriptEditorProps {
   value: string;
@@ -101,6 +102,7 @@ export function CampaignScriptEditor({
           activeIdx={activeIdx}
           caretXY={caretXY}
           onAccept={acceptSuggestion}
+          detailColors={DETAIL_COLORS_CSS}
         />
         {showWarnings && warnings.length > 0 && (
           <WarningPanel warnings={warnings} onClose={() => setShowWarnings(false)} />
