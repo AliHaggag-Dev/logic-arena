@@ -9,8 +9,6 @@ import { DashboardHeader } from "./components/layout/components/DashboardHeader"
 import { ChallengeModal } from "./components/layout/components/ChallengeModal";
 import { ToastNotification } from "./components/layout/components/ToastNotification";
 import { PWAInstallPrompt } from "../../components/PWAInstallPrompt";
-import { MobileHeader } from './components/MobileHeader';
-import { MobileNav } from './components/MobileNav';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { username, avatarUrl, handleLogout } = useDashboardAuth();

@@ -12,6 +12,7 @@ export const AUTH_COOKIE_MAX_AGE_SECONDS = 3_600;
 export interface JwtPayload {
   sub: string;
   username: string;
+  role?: string;
   sessionVersion?: number;
   iat?: number;
   exp?: number;

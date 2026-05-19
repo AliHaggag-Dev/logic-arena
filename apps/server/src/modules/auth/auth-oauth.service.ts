@@ -83,6 +83,7 @@ export class AuthOAuthService {
     const payload: JwtPayload = {
       sub: user.id,
       username: user.username,
+      role: user.role,
       sessionVersion,
     };
     const token = jwt.sign(payload, secret, { expiresIn: '1h' });

@@ -19,6 +19,7 @@ model User {
   avatarUrl            String?
   provider             String?            @default("local") // "local" | "google" | "github"
   isVerified           Boolean            @default(false)
+  role                 String             @default("USER")
   verifyCode           String?
   verifyExpiry         DateTime?
   resetCode            String?
@@ -126,4 +127,43 @@ model AriaInsight {
   createdAt DateTime @default(now())
 
   @@index([userId, isRead])
+}
+
+model BugReport {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  steps       String?
+  severity    String   // LOW | MEDIUM | HIGH | CRITICAL
+  status      String   @default("OPEN")
+  userId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+}
+
+model FeatureRequest {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  useCase     String?
+  priority    String   // NICE_TO_HAVE | MODERATE | HIGH | CRITICAL
+  status      String   @default("SUBMITTED")
+  votes       Int      @default(0)
+  userId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("UNREAD")
+  createdAt DateTime @default(now())
+
+  @@index([status])
 }
