@@ -2,37 +2,11 @@
 
 import React, { useEffect, useRef, useState, useMemo, useId } from "react";
 import { CombatStats } from "../../types";
-import { STAT_COLORS } from "../../constants";
+import { AXES, SIDES, RINGS, DURATION } from "./RadarChart.constants";
+import { polarToCartesian, getAngle } from "./RadarChart.utils";
 
-import { Zap, Flame, Shield, Target, Wind, LucideProps } from "lucide-react";
-
-interface Axis {
-  key: keyof CombatStats;
-  label: string;
-  color: string;
-  Icon: React.ComponentType<LucideProps>;
-}
-
-const AXES: Axis[] = [
-  { key: "efficiency", label: "EFFICIENCY", color: STAT_COLORS.efficiency, Icon: Zap },
-  { key: "aggression", label: "AGGRESSION", color: STAT_COLORS.aggression, Icon: Flame },
-  { key: "defense", label: "DEFENSE", color: STAT_COLORS.defense, Icon: Shield },
-  { key: "precision", label: "PRECISION", color: STAT_COLORS.precision, Icon: Target },
-  { key: "speed", label: "SPEED", color: STAT_COLORS.speed, Icon: Wind },
-];
-
-const SIDES = 5;
-const RINGS = 5;
-const DURATION = 1200;
-
-function polarToCartesian(
-  cx: number, cy: number, r: number, angleRad: number,
-): { x: number; y: number } {
-  return { x: cx + r * Math.cos(angleRad), y: cy + r * Math.sin(angleRad) };
-}
-
-function getAngle(i: number): number {
-  return (Math.PI * 2 * i) / SIDES - Math.PI / 2;
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
 }
 
 interface Props {
@@ -41,7 +15,6 @@ interface Props {
 }
 
 export function RadarChart({ stats, size = 280 }: Props) {
-  // Unique IDs per instance — prevents SVG filter conflicts (U13, U14)
   const uid = useId();
   const fillId = `radar-fill-${uid}`;
   const glowId = `radar-glow-${uid}`;
@@ -60,7 +33,7 @@ export function RadarChart({ stats, size = 280 }: Props) {
       if (!startRef.current) startRef.current = ts;
       const elapsed = ts - startRef.current;
       const t = Math.min(elapsed / DURATION, 1);
-      const ease = 1 - Math.pow(1 - t, 3);
+      const ease = easeOutCubic(t);
 
       setAnimated({
         efficiency: from.efficiency + (to.efficiency - from.efficiency) * ease,
@@ -85,8 +58,6 @@ export function RadarChart({ stats, size = 280 }: Props) {
   const cy = size / 2;
   const maxR = (size / 2) * 0.72;
 
-  // Memoize static geometry — depends only on size, recalculated only when
-  // the size prop changes (P8).
   const { rings, axisLines, axisDots, labels } = useMemo(() => {
     const ringPts = Array.from({ length: RINGS }, (_, i) => {
       const r = (maxR * (i + 1)) / RINGS;
@@ -113,7 +84,6 @@ export function RadarChart({ stats, size = 280 }: Props) {
     return { rings: ringPts, axisLines: lines, axisDots: dots, labels: lbls };
   }, [cx, cy, maxR]);
 
-  // Dynamic data polygon (changes every animation frame)
   const dataPoints = AXES.map((axis, i) => {
     const v = (animated[axis.key] ?? 0) / 100;
     return polarToCartesian(cx, cy, maxR * v, getAngle(i));
@@ -138,7 +108,6 @@ export function RadarChart({ stats, size = 280 }: Props) {
           </filter>
         </defs>
 
-        {/* Ring grid */}
         {rings.map((pts, i) => (
           <polygon
             key={i}
@@ -149,7 +118,6 @@ export function RadarChart({ stats, size = 280 }: Props) {
           />
         ))}
 
-        {/* Axis lines */}
         {axisLines.map((line, i) => (
           <line
             key={i}
@@ -160,15 +128,12 @@ export function RadarChart({ stats, size = 280 }: Props) {
           />
         ))}
 
-        {/* Axis endpoint dots */}
         {axisDots.map((pt, i) => (
           <circle key={i} cx={pt.x} cy={pt.y} r={3} fill={AXES[i].color} opacity={0.6} />
         ))}
 
-        {/* Data polygon — fill */}
         <polygon points={dataPolygon} fill={`url(#${fillId})`} opacity={0.8} />
 
-        {/* Data polygon — glowing stroke */}
         <polygon
           points={dataPolygon}
           fill="none"
@@ -185,7 +150,6 @@ export function RadarChart({ stats, size = 280 }: Props) {
           strokeLinejoin="round"
         />
 
-        {/* Vertex dots */}
         {dataPoints.map((pt, i) => (
           <React.Fragment key={i}>
             <circle cx={pt.x} cy={pt.y} r={5} fill={AXES[i].color} opacity={0.9} />
@@ -193,7 +157,6 @@ export function RadarChart({ stats, size = 280 }: Props) {
           </React.Fragment>
         ))}
 
-        {/* Axis labels */}
         {labels.map((lbl, i) => {
           const isLeft = lbl.x < cx - 10;
           const isRight = lbl.x > cx + 10;
@@ -238,7 +201,6 @@ export function RadarChart({ stats, size = 280 }: Props) {
           );
         })}
 
-        {/* Centre dot */}
         <circle cx={cx} cy={cy} r={3} fill="var(--accent)" opacity={0.5} />
       </svg>
     </div>
