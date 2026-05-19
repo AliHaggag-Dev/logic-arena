@@ -35,3 +35,160 @@
 
 .quick-card                { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .quick-card:hover          { transform: translateY(-3px); }
+
+/* ── DocsSectionNav Panel — theme-adaptive frosted glass ─────────────────── */
+
+/* Default / Cyberpunk */
+.docs-snav-panel {
+  background: rgba(3, 7, 18, 0.88);
+}
+
+[data-theme='light'] .docs-snav-panel {
+  background: rgba(240, 242, 250, 0.94);
+  box-shadow: -6px 0 32px rgba(91, 33, 182, 0.12), inset 0 1px 0 rgba(255,255,255,0.7) !important;
+}
+
+[data-theme='desert'] .docs-snav-panel {
+  background: rgba(14, 10, 4, 0.90);
+}
+
+/* Panel header label — adapts to theme text color */
+.docs-snav-header {
+  font-size: 7px;
+  font-family: monospace;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: rgba(var(--accent-rgb), 0.4);
+  text-align: center;
+  padding: 2px 10px 0;
+}
+
+/* Thin divider below header */
+.docs-snav-divider {
+  height: 1px;
+  margin: 6px 8px 4px;
+  background: rgba(var(--accent-rgb), 0.14);
+}
+
+/* Nav items */
+.docs-snav-desktop-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 8px;
+  border-radius: 8px;
+  font-size: 8px;
+  font-family: monospace;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+  color: rgba(var(--accent-rgb), 0.35);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.docs-snav-desktop-item:hover {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+  transform: translateX(-4px);
+}
+
+.docs-snav-desktop-item[data-active='true'] {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.14);
+}
+
+.docs-snav-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(var(--accent-rgb), 0.2);
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.docs-snav-desktop-item[data-active='true'] .docs-snav-dot {
+  background: var(--accent);
+  box-shadow: 0 0 7px var(--accent);
+}
+
+[data-theme='light'] .docs-snav-desktop-item:hover {
+  box-shadow: none !important;
+}
+
+/* ── MOBILE: Frosted glass pill strip ───────────────────────────────────── */
+
+.docs-snav-mobile-container {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  background: rgba(3, 7, 18, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.1);
+  padding: 8px 0;
+}
+
+[data-theme='light'] .docs-snav-mobile-container {
+  background: rgba(240, 242, 250, 0.94);
+}
+
+[data-theme='desert'] .docs-snav-mobile-container {
+  background: rgba(14, 10, 4, 0.90);
+}
+
+/* Fade edges */
+.docs-snav-mobile-fade-left {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 20px; z-index: 1; pointer-events: none;
+  background: linear-gradient(to right, rgba(3, 7, 18, 0.9), transparent);
+}
+.docs-snav-mobile-fade-right {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 20px; z-index: 1; pointer-events: none;
+  background: linear-gradient(to left, rgba(3, 7, 18, 0.9), transparent);
+}
+
+[data-theme='light'] .docs-snav-mobile-fade-left {
+  background: linear-gradient(to right, rgba(240, 242, 250, 0.9), transparent);
+}
+[data-theme='light'] .docs-snav-mobile-fade-right {
+  background: linear-gradient(to left, rgba(240, 242, 250, 0.9), transparent);
+}
+
+[data-theme='desert'] .docs-snav-mobile-fade-left {
+  background: linear-gradient(to right, rgba(14, 10, 4, 0.9), transparent);
+}
+[data-theme='desert'] .docs-snav-mobile-fade-right {
+  background: linear-gradient(to left, rgba(14, 10, 4, 0.9), transparent);
+}
+
+.docs-snav-mobile { scrollbar-width: none; }
+.docs-snav-mobile::-webkit-scrollbar { display: none; }
+
+.docs-snav-pill {
+  flex-shrink: 0;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 8.5px;
+  font-family: monospace;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  background: transparent;
+  color: rgba(var(--accent-rgb), 0.4);
+}
+
+.docs-snav-pill[data-active="true"] {
+  background: rgba(var(--accent-rgb), 0.18);
+  border-color: rgba(var(--accent-rgb), 0.45);
+  color: var(--accent);
+}

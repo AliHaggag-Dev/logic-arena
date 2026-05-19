@@ -43,7 +43,7 @@ export function DashboardHeader({ username, avatarUrl }: DashboardHeaderProps) {
   }, [username]);
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-bg-primary/90 backdrop-blur-xl border-b border-accent/[0.08] p-[16px_28px] flex items-center justify-between shrink-0 shadow-[0_10px_40px_rgba(var(--accent-rgb),0.05)]">
+    <header className="sticky top-0 z-[60] w-full bg-bg-primary/90 backdrop-blur-xl border-b border-accent/[0.08] p-[16px_28px] flex items-center justify-between shrink-0 shadow-[0_10px_40px_rgba(var(--accent-rgb),0.05)]">
       <button
         type="button"
         onClick={() => router.push("/dashboard")}

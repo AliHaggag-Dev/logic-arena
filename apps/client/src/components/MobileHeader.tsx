@@ -105,7 +105,7 @@ export function MobileHeader() {
   }
 
   return (
-    <header className={`mobile-header-safe w-full ${visibilityClass} items-center justify-between px-4 border-b border-accent/8 bg-bg-primary z-40 fixed top-0 left-0 right-0 min-h-14`}>
+    <header className={`mobile-header-safe w-full ${visibilityClass} items-center justify-between px-4 border-b border-accent/8 bg-bg-primary z-[60] fixed top-0 left-0 right-0 min-h-14`}>
       <button
         type="button"
         onClick={() => router.push("/dashboard")}
