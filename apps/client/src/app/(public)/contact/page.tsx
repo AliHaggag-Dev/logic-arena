@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, CheckCircle, ExternalLink, Code2, Link2, Loader2, MessageSquare, Send, Globe,
+  AlertTriangle, ArrowLeft, CheckCircle, ExternalLink, Code2, Link2, Loader2, MessageSquare, Send, Globe,
 } from "lucide-react";
 import { FieldLabel, StyledInput, StyledTextarea } from "../../../components/ui/FormHelpers";
+import { apiClient } from "@/lib/api-client";
 
 /* ─── Constants ─────────────────────────────────────────── */
 
@@ -24,14 +25,31 @@ export default function ContactPage() {
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSubmitted(true); }, 900);
+    setError("");
+    try {
+      await apiClient.post("/feedback/contact", {
+        name,
+        email,
+        subject,
+        message,
+      });
+      setSubmitted(true);
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+        || "Failed to send message. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const reset = () => { setSubmitted(false); setName(""); setEmail(""); setSubject(""); setMessage(""); };
+  const reset = () => { setSubmitted(false); setError(""); setName(""); setEmail(""); setSubject(""); setMessage(""); };
 
   return (
     <div className="min-h-screen relative overflow-x-hidden" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
@@ -108,6 +126,12 @@ export default function ContactPage() {
                   <FieldLabel htmlFor="contact-message">// Your Message</FieldLabel>
                   <StyledTextarea id="contact-message" placeholder="Your message..." value={message} onChange={e => setMessage(e.target.value)} required rows={6} disabled={loading} />
                 </div>
+                {error && (
+                  <div className="flex gap-3 items-start p-4 rounded-xl" style={{ background: "rgba(var(--sem-danger-rgb,239,68,68),0.08)", border: "1px solid rgba(var(--sem-danger-rgb,239,68,68),0.25)" }}>
+                    <AlertTriangle size={14} className="shrink-0 mt-0.5" style={{ color: "var(--sem-danger,#ef4444)" }} />
+                    <p className="text-[12px] leading-[1.8]" style={{ color: "rgba(var(--sem-danger-rgb,239,68,68),0.85)", fontFamily: "var(--font-mono)" }}>{error}</p>
+                  </div>
+                )}
                 <button type="submit" disabled={loading} className="relative group/btn flex items-center justify-center gap-3 h-14 rounded-xl text-[12px] font-black tracking-[0.25em] uppercase transition-all duration-300 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(var(--accent-rgb),0.15)]" style={{ background: "rgba(var(--accent-rgb),0.1)", border: "1px solid rgba(var(--accent-rgb),0.4)", color: "var(--accent)" }}>
                   <div className="absolute inset-0 w-0 group-hover/btn:w-full transition-all duration-500 ease-out" style={{ background: "rgba(var(--accent-rgb),0.07)" }} />
                   <span className="relative z-10 flex items-center gap-3">
