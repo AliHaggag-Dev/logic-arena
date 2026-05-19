@@ -2116,3 +2116,134 @@ Shipped a sweeping platform-wide identity overhaul — a premium image-based bra
 ### Current Status
 
 * Logic Arena now delivers a fully polished, brand-consistent identity across all platforms — native PWA fullscreen on mobile, premium image logo with theme-aware tinting, secure avatar uploads with four-layer validation, and a live spectator layer with zero infrastructure overhead. The Redis layer is TLS-correct and cache invalidation is fully atomic across all write paths. The engine, gateway, and client are all lifecycle-clean with zero memory leaks or ghost state. Ready for: **Fog of War, University Competition launch, and full multiplayer stress testing.**
+
+## [3.0.0] - The Architecture Mastery Update — Campaign Live Battles & Monorepo Refactor - 2026-05-19
+
+A seismic architectural overhaul transforming Logic Arena from a working product into an engineering landmark. Delivered two headline features — a fully live 2D campaign battle system with frame-by-frame streaming and a Secret Rail System giving the enemy AI surgical positional control — then spent an entire engineering sprint dismantling every monolith in the codebase into focused, single-responsibility modules across client, server, and packages.
+
+---
+
+### New Features
+
+* **Live 2D Campaign Battle System — The Streaming Arena:**
+  The campaign's core interaction loop was fundamentally broken in the wrong direction: players uploaded their script, waited for a black-box simulation to complete behind the scenes, and received a static win/lose result. No feedback. No spectacle. No understanding of why they lost.
+  We decided to make the impossible the default.
+  Every campaign level now streams the battle live from the server at 20fps — frame by frame, tick by tick — directly into a 2D canvas in front of the player. The blue robot executes the player's handwritten AliScript. The red robot runs its mission script. They fight in real time. The player watches their own code come alive, sees exactly where their logic breaks down, and understands what they need to fix without reading a single error message.
+  
+  * **Server-side headless simulation** — `MatchEngine` runs a fixed-step loop at 60fps physics + 10Hz logic inside `MatchGateway`. A `setInterval` at 50ms fires 3 physics steps per emission, keeping the simulation deterministic regardless of server load.
+  * **WebSocket frame streaming** — Each tick emits a `campaignFrame` event containing full robot state (position, rotation, health, energy, scanActive) and projectile positions. The client receives and renders each frame the moment it arrives.
+  * **Live ArenaCanvas rendering** — `ArenaCanvas.tsx` was extended with a `streamingMode` that overrides the local `miniEvaluator` simulation entirely when server frames are present. Server data is the source of truth; local simulation is the fallback and preview layer only.
+  * **Completion token security** — On player victory, the server issues a one-time UUID token stored in Redis with a 120-second TTL. The client must present this token to claim campaign progression points, making it cryptographically impossible to fake a win via direct API call.
+  * **Preview vs Battle separation** — Before script submission, the canvas runs in preview mode: the red robot animates via local TypeScript `tick()` functions (the `scenes/` system), the blue robot stands still. After submission, the server takes over entirely. Two completely separate execution paths, zero interference.
+
+* **The Secret Rail System — Enemy AI Surgical Control:**
+  Scripting the red robot's behavior for 60 levels across 6 algorithmic categories required more than basic movement commands. We needed the enemy to execute precise patrol routes, orbit specific coordinates, strafe while maintaining aim, and snap to graph nodes with pixel accuracy — all without exposing any of this machinery to the player.
+  We built a hidden system variable layer inside `movement-executor.ts` that only the server-side enemy scripts can access:
+  
+  * `_SYS_TARGET_X` / `_SYS_TARGET_Y` — teleport-smooth movement to exact pixel coordinates. The executor computes heading, moves toward the target each tick, and writes `_SYS_AT_TARGET = 1` on arrival with a configurable snap threshold.
+  * `_SYS_FACE_X` / `_SYS_FACE_Y` — rotates the robot's FOV cone toward a point without changing its movement direction. Used for scanning choreography.
+  * `_SYS_STRAFE` — lateral movement (1 right, -1 left) while the body faces forward. Enables the enemy to slide along walls while keeping aim locked.
+  * `_SYS_ORBIT_X` / `_SYS_ORBIT_Y` / `_SYS_ORBIT_R` — circular orbit around a point at a configurable radius. Produces the spinning patrol behavior on graph-theory levels.
+  * `_SYS_SPEED_MULT` — velocity multiplier for dramatic acceleration/deceleration effects on boss-tier levels.
+
+  Players see none of this. Their AliScript environment has no access to `_SYS_*` identifiers. The system is invisible at the language level.
+
+* **AliScript Semantic Warning System:**
+  Players were writing logically contradictory scripts and receiving zero feedback. A robot commanded to `PATHFIND` and then immediately `STOP` in the same block would silently cancel the pathfinding — the player would watch their robot stand still with no idea why.
+  We built a compile-time semantic analysis layer on top of the existing parser:
+  
+  * **Contradiction detection** — flags movement command pairs where the second cancels the first (`PATHFIND` → `STOP`, `MOVE` → `BACKUP`).
+  * **Redundancy detection** — flags variable assignments that are overwritten before being read (`SET x = 1`, then `SET x = 2` with no read in between).
+  * **Dead code detection** — flags unreachable statements after `RETURN`, `BREAK`, or infinite `WAIT`.
+
+  Warnings appear in the editor as an amber badge showing the count. Clicking opens a WarningPanel listing each issue with a categorized Lucide icon (Zap for contradictions, RefreshCw for redundancy, Skull for dead code) and a plain-language explanation. The script still runs — warnings are advisory, not blocking. Players learn algorithmic thinking from their own mistakes in real time.
+
+---
+
+### Technical Scars and Resolutions
+
+* **Issue — "The One Week Wall" (Batch Simulation vs Live Streaming):**
+  The first campaign battle architecture worked like a compiler: the server ran the entire match headlessly, buffered every frame into a replay array, then sent the complete buffer to the client to play back. The client received a finished movie and had to reconstruct it frame-by-frame using a separate scene script engine that mimicked what the server had done. The synchronization problem was brutal — the server's physics ran at 60fps with deterministic fixed steps, but the client's reconstruction had to independently reproduce the exact same robot positions from partial state snapshots. Any divergence between server physics and client rendering produced a match where the player watched one outcome and received a different result. We spent an entire week fighting this desync before recognizing the architecture was fundamentally wrong.
+  
+  **Resolution:** Abandoned the replay-reconstruction model entirely. Switched to direct frame streaming: the server emits the actual rendered state every 50ms as it computes it. The client renders exactly what it receives — no reconstruction, no divergence, no separate scene script engine needed. The client's `streamingMode` in `ArenaCanvas` bypasses the local evaluator completely when server frames are present. One source of truth. The week of desync debugging became one afternoon of clean streaming implementation.
+
+* **Issue — "The Jittery Robot" (Discrete Jump Movement):**
+  With the eval loop running every 6 frames and the render loop running every frame, robots were visibly teleporting 6 pixels at a time instead of gliding smoothly. The movement was technically correct but looked like a slideshow. At 10 logic ticks per second, each position update was a discrete jump — acceptable in a server simulation but visually jarring in a live canvas.
+  
+  **Resolution:** Added per-frame interpolation between eval ticks. When a move action fires, the robot's last move direction and speed are stored in `_lastMoveAngle` and `_lastMoveValue`. Every render frame between eval ticks applies a fractional `PER_FRAME_SPD` nudge in the same direction. The robot glides continuously at 60fps even though its logic only fires at 10fps. Movement became visually indistinguishable from a true 60fps simulation.
+
+* **Issue — "The FOV Visibility Paradox" (Enemy Cone Always Visible):**
+  The FOV cone was rendering permanently for both robots, which broke the core gameplay contract: the player should have to actively SCAN to reveal their own robot's vision cone. The enemy's cone was always visible, telegraphing its position and aim direction to the player at all times — removing all tactical mystery from the enemy AI.
+  
+  **Resolution:** Implemented a timer-based FOV system. Each robot's cone alpha decays to zero over `FOV_SWEEP_FRAMES` frames. The cone only activates when the robot performs a `SCAN`, `FIRE`, or `BURST_FIRE` action. The enemy robot gets an automatic cone refresh loop to maintain its always-visible status, while the player robot's cone only appears during active scanner use. Two robots, same rendering code, opposite visibility contracts.
+
+* **Issue — "The Left-Right Mirror Bug" (MOVE Direction Inversion):**
+  `MOVE LEFT` and `MOVE RIGHT` in the miniEvaluator were producing strafe movement instead of explicit directional facing. A robot commanded to `MOVE RIGHT` would slide sideways while facing whatever direction it happened to be pointing, instead of turning to face right and moving forward. Players writing directional patrol scripts were watching their robot crab-walk in random directions.
+  
+  **Resolution:** Rewrote the directional move handlers to explicitly set `robot.angle` before computing movement. `MOVE LEFT` sets `robot.angle = Math.PI` (facing west) then moves forward along that angle. `MOVE RIGHT` sets `robot.angle = 0` (facing east). The robot now turns and walks — intuitive, predictable, correct.
+
+* **Issue — "The Oscillating Graph Walker" (Ping-Pong Node Traversal):**
+  Graph-theory level enemies were scripted to traverse a sequence of nodes using `_SYS_TARGET_X/Y`. On reaching the last node, the index incremented past the end of the array and the target coordinates became undefined — causing the robot to snap back to the origin and restart. Players saw an enemy that walked the graph correctly once, then teleported and repeated, breaking the illusion of intelligent traversal.
+  
+  **Resolution:** Implemented a ping-pong bounce pattern in the graph-theory enemy scripts. A direction variable flips between 1 and -1 when the node index hits either boundary. The robot now walks the graph forward, reverses at the end, walks backward, and reverses again at the start — continuous, smooth, and visually coherent as a graph traversal demonstration.
+
+* **Issue — "The NEAREST_VISIBLE Lie" (Wrong Coordinate Source):**
+  `NEAREST_VISIBLE_X` and `NEAREST_VISIBLE_Y` were returning coordinates based on whether the enemy was inside the robot's FOV cone — which meant the values were always either the enemy's exact position or zero, with no consideration of actual distance. A robot could have the enemy directly behind it, outside the FOV cone, and still read non-zero coordinates from a previous scan tick.
+  
+  **Resolution:** Rewrote both identifiers to use raw Euclidean distance instead of FOV cone membership. `NEAREST_VISIBLE_X/Y` now returns the enemy's coordinates if and only if they are within `SCAN_RANGE`, regardless of facing direction. This matches the semantic contract players expect: "nearest visible" means "close enough to detect," not "inside my current cone angle."
+
+---
+
+### Monorepo-Wide Refactor — From Monoliths to Modules
+
+After shipping the campaign battle system, we ran a full architectural audit of the entire codebase. Every file over 250 lines was flagged. Every folder with mixed responsibilities was decomposed. Every dead file was deleted. The result: 60+ files created, 20+ files deleted, zero behavior changes, all builds passing.
+The guiding rule throughout: a subfolder is only created when it will contain 3 or more files of the same type. Never one file per folder.
+
+* **Server — Game Engine & Gateway:**
+  * `match.gateway.ts` (659 → 145 lines) decomposed into 6 focused managers: `match.auth.ts`, `match.campaign.ts`, `match.cleanup.ts`, `match.spectator.ts`, `match.leaderboard.ts`, `match.lobby-init.ts`, `match.stats.ts`.
+  * `expression-facade.ts` decomposed twice — once in `packages/game/evaluator/` (502 → 258 lines, builtins extracted to `builtins/` subfolder: math, array, sensory, communication) and once in `apps/server/src/game/evaluator/` (278 → 77 lines, handlers extracted to `expression-facade/` subfolder).
+  * `block-executor.ts` (456 lines) gained a `block-executor/` subfolder with `if-handler.ts`, `loop-handler.ts`, `call-handler.ts` alongside the existing 5 handlers.
+  * `users` module decomposed into full CQRS layered architecture: `controllers/` (profile, social, market), `queries/` (profile, social, market), `commands/` (profile, preferences, market) — 7 files → 16 files.
+  * `tournaments` command service decomposed into `commands/` subfolder: create, join, start, completeMatch — one handler per write operation.
+
+* **Client — Campaign Arena:**
+  * `ArenaCanvas.tsx` (708 → 261 lines) decomposed into `rendering/` (drawBackground, drawRobot, drawProjectile, drawObstacle), `physics/` (collision, projectileSystem), `combat/` (applyAction, fovSystem), `battle/` (battleOrchestrator, replaySync), plus `constants.ts`.
+  * `miniEvaluator.ts` (485 lines) decomposed into `evaluator/` subfolder: types, constants, gameVars, statements, index.
+  * Campaign `LevelVisual.tsx` (362 → 27 lines) — 6 inline SVG visualizations extracted into `visuals/` subfolder with `VIS_MAP` registry.
+  * 7 orphaned `scene-scripts/` files deleted — replaced entirely by the `scenes/` tick() system built in 2.9.0.
+
+* **Client — Auth, Dashboard, Docs, Garage, Settings, Tournaments, Public:**
+  * **Auth pages:** 150 lines of duplicated background markup eliminated by extracting `variant="danger"` prop into `AuthContainer`.
+  * `AiTutor.tsx` decomposed twice — first into `ai-tutor/` subfolder (use-ai-chat hook, markdown-components, typing-indicator), then the orchestrator further split into chat-trigger, chat-messages, chat-input.
+  * **Legal pages:** `terms/page.tsx` (434 lines) and `privacy/page.tsx` (473 lines) each decomposed into `sections/` subfolders (4 files each). Shared form helpers extracted from 3 pages into `FormHelpers.tsx`.
+  * `users.controller.ts` (392 lines), `users-query.service.ts` (313 lines), `users-command.service.ts` (308 lines) — full CQRS decomposition.
+  * Settings `Shared.tsx` → `shared/` (types, hooks, ui, inputs, PasswordStrength). `IdentitySection.tsx` → `identity/` (AvatarUpload, IdentityFields, ConnectedAccounts).
+  * Tournaments `BracketSVG.tsx` (312 lines) → `bracket/` (utils, PhaseLabels, ConnectorLines, MatchCard, ChampionCard).
+
+* **Packages — logic-parser:**
+  * `semantic-analyzer.ts` (362 lines) → 6 modules: contradiction-detector, redundancy-detector, dead-code-detector, types, constants, orchestrator (17 lines).
+  * `expression-parser.ts` (298 lines) → primary-parser + literal-parser.
+  * `statement-parser.ts` (276 lines) → control-flow-parser, action-command-parser, declaration-parser.
+  * All 29 parser tests pass unchanged.
+
+* **Dead Code Elimination:**
+  * `SceneOverlay.tsx` (44 lines, zero imports) — deleted.
+  * `RobotCard.tsx` (264 lines, zero imports) — deleted.
+  * `docs/AiTutor.tsx` (495 lines, stale pre-refactor copy) — deleted.
+  * `tournaments/[id]/types.ts` (duplicate of parent types.ts, zero imports) — deleted.
+  * `useCommandHistory.ts`, `ReferencePanel.tsx`, `PrebuiltScripts.tsx` (arena, zero imports each) — deleted.
+  * `scene-scripts/` folder (7 files) + `sceneScriptEngine.ts` (146 lines) — deleted.
+  * `server/common/test-script.ts` — deleted.
+
+* **Shared Script Editor Extraction:**
+  The campaign editor and arena `ScriptEditor` contained 13 near-identical files duplicated across two locations. After a precise diff analysis, shared modules were extracted to `components/shared-script-editor/`: merged types, unified constants with both color maps, single `useParserWorker`, configurable `highlight.ts`, and a dual-export useAutocomplete (`useAutocomplete` for shadow-DOM precision in campaign, `useAutocompleteFast` for line-count speed in arena). 13 duplicate files deleted. Both editors now import from a single canonical source.
+
+* **TrainingMode HUD Deduplication:**
+  `StatItem` component and `StasisWarning` overlay were copy-pasted identically between `TrainingHUD.tsx` and `RacingHUD.tsx`. Extracted to `TrainingMode/shared/` with a `brandColor` prop for per-HUD theming. `ANIM_DURATION_MS` extracted to `shared/constants.ts`. DRY violation across 2 HUDs eliminated.
+
+---
+
+### Current Status
+
+* Logic Arena is now architecturally clean from packages to pages. Every module has a single responsibility. Every file is under 250 lines. Every dead file is deleted. The campaign delivers a live battle experience that no comparable platform offers. The enemy AI operates with surgical precision through a hidden control layer invisible to players. The semantic warning system teaches algorithmic thinking in real time.
+* **Ready for:** Fog of War, University Competition launch, and full multiplayer stress testing.
