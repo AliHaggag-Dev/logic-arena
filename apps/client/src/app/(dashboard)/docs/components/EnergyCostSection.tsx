@@ -3,7 +3,7 @@
 import React from 'react';
 import { SectionLabel } from './SectionLabel';
 import { EnergyCostTable } from './EnergyCostTable';
-import { EnergyDrainSimulator } from './EnergyDrainSimulator';
+import { EnergyDrainSimulator } from './drain-simulator/EnergyDrainSimulator';
 
 export function EnergyCostSection({ isMobile }: { isMobile: boolean }) {
   return (

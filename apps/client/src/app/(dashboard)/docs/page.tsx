@@ -7,7 +7,7 @@ import { QuickReferenceSection } from './components/QuickReferenceSection';
 import { InteractivePlayground } from './components/InteractivePlayground';
 import { BattleTacticsSection } from './components/BattleTacticsSection';
 import { CommandReferenceSection } from './components/CommandReferenceSection';
-import { RotationSystemSection } from './components/RotationSystemSection';
+import { RotationSystemSection } from './components/rotation-system/RotationSystemSection';
 import { AlgorithmChallenges } from './components/AlgorithmChallenges';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { EnergyCostSection } from './components/EnergyCostSection';
