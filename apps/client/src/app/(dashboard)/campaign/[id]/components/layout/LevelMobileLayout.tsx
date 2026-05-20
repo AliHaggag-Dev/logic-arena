@@ -1,10 +1,12 @@
 import React from "react";
-import { ArrowLeft, Swords, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LevelDetail, ModalState } from "../../types";
+import type { CampaignFrame, FightResult } from "../../../hooks/useCampaignFight";
 import { DIFFICULTY_CONFIG } from "../../../constants/difficulty.constants";
 import { CampaignScriptEditor } from "../editor/CampaignScriptEditor";
 import { LevelArenaPreview } from "../arena/LevelArenaPreview";
+import { EditorToolbar } from "../../../../../../components/editor/EditorToolbar";
 
 interface LevelMobileLayoutProps {
   level: LevelDetail;
@@ -13,15 +15,16 @@ interface LevelMobileLayoutProps {
   modal: ModalState;
   handleFight: () => void;
   onBattleEnd: (winner: 'player' | 'enemy' | 'draw') => void;
-  latestFrameRef?: React.MutableRefObject<any>;
+  latestFrameRef?: React.MutableRefObject<CampaignFrame | null>;
   isReplaying?: boolean;
-  fightResult?: { winner: string; completionToken: string | null } | null;
+  fightResult?: FightResult | null;
   waitingForReplay?: boolean;
   router: AppRouterInstance;
 }
 
 export function LevelMobileLayout({ level, script, setScript, modal, handleFight, onBattleEnd, latestFrameRef, isReplaying, fightResult, waitingForReplay, router }: LevelMobileLayoutProps) {
   const dc = DIFFICULTY_CONFIG[level.difficulty];
+  const fightDisabled = !script.trim() || modal === "loading";
 
   return (
     <div className="w-full flex flex-col min-h-[calc(100vh-80px-env(safe-area-inset-bottom))] px-4 pt-4 pb-[env(safe-area-inset-bottom)] relative z-10 animate-[fadeIn_0.35s_ease]">
@@ -102,30 +105,13 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
         <CampaignScriptEditor
           value={script}
           onChange={setScript}
+          isMobile
+          onRun={handleFight}
+          readOnly={modal === "loading"}
           placeholder={"// Write your AliScript here\n// Example:\nSET x = SCAN\nIF x > 0\n  FIRE\nELSE\n  MOVE RIGHT\nEND"}
           className="min-h-[300px] flex-1"
         />
-        <button
-          type="button"
-          onClick={handleFight}
-          disabled={!script.trim() || modal === "loading"}
-          className={`w-full h-[44px] shrink-0 rounded-xl text-[10px] font-black tracking-[0.2em] font-mono flex items-center justify-center gap-2 transition-transform duration-150 border active:scale-95 ${modal === "loading"
-            ? "bg-accent/5 border-accent/20 text-accent/70 cursor-not-allowed"
-            : !script.trim()
-              ? "bg-accent/5 border-accent/15 text-accent/25 cursor-default"
-              : "bg-accent/10 border-accent/40 text-accent cursor-pointer shadow-[0_0_8px_rgba(var(--accent-rgb),0.2)]"
-            }`}
-        >
-          {modal === "loading" ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" /> INITIALIZING COMBAT...
-            </>
-          ) : (
-            <>
-              <Swords className="w-3.5 h-3.5" /> DEPLOY & FIGHT
-            </>
-          )}
-        </button>
+        <EditorToolbar onRun={handleFight} disabled={fightDisabled} isMobile />
       </div>
     </div>
   );

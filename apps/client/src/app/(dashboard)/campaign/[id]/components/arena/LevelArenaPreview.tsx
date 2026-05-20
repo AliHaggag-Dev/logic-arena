@@ -3,6 +3,7 @@ import React, { memo } from "react";
 import { getSceneForLevel } from "./scenes";
 import { ArenaCanvas } from "./ArenaCanvas";
 import { Loader2 } from "lucide-react";
+import type { CampaignFrame, FightResult } from "../../../hooks/useCampaignFight";
 
 interface LevelArenaPreviewProps {
   levelId: string;
@@ -11,9 +12,9 @@ interface LevelArenaPreviewProps {
   userScript?: string;
   enemyScript?: string;
   onBattleEnd?: (winner: 'player' | 'enemy' | 'draw') => void;
-  latestFrameRef?: React.MutableRefObject<any>;
+  latestFrameRef?: React.MutableRefObject<CampaignFrame | null>;
   isReplaying?: boolean;
-  fightResult?: { winner: string; completionToken: string | null } | null;
+  fightResult?: FightResult | null;
   waitingForReplay?: boolean;
 }
 

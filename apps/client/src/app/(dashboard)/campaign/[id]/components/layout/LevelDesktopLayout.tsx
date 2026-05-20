@@ -1,10 +1,12 @@
 import React from "react";
-import { ArrowLeft, ArrowRight, Swords, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LevelDetail, ModalState } from "../../types";
+import type { CampaignFrame, FightResult } from "../../../hooks/useCampaignFight";
 import { DIFFICULTY_CONFIG } from "../../../constants/difficulty.constants";
 import { CampaignScriptEditor } from "../editor/CampaignScriptEditor";
 import { LevelArenaPreview } from "../arena/LevelArenaPreview";
+import { EditorToolbar } from "../../../../../../components/editor/EditorToolbar";
 
 interface LevelDesktopLayoutProps {
   level: LevelDetail;
@@ -13,15 +15,16 @@ interface LevelDesktopLayoutProps {
   modal: ModalState;
   handleFight: () => void;
   onBattleEnd: (winner: 'player' | 'enemy' | 'draw') => void;
-  latestFrameRef?: React.MutableRefObject<any>;
+  latestFrameRef?: React.MutableRefObject<CampaignFrame | null>;
   isReplaying?: boolean;
-  fightResult?: { winner: string; completionToken: string | null } | null;
+  fightResult?: FightResult | null;
   waitingForReplay?: boolean;
   router: AppRouterInstance;
 }
 
 export function LevelDesktopLayout({ level, script, setScript, modal, handleFight, onBattleEnd, latestFrameRef, isReplaying, fightResult, waitingForReplay, router }: LevelDesktopLayoutProps) {
   const dc = DIFFICULTY_CONFIG[level.difficulty];
+  const fightDisabled = !script.trim() || modal === "loading";
 
   return (
     <div className="max-w-[1100px] mx-auto px-6 pt-10 pb-[120px] relative z-10 animate-[fadeIn_0.35s_ease]">
@@ -138,31 +141,14 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
           <CampaignScriptEditor
             value={script}
             onChange={setScript}
+            isMobile={false}
+            onRun={handleFight}
+            readOnly={modal === "loading"}
             placeholder={"// Write your AliScript here\n// Example:\nSET x = SCAN\nIF x > 0\n  FIRE\nELSE\n  MOVE RIGHT\nEND"}
             className="min-h-[380px]"
           />
 
-          <button
-            type="button"
-            onClick={handleFight}
-            disabled={!script.trim() || modal === "loading"}
-            className={`w-full py-4 rounded-xl text-[11px] font-black tracking-[0.3em] font-mono flex items-center justify-center gap-2 transition-all duration-200 border ${modal === "loading"
-              ? "bg-accent/5 border-accent/20 text-accent/70 cursor-not-allowed"
-              : !script.trim()
-                ? "bg-accent/5 border-accent/15 text-accent/25 cursor-default"
-                : "bg-accent/10 border-accent/40 text-accent cursor-pointer hover:bg-accent/20 hover:border-accent/70 hover:drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.5)]"
-              }`}
-          >
-            {modal === "loading" ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> INITIALIZING COMBAT...
-              </>
-            ) : (
-              <>
-                <Swords className="w-4 h-4" /> DEPLOY & FIGHT
-              </>
-            )}
-          </button>
+          <EditorToolbar onRun={handleFight} disabled={fightDisabled} isMobile={false} />
         </div>
       </div>
     </div>
