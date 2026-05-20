@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { Trash2, X } from "lucide-react";
 import { AdminErrorBoundary, DataTable, StatusBadge, type DataTableColumn } from "@/components/admin";
 import { useAdminViewport } from "../../components/AdminViewportContext";
@@ -31,8 +32,14 @@ interface DetailModalProps {
 
 function DetailModal({ request, onClose }: DetailModalProps): React.ReactElement {
   return (
-    <div className="fixed inset-0 z-[120] grid place-items-center bg-bg-primary/85 px-4 backdrop-blur-sm">
-      <section className="max-h-[86vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-accent/40 bg-card p-5 shadow-[0_0_42px_rgba(var(--accent-rgb),0.18)]">
+    <div className="fixed inset-0 z-[120] grid place-items-end bg-bg-primary/85 px-0 backdrop-blur-sm md:place-items-center md:px-4">
+      <motion.section
+        className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border border-accent/40 bg-card p-5 shadow-[0_0_42px_rgba(var(--accent-rgb),0.18)] md:max-h-[86vh] md:max-w-2xl md:rounded-lg"
+        initial={{ opacity: 0, y: 48 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 48 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-[10px] font-black uppercase tracking-[0.28em] text-accent/70">Feature Request</p>
@@ -60,7 +67,7 @@ function DetailModal({ request, onClose }: DetailModalProps): React.ReactElement
             <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-text-primary">{request.useCase?.trim() || "No use case provided."}</p>
           </section>
         </div>
-      </section>
+      </motion.section>
     </div>
   );
 }
@@ -168,9 +175,9 @@ export default function AdminFeatureRequestsPage(): React.ReactElement {
         <AdminErrorBoundary>
           {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
 
-          <section className={`mb-4 grid gap-2 ${isMobile ? "grid-cols-2" : "grid-cols-6"}`}>
+          <section className={`mb-4 gap-2 ${isMobile ? "flex overflow-x-auto whitespace-nowrap pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : "grid grid-cols-6"}`}>
             {FILTERS.map((filter) => (
-              <button key={filter} type="button" onClick={() => { setPage(DEFAULT_PAGE); setStatus(filter); }} className={`min-h-11 rounded-lg border px-3 text-xs font-black uppercase tracking-widest transition-colors ${status === filter ? "border-accent bg-accent/15 text-accent" : "border-accent/20 bg-card text-text-secondary hover:border-accent/50 hover:text-text-primary"}`}>
+              <button key={filter} type="button" onClick={() => { setPage(DEFAULT_PAGE); setStatus(filter); }} className={`min-h-11 shrink-0 rounded-lg border px-3 text-xs font-black uppercase tracking-widest transition-colors ${status === filter ? "border-accent bg-accent/15 text-accent" : "border-accent/20 bg-card text-text-secondary hover:border-accent/50 hover:text-text-primary"}`}>
                 {formatLabel(filter)}
               </button>
             ))}

@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useScripts } from "./hooks/useScripts";
 import { CustomSelect } from "./components/CustomSelect";
 import { ScriptSkeleton } from "./components/ScriptSkeleton";
 import { ScriptCard } from "./components/script-card/ScriptCard";
 import { ProtocolForm } from "./components/ProtocolForm";
 import dynamic from "next/dynamic";
-import { Terminal, Box } from "lucide-react";
+import { Terminal, Box, Swords } from "lucide-react";
 import { AuthModal } from "../../../components/AuthModal";
 import type { GameMode } from "./hooks/useScripts";
 
@@ -59,6 +60,22 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 )}
+
+                <Link
+                    href="/lobby"
+                    className="group relative block min-h-16 overflow-hidden rounded-2xl border border-accent/30 bg-card p-4 text-left shadow-[0_12px_28px_rgba(var(--accent-rgb),0.10)] transition-colors hover:border-accent md:hidden"
+                >
+                    <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--accent),transparent)] opacity-70" />
+                    <div className="flex items-center gap-4">
+                        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
+                            <Swords className="h-6 w-6" />
+                        </span>
+                        <span className="min-w-0">
+                            <span className="block text-base font-black uppercase tracking-[0.18em] text-text-primary">Lobby</span>
+                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-text-secondary">Deploy scripts into live matches</span>
+                        </span>
+                    </div>
+                </Link>
 
                 <div className="flex flex-col md:grid md:grid-cols-3 gap-6 md:gap-8">
                     

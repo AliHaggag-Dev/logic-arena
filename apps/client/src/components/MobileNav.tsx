@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, Wrench, Hexagon, X, Trophy, Lightbulb, Shield } from "lucide-react";
+import { User, Settings, Wrench, Hexagon, X, Trophy, Lightbulb, Shield, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const mainNavItems = [
@@ -14,13 +14,6 @@ const mainNavItems = [
         <rect width="7" height="5" x="14" y="3" rx="1.5" />
         <rect width="7" height="9" x="14" y="12" rx="1.5" />
         <rect width="7" height="5" x="3" y="16" rx="1.5" />
-      </svg>
-    )
-  },
-  {
-    href: "/lobby", label: "LOBBY", icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
-        <polygon points="5 3 19 12 5 21 5 3" />
       </svg>
     )
   },
@@ -77,7 +70,14 @@ export function MobileNav() {
           icon: <Shield size={22} strokeWidth={1.8} />,
         },
       ]
-    : mainNavItems;
+    : [
+        ...mainNavItems,
+        {
+          href: "/black-market",
+          label: "BLACK MARKET",
+          icon: <ShoppingCart size={22} strokeWidth={1.8} />,
+        },
+      ];
   const isHubActive = subNavItems.some(item => pathname === item.href);
 
   return (
@@ -129,7 +129,7 @@ export function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative flex flex-col items-center justify-center w-full max-w-[72px] h-full transition-all duration-150 ease-out group overflow-hidden"
+                className="relative flex min-h-11 flex-col items-center justify-center w-full max-w-[72px] h-full transition-all duration-150 ease-out group overflow-hidden"
               >
                 <div
                   className={`absolute top-0 w-10 h-[2px] rounded-b-full bg-accent transition-all duration-150 ease-out z-20 ${isActive ? "translate-y-0 opacity-100 shadow-[0_0_12px_rgba(var(--accent-rgb),1)]" : "-translate-y-full opacity-0"}`}
@@ -156,7 +156,7 @@ export function MobileNav() {
           <button
             type="button"
             onClick={() => setIsHubOpen(!isHubOpen)}
-            className="relative flex flex-col items-center justify-center w-full max-w-[72px] h-full transition-all duration-150 ease-out group overflow-hidden"
+            className="relative flex min-h-11 flex-col items-center justify-center w-full max-w-[72px] h-full transition-all duration-150 ease-out group overflow-hidden"
           >
             <div
               className={`absolute top-0 w-10 h-[2px] rounded-b-full bg-accent transition-all duration-150 ease-out z-20 ${isHubActive || isHubOpen ? "translate-y-0 opacity-100 shadow-[0_0_12px_rgba(var(--accent-rgb),1)]" : "-translate-y-full opacity-0"}`}

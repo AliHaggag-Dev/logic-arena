@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminViewport } from "@/app/(dashboard)/admin/components/AdminViewportContext";
+
 const DEFAULT_CHART_HEIGHT = 320;
 const DEFAULT_TABLE_ROWS = 5;
 const TABLE_SKELETON_COLUMNS = 4;
@@ -17,7 +19,7 @@ const shimmerClassName =
 
 export function KpiCardSkeleton(): React.ReactElement {
   return (
-    <div className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
+    <div className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] md:p-5">
       <div className={`${shimmerClassName} h-3 w-28 rounded`} />
       <div className="mt-5 flex items-end justify-between gap-4">
         <div className={`${shimmerClassName} h-9 w-32 rounded`} />
@@ -30,7 +32,7 @@ export function KpiCardSkeleton(): React.ReactElement {
 
 export function ChartSkeleton({ height = DEFAULT_CHART_HEIGHT }: ChartSkeletonProps): React.ReactElement {
   return (
-    <div className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
+    <div className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] md:p-5">
       <div className="flex items-center justify-between gap-4">
         <div className={`${shimmerClassName} h-4 w-36 rounded`} />
         <div className={`${shimmerClassName} h-8 w-32 rounded`} />
@@ -44,6 +46,28 @@ export function ChartSkeleton({ height = DEFAULT_CHART_HEIGHT }: ChartSkeletonPr
 }
 
 export function TableSkeleton({ rows = DEFAULT_TABLE_ROWS }: TableSkeletonProps): React.ReactElement {
+  const { isMobile } = useAdminViewport();
+
+  if (isMobile) {
+    return (
+      <div className="grid gap-3">
+        {Array.from({ length: rows }, (_, rowIndex) => (
+          <div key={`card-row-${rowIndex}`} className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)]">
+            <div className={`${shimmerClassName} h-11 rounded-lg`} />
+            <div className="mt-4 grid gap-3">
+              {Array.from({ length: 3 }, (_, columnIndex) => (
+                <div key={`card-cell-${rowIndex}-${columnIndex}`} className="grid gap-2">
+                  <div className={`${shimmerClassName} h-3 w-24 rounded`} />
+                  <div className={`${shimmerClassName} h-5 rounded`} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden rounded-lg border border-accent/20 bg-card shadow-[var(--card-shadow)]">
       <div className="grid gap-4 border-b border-accent/20 bg-accent/5 p-4" style={{ gridTemplateColumns: `repeat(${TABLE_SKELETON_COLUMNS}, minmax(0, 1fr))` }}>

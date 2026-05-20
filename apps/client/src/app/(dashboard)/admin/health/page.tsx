@@ -136,7 +136,7 @@ export default function AdminHealthPage(): React.ReactElement {
             ) : (
               <>
                 <GaugeWidget value={heapPercent} title="HEAP USAGE" />
-                <div className="grid gap-3">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
                   <KpiCard title="RSS" value={health ? formatMegabytes(health.memoryUsage.rss) : "N/A"} icon={<HardDrive className="h-5 w-5" />} />
                   <KpiCard title="Heap Used" value={health ? formatMegabytes(health.memoryUsage.heapUsed) : "N/A"} icon={<MemoryStick className="h-5 w-5" />} />
                   <KpiCard title="Heap Total" value={health ? formatMegabytes(health.memoryUsage.heapTotal) : "N/A"} icon={<Cpu className="h-5 w-5" />} />

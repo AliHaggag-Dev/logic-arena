@@ -9,9 +9,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useAdminViewport } from "@/app/(dashboard)/admin/components/AdminViewportContext";
 import { ChartSkeleton } from "./AdminSkeleton";
 
 const DEFAULT_LINE_HEIGHT = 320;
+const MOBILE_LINE_HEIGHT = 220;
+const MOBILE_POINTS_LIMIT = 7;
 const DEFAULT_CHART_COLOR = "var(--accent)";
 const LINE_STROKE_WIDTH = 2;
 const GRID_OPACITY = 0.14;
@@ -31,16 +34,20 @@ export interface LineChartProps {
 }
 
 export function LineChart({ data, title, color = DEFAULT_CHART_COLOR, height = DEFAULT_LINE_HEIGHT, isLoading = false }: LineChartProps): React.ReactElement {
+  const { isMobile } = useAdminViewport();
+  const chartHeight = isMobile ? Math.max(MOBILE_LINE_HEIGHT, 200) : height;
+  const chartData = isMobile ? data.slice(-MOBILE_POINTS_LIMIT) : data;
+
   if (isLoading) {
-    return <ChartSkeleton height={height} />;
+    return <ChartSkeleton height={chartHeight} />;
   }
 
   return (
-    <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
-      <h3 className="font-mono text-sm font-black uppercase tracking-widest text-text-primary">{title}</h3>
-      <div className="mt-5" style={{ height }}>
+    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] md:p-5">
+      <h3 className="font-mono text-xs font-black uppercase tracking-widest text-text-primary md:text-sm">{title}</h3>
+      <div className="mt-4 min-h-[200px] md:mt-5" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
-          <RechartsLineChart data={data}>
+          <RechartsLineChart data={chartData}>
             <CartesianGrid stroke="var(--border)" strokeOpacity={GRID_OPACITY} vertical={false} />
             <XAxis dataKey="date" stroke="var(--text-secondary)" tickLine={false} axisLine={false} fontSize={12} />
             <YAxis stroke="var(--text-secondary)" tickLine={false} axisLine={false} fontSize={12} width={44} />

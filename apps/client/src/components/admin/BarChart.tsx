@@ -9,9 +9,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useAdminViewport } from "@/app/(dashboard)/admin/components/AdminViewportContext";
 import { ChartSkeleton } from "./AdminSkeleton";
 
 const DEFAULT_BAR_HEIGHT = 320;
+const MOBILE_BAR_HEIGHT = 220;
+const MOBILE_POINTS_LIMIT = 7;
 const DEFAULT_CHART_COLOR = "var(--accent)";
 const BAR_RADIUS = 6;
 const GRID_OPACITY = 0.14;
@@ -31,16 +34,20 @@ export interface BarChartProps {
 }
 
 export function BarChart({ data, title, color = DEFAULT_CHART_COLOR, horizontal = false, height = DEFAULT_BAR_HEIGHT, isLoading = false }: BarChartProps): React.ReactElement {
+  const { isMobile } = useAdminViewport();
+  const chartHeight = isMobile ? Math.max(MOBILE_BAR_HEIGHT, 200) : height;
+  const chartData = isMobile ? data.slice(0, MOBILE_POINTS_LIMIT) : data;
+
   if (isLoading) {
-    return <ChartSkeleton height={height} />;
+    return <ChartSkeleton height={chartHeight} />;
   }
 
   return (
-    <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
-      <h3 className="font-mono text-sm font-black uppercase tracking-widest text-text-primary">{title}</h3>
-      <div className="mt-5" style={{ height }}>
+    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] md:p-5">
+      <h3 className="font-mono text-xs font-black uppercase tracking-widest text-text-primary md:text-sm">{title}</h3>
+      <div className="mt-4 min-h-[200px] md:mt-5" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
-          <RechartsBarChart data={data} layout={horizontal ? "vertical" : "horizontal"}>
+          <RechartsBarChart data={chartData} layout={horizontal ? "vertical" : "horizontal"}>
             <CartesianGrid stroke="var(--border)" strokeOpacity={GRID_OPACITY} vertical={horizontal} horizontal={!horizontal} />
             {horizontal ? (
               <>

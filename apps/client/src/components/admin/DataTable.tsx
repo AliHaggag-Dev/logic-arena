@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronsUpDown, ChevronUp } from "lucide-react";
+import { useAdminViewport } from "@/app/(dashboard)/admin/components/AdminViewportContext";
 import { TableSkeleton } from "./AdminSkeleton";
 
 const DEFAULT_SKELETON_ROWS = 6;
@@ -50,6 +51,7 @@ function getTotalPages(pagination: DataTablePagination): number {
 
 export function DataTable({ columns, data, isLoading = false, pagination }: DataTableProps): React.ReactElement {
   const [sortState, setSortState] = useState<SortState | undefined>();
+  const { isMobile } = useAdminViewport();
 
   const sortedData = useMemo((): Array<Record<string, unknown>> => {
     if (!sortState) {
@@ -73,6 +75,87 @@ export function DataTable({ columns, data, isLoading = false, pagination }: Data
 
   if (isLoading) {
     return <TableSkeleton rows={DEFAULT_SKELETON_ROWS} />;
+  }
+
+  if (isMobile) {
+    if (columns.length === 0) {
+      return (
+        <section className="rounded-lg border border-accent/20 bg-card p-8 text-center shadow-[var(--card-shadow)]">
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-text-primary">No columns configured</p>
+        </section>
+      );
+    }
+
+    return (
+      <div className="grid gap-3">
+        {sortedData.length === 0 ? (
+          <section className="rounded-lg border border-accent/20 bg-card p-8 text-center shadow-[var(--card-shadow)]">
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-text-primary">No records found</p>
+            <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-text-secondary">Try a different filter.</p>
+          </section>
+        ) : (
+          sortedData.map((row, rowIndex) => {
+            const titleColumn = columns[0]!;
+            const detailColumns = columns.slice(1);
+            return (
+              <article key={`card-${rowIndex}`} className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)]">
+                <div className="mb-4 [&_button]:min-w-0">
+                  {titleColumn.render ? titleColumn.render(row[titleColumn.key], row) : (
+                    <h2 className="break-words text-base font-black uppercase tracking-[0.12em] text-text-primary">
+                      {String(row[titleColumn.key] ?? "")}
+                    </h2>
+                  )}
+                </div>
+                <dl className="grid gap-3">
+                  {detailColumns.map((column) => {
+                    const content = column.render ? column.render(row[column.key], row) : String(row[column.key] ?? "");
+                    const isActionsColumn = column.key === "actions";
+                    return (
+                      <div key={`${rowIndex}-${column.key}`} className={isActionsColumn ? "pt-2 [&_button]:w-full [&_select]:w-full [&>div]:w-full" : "grid gap-1"}>
+                        {!isActionsColumn && (
+                          <dt className="text-[10px] font-black uppercase tracking-[0.18em] text-text-secondary">{column.label}</dt>
+                        )}
+                        <dd className={isActionsColumn ? "[&_*]:min-w-0 [&_div]:w-full [&_button]:min-h-11 [&_button]:w-full [&_select]:min-h-11 [&_select]:w-full" : "break-words text-sm font-bold text-text-primary"}>
+                          {content}
+                        </dd>
+                      </div>
+                    );
+                  })}
+                </dl>
+              </article>
+            );
+          })
+        )}
+
+        {pagination && (
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-accent/20 bg-card px-4 py-3 font-mono text-xs text-text-secondary shadow-[var(--card-shadow)]">
+            <span>
+              Page {pagination.page} of {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Previous page"
+                onClick={() => pagination.onPageChange(Math.max(pagination.page - 1, FIRST_PAGE))}
+                disabled={pagination.page <= FIRST_PAGE}
+                className="flex h-11 w-11 items-center justify-center rounded border border-accent/20 text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Next page"
+                onClick={() => pagination.onPageChange(Math.min(pagination.page + 1, totalPages))}
+                disabled={pagination.page >= totalPages}
+                className="flex h-11 w-11 items-center justify-center rounded border border-accent/20 text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (

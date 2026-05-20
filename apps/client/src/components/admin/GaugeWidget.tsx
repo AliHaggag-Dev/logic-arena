@@ -36,8 +36,8 @@ export function GaugeWidget({ value, title, maxLabel = "100" }: GaugeWidgetProps
   }, [normalizedValue]);
 
   return (
-    <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
-      <h3 className="font-mono text-sm font-black uppercase tracking-widest text-text-primary">{title}</h3>
+    <section className="w-full rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] md:p-5">
+      <h3 className="font-mono text-xs font-black uppercase tracking-widest text-text-primary md:text-sm">{title}</h3>
       <div className="mt-4 flex justify-center">
         <div className="relative" style={{ width: DEFAULT_GAUGE_SIZE, height: DEFAULT_GAUGE_SIZE / 2 }}>
           <svg width={DEFAULT_GAUGE_SIZE} height={DEFAULT_GAUGE_SIZE / 2} viewBox={`0 0 ${DEFAULT_GAUGE_SIZE} ${DEFAULT_GAUGE_SIZE / 2}`} role="img" aria-label={`${title}: ${normalizedValue}%`}>
