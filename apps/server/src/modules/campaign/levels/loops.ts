@@ -400,6 +400,21 @@ END`,
   SET prevEnemyHp = 100
   SET init = 1
 END
+SET enemies = GET_ALL_VISIBLE_ENEMIES()
+SET len = LENGTH(enemies)
+IF len > 0 THEN
+  SET curHp = enemies[0][3]
+  IF curHp < prevEnemyHp THEN
+    SET hitCounter = hitCounter + 1
+    IF hitCounter >= 3 THEN
+      SET hitCounter = 0
+      IF evolution < 3 THEN
+        SET evolution = evolution + 1
+      END
+    END
+  END
+  SET prevEnemyHp = curHp
+END
 IF VISIBLE_ENEMY_COUNT > 0 THEN
   SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
   IF evolution == 0 THEN
