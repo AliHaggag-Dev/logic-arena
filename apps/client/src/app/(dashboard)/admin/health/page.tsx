@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Cpu, Database, HardDrive, MemoryStick, RefreshCcw, Server, Timer, Wifi } from "lucide-react";
-import { ChartSkeleton, GaugeWidget, KpiCard, KpiCardSkeleton, StatusIndicator } from "@/components/admin";
+import { AdminErrorBoundary, ChartSkeleton, GaugeWidget, KpiCard, KpiCardSkeleton, StatusIndicator } from "@/components/admin";
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminHealth } from "../hooks/useAdminHealth";
 
@@ -91,62 +91,64 @@ export default function AdminHealthPage(): React.ReactElement {
           </div>
         </header>
 
-        {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
+        <AdminErrorBoundary>
+          {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
 
-        {hasServiceWarning && (
-          <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-[rgba(var(--sem-danger-rgb),0.12)] p-4 text-sm font-black uppercase tracking-[0.12em] text-[var(--sem-danger)]">
-            Critical service dependency is down
+          {hasServiceWarning && (
+            <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-[rgba(var(--sem-danger-rgb),0.12)] p-4 text-sm font-black uppercase tracking-[0.12em] text-[var(--sem-danger)]">
+              Critical service dependency is down
+            </section>
+          )}
+
+          <section className="grid gap-3 md:grid-cols-3 md:gap-4">
+            {isLoading ? (
+              <>
+                <KpiCardSkeleton />
+                <KpiCardSkeleton />
+                <KpiCardSkeleton />
+              </>
+            ) : (
+              <>
+                <div className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent">
+                    <Database className="h-5 w-5" />
+                  </div>
+                  <StatusIndicator status={health?.dbHealthy ? "healthy" : "down"} label={health?.dbHealthy ? "Database Healthy" : "Database Down"} />
+                </div>
+                <div className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent">
+                    <Wifi className="h-5 w-5" />
+                  </div>
+                  <StatusIndicator status={health?.redisHealthy ? "healthy" : "down"} label={health?.redisHealthy ? "Redis Healthy" : "Redis Down"} />
+                </div>
+                <KpiCard title="Server Uptime" value={health ? formatUptime(health.uptimeSeconds) : "N/A"} icon={<Timer className="h-5 w-5" />} />
+              </>
+            )}
           </section>
-        )}
 
-        <section className="grid gap-3 md:grid-cols-3 md:gap-4">
-          {isLoading ? (
-            <>
-              <KpiCardSkeleton />
-              <KpiCardSkeleton />
-              <KpiCardSkeleton />
-            </>
-          ) : (
-            <>
-              <div className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent">
-                  <Database className="h-5 w-5" />
+          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+            {isLoading ? (
+              <>
+                <ChartSkeleton height={isMobile ? MEMORY_SKELETON_HEIGHT_MOBILE : MEMORY_SKELETON_HEIGHT_DESKTOP} />
+                <ChartSkeleton height={isMobile ? MEMORY_SKELETON_HEIGHT_MOBILE : MEMORY_SKELETON_HEIGHT_DESKTOP} />
+              </>
+            ) : (
+              <>
+                <GaugeWidget value={heapPercent} title="HEAP USAGE" />
+                <div className="grid gap-3">
+                  <KpiCard title="RSS" value={health ? formatMegabytes(health.memoryUsage.rss) : "N/A"} icon={<HardDrive className="h-5 w-5" />} />
+                  <KpiCard title="Heap Used" value={health ? formatMegabytes(health.memoryUsage.heapUsed) : "N/A"} icon={<MemoryStick className="h-5 w-5" />} />
+                  <KpiCard title="Heap Total" value={health ? formatMegabytes(health.memoryUsage.heapTotal) : "N/A"} icon={<Cpu className="h-5 w-5" />} />
                 </div>
-                <StatusIndicator status={health?.dbHealthy ? "healthy" : "down"} label={health?.dbHealthy ? "Database Healthy" : "Database Down"} />
-              </div>
-              <div className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent">
-                  <Wifi className="h-5 w-5" />
-                </div>
-                <StatusIndicator status={health?.redisHealthy ? "healthy" : "down"} label={health?.redisHealthy ? "Redis Healthy" : "Redis Down"} />
-              </div>
-              <KpiCard title="Server Uptime" value={health ? formatUptime(health.uptimeSeconds) : "N/A"} icon={<Timer className="h-5 w-5" />} />
-            </>
-          )}
-        </section>
+              </>
+            )}
+          </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          {isLoading ? (
-            <>
-              <ChartSkeleton height={isMobile ? MEMORY_SKELETON_HEIGHT_MOBILE : MEMORY_SKELETON_HEIGHT_DESKTOP} />
-              <ChartSkeleton height={isMobile ? MEMORY_SKELETON_HEIGHT_MOBILE : MEMORY_SKELETON_HEIGHT_DESKTOP} />
-            </>
-          ) : (
-            <>
-              <GaugeWidget value={heapPercent} title="HEAP USAGE" />
-              <div className="grid gap-3">
-                <KpiCard title="RSS" value={health ? formatMegabytes(health.memoryUsage.rss) : "N/A"} icon={<HardDrive className="h-5 w-5" />} />
-                <KpiCard title="Heap Used" value={health ? formatMegabytes(health.memoryUsage.heapUsed) : "N/A"} icon={<MemoryStick className="h-5 w-5" />} />
-                <KpiCard title="Heap Total" value={health ? formatMegabytes(health.memoryUsage.heapTotal) : "N/A"} icon={<Cpu className="h-5 w-5" />} />
-              </div>
-            </>
-          )}
-        </section>
-
-        <section className="mt-6 grid gap-3 md:grid-cols-2 md:gap-4">
-          <KpiCard title="Node.js Version" value={health?.nodeVersion ?? "N/A"} icon={<Server className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Process Uptime" value={health ? formatUptime(health.uptimeSeconds) : "N/A"} icon={<Activity className="h-5 w-5" />} isLoading={isLoading} />
-        </section>
+          <section className="mt-6 grid gap-3 md:grid-cols-2 md:gap-4">
+            <KpiCard title="Node.js Version" value={health?.nodeVersion ?? "N/A"} icon={<Server className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Process Uptime" value={health ? formatUptime(health.uptimeSeconds) : "N/A"} icon={<Activity className="h-5 w-5" />} isLoading={isLoading} />
+          </section>
+        </AdminErrorBoundary>
       </div>
     </div>
   );

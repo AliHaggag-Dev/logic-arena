@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Activity,
   BarChart3,
@@ -25,9 +26,13 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 const EXPANDED_WIDTH_CLASS = "w-[280px]";
 const COLLAPSED_WIDTH_CLASS = "w-[84px]";
+const COMMUNITY_SECTION_TITLE = "COMMUNITY";
+const FEEDBACK_PAGE_SIZE = 1;
+const SECTION_ANIMATION_DURATION = 0.18;
 
 type AdminNavItem = {
   href: string;
@@ -40,6 +45,12 @@ type AdminNavSection = {
   title: string;
   items: AdminNavItem[];
 };
+
+interface FeedbackCountResponse {
+  total: number;
+}
+
+type SectionOpenState = Record<string, boolean>;
 
 const NAV_SECTIONS: AdminNavSection[] = [
   {
@@ -81,9 +92,51 @@ function isActivePath(pathname: string, item: AdminNavItem): boolean {
   return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
+function getInitialSectionState(): SectionOpenState {
+  return NAV_SECTIONS.reduce<SectionOpenState>((state, section) => {
+    state[section.title] = true;
+    return state;
+  }, {});
+}
+
+export function useCommunityFeedbackCount(): number {
+  const [count, setCount] = useState<number>(0);
+
+  useEffect((): (() => void) => {
+    let cancelled = false;
+
+    async function loadCount(): Promise<void> {
+      try {
+        const [contactResponse, bugResponse] = await Promise.all([
+          apiClient.get<FeedbackCountResponse>("/admin/feedback/contact", { params: { status: "UNREAD", pageSize: FEEDBACK_PAGE_SIZE } }),
+          apiClient.get<FeedbackCountResponse>("/admin/feedback/bug-reports", { params: { status: "OPEN", pageSize: FEEDBACK_PAGE_SIZE } }),
+        ]);
+
+        if (!cancelled) {
+          setCount(contactResponse.data.total + bugResponse.data.total);
+        }
+      } catch {
+        if (!cancelled) {
+          setCount(0);
+        }
+      }
+    }
+
+    void loadCount();
+
+    return (): void => {
+      cancelled = true;
+    };
+  }, []);
+
+  return count;
+}
+
 export function AdminSidebar(): React.ReactElement {
   const pathname = usePathname() || "";
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [openSections, setOpenSections] = useState<SectionOpenState>(() => getInitialSectionState());
+  const communityFeedbackCount = useCommunityFeedbackCount();
   const widthClass = isCollapsed ? COLLAPSED_WIDTH_CLASS : EXPANDED_WIDTH_CLASS;
   const activeTitle = useMemo((): string => {
     for (const section of NAV_SECTIONS) {
@@ -92,6 +145,10 @@ export function AdminSidebar(): React.ReactElement {
     }
     return "Overview";
   }, [pathname]);
+
+  const toggleSection = (title: string): void => {
+    setOpenSections((current) => ({ ...current, [title]: !current[title] }));
+  };
 
   return (
     <aside className={`fixed left-0 top-0 z-[70] flex h-screen ${widthClass} flex-col border-r border-accent/20 bg-bg-primary/95 shadow-[0_0_36px_rgba(var(--accent-rgb),0.08)] backdrop-blur-xl transition-[width] duration-200`}>
@@ -122,32 +179,60 @@ export function AdminSidebar(): React.ReactElement {
         {NAV_SECTIONS.map((section) => (
           <div key={section.title} className="mb-6">
             {!isCollapsed && (
-              <div className="mb-2 flex items-center gap-2 px-3">
-                <Activity className="h-3 w-3 text-accent/50" />
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-text-secondary">{section.title}</p>
-              </div>
+              <button
+                type="button"
+                onClick={() => toggleSection(section.title)}
+                className="mb-2 flex min-h-11 w-full items-center justify-between gap-2 rounded-lg px-3 text-left transition-colors hover:bg-accent/5"
+                aria-expanded={openSections[section.title]}
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <Activity className="h-3 w-3 text-accent/50" />
+                  <span className="truncate text-[10px] font-black uppercase tracking-[0.24em] text-text-secondary">{section.title}</span>
+                </span>
+                <span className="flex items-center gap-2">
+                  {section.title === COMMUNITY_SECTION_TITLE && communityFeedbackCount > 0 && (
+                    <span className="rounded-full border border-[var(--sem-danger)] bg-[rgba(var(--sem-danger-rgb),0.12)] px-2 py-0.5 text-[10px] font-black text-[var(--sem-danger)]">
+                      {communityFeedbackCount.toLocaleString()}
+                    </span>
+                  )}
+                  <ChevronRight className={`h-3.5 w-3.5 text-text-secondary transition-transform ${openSections[section.title] ? "rotate-90" : ""}`} />
+                </span>
+              </button>
             )}
-            <div className="grid gap-1">
-              {section.items.map((item) => {
-                const Icon = item.icon;
-                const active = isActivePath(pathname, item);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    title={item.label}
-                    className={`flex min-h-11 items-center gap-3 rounded-lg border px-3 text-xs font-bold uppercase tracking-[0.14em] transition-colors ${
-                      active
-                        ? "border-accent/50 bg-accent/15 text-accent shadow-[inset_0_0_18px_rgba(var(--accent-rgb),0.08)]"
-                        : "border-transparent text-text-secondary hover:border-accent/20 hover:bg-accent/5 hover:text-text-primary"
-                    } ${isCollapsed ? "justify-center" : ""}`}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    {!isCollapsed && <span className="truncate">{item.label}</span>}
-                  </Link>
-                );
-              })}
-            </div>
+            <AnimatePresence initial={false}>
+              {(isCollapsed || openSections[section.title]) && (
+                <motion.div
+                  className="grid gap-1 overflow-hidden"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: SECTION_ANIMATION_DURATION }}
+                >
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = isActivePath(pathname, item);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        title={item.label}
+                        className={`relative flex min-h-11 items-center gap-3 rounded-lg border px-3 text-xs font-bold uppercase tracking-[0.14em] transition-colors ${
+                          active
+                            ? "border-accent/50 bg-accent/15 text-accent shadow-[inset_0_0_18px_rgba(var(--accent-rgb),0.08)]"
+                            : "border-transparent text-text-secondary hover:border-accent/20 hover:bg-accent/5 hover:text-text-primary"
+                        } ${isCollapsed ? "justify-center" : ""}`}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        {!isCollapsed && <span className="truncate">{item.label}</span>}
+                        {isCollapsed && section.title === COMMUNITY_SECTION_TITLE && communityFeedbackCount > 0 && (
+                          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[var(--sem-danger)]" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ))}
       </nav>

@@ -90,7 +90,7 @@ export function DataTable({ columns, data, isLoading = false, pagination }: Data
                     <button
                       type="button"
                       onClick={() => handleSort(column.key)}
-                      className="inline-flex min-h-8 items-center gap-2 font-mono text-xs font-black uppercase tracking-widest text-text-secondary transition-colors hover:text-accent"
+                      className="inline-flex min-h-11 items-center gap-2 font-mono text-xs font-black uppercase tracking-widest text-text-secondary transition-colors hover:text-accent"
                     >
                       <span>{column.label}</span>
                       <SortIcon className="h-3.5 w-3.5" />
@@ -125,7 +125,7 @@ export function DataTable({ columns, data, isLoading = false, pagination }: Data
               aria-label="Previous page"
               onClick={() => pagination.onPageChange(Math.max(pagination.page - 1, FIRST_PAGE))}
               disabled={pagination.page <= FIRST_PAGE}
-              className="flex h-9 w-9 items-center justify-center rounded border border-accent/20 text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-11 w-11 items-center justify-center rounded border border-accent/20 text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -134,7 +134,7 @@ export function DataTable({ columns, data, isLoading = false, pagination }: Data
               aria-label="Next page"
               onClick={() => pagination.onPageChange(Math.min(pagination.page + 1, totalPages))}
               disabled={pagination.page >= totalPages}
-              className="flex h-9 w-9 items-center justify-center rounded border border-accent/20 text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-11 w-11 items-center justify-center rounded border border-accent/20 text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

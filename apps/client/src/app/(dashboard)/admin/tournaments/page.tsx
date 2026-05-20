@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { CheckCircle2, Clock3, LoaderCircle, Trophy, UsersRound } from "lucide-react";
-import { BarChart, DonutChart, KpiCard, type BarChartDatum, type DonutChartDatum } from "@/components/admin";
+import { AdminErrorBoundary, BarChart, DonutChart, KpiCard, type BarChartDatum, type DonutChartDatum } from "@/components/admin";
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminTournaments } from "../hooks/useAdminTournaments";
 
@@ -35,20 +35,22 @@ export default function AdminTournamentsPage(): React.ReactElement {
           <h1 className="mt-2 text-3xl font-black uppercase tracking-[0.18em] text-text-primary md:text-5xl">TOURNAMENT ANALYTICS</h1>
         </header>
 
-        {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
+        <AdminErrorBoundary>
+          {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <KpiCard title="Total Tournaments" value={stats?.total ?? 0} icon={<Trophy className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Completed" value={stats?.byStatus.completed ?? 0} icon={<CheckCircle2 className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="In Progress" value={stats?.byStatus.inProgress ?? 0} icon={<LoaderCircle className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Waiting" value={stats?.byStatus.waiting ?? 0} icon={<Clock3 className="h-5 w-5" />} isLoading={isLoading} />
-        </section>
+          <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            <KpiCard title="Total Tournaments" value={stats?.total ?? 0} icon={<Trophy className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Completed" value={stats?.byStatus.completed ?? 0} icon={<CheckCircle2 className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="In Progress" value={stats?.byStatus.inProgress ?? 0} icon={<LoaderCircle className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Waiting" value={stats?.byStatus.waiting ?? 0} icon={<Clock3 className="h-5 w-5" />} isLoading={isLoading} />
+          </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <DonutChart data={statusBreakdown} title="Status Breakdown" height={chartHeight} isLoading={isLoading} />
-          <BarChart data={tournamentWins} title="Most Tournament Wins" horizontal height={chartHeight} isLoading={isLoading} color="var(--sem-success)" />
-        </section>
-        <span className="sr-only"><UsersRound className="hidden" /> Tournament player wins tracked</span>
+          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+            <DonutChart data={statusBreakdown} title="Status Breakdown" height={chartHeight} isLoading={isLoading} />
+            <BarChart data={tournamentWins} title="Most Tournament Wins" horizontal height={chartHeight} isLoading={isLoading} color="var(--sem-success)" />
+          </section>
+          <span className="sr-only"><UsersRound className="hidden" /> Tournament player wins tracked</span>
+        </AdminErrorBoundary>
       </div>
     </div>
   );

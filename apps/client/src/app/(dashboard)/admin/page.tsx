@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, FileCode2, HeartPulse, RefreshCcw, Swords, Users } from "lucide-react";
-import { AreaChart, BarChart, ChartSkeleton, KpiCard } from "@/components/admin";
+import { AdminErrorBoundary, AreaChart, BarChart, ChartSkeleton, KpiCard } from "@/components/admin";
 import type { AreaChartDatum, BarChartDatum } from "@/components/admin";
 import { apiClient } from "@/lib/api-client";
 import { useAdminStats } from "./hooks/useAdminStats";
@@ -134,29 +134,30 @@ export default function AdminOverviewPage(): React.ReactElement {
           </button>
         </header>
 
-        {error && (
-          <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">
-            {error}
+        <AdminErrorBoundary>
+          {error && (
+            <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">
+              {error}
+            </section>
+          )}
+
+          <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            <KpiCard title="Total Users" value={stats?.totalUsers ?? 0} trend={stats?.newUsersThisWeek ?? 0} trendLabel="new this week" icon={<Users className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Total Matches" value={stats?.totalMatches ?? 0} trend={todaysMatches} trendLabel="today" icon={<Swords className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Active Matches Now" value={stats?.activeMatches ?? 0} icon={<span className="relative flex"><Activity className="h-5 w-5 animate-pulse" /></span>} isLoading={isLoading} />
+            <KpiCard title="Total Scripts" value={stats?.totalScripts ?? 0} icon={<FileCode2 className="h-5 w-5" />} isLoading={isLoading} />
           </section>
-        )}
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <KpiCard title="Total Users" value={stats?.totalUsers ?? 0} trend={stats?.newUsersThisWeek ?? 0} trendLabel="new this week" icon={<Users className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Total Matches" value={stats?.totalMatches ?? 0} trend={todaysMatches} trendLabel="today" icon={<Swords className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Active Matches Now" value={stats?.activeMatches ?? 0} icon={<span className="relative flex"><Activity className="h-5 w-5 animate-pulse" /></span>} isLoading={isLoading} />
-          <KpiCard title="Total Scripts" value={stats?.totalScripts ?? 0} icon={<FileCode2 className="h-5 w-5" />} isLoading={isLoading} />
-        </section>
+          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+            <AreaChart data={registrationData} title="User Growth" height={chartHeight} isLoading={detailsLoading} />
+            <BarChart data={matchData} title="Matches Per Day" height={chartHeight} isLoading={detailsLoading} />
+          </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <AreaChart data={registrationData} title="User Growth" height={chartHeight} isLoading={detailsLoading} />
-          <BarChart data={matchData} title="Matches Per Day" height={chartHeight} isLoading={detailsLoading} />
-        </section>
-
-        <section className="mt-6">
-          {detailsLoading ? (
-            <ChartSkeleton height={isMobile ? 220 : 180} />
-          ) : (
-            <div className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
+          <section className="mt-6">
+            {detailsLoading ? (
+              <ChartSkeleton height={isMobile ? 220 : 180} />
+            ) : (
+              <div className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h2 className="text-sm font-black uppercase tracking-[0.2em] text-text-primary">Platform Health</h2>
@@ -185,9 +186,10 @@ export default function AdminOverviewPage(): React.ReactElement {
                   <p className="mt-2 text-lg font-black text-text-primary">{health ? formatUptime(health.uptimeSeconds) : "N/A"}</p>
                 </div>
               </div>
-            </div>
-          )}
-        </section>
+              </div>
+            )}
+          </section>
+        </AdminErrorBoundary>
       </div>
     </div>
   );

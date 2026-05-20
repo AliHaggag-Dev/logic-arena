@@ -8,4 +8,5 @@ export { LineChart, type LineChartDatum, type LineChartProps } from "./LineChart
 export { ProgressRing, type ProgressRingProps } from "./ProgressRing";
 export { StatusBadge, type StatusBadgeProps, type StatusBadgeType } from "./StatusBadge";
 export { StatusIndicator, type StatusIndicatorProps, type StatusIndicatorStatus } from "./StatusIndicator";
-export { ChartSkeleton, KpiCardSkeleton, TableSkeleton } from "./AdminSkeleton";
+export { AdminErrorBoundary } from "./AdminErrorBoundary";
+export { ChartSkeleton, KpiCardSkeleton, PageSkeleton, TableSkeleton } from "./AdminSkeleton";

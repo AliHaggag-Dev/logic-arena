@@ -63,3 +63,20 @@ export function TableSkeleton({ rows = DEFAULT_TABLE_ROWS }: TableSkeletonProps)
     </div>
   );
 }
+
+export function PageSkeleton(): React.ReactElement {
+  return (
+    <div className="grid gap-6">
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <KpiCardSkeleton />
+        <KpiCardSkeleton />
+        <KpiCardSkeleton />
+        <KpiCardSkeleton />
+      </section>
+      <section className="grid gap-6 lg:grid-cols-2">
+        <ChartSkeleton />
+        <ChartSkeleton />
+      </section>
+    </div>
+  );
+}

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Bar, BarChart as RechartsBarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Flag, Gauge, ListChecks, Target, Trophy } from "lucide-react";
-import { BarChart, ChartSkeleton, KpiCard, type BarChartDatum } from "@/components/admin";
+import { AdminErrorBoundary, BarChart, ChartSkeleton, KpiCard, type BarChartDatum } from "@/components/admin";
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminCampaign, type LevelCompletionRate } from "../hooks/useAdminCampaign";
 
@@ -164,25 +164,26 @@ export default function AdminCampaignPage(): React.ReactElement {
           <h1 className="mt-2 text-3xl font-black uppercase tracking-[0.18em] text-text-primary md:text-5xl">CAMPAIGN ANALYTICS</h1>
         </header>
 
-        {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
+        <AdminErrorBoundary>
+          {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <KpiCard title="Engagement Rate" value={formatRate(stats?.campaignEngagementRate ?? 0)} icon={<Flag className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Total Completions" value={totalCompletions} icon={<ListChecks className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Hardest Level" value={hardestLevel ? hardestLevel.label : "N/A"} icon={<Target className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Easiest Level" value={easiestLevel ? easiestLevel.label : "N/A"} icon={<Trophy className="h-5 w-5" />} isLoading={isLoading} />
-        </section>
+          <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            <KpiCard title="Engagement Rate" value={formatRate(stats?.campaignEngagementRate ?? 0)} icon={<Flag className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Total Completions" value={totalCompletions} icon={<ListChecks className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Hardest Level" value={hardestLevel ? hardestLevel.label : "N/A"} icon={<Target className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Easiest Level" value={easiestLevel ? easiestLevel.label : "N/A"} icon={<Trophy className="h-5 w-5" />} isLoading={isLoading} />
+          </section>
 
-        <section className="mt-6">
-          <LevelCompletionChart data={levelData} height={levelChartHeight} isLoading={isLoading} />
-        </section>
+          <section className="mt-6">
+            <LevelCompletionChart data={levelData} height={levelChartHeight} isLoading={isLoading} />
+          </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <BarChart data={funnelData} title="Progression Funnel" horizontal height={compactChartHeight} isLoading={isLoading} color="var(--accent)" />
-          {isLoading ? (
-            <ChartSkeleton height={compactChartHeight} />
-          ) : (
-            <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
+          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+            <BarChart data={funnelData} title="Progression Funnel" horizontal height={compactChartHeight} isLoading={isLoading} color="var(--accent)" />
+            {isLoading ? (
+              <ChartSkeleton height={compactChartHeight} />
+            ) : (
+              <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-mono text-sm font-black uppercase tracking-widest text-text-primary">Hardest Levels</h3>
                 <Gauge className="h-5 w-5 text-accent" />
@@ -199,10 +200,11 @@ export default function AdminCampaignPage(): React.ReactElement {
                   </div>
                 ))}
               </div>
-            </section>
-          )}
-        </section>
-        <span className="sr-only">{TOTAL_LEVELS} campaign levels tracked</span>
+              </section>
+            )}
+          </section>
+          <span className="sr-only">{TOTAL_LEVELS} campaign levels tracked</span>
+        </AdminErrorBoundary>
       </div>
     </div>
   );

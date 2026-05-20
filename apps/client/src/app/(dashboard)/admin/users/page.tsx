@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Search, ShieldCheck, Trophy, UserCheck, Users } from "lucide-react";
-import { AreaChart, DataTable, DonutChart, KpiCard, type AreaChartDatum, type DataTableColumn, type DonutChartDatum } from "@/components/admin";
+import { AdminErrorBoundary, AreaChart, DataTable, DonutChart, KpiCard, type AreaChartDatum, type DataTableColumn, type DonutChartDatum } from "@/components/admin";
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminUsers, useAdminUserStats, type AdminUserSortBy } from "../hooks/useAdminUsers";
 
@@ -117,21 +117,22 @@ export default function AdminUsersPage(): React.ReactElement {
           <h1 className="mt-2 text-3xl font-black uppercase tracking-[0.18em] text-text-primary md:text-5xl">USER MANAGEMENT</h1>
         </header>
 
-        {(statsError || usersError) && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{statsError ?? usersError}</section>}
+        <AdminErrorBoundary>
+          {(statsError || usersError) && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{statsError ?? usersError}</section>}
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <KpiCard title="Total Users" value={totalUsers} icon={<Users className="h-5 w-5" />} isLoading={statsLoading} />
-          <KpiCard title="Verified %" value={formatPercent(stats?.verifiedCount ?? 0, totalUsers)} icon={<ShieldCheck className="h-5 w-5" />} isLoading={statsLoading} />
-          <KpiCard title="OAuth Users %" value={formatPercent(oauthUsers, totalUsers)} icon={<UserCheck className="h-5 w-5" />} isLoading={statsLoading} />
-          <KpiCard title="New This Week" value={newThisWeek} icon={<CheckCircle2 className="h-5 w-5" />} isLoading={statsLoading} />
-        </section>
+          <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            <KpiCard title="Total Users" value={totalUsers} icon={<Users className="h-5 w-5" />} isLoading={statsLoading} />
+            <KpiCard title="Verified %" value={formatPercent(stats?.verifiedCount ?? 0, totalUsers)} icon={<ShieldCheck className="h-5 w-5" />} isLoading={statsLoading} />
+            <KpiCard title="OAuth Users %" value={formatPercent(oauthUsers, totalUsers)} icon={<UserCheck className="h-5 w-5" />} isLoading={statsLoading} />
+            <KpiCard title="New This Week" value={newThisWeek} icon={<CheckCircle2 className="h-5 w-5" />} isLoading={statsLoading} />
+          </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <AreaChart data={registrationData} title="Registration Timeline" height={chartHeight} isLoading={statsLoading} />
-          <DonutChart data={providerData} title="Auth Provider Mix" height={chartHeight} isLoading={statsLoading} />
-        </section>
+          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+            <AreaChart data={registrationData} title="Registration Timeline" height={chartHeight} isLoading={statsLoading} />
+            <DonutChart data={providerData} title="Auth Provider Mix" height={chartHeight} isLoading={statsLoading} />
+          </section>
 
-        <section className="mt-6">
+          <section className="mt-6">
           <div className="mb-4 rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)]">
             <div className="grid gap-3 md:grid-cols-[1fr_220px]">
               <label className="relative block">
@@ -149,8 +150,9 @@ export default function AdminUsersPage(): React.ReactElement {
               </label>
             </div>
           </div>
-          <DataTable columns={columns} data={tableData} isLoading={usersLoading} pagination={{ page, pageSize: PAGE_SIZE, total, onPageChange: setPage }} />
-        </section>
+            <DataTable columns={columns} data={tableData} isLoading={usersLoading} pagination={{ page, pageSize: PAGE_SIZE, total, onPageChange: setPage }} />
+          </section>
+        </AdminErrorBoundary>
       </div>
     </div>
   );

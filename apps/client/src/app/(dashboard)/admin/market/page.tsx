@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { Bot, Coins, PackageOpen, Palette, Sparkles } from "lucide-react";
-import { BarChart, DonutChart, KpiCard, type BarChartDatum, type DonutChartDatum } from "@/components/admin";
+import { AdminErrorBoundary, BarChart, DonutChart, KpiCard, type BarChartDatum, type DonutChartDatum } from "@/components/admin";
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminMarket, type HistogramBucket, type LabelCount } from "../hooks/useAdminMarket";
 
@@ -51,26 +51,28 @@ export default function AdminMarketPage(): React.ReactElement {
           <h1 className="mt-2 text-3xl font-black uppercase tracking-[0.18em] text-text-primary md:text-5xl">BLACK MARKET ECONOMY</h1>
         </header>
 
-        {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
+        <AdminErrorBoundary>
+          {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <KpiCard title="Total Points In Circulation" value={stats?.totalPointsInCirculation ?? 0} icon={<Coins className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Avg Points Per User" value={stats?.avgPointsPerUser ?? 0} icon={<Sparkles className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Most Unlocked Item" value={mostUnlockedItem} icon={<PackageOpen className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Most Popular Chassis" value={mostPopularChassis} icon={<Bot className="h-5 w-5" />} isLoading={isLoading} />
-        </section>
+          <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            <KpiCard title="Total Points In Circulation" value={stats?.totalPointsInCirculation ?? 0} icon={<Coins className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Avg Points Per User" value={stats?.avgPointsPerUser ?? 0} icon={<Sparkles className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Most Unlocked Item" value={mostUnlockedItem} icon={<PackageOpen className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Most Popular Chassis" value={mostPopularChassis} icon={<Bot className="h-5 w-5" />} isLoading={isLoading} />
+          </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <BarChart data={pointsDistribution} title="Points Distribution" height={chartHeight} isLoading={isLoading} />
-          <BarChart data={unlockedItems} title="Most Unlocked Items" horizontal height={chartHeight} isLoading={isLoading} color="var(--sem-success)" />
-        </section>
+          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+            <BarChart data={pointsDistribution} title="Points Distribution" height={chartHeight} isLoading={isLoading} />
+            <BarChart data={unlockedItems} title="Most Unlocked Items" horizontal height={chartHeight} isLoading={isLoading} color="var(--sem-success)" />
+          </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-3">
-          <DonutChart data={chassisData} title="Popular Chassis" height={donutHeight} isLoading={isLoading} />
-          <DonutChart data={paintData} title="Popular Paints" height={donutHeight} isLoading={isLoading} />
-          <DonutChart data={tracerData} title="Popular Tracers" height={donutHeight} isLoading={isLoading} />
-        </section>
-        <span className="sr-only"><Palette className="hidden" /> Market cosmetic preferences tracked</span>
+          <section className="mt-6 grid gap-6 lg:grid-cols-3">
+            <DonutChart data={chassisData} title="Popular Chassis" height={donutHeight} isLoading={isLoading} />
+            <DonutChart data={paintData} title="Popular Paints" height={donutHeight} isLoading={isLoading} />
+            <DonutChart data={tracerData} title="Popular Tracers" height={donutHeight} isLoading={isLoading} />
+          </section>
+          <span className="sr-only"><Palette className="hidden" /> Market cosmetic preferences tracked</span>
+        </AdminErrorBoundary>
       </div>
     </div>
   );

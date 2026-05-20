@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Trash2, X } from "lucide-react";
-import { DataTable, StatusBadge, type DataTableColumn } from "@/components/admin";
+import { AdminErrorBoundary, DataTable, StatusBadge, type DataTableColumn } from "@/components/admin";
 import { useAdminViewport } from "../../components/AdminViewportContext";
 import {
   useAdminFeedback,
@@ -165,17 +165,19 @@ export default function AdminFeatureRequestsPage(): React.ReactElement {
           <h1 className="mt-2 text-3xl font-black uppercase tracking-[0.18em] text-text-primary md:text-5xl">FEATURE REQUESTS</h1>
         </header>
 
-        {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
+        <AdminErrorBoundary>
+          {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
 
-        <section className={`mb-4 grid gap-2 ${isMobile ? "grid-cols-2" : "grid-cols-6"}`}>
-          {FILTERS.map((filter) => (
-            <button key={filter} type="button" onClick={() => { setPage(DEFAULT_PAGE); setStatus(filter); }} className={`min-h-11 rounded-lg border px-3 text-xs font-black uppercase tracking-widest transition-colors ${status === filter ? "border-accent bg-accent/15 text-accent" : "border-accent/20 bg-card text-text-secondary hover:border-accent/50 hover:text-text-primary"}`}>
-              {formatLabel(filter)}
-            </button>
-          ))}
-        </section>
+          <section className={`mb-4 grid gap-2 ${isMobile ? "grid-cols-2" : "grid-cols-6"}`}>
+            {FILTERS.map((filter) => (
+              <button key={filter} type="button" onClick={() => { setPage(DEFAULT_PAGE); setStatus(filter); }} className={`min-h-11 rounded-lg border px-3 text-xs font-black uppercase tracking-widest transition-colors ${status === filter ? "border-accent bg-accent/15 text-accent" : "border-accent/20 bg-card text-text-secondary hover:border-accent/50 hover:text-text-primary"}`}>
+                {formatLabel(filter)}
+              </button>
+            ))}
+          </section>
 
-        <DataTable columns={columns} data={tableData} isLoading={featureRequestsState.isLoading} pagination={{ page, pageSize: PAGE_SIZE, total, onPageChange: setPage }} />
+          <DataTable columns={columns} data={tableData} isLoading={featureRequestsState.isLoading} pagination={{ page, pageSize: PAGE_SIZE, total, onPageChange: setPage }} />
+        </AdminErrorBoundary>
       </div>
       {selectedRequest && <DetailModal request={selectedRequest} onClose={() => setSelectedRequest(null)} />}
     </div>

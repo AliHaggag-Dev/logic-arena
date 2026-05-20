@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { Brain, Eye, EyeOff, Lightbulb, Users } from "lucide-react";
-import { ChartSkeleton, DonutChart, KpiCard, ProgressRing, type DonutChartDatum } from "@/components/admin";
+import { AdminErrorBoundary, ChartSkeleton, DonutChart, KpiCard, ProgressRing, type DonutChartDatum } from "@/components/admin";
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminAI, type LabelCount } from "../hooks/useAdminAI";
 
@@ -43,20 +43,21 @@ export default function AdminAIInsightsPage(): React.ReactElement {
           <h1 className="mt-2 text-3xl font-black uppercase tracking-[0.18em] text-text-primary md:text-5xl">AI INSIGHTS ANALYTICS</h1>
         </header>
 
-        {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
+        <AdminErrorBoundary>
+          {error && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{error}</section>}
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <KpiCard title="Total Insights Generated" value={stats?.totalInsights ?? 0} icon={<Brain className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Read Count" value={stats?.readCount ?? 0} icon={<Eye className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Unread Count" value={stats?.unreadCount ?? 0} icon={<EyeOff className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Avg Insights Per User" value={stats?.avgInsightsPerUser ?? 0} icon={<Users className="h-5 w-5" />} isLoading={isLoading} />
-        </section>
+          <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            <KpiCard title="Total Insights Generated" value={stats?.totalInsights ?? 0} icon={<Brain className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Read Count" value={stats?.readCount ?? 0} icon={<Eye className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Unread Count" value={stats?.unreadCount ?? 0} icon={<EyeOff className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Avg Insights Per User" value={stats?.avgInsightsPerUser ?? 0} icon={<Users className="h-5 w-5" />} isLoading={isLoading} />
+          </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          {isLoading ? (
-            <ChartSkeleton height={chartHeight} />
-          ) : (
-            <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
+          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+            {isLoading ? (
+              <ChartSkeleton height={chartHeight} />
+            ) : (
+              <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-mono text-sm font-black uppercase tracking-widest text-text-primary">Read vs Unread</h3>
                 <Lightbulb className="h-5 w-5 text-accent" />
@@ -74,10 +75,11 @@ export default function AdminAIInsightsPage(): React.ReactElement {
                   </div>
                 </div>
               </div>
-            </section>
-          )}
-          <DonutChart data={categoryData} title="Category Breakdown" height={chartHeight} isLoading={isLoading} />
-        </section>
+              </section>
+            )}
+            <DonutChart data={categoryData} title="Category Breakdown" height={chartHeight} isLoading={isLoading} />
+          </section>
+        </AdminErrorBoundary>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { KeyRound, ShieldCheck, UserCheck, Users } from "lucide-react";
-import { AreaChart, ChartSkeleton, DonutChart, KpiCard, ProgressRing, type AreaChartDatum, type DonutChartDatum } from "@/components/admin";
+import { AdminErrorBoundary, AreaChart, ChartSkeleton, DonutChart, KpiCard, ProgressRing, type AreaChartDatum, type DonutChartDatum } from "@/components/admin";
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminStats } from "../hooks/useAdminStats";
 import { useAdminUserStats } from "../hooks/useAdminUsers";
@@ -68,32 +68,34 @@ export default function AdminSecurityPage(): React.ReactElement {
           <h1 className="mt-2 text-3xl font-black uppercase tracking-[0.18em] text-text-primary md:text-5xl">AUTH &amp; SECURITY</h1>
         </header>
 
-        {(overviewError || userStatsError) && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{overviewError ?? userStatsError}</section>}
+        <AdminErrorBoundary>
+          {(overviewError || userStatsError) && <section className="mb-6 rounded-lg border border-[var(--sem-danger)] bg-card p-4 text-sm font-bold text-[var(--sem-danger)]">{overviewError ?? userStatsError}</section>}
 
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          <KpiCard title="Total Users" value={totalUsers} icon={<Users className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Verified Users %" value={formatPercent(verifiedCount, totalUsers)} icon={<ShieldCheck className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="OAuth Users %" value={formatPercent(oauthUsers, totalUsers)} icon={<UserCheck className="h-5 w-5" />} isLoading={isLoading} />
-          <KpiCard title="Local Auth Users %" value={formatPercent(localUsers, totalUsers)} icon={<KeyRound className="h-5 w-5" />} isLoading={isLoading} />
-        </section>
+          <section className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            <KpiCard title="Total Users" value={totalUsers} icon={<Users className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Verified Users %" value={formatPercent(verifiedCount, totalUsers)} icon={<ShieldCheck className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="OAuth Users %" value={formatPercent(oauthUsers, totalUsers)} icon={<UserCheck className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Local Auth Users %" value={formatPercent(localUsers, totalUsers)} icon={<KeyRound className="h-5 w-5" />} isLoading={isLoading} />
+          </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <DonutChart data={providerData} title="Auth Provider" height={chartHeight} isLoading={isLoading} />
-          {isLoading ? (
-            <ChartSkeleton height={chartHeight} />
-          ) : (
-            <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
+          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+            <DonutChart data={providerData} title="Auth Provider" height={chartHeight} isLoading={isLoading} />
+            {isLoading ? (
+              <ChartSkeleton height={chartHeight} />
+            ) : (
+              <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
               <h3 className="font-mono text-sm font-black uppercase tracking-widest text-text-primary">Verification Status</h3>
               <div className="flex items-center justify-center" style={{ height: PROGRESS_PANEL_HEIGHT }}>
                 <ProgressRing value={verifiedPercent} label="Verified" size={isMobile ? RING_SIZE_MOBILE : RING_SIZE_DESKTOP} color="var(--sem-success)" />
               </div>
-            </section>
-          )}
-        </section>
+              </section>
+            )}
+          </section>
 
-        <section className="mt-6">
-          <AreaChart data={registrationData} title="Registration Timeline" height={chartHeight} isLoading={isLoading} />
-        </section>
+          <section className="mt-6">
+            <AreaChart data={registrationData} title="Registration Timeline" height={chartHeight} isLoading={isLoading} />
+          </section>
+        </AdminErrorBoundary>
       </div>
     </div>
   );
