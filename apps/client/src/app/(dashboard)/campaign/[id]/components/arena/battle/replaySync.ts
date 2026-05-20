@@ -22,13 +22,14 @@ export interface CampaignFrameProjectile {
 export interface CampaignFrame {
   robots?: CampaignFrameRobot[];
   projectiles?: CampaignFrameProjectile[];
+  tick?: number;
 }
 
 export function syncReplayFrame(
   state: SceneState,
   frame: CampaignFrame,
   battleEndedRef: { current: boolean },
-  fightResult: { winner: string; completionToken: string | null } | null,
+  fightResult: { winner: string; completionToken: string | null; tick?: number; fightDurationTicks?: number } | null,
   fovTimerRef: Map<string, number>,
   onBattleEnd: ((winner: 'player' | 'enemy' | 'draw') => void) | null,
 ): void {

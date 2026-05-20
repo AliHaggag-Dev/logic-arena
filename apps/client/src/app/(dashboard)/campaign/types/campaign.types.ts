@@ -1,4 +1,4 @@
-import type { CampaignDifficulty, CampaignTabId } from '../constants/campaign.constants';
+import type { CampaignDifficulty, CampaignTabId, StarThresholds } from '../constants/campaign.constants';
 
 /** Shape returned by GET /campaign/tabs (server hydrated with unlock/completion state) */
 export interface ApiLevelInfo {
@@ -10,6 +10,9 @@ export interface ApiLevelInfo {
   hint: string;
   difficulty: CampaignDifficulty;
   pointsReward: number;
+  starThresholds?: StarThresholds;
+  maxTicks?: number;
+  bestStars: number;
   unlocked: boolean;
   completed: boolean;
 }

@@ -9,6 +9,8 @@ export type FightStatus = 'idle' | 'connecting' | 'fighting' | 'streaming' | 'do
 export type FightResult = {
   winner: 'player' | 'enemy' | 'draw';
   completionToken: string | null;
+  tick?: number;
+  fightDurationTicks?: number;
 };
 
 export type CampaignRobotSpawn = {
@@ -38,6 +40,7 @@ export type CampaignFrameProjectile = {
 export type CampaignFrame = {
   robots?: CampaignFrameRobot[];
   projectiles?: CampaignFrameProjectile[];
+  tick?: number;
 };
 
 export function useCampaignFight() {

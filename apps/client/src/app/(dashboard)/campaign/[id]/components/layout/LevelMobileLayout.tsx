@@ -64,13 +64,13 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
         </div>
 
         {/* Enemy Intel */}
-        <div className="border border-red-500/20 rounded-xl p-4 bg-red-500/[0.03]">
+        <div className="border border-accent/15 rounded-xl p-4 bg-accent/[0.025]">
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center text-[10px]">
               <span className="text-accent/70 tracking-[0.15em]">INTEL</span>
-              <span className="font-bold text-red-500/80 tracking-[0.12em]">{level.title}</span>
+              <span className="font-bold text-accent/70 tracking-[0.12em]">{level.title}</span>
             </div>
-            <div className="h-[1px] bg-red-500/10" />
+            <div className="h-[1px] bg-accent/10" />
             <div className="flex justify-between items-center text-[10px]">
               <span className="text-accent/70 tracking-[0.15em]">REWARD</span>
               <span className="font-bold text-accent/70 tracking-[0.12em]">+{level.pointsReward} PTS</span>
@@ -90,6 +90,8 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
           isReplaying={isReplaying}
           fightResult={fightResult}
           waitingForReplay={waitingForReplay}
+          isMobile
+          maxTicks={level.maxTicks}
           compact
         />
       </div>

@@ -23,7 +23,7 @@ interface ArenaCanvasProps {
   onBattleEnd?: (winner: 'player' | 'enemy' | 'draw') => void;
   latestFrameRef?: React.MutableRefObject<CampaignFrame | null>;
   isReplaying?: boolean;
-  fightResult?: { winner: string; completionToken: string | null } | null;
+  fightResult?: { winner: string; completionToken: string | null; tick?: number; fightDurationTicks?: number } | null;
   aspectRatio?: number;
   className?: string;
   waitingForReplay?: boolean;

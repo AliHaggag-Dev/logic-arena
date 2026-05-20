@@ -19,6 +19,12 @@ export interface CampaignTabMeta {
   description: string;
 }
 
+export interface StarThresholds {
+  three: number;
+  two: number;
+  one: number;
+}
+
 export const DIFFICULTY_POINTS: Record<CampaignDifficulty, number> = {
   EASY: 50,
   MEDIUM: 120,

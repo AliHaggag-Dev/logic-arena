@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { apiClient } from "../../../../lib/api-client";
 import { useMediaQuery } from "../../../../hooks/useMediaQuery";
@@ -10,6 +10,15 @@ import { LevelMobileLayout } from "./components/layout/LevelMobileLayout";
 import { LevelModal } from "./components/layout/LevelModal";
 import { useCampaignFight } from '../hooks/useCampaignFight';
 import { getSceneForLevel } from './components/arena/scenes';
+
+const SIMULATION_TICKS_PER_SECOND = 60;
+const DEFAULT_REWARD = 0;
+const DEFAULT_STARS = 0;
+
+interface CompleteLevelResponse {
+  pointsAwarded?: number;
+  stars?: number;
+}
 
 export default function CampaignLevelPage() {
   const router = useRouter();
@@ -23,9 +32,13 @@ export default function CampaignLevelPage() {
   const [script, setScript] = useState("");
   const [modal, setModal] = useState<ModalState>("idle");
   const [reward, setReward] = useState<number>(0);
+  const [stars, setStars] = useState<number>(0);
   const [pendingWinner, setPendingWinner] = useState<'player' | 'enemy' | 'draw' | null>(null);
   const [pendingToken, setPendingToken] = useState<string | null>(null);
   const { fight, status: fightStatus, result: fightResult, latestFrameRef } = useCampaignFight();
+  const fightStartTimeMsRef = useRef<number>(0);
+  const fightStartTickRef = useRef<number>(0);
+  const fightEndTickRef = useRef<number>(0);
 
   useEffect(() => {
     if (invalidLevelId) return;
@@ -57,6 +70,11 @@ export default function CampaignLevelPage() {
   const handleFight = useCallback(() => {
     if (!script.trim()) return;
     setModal("loading");
+    setReward(DEFAULT_REWARD);
+    setStars(DEFAULT_STARS);
+    fightStartTimeMsRef.current = Date.now();
+    fightStartTickRef.current = 0;
+    fightEndTickRef.current = 0;
     const scene = getSceneForLevel(levelId);
     const s = scene?.init();
     const obstacles = s?.obstacles ?? [];
@@ -69,18 +87,38 @@ export default function CampaignLevelPage() {
     fight(levelId, script, obstacles, playerSpawn, enemySpawn);
   }, [script, levelId, fight]);
 
+  const getFallbackDurationTicks = useCallback((): number => {
+    const elapsedMs = Math.max(0, Date.now() - fightStartTimeMsRef.current);
+    return Math.ceil((elapsedMs / 1000) * SIMULATION_TICKS_PER_SECOND);
+  }, []);
+
+  const getFightDurationTicks = useCallback((): number => {
+    const resultTicks = fightResult?.fightDurationTicks ?? fightResult?.tick;
+    if (typeof resultTicks === "number") return Math.max(0, resultTicks - fightStartTickRef.current);
+
+    const frameTick = latestFrameRef.current?.tick;
+    if (typeof frameTick === "number") return Math.max(0, frameTick - fightStartTickRef.current);
+
+    return getFallbackDurationTicks();
+  }, [fightResult, getFallbackDurationTicks, latestFrameRef]);
+
   useEffect(() => {
     if (fightStatus === 'streaming' && modal === 'loading') {
+      const frameTick = latestFrameRef.current?.tick;
+      if (fightStartTickRef.current === 0 && typeof frameTick === "number") {
+        fightStartTickRef.current = frameTick;
+      }
       setModal('fighting');
     }
     if (fightStatus === 'done' && fightResult) {
       setPendingWinner(fightResult.winner);
       setPendingToken(fightResult.completionToken ?? null);
+      fightEndTickRef.current = getFightDurationTicks();
     }
     if (fightStatus === 'error') {
       setModal("defeat");
     }
-  }, [fightStatus, fightResult, modal]);
+  }, [fightStatus, fightResult, modal, getFightDurationTicks, latestFrameRef]);
 
   const handleBattleEnd = useCallback(() => {
     if (!pendingWinner) return;
@@ -89,15 +127,21 @@ export default function CampaignLevelPage() {
     setModal("victory");
 
     if (pendingToken) {
-      apiClient.post(`/campaign/levels/${levelId}/complete`, { completionToken: pendingToken })
+      const fightDurationTicks = fightEndTickRef.current || getFightDurationTicks();
+      apiClient.post<CompleteLevelResponse>(`/campaign/levels/${levelId}/complete`, { completionToken: pendingToken, fightDurationTicks })
         .then((res) => {
-          const pts = res.data?.pointsAwarded ?? level?.pointsReward ?? 0;
+          const pts = res.data?.pointsAwarded ?? level?.pointsReward ?? DEFAULT_REWARD;
+          const awardedStars = res.data?.stars ?? DEFAULT_STARS;
           setReward(pts);
+          setStars(awardedStars);
           window.dispatchEvent(new Event("global-refresh"));
         })
-        .catch(() => setReward(level?.pointsReward ?? 0));
+        .catch(() => {
+          setReward(level?.pointsReward ?? DEFAULT_REWARD);
+          setStars(DEFAULT_STARS);
+        });
     }
-  }, [pendingWinner, pendingToken, levelId, level]);
+  }, [pendingWinner, pendingToken, levelId, level, getFightDurationTicks]);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isReplaying = fightStatus === 'streaming' || fightStatus === 'done';
@@ -118,7 +162,7 @@ export default function CampaignLevelPage() {
   if (displayError || !level) {
     return (
       <div className="min-h-screen bg-bg-primary font-mono flex flex-col items-center justify-center p-4 text-center">
-        <div className="text-red-500 text-[14px] font-black tracking-[0.2em] mb-4">
+        <div className="text-accent/80 text-[14px] font-black tracking-[0.2em] mb-4">
           {displayError || "An unknown error occurred."}
         </div>
         <button
@@ -172,7 +216,15 @@ export default function CampaignLevelPage() {
         />
       )}
 
-      <LevelModal modal={modal} setModal={setModal} reward={reward} router={router} />
+      <LevelModal
+        modal={modal}
+        setModal={setModal}
+        reward={reward}
+        stars={stars}
+        level={level}
+        isMobile={isMobile}
+        router={router}
+      />
     </div>
   );
 }
