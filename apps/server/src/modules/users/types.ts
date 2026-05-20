@@ -54,6 +54,7 @@ export interface UserProfile {
   username: string;
   email: string;
   avatarUrl: string | null;
+  role: string;
   rank: number;
   memberSince: Date;
   selectedRobotId: string | null;

@@ -1,8 +1,9 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart, Power, LogIn } from "lucide-react";
+import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart, Power, LogIn, Terminal } from "lucide-react";
 import NavLink from "../../../../../components/ui/NavLink";
+import { useAuth } from "../../../../../context/AuthContext";
 
 const SIDEBAR_WIDTH = 220;
 
@@ -25,6 +26,9 @@ interface DashboardSidebarProps {
 }
 
 export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSidebarProps) {
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'ADMIN';
+
   return (
     <aside
       className="flex flex-col bg-bg-primary/95 border-r border-accent/[0.12] shadow-[4px_0_30px_rgba(var(--accent-rgb),0.04)] sticky top-0 h-screen overflow-y-auto z-50 shrink-0 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent"
@@ -107,7 +111,18 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
           <NavLink key={item.href} {...item} />
         ))}
         <div className="mt-auto">
-          <div className="mb-2 h-px bg-accent/[0.06]" />
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-md font-mono text-[10px] font-bold tracking-[0.18em] transition-all duration-200 relative group overflow-hidden border border-[var(--sem-warning)]/30 text-[var(--sem-warning)]/80 hover:border-[var(--sem-warning)]/60 hover:text-[var(--sem-warning)] shadow-[0_0_12px_rgba(var(--sem-warning-rgb),0.06)] hover:shadow-[0_0_20px_rgba(var(--sem-warning-rgb),0.12)]"
+            >
+              <span className="w-4 h-4 flex items-center justify-center shrink-0 opacity-80">
+                <Terminal size={13} strokeWidth={2.5} />
+              </span>
+              <span>COMMAND CENTER</span>
+            </Link>
+          )}
+          <div className={isAdmin ? "mb-2 mt-2 h-px bg-accent/[0.06]" : "mb-2 h-px bg-accent/[0.06]"} />
           <NavLink
             href="/settings"
             label="SETTINGS"

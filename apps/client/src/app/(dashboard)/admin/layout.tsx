@@ -69,11 +69,12 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
 
   return (
     <AdminViewportContext.Provider value={{ isMobile }}>
-      <div className="min-h-screen bg-bg-primary font-mono text-text-primary">
+      <div className="flex min-h-screen w-full bg-bg-primary font-mono text-text-primary">
         {!isMobile && <AdminSidebar />}
+        {!isMobile && <div className="hidden md:block w-[280px] shrink-0" />}
         {isMobile && <AdminMobileNav />}
-        <main className={isMobile ? "min-h-screen px-4 pb-8 pt-[76px]" : "min-h-screen pl-[280px]"}>
-          <div className={isMobile ? "mx-auto max-w-7xl" : "mx-auto max-w-7xl px-8 py-8"}>
+        <main className={isMobile ? "flex min-h-screen w-full flex-1 flex-col pt-[76px]" : "flex min-h-screen w-full flex-1 flex-col"}>
+          <div className={isMobile ? "w-full px-4 pb-8" : "w-full px-8 py-8"}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}

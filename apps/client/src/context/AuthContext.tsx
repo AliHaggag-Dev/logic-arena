@@ -8,6 +8,7 @@ export interface ProfileResponse {
   id: string;
   username: string;
   avatarUrl: string | null;
+  role?: string;
   email?: string;
   hasGoogle?: boolean;
   hasGithub?: boolean;
