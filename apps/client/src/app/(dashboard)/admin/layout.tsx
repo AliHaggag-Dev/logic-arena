@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageSkeleton } from "@/components/admin";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useAuth } from "@/context/AuthContext";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { apiClient } from "@/lib/api-client";
 import { AdminSidebar } from "./components/AdminSidebar";
@@ -23,15 +23,16 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
   const router = useRouter();
   const pathname = usePathname() || "/admin";
   const isMobile = useMediaQuery(MOBILE_QUERY);
-  const { isGuest } = useAuthState();
+  const { isGuest, loading: authLoading } = useAuth();
   const [isCheckingAccess, setIsCheckingAccess] = useState<boolean>(true);
 
   useEffect((): (() => void) => {
     let cancelled = false;
 
     async function verifyAdminAccess(): Promise<void> {
+      if (authLoading) return;
       if (isGuest) {
-        router.replace(ADMIN_REDIRECT_PATH);
+        router.replace("/login");
         return;
       }
 
@@ -52,7 +53,7 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
     return (): void => {
       cancelled = true;
     };
-  }, [isGuest, router]);
+  }, [isGuest, authLoading, router]);
 
   if (isCheckingAccess) {
     return (
