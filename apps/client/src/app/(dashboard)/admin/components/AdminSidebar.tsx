@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Activity,
+  ArrowLeft,
   BarChart3,
   Bot,
   Brain,
@@ -132,9 +133,13 @@ export function useCommunityFeedbackCount(): number {
   return count;
 }
 
-export function AdminSidebar(): React.ReactElement {
+interface AdminSidebarProps {
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+}
+
+export function AdminSidebar({ isCollapsed, onToggleCollapse }: AdminSidebarProps): React.ReactElement {
   const pathname = usePathname() || "";
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [openSections, setOpenSections] = useState<SectionOpenState>(() => getInitialSectionState());
   const communityFeedbackCount = useCommunityFeedbackCount();
   const widthClass = isCollapsed ? COLLAPSED_WIDTH_CLASS : EXPANDED_WIDTH_CLASS;
@@ -152,6 +157,18 @@ export function AdminSidebar(): React.ReactElement {
 
   return (
     <aside className={`fixed left-0 top-0 z-[70] flex h-screen ${widthClass} flex-col border-r border-accent/20 bg-bg-primary/95 shadow-[0_0_36px_rgba(var(--accent-rgb),0.08)] backdrop-blur-xl transition-[width] duration-200`}>
+      {/* ── Collapse toggle — right edge, vertically centered ── */}
+      <button
+        type="button"
+        aria-label={isCollapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
+        title={isCollapsed ? "Expand" : "Collapse"}
+        onClick={onToggleCollapse}
+        className="absolute right-0 top-1/2 z-[71] -translate-y-1/2 translate-x-1/2 grid h-8 w-5 place-items-center rounded-r border border-accent/20 bg-card text-text-secondary shadow-sm transition-colors hover:border-accent/50 hover:text-accent"
+      >
+        {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+      </button>
+
+      {/* ── Header ── */}
       <div className="flex min-h-20 items-center justify-between gap-3 border-b border-accent/20 px-4">
         <Link href="/admin" className="flex min-w-0 items-center gap-3" title="Command Center">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent/30 bg-accent/10 text-accent">
@@ -164,18 +181,28 @@ export function AdminSidebar(): React.ReactElement {
             </span>
           )}
         </Link>
-        <button
-          type="button"
-          aria-label={isCollapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
-          title={isCollapsed ? "Expand" : "Collapse"}
-          onClick={() => setIsCollapsed((current) => !current)}
-          className="grid min-h-11 min-w-11 place-items-center rounded-lg border border-accent/20 bg-card text-text-secondary transition-colors hover:border-accent/50 hover:text-accent"
-        >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-5">
+      {/* ── Back to Dashboard ── */}
+      <div className={`border-b border-accent/10 px-3 py-2 ${isCollapsed ? "flex justify-center" : ""}`}>
+        <Link
+          href="/dashboard"
+          className={`flex items-center gap-2 rounded-md font-mono text-[9px] font-bold tracking-[0.16em] uppercase text-text-secondary/60 transition-colors hover:text-text-secondary ${isCollapsed ? "justify-center py-2" : "px-2 py-1.5"}`}
+          title="Back to Dashboard"
+        >
+          <ArrowLeft className="h-3 w-3 shrink-0" />
+          {!isCollapsed && <span>BACK TO DASHBOARD</span>}
+        </Link>
+      </div>
+
+      {/* ── Nav ── */}
+      <nav
+        className="flex-1 overflow-y-auto px-3 py-5 scrollbar-none"
+        style={{ scrollbarWidth: "none" }}
+      >
+        <style>{`
+          nav::-webkit-scrollbar { display: none; }
+        `}</style>
         {NAV_SECTIONS.map((section) => (
           <div key={section.title} className="mb-6">
             {!isCollapsed && (
@@ -237,6 +264,7 @@ export function AdminSidebar(): React.ReactElement {
         ))}
       </nav>
 
+      {/* ── Footer ── */}
       <div className="border-t border-accent/20 p-3">
         <div className={`rounded-lg border border-accent/20 bg-card p-3 ${isCollapsed ? "grid place-items-center" : ""}`}>
           <MenuSquare className="h-4 w-4 text-accent" />

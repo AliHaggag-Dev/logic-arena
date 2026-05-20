@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageSkeleton } from "@/components/admin";
 import { useAuth } from "@/context/AuthContext";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { apiClient } from "@/lib/api-client";
 import { AdminSidebar } from "./components/AdminSidebar";
 import { AdminMobileNav } from "./components/AdminMobileNav";
 import { AdminViewportContext } from "./components/AdminViewportContext";
@@ -14,6 +13,8 @@ import { AdminViewportContext } from "./components/AdminViewportContext";
 const MOBILE_QUERY = "(max-width: 768px)";
 const ADMIN_REDIRECT_PATH = "/dashboard";
 const PAGE_TRANSITION_DURATION = 0.3;
+const EXPANDED_WIDTH = 280;
+const COLLAPSED_WIDTH = 84;
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -23,37 +24,40 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
   const router = useRouter();
   const pathname = usePathname() || "/admin";
   const isMobile = useMediaQuery(MOBILE_QUERY);
-  const { isGuest, loading: authLoading } = useAuth();
+  const { isGuest, loading: authLoading, profile } = useAuth();
   const [isCheckingAccess, setIsCheckingAccess] = useState<boolean>(true);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+
+  const toggleCollapsed = useCallback(() => {
+    setIsCollapsed((c) => !c);
+  }, []);
 
   useEffect((): (() => void) => {
     let cancelled = false;
 
-    async function verifyAdminAccess(): Promise<void> {
+    function check(): void {
       if (authLoading) return;
-      if (isGuest) {
+      if (isGuest || !profile) {
         router.replace("/login");
         return;
       }
-
-      try {
-        await apiClient.get("/admin/stats/overview");
-        if (!cancelled) {
-          setIsCheckingAccess(false);
-        }
-      } catch {
+      if (profile.role !== "ADMIN") {
         if (!cancelled) {
           router.replace(ADMIN_REDIRECT_PATH);
         }
+        return;
+      }
+      if (!cancelled) {
+        setIsCheckingAccess(false);
       }
     }
 
-    verifyAdminAccess();
+    check();
 
     return (): void => {
       cancelled = true;
     };
-  }, [isGuest, authLoading, router]);
+  }, [isGuest, authLoading, profile, router]);
 
   if (isCheckingAccess) {
     return (
@@ -67,11 +71,23 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
     );
   }
 
+  const sidebarWidth = isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH;
+
   return (
     <AdminViewportContext.Provider value={{ isMobile }}>
       <div className="flex min-h-screen w-full bg-bg-primary font-mono text-text-primary">
-        {!isMobile && <AdminSidebar />}
-        {!isMobile && <div className="hidden md:block w-[280px] shrink-0" />}
+        {!isMobile && (
+          <AdminSidebar
+            isCollapsed={isCollapsed}
+            onToggleCollapse={toggleCollapsed}
+          />
+        )}
+        {!isMobile && (
+          <div
+            className="hidden md:block shrink-0 transition-[width] duration-200"
+            style={{ width: sidebarWidth }}
+          />
+        )}
         {isMobile && <AdminMobileNav />}
         <main className={isMobile ? "flex min-h-screen w-full flex-1 flex-col pt-[76px]" : "flex min-h-screen w-full flex-1 flex-col"}>
           <div className={isMobile ? "w-full px-4 pb-8" : "w-full px-8 py-8"}>
