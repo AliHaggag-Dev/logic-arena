@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { requestAdminWithRetry } from "./adminRequest";
 
 export interface DailyCount {
   date: string;
@@ -49,7 +50,7 @@ export function useAdminMatches(): UseAdminMatchesResult {
     setError(null);
 
     try {
-      const response = await apiClient.get<MatchStats>("/admin/stats/matches");
+      const response = await requestAdminWithRetry(() => apiClient.get<MatchStats>("/admin/stats/matches"));
       setStats(response.data);
     } catch (err: unknown) {
       setError(getErrorMessage(err));

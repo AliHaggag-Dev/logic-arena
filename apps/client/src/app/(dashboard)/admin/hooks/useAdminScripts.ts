@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { requestAdminWithRetry } from "./adminRequest";
 
 export interface HistogramBucket {
   bucket: string;
@@ -43,7 +44,7 @@ export function useAdminScripts(): UseAdminScriptsResult {
     setError(null);
 
     try {
-      const response = await apiClient.get<ScriptStats>("/admin/stats/scripts");
+      const response = await requestAdminWithRetry(() => apiClient.get<ScriptStats>("/admin/stats/scripts"));
       setStats(response.data);
     } catch (err: unknown) {
       setError(getErrorMessage(err));

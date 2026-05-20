@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { requestAdminWithRetry } from "./adminRequest";
 
 const REFRESH_INTERVAL_MS = 60_000;
 
@@ -25,40 +26,49 @@ interface UseAdminStatsResult {
   refetch: () => Promise<void>;
 }
 
+interface UseAdminStatsOptions {
+  initialDelayMs?: number;
+}
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   return "Unable to load admin stats";
 }
 
-export function useAdminStats(): UseAdminStatsResult {
+export function useAdminStats(options: UseAdminStatsOptions = {}): UseAdminStatsResult {
   const [stats, setStats] = useState<OverviewStats | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const hasLoadedRef = useRef<boolean>(false);
 
   const refetch = useCallback(async (): Promise<void> => {
-    setIsLoading((current) => current || stats === null);
+    setIsLoading(!hasLoadedRef.current);
     setError(null);
 
     try {
-      const response = await apiClient.get<OverviewStats>("/admin/stats/overview");
+      const response = await requestAdminWithRetry(() => apiClient.get<OverviewStats>("/admin/stats/overview"));
       setStats(response.data);
+      hasLoadedRef.current = true;
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
-  }, [stats]);
+  }, []);
 
   useEffect((): (() => void) => {
-    void refetch();
+    const timeoutId = window.setTimeout(() => {
+      void refetch();
+    }, options.initialDelayMs ?? 0);
     const intervalId = window.setInterval(() => {
       void refetch();
     }, REFRESH_INTERVAL_MS);
 
     return (): void => {
+      window.clearTimeout(timeoutId);
       window.clearInterval(intervalId);
     };
-  }, [refetch]);
+  }, [options.initialDelayMs, refetch]);
 
   return { stats, isLoading, error, refetch };
 }

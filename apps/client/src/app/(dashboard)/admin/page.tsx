@@ -7,6 +7,7 @@ import type { AreaChartDatum, BarChartDatum } from "@/components/admin";
 import { apiClient } from "@/lib/api-client";
 import { useAdminStats } from "./hooks/useAdminStats";
 import { useAdminViewport } from "./components/AdminViewportContext";
+import { ADMIN_STAGGER_DELAY_MS, delay, requestAdminWithRetry } from "./hooks/adminRequest";
 
 const CHART_HEIGHT_DESKTOP = 320;
 const CHART_HEIGHT_MOBILE = 260;
@@ -69,7 +70,7 @@ function formatUptime(seconds: number): string {
 
 export default function AdminOverviewPage(): React.ReactElement {
   const { isMobile } = useAdminViewport();
-  const { stats, isLoading, error, refetch } = useAdminStats();
+  const { stats, isLoading, error, refetch } = useAdminStats({ initialDelayMs: ADMIN_STAGGER_DELAY_MS });
   const [details, setDetails] = useState<DashboardDetails>({
     userStats: null,
     matchStats: null,
@@ -80,11 +81,11 @@ export default function AdminOverviewPage(): React.ReactElement {
   const loadDetails = useCallback(async (): Promise<void> => {
     setDetailsLoading(true);
     try {
-      const [userResponse, matchResponse, healthResponse] = await Promise.all([
-        apiClient.get<UserStats>("/admin/stats/users"),
-        apiClient.get<MatchStats>("/admin/stats/matches"),
-        apiClient.get<HealthStats>("/admin/health"),
-      ]);
+      const userResponse = await requestAdminWithRetry(() => apiClient.get<UserStats>("/admin/stats/users"));
+      await delay(ADMIN_STAGGER_DELAY_MS);
+      const matchResponse = await requestAdminWithRetry(() => apiClient.get<MatchStats>("/admin/stats/matches"));
+      await delay(ADMIN_STAGGER_DELAY_MS);
+      const healthResponse = await requestAdminWithRetry(() => apiClient.get<HealthStats>("/admin/health"));
       setDetails({
         userStats: userResponse.data,
         matchStats: matchResponse.data,

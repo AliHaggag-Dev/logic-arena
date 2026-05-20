@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, Wrench, Hexagon, X, Trophy, Lightbulb } from "lucide-react";
+import { User, Settings, Wrench, Hexagon, X, Trophy, Lightbulb, Shield } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const mainNavItems = [
   {
@@ -55,6 +56,8 @@ const arcOffsets = ["mr-2", "mr-6", "mr-12", "mr-20", "mr-28"];
 export function MobileNav() {
   const pathname = usePathname() || "";
   const [isHubOpen, setIsHubOpen] = useState(false);
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === "ADMIN";
 
   useEffect(() => {
     setIsHubOpen(false);
@@ -65,6 +68,16 @@ export function MobileNav() {
 
   if (isAuthPage) return null;
 
+  const visibleMainNavItems = isAdmin
+    ? [
+        ...mainNavItems,
+        {
+          href: "/admin",
+          label: "COMMAND CENTER",
+          icon: <Shield size={22} strokeWidth={1.8} />,
+        },
+      ]
+    : mainNavItems;
   const isHubActive = subNavItems.some(item => pathname === item.href);
 
   return (
@@ -110,7 +123,7 @@ export function MobileNav() {
         className="mobile-nav-safe fixed bottom-0 left-0 right-0 z-40 flex justify-center bg-bg-primary/85 backdrop-blur-xl border-t border-accent/[0.12] shadow-[0_-10px_30px_rgba(var(--accent-rgb),0.05),inset_0_2px_10px_rgba(var(--accent-rgb),0.05)] w-full transition-all duration-150"
       >
         <nav className="flex items-center justify-around w-full h-[64px] px-1 mb-[6px]">
-          {mainNavItems.map((item) => {
+          {visibleMainNavItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
@@ -130,7 +143,7 @@ export function MobileNav() {
                   </div>
 
                   <span
-                    className={`text-[8.5px] font-bold tracking-wider uppercase transition-colors duration-150 ease-out leading-none ${isActive ? "text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.4)]" : "text-text-secondary/50"}`}
+                    className={`max-[380px]:sr-only max-w-[58px] text-center text-[7.5px] font-bold tracking-wider uppercase transition-colors duration-150 ease-out leading-[0.95] ${isActive ? "text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.4)]" : "text-text-secondary/50"}`}
                   >
                     {item.label}
                   </span>
@@ -141,6 +154,7 @@ export function MobileNav() {
 
           {/* SYSTEM HUB BUTTON */}
           <button
+            type="button"
             onClick={() => setIsHubOpen(!isHubOpen)}
             className="relative flex flex-col items-center justify-center w-full max-w-[72px] h-full transition-all duration-150 ease-out group overflow-hidden"
           >

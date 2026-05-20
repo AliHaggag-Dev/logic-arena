@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { requestAdminWithRetry } from "./adminRequest";
 
 export interface HistogramBucket {
   bucket: string;
@@ -44,7 +45,7 @@ export function useAdminMarket(): UseAdminMarketResult {
     setError(null);
 
     try {
-      const response = await apiClient.get<MarketStats>("/admin/stats/market");
+      const response = await requestAdminWithRetry(() => apiClient.get<MarketStats>("/admin/stats/market"));
       setStats(response.data);
     } catch (err: unknown) {
       setError(getErrorMessage(err));

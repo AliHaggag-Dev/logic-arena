@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { requestAdminWithRetry } from "./adminRequest";
 
 const DEFAULT_ERROR_MESSAGE = "Unable to update feedback";
 
@@ -133,61 +134,61 @@ export function useAdminFeedback(): UseAdminFeedbackResult {
 
   const fetchBugReports = useCallback((params: FeedbackListParams<BugReportStatus>): Promise<PaginatedFeedback<BugReportItem>> => (
     runOperation("bugReports", async () => {
-      const response = await apiClient.get<PaginatedFeedback<BugReportItem>>("/admin/feedback/bug-reports", { params: buildParams(params) });
+      const response = await requestAdminWithRetry(() => apiClient.get<PaginatedFeedback<BugReportItem>>("/admin/feedback/bug-reports", { params: buildParams(params) }));
       return response.data;
     })
   ), [runOperation]);
 
   const fetchFeatureRequests = useCallback((params: FeedbackListParams<FeatureRequestStatus>): Promise<PaginatedFeedback<FeatureRequestItem>> => (
     runOperation("featureRequests", async () => {
-      const response = await apiClient.get<PaginatedFeedback<FeatureRequestItem>>("/admin/feedback/feature-requests", { params: buildParams(params) });
+      const response = await requestAdminWithRetry(() => apiClient.get<PaginatedFeedback<FeatureRequestItem>>("/admin/feedback/feature-requests", { params: buildParams(params) }));
       return response.data;
     })
   ), [runOperation]);
 
   const fetchContactMessages = useCallback((params: FeedbackListParams<ContactMessageStatus>): Promise<PaginatedFeedback<ContactMessageItem>> => (
     runOperation("contactMessages", async () => {
-      const response = await apiClient.get<PaginatedFeedback<ContactMessageItem>>("/admin/feedback/contact", { params: buildParams(params) });
+      const response = await requestAdminWithRetry(() => apiClient.get<PaginatedFeedback<ContactMessageItem>>("/admin/feedback/contact", { params: buildParams(params) }));
       return response.data;
     })
   ), [runOperation]);
 
   const updateBugReportStatus = useCallback((id: string, status: BugReportStatus): Promise<BugReportItem> => (
     runOperation("update", async () => {
-      const response = await apiClient.patch<BugReportItem>(`/admin/feedback/bug-reports/${id}`, { status });
+      const response = await requestAdminWithRetry(() => apiClient.patch<BugReportItem>(`/admin/feedback/bug-reports/${id}`, { status }));
       return response.data;
     })
   ), [runOperation]);
 
   const updateFeatureRequestStatus = useCallback((id: string, status: FeatureRequestStatus): Promise<FeatureRequestItem> => (
     runOperation("update", async () => {
-      const response = await apiClient.patch<FeatureRequestItem>(`/admin/feedback/feature-requests/${id}`, { status });
+      const response = await requestAdminWithRetry(() => apiClient.patch<FeatureRequestItem>(`/admin/feedback/feature-requests/${id}`, { status }));
       return response.data;
     })
   ), [runOperation]);
 
   const updateContactMessageStatus = useCallback((id: string, status: ContactMessageStatus): Promise<ContactMessageItem> => (
     runOperation("update", async () => {
-      const response = await apiClient.patch<ContactMessageItem>(`/admin/feedback/contact/${id}`, { status });
+      const response = await requestAdminWithRetry(() => apiClient.patch<ContactMessageItem>(`/admin/feedback/contact/${id}`, { status }));
       return response.data;
     })
   ), [runOperation]);
 
   const deleteBugReport = useCallback((id: string): Promise<void> => (
     runOperation("delete", async () => {
-      await apiClient.delete(`/admin/feedback/bug-reports/${id}`);
+      await requestAdminWithRetry(() => apiClient.delete(`/admin/feedback/bug-reports/${id}`));
     })
   ), [runOperation]);
 
   const deleteFeatureRequest = useCallback((id: string): Promise<void> => (
     runOperation("delete", async () => {
-      await apiClient.delete(`/admin/feedback/feature-requests/${id}`);
+      await requestAdminWithRetry(() => apiClient.delete(`/admin/feedback/feature-requests/${id}`));
     })
   ), [runOperation]);
 
   const deleteContactMessage = useCallback((id: string): Promise<void> => (
     runOperation("delete", async () => {
-      await apiClient.delete(`/admin/feedback/contact/${id}`);
+      await requestAdminWithRetry(() => apiClient.delete(`/admin/feedback/contact/${id}`));
     })
   ), [runOperation]);
 

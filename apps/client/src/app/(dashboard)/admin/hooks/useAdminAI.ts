@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { requestAdminWithRetry } from "./adminRequest";
 
 export interface LabelCount {
   label: string;
@@ -37,7 +38,7 @@ export function useAdminAI(): UseAdminAIResult {
     setError(null);
 
     try {
-      const response = await apiClient.get<AIStats>("/admin/stats/ai");
+      const response = await requestAdminWithRetry(() => apiClient.get<AIStats>("/admin/stats/ai"));
       setStats(response.data);
     } catch (err: unknown) {
       setError(getErrorMessage(err));

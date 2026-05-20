@@ -6,6 +6,7 @@ import { AdminErrorBoundary, AreaChart, ChartSkeleton, DonutChart, KpiCard, Prog
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminStats } from "../hooks/useAdminStats";
 import { useAdminUserStats } from "../hooks/useAdminUsers";
+import { ADMIN_STAGGER_DELAY_MS } from "../hooks/adminRequest";
 
 const CHART_HEIGHT_DESKTOP = 320;
 const CHART_HEIGHT_MOBILE = 260;
@@ -32,7 +33,7 @@ function mapAreaData(timeline: Array<{ date: string; count: number }> | undefine
 export default function AdminSecurityPage(): React.ReactElement {
   const { isMobile } = useAdminViewport();
   const { stats: overviewStats, isLoading: overviewLoading, error: overviewError } = useAdminStats();
-  const { stats: userStats, isLoading: userStatsLoading, error: userStatsError } = useAdminUserStats();
+  const { stats: userStats, isLoading: userStatsLoading, error: userStatsError } = useAdminUserStats({ initialDelayMs: ADMIN_STAGGER_DELAY_MS });
 
   const totalUsers = userStats?.totalUsers ?? overviewStats?.totalUsers ?? 0;
   const localUsers = userStats?.providerBreakdown.local ?? 0;

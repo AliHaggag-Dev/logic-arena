@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { requestAdminWithRetry } from "./adminRequest";
 
 export interface LevelCompletionRate {
   levelId: string;
@@ -42,7 +43,7 @@ export function useAdminCampaign(): UseAdminCampaignResult {
     setError(null);
 
     try {
-      const response = await apiClient.get<CampaignStats>("/admin/stats/campaign");
+      const response = await requestAdminWithRetry(() => apiClient.get<CampaignStats>("/admin/stats/campaign"));
       setStats(response.data);
     } catch (err: unknown) {
       setError(getErrorMessage(err));

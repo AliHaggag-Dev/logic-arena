@@ -31,7 +31,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
 
   return (
     <aside
-      className="flex flex-col bg-bg-primary/95 border-r border-accent/[0.12] shadow-[4px_0_30px_rgba(var(--accent-rgb),0.04)] sticky top-0 h-screen overflow-y-auto z-50 shrink-0 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent"
+      className="flex flex-col bg-bg-primary/95 border-r border-accent/[0.12] shadow-[4px_0_30px_rgba(var(--accent-rgb),0.04)] sticky top-0 h-screen overflow-hidden z-50 shrink-0"
       style={{ width: SIDEBAR_WIDTH }}
     >
       {/* Scanline overlay */}
@@ -47,7 +47,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
       <div className="h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent opacity-60 shrink-0" />
 
       {/* ── NEURAL UPLINK TERMINAL ── */}
-      <div className="px-3 pt-3 pb-2 relative z-10">
+      <div className="px-3 pt-3 pb-1.5 relative z-10 shrink-0">
         <div
           className="relative rounded border border-accent/[0.18] overflow-hidden"
           style={{ background: 'linear-gradient(160deg, rgba(var(--accent-rgb),0.05) 0%, rgba(var(--accent-rgb),0.02) 50%, transparent 100%)' }}
@@ -103,7 +103,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
       </div>
 
       {/* ── NAV LINKS ── */}
-      <nav className="flex-1 p-[16px_10px] flex flex-col gap-1 relative z-10">
+      <nav className="flex-1 min-h-0 p-[12px_10px] flex flex-col gap-0.5 relative z-10">
         <div className="text-[9px] tracking-[0.22em] text-accent/25 font-bold px-1 pb-2 uppercase">
           navigation
         </div>

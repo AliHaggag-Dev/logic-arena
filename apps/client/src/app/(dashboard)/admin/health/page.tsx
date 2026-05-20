@@ -5,6 +5,7 @@ import { Activity, Cpu, Database, HardDrive, MemoryStick, RefreshCcw, Server, Ti
 import { AdminErrorBoundary, ChartSkeleton, GaugeWidget, KpiCard, KpiCardSkeleton, StatusIndicator } from "@/components/admin";
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminHealth } from "../hooks/useAdminHealth";
+import { ADMIN_STAGGER_DELAY_MS } from "../hooks/adminRequest";
 
 const BYTES_PER_MEGABYTE = 1_048_576;
 const SECONDS_PER_MINUTE = 60;
@@ -40,7 +41,7 @@ function calculateHeapPercent(heapUsed: number, heapTotal: number): number {
 
 export default function AdminHealthPage(): React.ReactElement {
   const { isMobile } = useAdminViewport();
-  const { health, isLoading, error, lastUpdated, refetch } = useAdminHealth();
+  const { health, isLoading, error, lastUpdated, refetch } = useAdminHealth({ initialDelayMs: ADMIN_STAGGER_DELAY_MS });
   const [now, setNow] = useState<Date>(new Date());
 
   useEffect((): (() => void) => {

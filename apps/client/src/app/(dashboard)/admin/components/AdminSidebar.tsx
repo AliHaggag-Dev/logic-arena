@@ -28,6 +28,7 @@ import {
   Users,
 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
+import { ADMIN_STAGGER_DELAY_MS, delay, requestAdminWithRetry } from "../hooks/adminRequest";
 
 const EXPANDED_WIDTH_CLASS = "w-[280px]";
 const COLLAPSED_WIDTH_CLASS = "w-[84px]";
@@ -108,10 +109,14 @@ export function useCommunityFeedbackCount(): number {
 
     async function loadCount(): Promise<void> {
       try {
-        const [contactResponse, bugResponse] = await Promise.all([
-          apiClient.get<FeedbackCountResponse>("/admin/feedback/contact", { params: { status: "UNREAD", pageSize: FEEDBACK_PAGE_SIZE } }),
-          apiClient.get<FeedbackCountResponse>("/admin/feedback/bug-reports", { params: { status: "OPEN", pageSize: FEEDBACK_PAGE_SIZE } }),
-        ]);
+        const contactResponse = await requestAdminWithRetry(() => (
+          apiClient.get<FeedbackCountResponse>("/admin/feedback/contact", { params: { status: "UNREAD", pageSize: FEEDBACK_PAGE_SIZE } })
+        ));
+        await delay(ADMIN_STAGGER_DELAY_MS);
+        if (cancelled) return;
+        const bugResponse = await requestAdminWithRetry(() => (
+          apiClient.get<FeedbackCountResponse>("/admin/feedback/bug-reports", { params: { status: "OPEN", pageSize: FEEDBACK_PAGE_SIZE } })
+        ));
 
         if (!cancelled) {
           setCount(contactResponse.data.total + bugResponse.data.total);

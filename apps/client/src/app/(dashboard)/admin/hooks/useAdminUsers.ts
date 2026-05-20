@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { requestAdminWithRetry } from "./adminRequest";
 
 const DEFAULT_ERROR_MESSAGE = "Unable to load admin users";
 
@@ -57,6 +58,10 @@ interface UseAdminUserStatsResult {
   error: string | null;
 }
 
+interface UseAdminUserStatsOptions {
+  initialDelayMs?: number;
+}
+
 interface UseAdminUsersResult {
   users: AdminUserListItem[];
   total: number;
@@ -70,7 +75,7 @@ function getErrorMessage(error: unknown): string {
   return DEFAULT_ERROR_MESSAGE;
 }
 
-export function useAdminUserStats(): UseAdminUserStatsResult {
+export function useAdminUserStats(options: UseAdminUserStatsOptions = {}): UseAdminUserStatsResult {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +88,7 @@ export function useAdminUserStats(): UseAdminUserStatsResult {
       setError(null);
 
       try {
-        const response = await apiClient.get<UserStats>("/admin/stats/users");
+        const response = await requestAdminWithRetry(() => apiClient.get<UserStats>("/admin/stats/users"));
         if (!cancelled) setStats(response.data);
       } catch (err: unknown) {
         if (!cancelled) setError(getErrorMessage(err));
@@ -92,12 +97,15 @@ export function useAdminUserStats(): UseAdminUserStatsResult {
       }
     }
 
-    void loadStats();
+    const timeoutId = window.setTimeout(() => {
+      void loadStats();
+    }, options.initialDelayMs ?? 0);
 
     return (): void => {
       cancelled = true;
+      window.clearTimeout(timeoutId);
     };
-  }, []);
+  }, [options.initialDelayMs]);
 
   return { stats, isLoading, error };
 }
@@ -113,7 +121,7 @@ export function useAdminUsers(params: UseAdminUsersParams): UseAdminUsersResult 
     setError(null);
 
     try {
-      const response = await apiClient.get<PaginatedUsers>("/admin/users", {
+      const response = await requestAdminWithRetry(() => apiClient.get<PaginatedUsers>("/admin/users", {
         params: {
           page: params.page,
           pageSize: params.pageSize,
@@ -121,7 +129,7 @@ export function useAdminUsers(params: UseAdminUsersParams): UseAdminUsersResult 
           sortBy: params.sortBy,
           sortOrder: params.sortOrder,
         },
-      });
+      }));
       setUsers(response.data.data);
       setTotal(response.data.total);
     } catch (err: unknown) {
