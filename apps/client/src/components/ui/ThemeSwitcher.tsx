@@ -43,7 +43,12 @@ const Sunrise = ({ size }: { size?: number }) => (
   </SVGBase>
 );
 
-export function ThemeSwitcher({ variant = "default" }: { variant?: "default" | "minimal" }) {
+interface ThemeSwitcherProps {
+  variant?: "default" | "minimal";
+  size?: "compact" | "touch";
+}
+
+export function ThemeSwitcher({ variant = "default", size = "compact" }: ThemeSwitcherProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -64,6 +69,9 @@ export function ThemeSwitcher({ variant = "default" }: { variant?: "default" | "
   if (!mounted) return null;
 
   const currentIcon = theme === "cyberpunk" ? <Moon size={14} /> : theme === "light" ? <Sun size={14} /> : <Sunrise size={14} />;
+  const minimalButtonClassName = size === "touch"
+    ? "flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-accent/20 bg-accent/5 text-accent hover:border-accent/40 hover:bg-accent/10 transition-colors duration-150 cursor-pointer"
+    : "flex items-center justify-center w-[28px] h-[28px] rounded-md border border-accent/20 bg-accent/5 text-accent hover:border-accent/40 hover:bg-accent/10 transition-colors duration-150 cursor-pointer";
 
   const THEMES = [
     { id: "cyberpunk", label: "CYBERPUNK", icon: <Moon size={14} /> },
@@ -85,9 +93,10 @@ export function ThemeSwitcher({ variant = "default" }: { variant?: "default" | "
       )}
       <div className={variant === "minimal" ? "" : "w-full relative"}>
         <button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={variant === "minimal"
-            ? "flex items-center justify-center w-[28px] h-[28px] rounded-md border border-accent/20 bg-accent/5 text-accent hover:border-accent/40 hover:bg-accent/10 transition-colors duration-150"
+            ? minimalButtonClassName
             : "flex items-center justify-between w-full px-3 py-2 rounded-md border border-accent/20 bg-accent/5 text-accent hover:border-accent/40 hover:bg-accent/10 transition-colors duration-150 text-[10px] font-mono tracking-widest font-bold"
           }
         >
@@ -108,6 +117,7 @@ export function ThemeSwitcher({ variant = "default" }: { variant?: "default" | "
             return (
               <button
                 key={id}
+                type="button"
                 onClick={() => handleSelect(id)}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[10px] font-mono font-bold tracking-[0.05em] transition-colors duration-150 ${isActive ? "bg-accent/10 text-accent" : "bg-transparent text-text-secondary hover:bg-accent/5 hover:text-accent/80"}`}
               >

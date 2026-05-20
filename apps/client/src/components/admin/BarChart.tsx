@@ -43,7 +43,7 @@ export function BarChart({ data, title, color = DEFAULT_CHART_COLOR, horizontal 
   }
 
   return (
-    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] md:p-5">
+    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] [&_.recharts-layer:focus]:outline-none [&_.recharts-rectangle:focus]:outline-none [&_*:focus]:outline-none md:p-5">
       <h3 className="font-mono text-xs font-black uppercase tracking-widest text-text-primary md:text-sm">{title}</h3>
       <div className="mt-4 min-h-[200px] md:mt-5" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
@@ -60,8 +60,8 @@ export function BarChart({ data, title, color = DEFAULT_CHART_COLOR, horizontal 
                 <YAxis stroke="var(--text-secondary)" tickLine={false} axisLine={false} fontSize={12} width={44} />
               </>
             )}
-            <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)" }} cursor={{ fill: "rgba(var(--accent-rgb),0.08)" }} />
-            <Bar dataKey="value" fill={color} radius={BAR_RADIUS} />
+            <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)" }} cursor={{ fill: "rgba(var(--accent-rgb),0.08)", strokeWidth: 0 }} />
+            <Bar dataKey="value" fill={color} radius={BAR_RADIUS} activeBar={false} />
           </RechartsBarChart>
         </ResponsiveContainer>
       </div>

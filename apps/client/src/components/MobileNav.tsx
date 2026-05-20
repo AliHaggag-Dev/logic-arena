@@ -66,7 +66,7 @@ export function MobileNav() {
         ...mainNavItems,
         {
           href: "/admin",
-          label: "COMMAND CENTER",
+          label: "ADMIN",
           icon: <Shield size={22} strokeWidth={1.8} />,
         },
       ]

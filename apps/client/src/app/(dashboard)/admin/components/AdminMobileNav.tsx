@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 import { NAV_SECTIONS, isActivePath, useCommunityFeedbackCount } from "./AdminSidebar";
 
 const DRAWER_ANIMATION_DURATION = 0.2;
@@ -39,9 +40,9 @@ export function AdminMobileNav(): React.ReactElement {
           <Menu className="h-5 w-5" />
         </button>
         <h1 className="min-w-0 truncate text-center text-sm font-black uppercase tracking-[0.18em] text-accent">{currentTitle}</h1>
-        <Link href="/admin" aria-label="Command Center" title="Command Center" className="grid min-h-11 min-w-11 place-items-center rounded-lg border border-accent/20 bg-accent/10 text-accent">
-          <Bot className="h-5 w-5" />
-        </Link>
+        <div className="flex min-h-11 min-w-11 items-center justify-end">
+          <ThemeSwitcher variant="minimal" size="touch" />
+        </div>
       </header>
 
       <AnimatePresence>
@@ -49,7 +50,7 @@ export function AdminMobileNav(): React.ReactElement {
           <motion.button
             type="button"
             aria-label="Close admin navigation"
-            className="fixed inset-0 z-[85] bg-bg-primary/80 backdrop-blur-md"
+            className="fixed inset-0 z-[180] bg-bg-primary/80 backdrop-blur-md"
             onClick={() => setIsOpen(false)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -62,7 +63,7 @@ export function AdminMobileNav(): React.ReactElement {
       <AnimatePresence>
         {isOpen && (
           <motion.aside
-            className="fixed inset-y-0 left-0 z-[90] h-screen w-screen border-r border-accent/20 bg-bg-primary shadow-[0_0_42px_rgba(var(--accent-rgb),0.14)]"
+            className="fixed inset-y-0 left-0 z-[190] h-screen w-screen border-r border-accent/20 bg-bg-primary shadow-[0_0_42px_rgba(var(--accent-rgb),0.14)]"
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}

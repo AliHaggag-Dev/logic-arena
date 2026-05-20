@@ -13,9 +13,6 @@ import { AdminViewportContext } from "./components/AdminViewportContext";
 const MOBILE_QUERY = "(max-width: 768px)";
 const ADMIN_REDIRECT_PATH = "/dashboard";
 const PAGE_TRANSITION_DURATION = 0.3;
-const EXPANDED_WIDTH = 280;
-const COLLAPSED_WIDTH = 84;
-
 interface AdminLayoutProps {
   children: ReactNode;
 }
@@ -71,8 +68,6 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
     );
   }
 
-  const sidebarWidth = isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH;
-
   return (
     <AdminViewportContext.Provider value={{ isMobile }}>
       <div className="flex min-h-screen w-full bg-bg-primary font-mono text-text-primary">
@@ -80,12 +75,6 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
           <AdminSidebar
             isCollapsed={isCollapsed}
             onToggleCollapse={toggleCollapsed}
-          />
-        )}
-        {!isMobile && (
-          <div
-            className="hidden md:block shrink-0 transition-[width] duration-200"
-            style={{ width: sidebarWidth }}
           />
         )}
         {isMobile && <AdminMobileNav />}

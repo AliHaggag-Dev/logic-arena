@@ -54,7 +54,7 @@ export function AreaChart({ data, title, color = DEFAULT_CHART_COLOR, height = D
   }
 
   return (
-    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] md:p-5">
+    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] [&_.recharts-layer:focus]:outline-none [&_.recharts-surface:focus]:outline-none [&_*:focus]:outline-none md:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="font-mono text-xs font-black uppercase tracking-widest text-text-primary md:text-sm">{title}</h3>
         <div className="flex overflow-x-auto rounded-lg border border-accent/20 bg-bg-primary p-1">
@@ -82,8 +82,8 @@ export function AreaChart({ data, title, color = DEFAULT_CHART_COLOR, height = D
             <CartesianGrid stroke="var(--border)" strokeOpacity={GRID_OPACITY} vertical={false} />
             <XAxis dataKey="date" stroke="var(--text-secondary)" tickLine={false} axisLine={false} fontSize={12} />
             <YAxis stroke="var(--text-secondary)" tickLine={false} axisLine={false} fontSize={12} width={44} />
-            <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)" }} />
-            <Area type="monotone" dataKey="value" stroke={color} strokeWidth={AREA_STROKE_WIDTH} fill={`url(#${gradientId})`} />
+            <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)" }} cursor={{ stroke: "rgba(var(--accent-rgb),0.2)", strokeWidth: 1 }} />
+            <Area type="monotone" dataKey="value" stroke={color} strokeWidth={AREA_STROKE_WIDTH} fill={`url(#${gradientId})`} activeDot={{ strokeWidth: 0 }} />
           </RechartsAreaChart>
         </ResponsiveContainer>
       </div>

@@ -43,7 +43,7 @@ export function LineChart({ data, title, color = DEFAULT_CHART_COLOR, height = D
   }
 
   return (
-    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] md:p-5">
+    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] [&_.recharts-layer:focus]:outline-none [&_.recharts-symbols:focus]:outline-none [&_*:focus]:outline-none md:p-5">
       <h3 className="font-mono text-xs font-black uppercase tracking-widest text-text-primary md:text-sm">{title}</h3>
       <div className="mt-4 min-h-[200px] md:mt-5" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
@@ -51,8 +51,8 @@ export function LineChart({ data, title, color = DEFAULT_CHART_COLOR, height = D
             <CartesianGrid stroke="var(--border)" strokeOpacity={GRID_OPACITY} vertical={false} />
             <XAxis dataKey="date" stroke="var(--text-secondary)" tickLine={false} axisLine={false} fontSize={12} />
             <YAxis stroke="var(--text-secondary)" tickLine={false} axisLine={false} fontSize={12} width={44} />
-            <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)" }} />
-            <Line type="monotone" dataKey="value" stroke={color} strokeWidth={LINE_STROKE_WIDTH} dot={{ r: DOT_RADIUS, fill: color }} activeDot={{ r: DOT_RADIUS + 1 }} />
+            <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)" }} cursor={{ stroke: "rgba(var(--accent-rgb),0.2)", strokeWidth: 1 }} />
+            <Line type="monotone" dataKey="value" stroke={color} strokeWidth={LINE_STROKE_WIDTH} dot={{ r: DOT_RADIUS, fill: color, strokeWidth: 0 }} activeDot={{ r: DOT_RADIUS + 1, strokeWidth: 0 }} />
           </RechartsLineChart>
         </ResponsiveContainer>
       </div>

@@ -73,24 +73,26 @@ export function KpiCard({ title, value, trend, trendLabel, icon, isLoading = fal
   }
 
   return (
-    <section className="group relative overflow-hidden rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] transition-colors duration-200 hover:border-accent/50 md:p-5">
+    <section className="group relative flex flex-col self-start overflow-hidden rounded-lg border border-accent/20 bg-card p-3 shadow-[var(--card-shadow)] transition-colors duration-200 hover:border-accent/50 md:p-5">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--accent),transparent)] opacity-60" />
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="font-mono text-xs font-bold uppercase tracking-wider text-text-secondary md:tracking-widest">{title}</p>
-          <p className="mt-3 font-mono text-3xl font-black text-text-primary [text-shadow:0_0_16px_rgba(var(--accent-rgb),0.25)]">
-            {Number.isNaN(numericValue) ? displayValue : displayValue}
-          </p>
+      <div className="flex items-start justify-between gap-2 md:gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="min-h-8 font-mono text-[10px] font-bold uppercase leading-4 tracking-wider text-text-secondary md:min-h-0 md:text-xs md:tracking-widest">{title}</p>
         </div>
         {icon && (
-          <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent [&_svg]:h-8 [&_svg]:w-8 md:h-11 md:w-11 md:[&_svg]:h-5 md:[&_svg]:w-5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent [&_svg]:h-5 [&_svg]:w-5 md:h-11 md:w-11">
             {icon}
           </div>
         )}
       </div>
 
-      {trend !== undefined && (
-        <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
+      <p className="mt-2 break-words font-mono text-[1.35rem] font-black leading-tight text-text-primary [text-shadow:0_0_16px_rgba(var(--accent-rgb),0.25)] md:mt-3 md:text-3xl">
+        {Number.isNaN(numericValue) ? displayValue : displayValue}
+      </p>
+
+      <div className="font-mono text-xs">
+        {trend !== undefined ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-4">
           <span
             className={
               trendState === "positive"
@@ -104,8 +106,9 @@ export function KpiCard({ title, value, trend, trendLabel, icon, isLoading = fal
             {Math.abs(trend).toLocaleString()}%
           </span>
           {trendLabel && <span className="text-text-secondary">{trendLabel}</span>}
-        </div>
-      )}
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }

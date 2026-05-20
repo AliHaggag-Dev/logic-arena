@@ -114,7 +114,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
           {isAdmin && (
             <Link
               href="/admin"
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-md font-mono text-[10px] font-bold tracking-[0.18em] transition-all duration-200 relative group overflow-hidden border border-[var(--sem-warning)]/30 text-[var(--sem-warning)]/80 hover:border-[var(--sem-warning)]/60 hover:text-[var(--sem-warning)] shadow-[0_0_12px_rgba(var(--sem-warning-rgb),0.06)] hover:shadow-[0_0_20px_rgba(var(--sem-warning-rgb),0.12)]"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-md font-mono text-[10px] font-bold tracking-[0.18em] transition-all duration-200 relative group overflow-hidden border border-accent/40 bg-accent/[0.07] text-accent hover:border-accent hover:bg-accent/[0.14] shadow-[0_0_14px_rgba(var(--accent-rgb),0.10),inset_0_0_14px_rgba(var(--accent-rgb),0.04)] hover:shadow-[0_0_22px_rgba(var(--accent-rgb),0.18),inset_0_0_18px_rgba(var(--accent-rgb),0.06)]"
             >
               <span className="w-4 h-4 flex items-center justify-center shrink-0 opacity-80">
                 <Terminal size={13} strokeWidth={2.5} />

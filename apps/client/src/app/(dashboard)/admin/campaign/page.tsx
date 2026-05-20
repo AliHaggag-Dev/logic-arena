@@ -107,7 +107,7 @@ function LevelCompletionChart({ data, height, isLoading }: LevelCompletionChartP
   if (isLoading) return <ChartSkeleton height={height} />;
 
   return (
-    <section className="rounded-lg border border-accent/20 bg-card p-5 shadow-[var(--card-shadow)]">
+    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] [&_.recharts-layer:focus]:outline-none [&_.recharts-rectangle:focus]:outline-none [&_*:focus]:outline-none md:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="font-mono text-sm font-black uppercase tracking-widest text-text-primary">Level Completion Rates</h3>
         <div className="flex flex-wrap gap-2">
@@ -119,16 +119,16 @@ function LevelCompletionChart({ data, height, isLoading }: LevelCompletionChartP
           ))}
         </div>
       </div>
-      <div className="mt-5" style={{ height }}>
+      <div className="mt-4 md:mt-5" style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           <RechartsBarChart data={data} layout="vertical">
             <CartesianGrid stroke="var(--border)" strokeOpacity={GRID_OPACITY} vertical horizontal={false} />
             <XAxis type="number" stroke="var(--text-secondary)" tickLine={false} axisLine={false} fontSize={12} domain={[0, 100]} />
             <YAxis type="category" dataKey="label" stroke="var(--text-secondary)" tickLine={false} axisLine={false} fontSize={11} width={72} />
-            <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)" }} formatter={formatTooltipRate} />
-            <Bar dataKey="value" radius={BAR_RADIUS}>
+            <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)" }} cursor={{ fill: "rgba(var(--accent-rgb),0.08)", strokeWidth: 0 }} formatter={formatTooltipRate} />
+            <Bar dataKey="value" radius={BAR_RADIUS} activeBar={false}>
               {data.map((entry) => (
-                <Cell key={entry.label} fill={entry.color} />
+                <Cell key={entry.label} fill={entry.color} strokeWidth={0} />
               ))}
             </Bar>
           </RechartsBarChart>

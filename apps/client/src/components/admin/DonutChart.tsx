@@ -36,14 +36,14 @@ export function DonutChart({ data, title, height = DEFAULT_DONUT_HEIGHT, isLoadi
   }
 
   return (
-    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] md:p-5">
+    <section className="rounded-lg border border-accent/20 bg-card p-4 shadow-[var(--card-shadow)] [&_.recharts-layer:focus]:outline-none [&_.recharts-sector:focus]:outline-none [&_*:focus]:outline-none md:p-5">
       <h3 className="font-mono text-xs font-black uppercase tracking-widest text-text-primary md:text-sm">{title}</h3>
       <div className="mt-4 min-h-[200px] md:mt-5" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={data} dataKey="value" nameKey="label" innerRadius={innerRadius} outerRadius={outerRadius} paddingAngle={2}>
+            <Pie data={data} dataKey="value" nameKey="label" innerRadius={innerRadius} outerRadius={outerRadius} paddingAngle={2} activeShape={false}>
               {data.map((entry, index) => (
-                <Cell key={entry.label} fill={entry.color ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length]} />
+                <Cell key={entry.label} fill={entry.color ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length]} strokeWidth={0} />
               ))}
             </Pie>
             <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)" }} />

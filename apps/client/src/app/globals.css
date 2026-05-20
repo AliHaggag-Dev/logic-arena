@@ -226,6 +226,19 @@ textarea,
   -webkit-user-select: text;
 }
 
+::selection {
+  color: var(--bg-primary);
+  background: rgba(var(--accent-rgb), 0.88);
+  text-shadow: none;
+}
+
+input::selection,
+textarea::selection,
+[contenteditable="true"]::selection {
+  color: var(--bg-primary);
+  background: rgba(var(--accent-rgb), 0.82);
+}
+
 
 /* ─────────────────────────────────────────────────────────
  *  GLOBAL CYBERPUNK SCROLLBAR

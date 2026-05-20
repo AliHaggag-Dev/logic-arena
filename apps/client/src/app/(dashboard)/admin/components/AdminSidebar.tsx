@@ -27,6 +27,7 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
+import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
 import { apiClient } from "@/lib/api-client";
 import { ADMIN_STAGGER_DELAY_MS, delay, requestAdminWithRetry } from "../hooks/adminRequest";
 
@@ -161,7 +162,7 @@ export function AdminSidebar({ isCollapsed, onToggleCollapse }: AdminSidebarProp
   };
 
   return (
-    <aside className={`fixed left-0 top-0 z-[70] flex h-screen ${widthClass} flex-col border-r border-accent/20 bg-bg-primary/95 shadow-[0_0_36px_rgba(var(--accent-rgb),0.08)] backdrop-blur-xl transition-[width] duration-200`}>
+    <aside className={`sticky left-0 top-0 z-[70] flex h-screen ${widthClass} shrink-0 flex-col border-r border-accent/20 bg-bg-primary/95 shadow-[0_0_36px_rgba(var(--accent-rgb),0.08)] backdrop-blur-xl transition-[width] duration-200`}>
       {/* ── Collapse toggle — right edge, vertically centered ── */}
       <button
         type="button"
@@ -186,6 +187,7 @@ export function AdminSidebar({ isCollapsed, onToggleCollapse }: AdminSidebarProp
             </span>
           )}
         </Link>
+        {!isCollapsed && <ThemeSwitcher variant="minimal" />}
       </div>
 
       {/* ── Back to Dashboard ── */}

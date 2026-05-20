@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Search, ShieldCheck, Trophy, UserCheck, Users } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, CheckCircle2, ChevronDown, Search, ShieldCheck, Trophy, UserCheck, Users } from "lucide-react";
 import { AdminErrorBoundary, AreaChart, DataTable, DonutChart, KpiCard, type AreaChartDatum, type DataTableColumn, type DonutChartDatum } from "@/components/admin";
 import { useAdminViewport } from "../components/AdminViewportContext";
 import { useAdminUsers, useAdminUserStats, type AdminUserSortBy } from "../hooks/useAdminUsers";
@@ -13,6 +13,11 @@ const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 const WEEK_DAYS = 7;
 const PERCENT_MULTIPLIER = 100;
+const SORT_OPTIONS: Array<{ value: AdminUserSortBy; label: string }> = [
+  { value: "rank", label: "Rank" },
+  { value: "points", label: "Points" },
+  { value: "createdAt", label: "Joined" },
+];
 
 function formatPercent(value: number, total: number): string {
   if (total <= 0) return "0%";
@@ -30,6 +35,78 @@ function mapAreaData(timeline: Array<{ date: string; count: number }> | undefine
 function getInitials(value: unknown): string {
   const username = String(value ?? "?").trim();
   return username.slice(0, 2).toUpperCase();
+}
+
+interface AdminUserSortSelectProps {
+  value: AdminUserSortBy;
+  onChange: (value: AdminUserSortBy) => void;
+}
+
+function AdminUserSortSelect({ value, onChange }: AdminUserSortSelectProps): React.ReactElement {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const selectedOption = SORT_OPTIONS.find((option) => option.value === value) ?? SORT_OPTIONS[0];
+
+  useEffect((): (() => void) => {
+    function handlePointerDown(event: PointerEvent): void {
+      if (!wrapperRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return (): void => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, []);
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <button
+        type="button"
+        aria-label="Sort users"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((current) => !current)}
+        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-accent/20 bg-bg-primary px-3 text-left text-sm font-black uppercase tracking-widest text-accent outline-none transition-colors hover:border-accent/50 focus:border-accent"
+      >
+        <span>{selectedOption.label}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div
+          role="listbox"
+          aria-label="Sort users"
+          className="absolute left-0 right-0 top-[calc(100%+8px)] z-[70] overflow-hidden rounded-lg border border-accent/40 bg-bg-primary p-1 shadow-[0_14px_34px_rgba(var(--accent-rgb),0.18)]"
+        >
+          {SORT_OPTIONS.map((option) => {
+            const isSelected = option.value === value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 text-left text-sm font-black uppercase tracking-widest transition-colors ${
+                  isSelected
+                    ? "bg-accent/15 text-accent"
+                    : "text-text-secondary hover:bg-accent/10 hover:text-text-primary"
+                }`}
+              >
+                <span>{option.label}</span>
+                {isSelected && <Check className="h-4 w-4 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function AdminUsersPage(): React.ReactElement {
@@ -140,14 +217,13 @@ export default function AdminUsersPage(): React.ReactElement {
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
                 <input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} className="min-h-11 w-full rounded-lg border border-accent/20 bg-bg-primary pl-10 pr-3 text-sm font-bold text-text-primary outline-none transition-colors placeholder:text-text-secondary focus:border-accent" placeholder="Search users" />
               </label>
-              <label className="block">
-                <span className="sr-only">Sort users</span>
-                <select value={sortBy} onChange={(event) => { setPage(DEFAULT_PAGE); setSortBy(event.target.value as AdminUserSortBy); }} className="min-h-11 w-full rounded-lg border border-accent/20 bg-bg-primary px-3 text-sm font-black uppercase tracking-widest text-accent outline-none transition-colors focus:border-accent">
-                  <option value="rank">Rank</option>
-                  <option value="points">Points</option>
-                  <option value="createdAt">Joined</option>
-                </select>
-              </label>
+              <AdminUserSortSelect
+                value={sortBy}
+                onChange={(nextSortBy) => {
+                  setPage(DEFAULT_PAGE);
+                  setSortBy(nextSortBy);
+                }}
+              />
             </div>
           </div>
             <DataTable columns={columns} data={tableData} isLoading={usersLoading} pagination={{ page, pageSize: PAGE_SIZE, total, onPageChange: setPage }} />
