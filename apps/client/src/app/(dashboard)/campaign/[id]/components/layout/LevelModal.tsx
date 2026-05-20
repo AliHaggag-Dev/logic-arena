@@ -32,7 +32,7 @@ export function LevelModal({ modal, setModal, reward, stars, level, isMobile, ro
 
   const handleBack = (): void => router.push("/campaign");
   const handleReplay = (): void => setModal("idle");
-  const handleHint = (): void => window.alert(level.hint);
+  const handleHint = (): void => window.alert(level.hints[0]);
 
   return (
     <div className={`fixed inset-0 z-50 flex bg-bg-primary/75 backdrop-blur-sm ${isMobile ? "items-stretch justify-center p-0" : "items-center justify-center px-4"}`} role="dialog" aria-modal="true">

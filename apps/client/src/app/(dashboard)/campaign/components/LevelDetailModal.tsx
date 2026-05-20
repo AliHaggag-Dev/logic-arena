@@ -182,7 +182,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
             <div className="px-4 pb-4 pt-0">
               <div className="h-px bg-accent/10 mb-3" />
               <p className="text-[11px] leading-[1.8] text-accent/65 tracking-[0.03em]">
-                {level.hint}
+                {level.hints[0]}
               </p>
             </div>
           </div>

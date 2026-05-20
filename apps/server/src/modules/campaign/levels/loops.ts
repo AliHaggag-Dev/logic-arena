@@ -10,9 +10,14 @@ export const LOOPS_LEVELS: CampaignLevel[] = [
     title: 'PULSE DRUM',
     difficulty: 'EASY',
     pointsReward: D.EASY,
+    conceptTaught: 'Counter-based loop with fixed period',
     description:
       'Five pulses, then a pause. The drum fires exactly 5 shots in sequence (one per tick), then moves right for 3 ticks before resetting. A mechanical heartbeat with a fixed period of 8 ticks. Count the beats to find the silence.',
-    hint: 'The 3-tick movement pause after 5 shots is your attack window. Time your assault for ticks 6-8 of each cycle.',
+    hints: [
+      'The 3-tick movement pause after 5 shots is your attack window. Time your assault for ticks 6-8 of each cycle.',
+      'Count with a local variable: SET t = t + 1. After each burst of 5 from the enemy, you have ticks 6, 7, 8 where it moves right without firing. Rush during those 3 ticks.',
+      'SET t = t + 1. IF t > 8 THEN SET t = 0 END. IF t > 5 THEN FIRE END ELSE MOVE END. Time your FIRE commands to ticks 6-8 to maximize aggression during the enemy\'s pause.',
+    ],
     enemyScript: `IF NOT init THEN
   SET i = 0
   SET init = 1
@@ -44,9 +49,14 @@ END`,
     title: 'PATROL CIRCUIT',
     difficulty: 'EASY',
     pointsReward: D.EASY,
+    conceptTaught: 'Waypoint loop with fire-on-arrival',
     description:
       'It patrols a fixed circuit using waypoints: moves to point A (200, 300), then B (600, 300), then back to A, firing whenever it reaches a waypoint and detects you. A predictable back-and-forth loop with known fire positions.',
-    hint: 'It fires only at the two waypoint positions. Stay away from (200,300) and (600,300) to avoid all shots.',
+    hints: [
+      'It fires only at the two waypoint positions. Stay away from (200,300) and (600,300) to avoid all shots.',
+      'During transit between A and B it cannot fire — only at arrival. Position yourself near the midpoint (400, 300) so you are close enough to shoot but not at either waypoint.',
+      'The enemy is vulnerable DURING movement (no fire). Use MOVE to intercept its path between waypoints and fire continuously: IF VISIBLE_ENEMY_COUNT > 0 THEN SET rotation = ATAN2(...), FIRE END, MOVE.',
+    ],
     enemyScript: `IF NOT init THEN
   SET phase = 0
   SET init = 1
@@ -89,9 +99,14 @@ END`,
     title: 'ADAPTIVE VORTEX',
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
+    conceptTaught: 'Direction-toggling orbit loop',
     description:
       'It orbits the arena center in a circle. Every 8 ticks it reverses orbit direction. During clockwise rotation it fires on sight. During counter-clockwise it only scans. The vortex switches direction like a spinning top — you must time strikes to the correct spin phase.',
-    hint: 'Counter-clockwise phase (no firing) is your safe window. Count 8 ticks to know when it swaps.',
+    hints: [
+      'Counter-clockwise phase (no firing) is your safe window. Count 8 ticks to know when it swaps.',
+      'It starts clockwise (fires). After 8 ticks it goes counter-clockwise (no fire, only scans). These 8 tick windows alternate. Commit to aggressive attacks in the scan-only (CCW) phase.',
+      'Track the enemy\'s orbit tick: SET myTick = myTick + 1. Every 8 ticks (myTick % 8 == 0) the enemy swaps. Attack during odd windows (ticks 9-16, 25-32...) when it is in CCW/scan mode.',
+    ],
     enemyScript: `IF NOT init THEN
   SET tick = 0
   SET orbitDir = 1
@@ -133,9 +148,14 @@ MOVE`,
     title: 'RAMP PROTOCOL',
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
+    conceptTaught: 'Escalating inner-loop shot count',
     description:
       'Each round fires an increasing number of shots: round 1 fires 1 shot, round 2 fires 2, round 3 fires 3, then resets. Between rounds it moves to the next waypoint. A ramping crescendo: 1+2+3 = 6 shots per full cycle, with the heaviest burst last.',
-    hint: 'Round 3 fires 3 rapid shots — the most dangerous. Destroy it before round 3 or hide during it. The movement between rounds is your opening.',
+    hints: [
+      'Round 3 fires 3 rapid shots — the most dangerous. Destroy it before round 3 or hide during it. The movement between rounds is your opening.',
+      'Between rounds it strafes right for exactly 1 tick — that single movement tick is your safest attack window. Fire once per transition tick across all 3 rounds (3 free shots per cycle).',
+      'The between-round tick: shots == round (the else branch). Use SCAN to track it, and time your FIRE on ticks where shots == round. You get 3 free windows per full cycle.',
+    ],
     enemyScript: `IF NOT init THEN
   SET round = 1
   SET shots = 0
@@ -169,9 +189,14 @@ END`,
     title: 'SEEK AND DESTROY',
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
+    conceptTaught: 'Waypoint search loop with burst trigger',
     description:
       'A search loop: it patrols between 4 waypoints. At each waypoint it scans 360 degrees. If it detects you, it locks on and fires 3 times before continuing to the next waypoint. If it does not detect you, it moves on immediately. You must break the search pattern.',
-    hint: 'Hide during its scan at each waypoint. It only fires when it finds you — if all scans miss, it is harmless.',
+    hints: [
+      'Hide during its scan at each waypoint. It only fires when it finds you — if all scans miss, it is harmless.',
+      'The 4 waypoints form a rectangle at (200,150), (600,150), (600,450), (200,450). It scans 360° at each corner. Stay in the center of the arena — it scans outward and may miss you there.',
+      'After a burst of 3 shots it stops firing and moves to the next node. Once you take the first hit, retreat immediately — you still have 2 more shots incoming. Dodge laterally during the burst.',
+    ],
     enemyScript: `IF NOT init THEN
   SET wp = 0
   SET burstLeft = 0
@@ -227,9 +252,14 @@ END`,
     title: 'ECHO CHAMBER',
     difficulty: 'HARD',
     pointsReward: D.HARD,
+    conceptTaught: 'Nested outer/inner loop with strafe reposition',
     description:
       'Nested loops: an outer loop runs 3 cycles. Each outer cycle, an inner loop fires a number of shots equal to the outer index + 1 (1, 2, 3 shots). Between outer cycles, it strafes to reposition. 6 total shots compressed into a cage of echoes with variable intensity.',
-    hint: 'The third outer cycle fires 3 shots — the heaviest burst. The strafe reposition between cycles is your attack window.',
+    hints: [
+      'The third outer cycle fires 3 shots — the heaviest burst. The strafe reposition between cycles is your attack window.',
+      'Between outer cycles it strafes LEFT for 2 ticks (repos = 2). That is your window — 2 ticks of safe attack per cycle boundary. There are 3 boundaries per full loop (after 1,2,3 shots), giving 6 free ticks per full iteration.',
+      'Track with a counter: SET t = t + 1. Full cycle is 1+2+3+2+2+2 = 12 ticks (shots + reposition ticks). Attack on reposition ticks (t%12 == 2, t%12 == 6, t%12 == 11 approximately).',
+    ],
     enemyScript: `IF NOT init THEN
   SET outer = 0
   SET inner = 0
@@ -271,9 +301,14 @@ END`,
     title: 'DECIMATOR MK-IV',
     difficulty: 'HARD',
     pointsReward: D.HARD,
+    conceptTaught: 'Sight-accumulation overdrive trigger',
     description:
       'It runs a damage-tracking loop. It fires each tick it sees you and counts successful shots. After accumulating 4 confirmed sightings, it enters overdrive: speed doubles and it switches to burst fire for 5 ticks. Overdrive resets the counter. A bot that accelerates with engagement — the longer you are visible, the deadlier it becomes.',
-    hint: 'Break line-of-sight frequently to prevent the counter from reaching 4. Stay hidden for 2+ ticks between engagements to keep it in normal mode.',
+    hints: [
+      'Break line-of-sight frequently to prevent the counter from reaching 4. Stay hidden for 2+ ticks between engagements to keep it in normal mode.',
+      'The counter only increments when visible — not when shots connect. Hide for even 1 tick to pause accumulation. A pattern of expose-1 hide-2 keeps sightCount at max 1, preventing overdrive entirely.',
+      'Rhythm: expose for 1 tick → FIRE → hide for 2 ticks → repeat. Your script: IF t%3 == 0 THEN expose and FIRE ELSE MOVE RIGHT END. This caps the enemy\'s sightCount at 1-2 indefinitely.',
+    ],
     enemyScript: `IF NOT init THEN
   SET sightCount = 0
   SET overdrive = 0
@@ -318,9 +353,14 @@ END`,
     title: 'SINE WAVE',
     difficulty: 'HARD',
     pointsReward: D.HARD,
+    conceptTaught: 'Modulo-based phase loop with fire peaks',
     description:
       'It moves in a sine wave pattern using a tick counter modulo 10. Phases 0-2: strafe right. Phase 3: fire. Phases 4-6: strafe left. Phase 7: fire. Phases 8-9: orbit center. A wave oscillation with precisely timed fire peaks at the extremes of each oscillation.',
-    hint: 'Fires happen exactly at phases 3 and 7. Position yourself at the center of the wave — its strafing carries it away from you at fire time.',
+    hints: [
+      'Fires happen exactly at phases 3 and 7. Position yourself at the center of the wave — its strafing carries it away from you at fire time.',
+      'Phase 3 fire: it has just finished strafing right (max right position). Phase 7 fire: just finished strafing left (max left). These are the two extreme positions. Fire back during the strafe phases (0-2, 4-6) when it is moving predictably.',
+      'Use tick % 10 logic in your approach: attack on phases 0-2 (strafe right, no fire) and 4-6 (strafe left, no fire). Back off or dodge on phases 3 and 7 when fire triggers. Use SCAN to verify position.',
+    ],
     enemyScript: `IF NOT init THEN
   SET tick = 0
   SET init = 1
@@ -366,9 +406,14 @@ SET tick = tick + 1`,
     title: 'CONVERGENCE ENGINE',
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
+    conceptTaught: 'Dual-counter convergence with frenzy burst',
     description:
       'Two counters converge: A starts at 0 going up, B starts at 6 going down. Each tick both advance. When A < B: it patrols and fires single shots. When A == B (convergence): it triggers a 3-tick BURST_FIRE frenzy with speed boost. After convergence it resets. The convergence point is tick 3 — a countdown to maximum violence.',
-    hint: 'Convergence happens at tick 3. The burst frenzy lasts 3 ticks. Either kill it before tick 3 or survive ticks 3-5, then attack during the reset.',
+    hints: [
+      'Convergence happens at tick 3. The burst frenzy lasts 3 ticks. Either kill it before tick 3 or survive ticks 3-5, then attack during the reset.',
+      'After the 3-tick frenzy it resets completely (a=0, b=6) and starts over. The reset tick is your opening — it performs no action during that exact tick. Attack immediately after the frenzy ends.',
+      'Full cycle: 3 normal ticks + 3 frenzy ticks + 1 reset tick = 7 ticks. Your rhythm: attack ticks 1-2 (normal fire), dodge ticks 3-5 (frenzy), attack tick 6 (reset window), repeat.',
+    ],
     enemyScript: `IF NOT init THEN
   SET a = 0
   SET b = 6
@@ -418,9 +463,14 @@ END`,
     title: 'INFINITE NEMESIS',
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
+    conceptTaught: 'Hit-count evolutionary state machine',
     description:
       'A perpetual loop with an internal evolution counter. It tracks total damage dealt via a hit counter. Every 3 hits, it evolves: evolution 0 = normal fire, evolution 1 = strafe + fire, evolution 2 = orbit + burst fire, evolution 3 = speed-boosted orbit + FOV lock + burst. Each evolution is permanent — the longer the fight, the more lethal it becomes. There is no reset.',
-    hint: 'It evolves every 3 hits — not shots, HITS. If you can dodge consistently, it stays in evolution 0. Alternatively, rush it down before it evolves past 1.',
+    hints: [
+      'It evolves every 3 hits — not shots, HITS. If you can dodge consistently, it stays in evolution 0. Alternatively, rush it down before it evolves past 1.',
+      'Evolution happens every 3 times your HP drops. To prevent evolution, dodge all 3 shots before it registers 3 hits. Strafe laterally every 2 ticks — single-fire evolution 0 is easy to sidestep.',
+      'Rush strategy: write maximum DPS. Start with BURST_FIRE immediately. Target: kill it in evolution 0 (<3 hits to you). Use: IF VISIBLE_ENEMY_COUNT > 0 THEN SET rotation = ATAN2(...), BURST_FIRE, MOVE END with aggressive positioning.',
+    ],
     enemyScript: `IF NOT init THEN
   SET hitCounter = 0
   SET evolution = 0

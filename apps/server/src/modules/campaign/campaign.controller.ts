@@ -9,6 +9,8 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import {
@@ -16,10 +18,12 @@ import {
   ERR_LEVEL_LOCKED,
   ERR_LEVEL_NOT_FOUND,
   ERR_USER_NOT_FOUND,
+  ERR_INSUFFICIENT_POINTS,
+  ERR_INVALID_HINT_INDEX,
 } from './campaign.service';
 import { AuthGuard } from '../../common/auth.guard';
 import { RedisService } from '../../common/redis.service';
-import { CompleteLevelDto } from './campaign.dto';
+import { CompleteLevelDto, RevealHintDto } from './campaign.dto';
 
 interface RequestWithUser extends Request {
   user: { sub: string };
@@ -63,6 +67,40 @@ export class CampaignController {
         throw new ForbiddenException('Level is locked');
       if (msg === ERR_LEVEL_NOT_FOUND)
         throw new NotFoundException('Level not found');
+      throw e;
+    }
+  }
+
+  /**
+   * Reveals a progressive hint for the authenticated user.
+   * hintIndex 1 costs 10 points, hintIndex 2 costs 25 points.
+   * Returns { hint, pointsDeducted, remainingPoints }.
+   */
+  @Post('levels/:id/hint')
+  async revealHint(
+    @Req() req: RequestWithUser,
+    @Param('id') id: string,
+    @Body() body: RevealHintDto,
+  ) {
+    if (!id?.trim()) throw new BadRequestException('Invalid level id');
+    try {
+      return await this.campaignService.revealHint(
+        req.user.sub,
+        id,
+        body.hintIndex,
+      );
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : '';
+      if (msg === ERR_LEVEL_LOCKED)
+        throw new ForbiddenException('Level is locked');
+      if (msg === ERR_LEVEL_NOT_FOUND)
+        throw new NotFoundException('Level not found');
+      if (msg === ERR_USER_NOT_FOUND)
+        throw new NotFoundException('User not found');
+      if (msg === ERR_INSUFFICIENT_POINTS)
+        throw new HttpException('Insufficient points to reveal hint', HttpStatus.PAYMENT_REQUIRED);
+      if (msg === ERR_INVALID_HINT_INDEX)
+        throw new BadRequestException('hintIndex must be 1 or 2');
       throw e;
     }
   }

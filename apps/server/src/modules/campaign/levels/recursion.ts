@@ -10,9 +10,14 @@ export const RECURSION_LEVELS: CampaignLevel[] = [
     title: 'ECHO PULSE',
     difficulty: 'EASY',
     pointsReward: D.EASY,
+    conceptTaught: 'Depth counter simulation (wind-up / release)',
     description:
       'A simulated recursive depth of 2. It tracks a depth counter. At depth 1: advance. At depth 2: burst fire. Then it unwinds back to depth 1. A two-step wind-up and release pattern.',
-    hint: 'It only fires at depth 2 (every other tick). You can advance freely on its movement ticks.',
+    hints: [
+      'It only fires at depth 2 (every other tick). You can advance freely on its movement ticks.',
+      'Depth alternates every tick: 1→2→1→2. On depth 1 it moves right — no fire. On depth 2 it fires only if you are visible. The pattern is exactly one free tick (move) per fire tick.',
+      'Time your approach for depth 1 ticks. Advance during depth 1, dodge during depth 2. Your script: SET d = d + 1. IF d % 2 == 0 THEN dodge/BACKUP. ELSE MOVE closer and FIRE END.',
+    ],
     enemyScript: `IF NOT init THEN
   SET depth = 1
   SET ddir = 1
@@ -49,9 +54,14 @@ END`,
     title: 'DOUBLE ECHO',
     difficulty: 'EASY',
     pointsReward: D.EASY,
+    conceptTaught: 'Bidirectional depth traversal (wind and unwind)',
     description:
       'It simulates recursion with depth 3. Wind up: moves left (depth 1), then right (depth 2), then reaches base case (depth 3) to FIRE. Unwind: fires again at depth 3, moves right, moves left. A perfectly mirrored execution stack.',
-    hint: 'It fires twice in a row at the base case — once winding in, once winding out. The only move-safe ticks are the two steps between fire pairs.',
+    hints: [
+      'It fires twice in a row at the base case — once winding in, once winding out. The only move-safe ticks are the two steps between fire pairs.',
+      'Full cycle: L (depth 1), R (depth 2), FIRE (depth 3), FIRE (depth 3 again), R (depth 2 unwind), L (depth 1 unwind), then reset. Move windows: depths 1 and 2 on both wind and unwind = 4 safe ticks per 6-tick cycle.',
+      'The 6-tick cycle is: tick 1 (move left), tick 2 (move right), tick 3 (FIRE), tick 4 (FIRE), tick 5 (move right), tick 6 (move left). Use tick 1,2,5,6 to advance and attack. Dodge on ticks 3 and 4.',
+    ],
     enemyScript: `IF NOT init THEN
   SET depth = 1
   SET ddir = 1
@@ -91,9 +101,14 @@ END`,
     title: 'DEPTH CHARGE',
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
+    conceptTaught: 'Growing max-depth recursive pattern',
     description:
       'Dynamic recursion depth. It starts with max depth = 2. It winds up (strafe), hits max depth (fires), and unwinds. Then max depth increments. The deeper the recursion, the longer the strafe before the fire. Depth grows to 5 then resets.',
-    hint: 'The time between shots grows as max depth increases. Exploit the long wind-up times on depths 4 and 5.',
+    hints: [
+      'The time between shots grows as max depth increases. Exploit the long wind-up times on depths 4 and 5.',
+      'At maxD = 5, the wind-up is 4 strafe ticks before firing. That means 4 safe ticks of no fire to attack. At maxD = 2, only 1 safe tick. Sit back and attack most aggressively when you see long strafe sequences (maxD is high).',
+      'Full cycle at maxD=5: 4 strafe ticks in, 1 fire tick, 4 strafe ticks out, then maxD resets to 2. Peak attack window: after the fire at maxD=5, the unwind begins — 4 ticks of strafe with no fire. Rush those 4 ticks before the next cycle starts at maxD=2.',
+    ],
     enemyScript: `IF NOT init THEN
   SET depth = 1
   SET maxD = 2
@@ -135,9 +150,14 @@ END`,
     title: 'MIRROR RECURSION',
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
+    conceptTaught: 'Symmetric recursive tree with base-case pause',
     description:
       'At each depth level it performs work: fires one shot. It dives 3 levels deep (3 shots), pauses at the base case, then unwinds 3 levels up (3 more shots). A symmetrical recursive tree of firepower.',
-    hint: 'It fires continuously during both wind-up and unwind. The only safe moment is the base case pause when it reaches depth 4.',
+    hints: [
+      'It fires continuously during both wind-up and unwind. The only safe moment is the base case pause when it reaches depth 4.',
+      'At depth 4 (base case): SET _SYS_SPEED_MULT = 0, MOVE — effectively a stationary pause with NO fire. This is the ONE safe tick per 6-tick cycle. Attack during this exact tick.',
+      'Cycle breakdown: depths 1→2→3 (3 fire ticks), depth 4 (1 safe pause), depths 3→2→1 (3 fire ticks). The pause at depth 4 is your only window. Count: after 3 consecutive fire ticks, attack on the 4th tick (the pause).',
+    ],
     enemyScript: `IF NOT init THEN
   SET depth = 1
   SET ddir = 1
@@ -176,9 +196,14 @@ END`,
     title: 'FIBONACCI STRIKER',
     difficulty: 'MEDIUM',
     pointsReward: D.MEDIUM,
+    conceptTaught: 'Fibonacci sequence as iteration limit',
     description:
       'It computes Fibonacci values iteratively and uses them as a recursive iteration limit. It strafes `fib(N)` times, then fires once. N increases from 1 to 5. The spacing between shots grows according to the Fibonacci sequence.',
-    hint: 'Spacing sequence: 1, 1, 2, 3, 5 ticks between shots. The gaps get larger. Wait for the 3 and 5 gaps to counterattack.',
+    hints: [
+      'Spacing sequence: 1, 1, 2, 3, 5 ticks between shots. The gaps get larger. Wait for the 3 and 5 gaps to counterattack.',
+      'Shot timing: shot1 at tick 1, shot2 at tick 2, shot3 at tick 4, shot4 at tick 7, shot5 at tick 12 — then it resets. The 5-tick gap (before shot5) is your longest and best attack window.',
+      'Count your ticks from the last shot. After shot4 (at tick 7), you have exactly 5 ticks of strafe-only movement. Commit your entire offense during these 5 ticks, then retreat before shot5 at tick 12. Repeat every full cycle (~13 ticks).',
+    ],
     enemyScript: `IF NOT init THEN
   SET n = 1
   SET a = 0
@@ -219,9 +244,14 @@ END`,
     title: 'TOWER OF POWER',
     difficulty: 'HARD',
     pointsReward: D.HARD,
+    conceptTaught: 'Call-stack push/pop with closing and retreating',
     description:
       'Simulates the Call Stack. Depth goes from 1 to 4. As it descends (push), it accumulates "pointers" by stepping closer. At base case (depth 4) it executes the payload: burst fire. As it unwinds (pop), it steps away. A stack frame execution model.',
-    hint: 'It only fires at depth 4, but it closes the distance during depths 1-3. Retreat as it pushes frames, attack as it pops them.',
+    hints: [
+      'It only fires at depth 4, but it closes the distance during depths 1-3. Retreat as it pushes frames, attack as it pops them.',
+      'During the unwind (ddir == -1, depths 3→2→1): it backs up. This is a clean retreat — no fire and predictable backward movement. Chase it during unwind and fire continuously.',
+      'Pattern: depths 1-3 PUSH (it approaches, no fire — retreat and match its advance), depth 4 BURST_FIRE (dodge with BACKUP or strafe), depths 3-1 POP (it backs up — pursue and attack with MOVE + FIRE).',
+    ],
     enemyScript: `IF NOT init THEN
   SET depth = 1
   SET ddir = 1
@@ -266,9 +296,14 @@ END`,
     title: 'BINARY SPLITTER',
     difficulty: 'HARD',
     pointsReward: D.HARD,
+    conceptTaught: 'Binary tree traversal via stack array',
     description:
       'It divides its logic into branches: Left Branch and Right Branch. It maintains a branch array stack. It executes Left (strafe left + fire), then Right (strafe right + fire). A binary tree traversal of destruction.',
-    hint: 'It alternates strict left and right strafing while firing. The pattern zig-zags predictably. Lead your shots to the opposite side.',
+    hints: [
+      'It alternates strict left and right strafing while firing. The pattern zig-zags predictably. Lead your shots to the opposite side.',
+      'The stack [1,2,1,2] cycles predictably: left strafe 2 ticks, right strafe 2 ticks, repeat. Position yourself to exploit the predictable reversal — when it strafes left, move right to stay in its trajectory.',
+      'Counter-tactic: mirror-strafe. When it strafes left (branch==1), you also strafe left. Both moving the same direction minimizes relative velocity — it struggles to track you. Fire during same-direction ticks for highest hit rate.',
+    ],
     enemyScript: `IF NOT init THEN
   SET stack = [1, 2, 1, 2]
   SET sp = 0
@@ -302,9 +337,14 @@ END`,
     title: 'FRACTAL STORM',
     difficulty: 'HARD',
     pointsReward: D.HARD,
+    conceptTaught: 'Fractal orbit pattern with direction reversal',
     description:
       'It orbits in a fractal pattern: 3 large steps clockwise, 1 small step counter-clockwise, repeat. The recursive definition of its movement creates a jagged orbit that throws off predictive targeting.',
-    hint: 'Every 4th tick it reverses direction briefly. Hold fire during the reversal tick.',
+    hints: [
+      'Every 4th tick it reverses direction briefly. Hold fire during the reversal tick.',
+      'The CCW reversal tick (step == 3) uses a smaller orbit radius (-80 vs 120). On this tick its position snaps differently. Fire on CW ticks (steps 0-2) where its orbit is larger and more predictable.',
+      'The orbit center is always (400,300). Position yourself at distance ~120 from center — on the CW orbit path. Fire at the orbital position 2-3 ticks ahead. The reversal tick (step 3) it jumps inward briefly, then back out. Ignore that tick.',
+    ],
     enemyScript: `IF NOT init THEN
   SET step = 0
   SET init = 1
@@ -342,9 +382,14 @@ END`,
     title: 'CALL STACK OVERLOAD',
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
+    conceptTaught: 'Ghost-trail stack pop with deferred coordinate burst',
     description:
       'It simulates a recursive algorithm that builds up state until a stack overflow limit (5). It pushes your position onto an array. At depth 5, it pops them all off, firing a burst at every historical coordinate. A deferred execution model.',
-    hint: 'It records your ghost trail for 5 ticks, then shoots the trail. Keep moving — by the time it executes the stack, you should be far away from your past positions.',
+    hints: [
+      'It records your ghost trail for 5 ticks, then shoots the trail. Keep moving — by the time it executes the stack, you should be far away from your past positions.',
+      'During POP phase (5 ticks of burst fire): speed mult = 0 (it is stationary). This is actually safe for YOU if you have moved. But it fires at the 5 past coordinates — guarantee you are not at any of those 5 positions.',
+      'Strategy: during PUSH phase (5 ticks), move in ONE direction steadily (strafe left). All 5 recorded positions will be in a line. Then during POP phase, you have already moved perpendicular away — all 5 shots miss. Then attack the stationary enemy during POP.',
+    ],
     enemyScript: `IF NOT init THEN
   SET histX = [0,0,0,0,0]
   SET histY = [0,0,0,0,0]
@@ -390,9 +435,14 @@ END`,
     title: 'OMEGA UNWIND',
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
+    conceptTaught: 'Dual-variable entanglement producing cyclical chaos',
     description:
       'A dual-recursive function simulation: Ackermann-lite. It scales its target speed and burst count based on two deeply entangled variables. As the variables intertwine and grow, its movement becomes hyper-erratic and its fire rate spikes massively before collapsing. The ultimate chaotic attractor.',
-    hint: 'The chaos is cyclical. It reaches a peak intensity where speed and burst count are maxed, then it resets to a slow baseline. Strike during the reset.',
+    hints: [
+      'The chaos is cyclical. It reaches a peak intensity where speed and burst count are maxed, then it resets to a slow baseline. Strike during the reset.',
+      'The cycle is 12 ticks (m goes 0→1→2→0, each lasting 4 ticks since n counts 0-3). m=0: FIRE+orbit100. m=1: FIRE+orbit120. m=2: BURST_FIRE+orbit140+high speed. The reset from m=2 back to m=0 is the weakest moment.',
+      'Attack plan: heavily engage during m=0 (ticks 1-4): speed is 1.0x and only single FIRE. Dodge during m=2 (ticks 9-12): speed 2.5x and BURST_FIRE. After tick 12 (m resets to 0), attack immediately at the slow baseline.',
+    ],
     enemyScript: `IF NOT init THEN
   SET m = 0
   SET n = 0

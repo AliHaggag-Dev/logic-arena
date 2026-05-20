@@ -38,7 +38,10 @@ export interface CampaignLevel {
   order: number;
   title: string;
   description: string;
-  hint: string;
+  /** Three progressive hints: [0]=free, [1]=costs 10pts, [2]=costs 25pts */
+  hints: [string, string, string];
+  /** Short label describing the concept this level teaches, e.g. "IF/ELSE branching" */
+  conceptTaught: string;
   difficulty: CampaignDifficulty;
   pointsReward: number;
   enemyScript: string;

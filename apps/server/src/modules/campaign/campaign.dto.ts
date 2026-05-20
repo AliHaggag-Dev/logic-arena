@@ -1,4 +1,4 @@
-import { IsString, IsNumber, MaxLength, Min, MinLength } from 'class-validator';
+import { IsString, IsNumber, MaxLength, Min, MinLength, IsIn } from 'class-validator';
 
 export class CompleteLevelDto {
   @IsString()
@@ -9,4 +9,10 @@ export class CompleteLevelDto {
   @IsNumber()
   @Min(0)
   fightDurationTicks!: number;
+}
+
+export class RevealHintDto {
+  @IsNumber()
+  @IsIn([1, 2])
+  hintIndex!: 1 | 2;
 }

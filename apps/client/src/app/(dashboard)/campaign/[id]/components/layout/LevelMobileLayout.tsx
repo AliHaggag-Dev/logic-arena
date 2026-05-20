@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { ArrowLeft } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LevelDetail, ModalState } from "../../types";
@@ -7,6 +7,14 @@ import { DIFFICULTY_CONFIG } from "../../../constants/difficulty.constants";
 import { CampaignScriptEditor } from "../editor/CampaignScriptEditor";
 import { LevelArenaPreview } from "../arena/LevelArenaPreview";
 import { EditorToolbar } from "../../../../../../components/editor/EditorToolbar";
+import { HintPanel } from "../HintPanel";
+import { apiClient } from "../../../../../../lib/api-client";
+
+interface RevealHintResponse {
+  hint: string;
+  pointsDeducted: number;
+  remainingPoints: number;
+}
 
 interface LevelMobileLayoutProps {
   level: LevelDetail;
@@ -25,6 +33,29 @@ interface LevelMobileLayoutProps {
 export function LevelMobileLayout({ level, script, setScript, modal, handleFight, onBattleEnd, latestFrameRef, isReplaying, fightResult, waitingForReplay, router }: LevelMobileLayoutProps) {
   const dc = DIFFICULTY_CONFIG[level.difficulty];
   const fightDisabled = !script.trim() || modal === "loading";
+
+  const [revealedCount, setRevealedCount] = useState(level.revealedHintCount ?? 0);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const [hints, setHints] = useState<string[]>(level.hints ?? []);
+
+  const handleReveal = useCallback(async (index: number) => {
+    if (index !== 1 && index !== 2) return;
+    setIsRevealing(true);
+    try {
+      const res = await apiClient.post<RevealHintResponse>(
+        `/campaign/levels/${level.id}/hint`,
+        { hintIndex: index },
+      );
+      const newHints = [...hints];
+      newHints[index] = res.data.hint;
+      setHints(newHints);
+      setRevealedCount((c) => Math.max(c, index));
+    } catch {
+      // Errors (e.g. insufficient points) surface via UI — no re-throw needed
+    } finally {
+      setIsRevealing(false);
+    }
+  }, [level.id, hints]);
 
   return (
     <div className="w-full flex flex-col min-h-[calc(100vh-80px-env(safe-area-inset-bottom))] px-4 pt-4 pb-[env(safe-area-inset-bottom)] relative z-10 animate-[fadeIn_0.35s_ease]">
@@ -76,6 +107,18 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
               <span className="font-bold text-accent/70 tracking-[0.12em]">+{level.pointsReward} PTS</span>
             </div>
           </div>
+        </div>
+
+        {/* Hint Panel */}
+        <div className="border border-accent/15 rounded-xl p-4 bg-accent/[0.02]">
+          <HintPanel
+            hints={hints}
+            revealedCount={revealedCount}
+            conceptTaught={level.conceptTaught}
+            onReveal={handleReveal}
+            isMobile
+            isRevealing={isRevealing}
+          />
         </div>
       </div>
 

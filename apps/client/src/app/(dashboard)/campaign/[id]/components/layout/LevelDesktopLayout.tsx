@@ -1,5 +1,5 @@
-import React from "react";
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import React, { useState, useCallback } from "react";
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LevelDetail, ModalState } from "../../types";
 import type { CampaignFrame, FightResult } from "../../../hooks/useCampaignFight";
@@ -7,6 +7,15 @@ import { DIFFICULTY_CONFIG } from "../../../constants/difficulty.constants";
 import { CampaignScriptEditor } from "../editor/CampaignScriptEditor";
 import { LevelArenaPreview } from "../arena/LevelArenaPreview";
 import { EditorToolbar } from "../../../../../../components/editor/EditorToolbar";
+import { HintPanel } from "../HintPanel";
+import { apiClient } from "../../../../../../lib/api-client";
+import { Loader2 } from "lucide-react";
+
+interface RevealHintResponse {
+  hint: string;
+  pointsDeducted: number;
+  remainingPoints: number;
+}
 
 interface LevelDesktopLayoutProps {
   level: LevelDetail;
@@ -25,6 +34,29 @@ interface LevelDesktopLayoutProps {
 export function LevelDesktopLayout({ level, script, setScript, modal, handleFight, onBattleEnd, latestFrameRef, isReplaying, fightResult, waitingForReplay, router }: LevelDesktopLayoutProps) {
   const dc = DIFFICULTY_CONFIG[level.difficulty];
   const fightDisabled = !script.trim() || modal === "loading";
+
+  const [revealedCount, setRevealedCount] = useState(level.revealedHintCount ?? 0);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const [hints, setHints] = useState<string[]>(level.hints ?? []);
+
+  const handleReveal = useCallback(async (index: number) => {
+    if (index !== 1 && index !== 2) return;
+    setIsRevealing(true);
+    try {
+      const res = await apiClient.post<RevealHintResponse>(
+        `/campaign/levels/${level.id}/hint`,
+        { hintIndex: index },
+      );
+      const newHints = [...hints];
+      newHints[index] = res.data.hint;
+      setHints(newHints);
+      setRevealedCount((c) => Math.max(c, index));
+    } catch {
+      // Errors (e.g. insufficient points) surface via UI — no re-throw needed
+    } finally {
+      setIsRevealing(false);
+    }
+  }, [level.id, hints]);
 
   return (
     <div className="max-w-[1100px] mx-auto px-6 pt-10 pb-[120px] relative z-10 animate-[fadeIn_0.35s_ease]">
@@ -118,14 +150,15 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
             </div>
           </div>
 
-          <div className="border border-accent/10 rounded-xl p-4 bg-transparent">
-            <p className="text-[9px] tracking-[0.3em] text-accent/25 mb-2.5 uppercase">{'// '}TACTICS</p>
-            <ul className="text-[10px] text-accent/35 tracking-[0.06em] leading-relaxed space-y-1.5 list-none p-0 m-0">
-              <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> Use SCAN to detect proximity</li>
-              <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> TIME your FIRE commands carefully</li>
-              <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> WHILE loops amplify your firepower</li>
-              <li className="flex items-center gap-2"><ArrowRight className="w-2.5 h-2.5 text-accent/20 shrink-0" /> Reposition with MOVE to dodge fire</li>
-            </ul>
+          <div className="border border-accent/15 rounded-xl p-5 bg-accent/[0.02]">
+            <HintPanel
+              hints={hints}
+              revealedCount={revealedCount}
+              conceptTaught={level.conceptTaught}
+              onReveal={handleReveal}
+              isMobile={false}
+              isRevealing={isRevealing}
+            />
           </div>
         </div>
 

@@ -11,12 +11,17 @@ import {
   getPreviousLevelId,
 } from './campaign.constants';
 
+// ── Hint cost constants ───────────────────────────────────────────────────────
+
+const HINT_COSTS: Record<1 | 2, number> = { 1: 10, 2: 25 };
+
 // ── Public response shapes ────────────────────────────────────────────────────
 
 export interface LevelResponse extends Omit<CampaignLevel, 'enemyScript'> {
   unlocked: boolean;
   completed: boolean;
   bestStars: number;
+  revealedHintCount: number;
 }
 
 export interface TabWithLevels {
@@ -32,14 +37,23 @@ export interface CompleteLevelResult {
   stars: number;
 }
 
+export interface RevealHintResult {
+  hint: string;
+  pointsDeducted: number;
+  remainingPoints: number;
+}
+
 // ── Errors ────────────────────────────────────────────────────────────────────
 export const ERR_LEVEL_NOT_FOUND = 'LEVEL_NOT_FOUND';
 export const ERR_LEVEL_LOCKED = 'LEVEL_LOCKED';
 export const ERR_USER_NOT_FOUND = 'USER_NOT_FOUND';
 export const ERR_ALREADY_CLAIMED = 'ALREADY_CLAIMED';
+export const ERR_INSUFFICIENT_POINTS = 'INSUFFICIENT_POINTS';
+export const ERR_INVALID_HINT_INDEX = 'INVALID_HINT_INDEX';
 
 const CAMPAIGN_CACHE_TTL = 120;
 const STARS_CACHE_TTL = 0; // persistent — no TTL (0 means no expiry in our redis wrapper)
+const HINTS_CACHE_TTL = 0; // persistent — revealed hints must survive sessions
 
 export const campaignVersionKey = (userId: string) =>
   `campaign:version:${userId}`;
@@ -54,6 +68,8 @@ export const campaignLevelKey = (
 ) => `campaign:v${version}:level:${userId}:${levelId}`;
 export const campaignStarsKey = (userId: string, levelId: string) =>
   `campaign:stars:${userId}:${levelId}`;
+export const campaignHintsKey = (userId: string, levelId: string) =>
+  `campaign:hints:${userId}:${levelId}`;
 
 @Injectable()
 export class CampaignService {
@@ -91,6 +107,21 @@ export class CampaignService {
     }
   }
 
+  private async getRevealedHintCount(
+    userId: string,
+    levelId: string,
+  ): Promise<number> {
+    const indices = await this.redis.get<number[]>(campaignHintsKey(userId, levelId));
+    return indices ? indices.length : 0;
+  }
+
+  private async getRevealedHintIndices(
+    userId: string,
+    levelId: string,
+  ): Promise<number[]> {
+    return (await this.redis.get<number[]>(campaignHintsKey(userId, levelId))) ?? [];
+  }
+
   private calculateStars(
     level: CampaignLevel,
     fightDurationTicks: number,
@@ -118,10 +149,13 @@ export class CampaignService {
     const unlocked = this.isLevelUnlocked(level, completedIds);
     const completed = completedIds.includes(level.id);
     const bestStars = completed ? await this.getBestStars(userId, level.id) : 0;
+    const revealedHintCount = unlocked
+      ? await this.getRevealedHintCount(userId, level.id)
+      : 0;
     // Strip enemyScript from the public payload
     const { enemyScript: _omit, ...rest } = level;
     void _omit;
-    return { ...rest, unlocked, completed, bestStars };
+    return { ...rest, unlocked, completed, bestStars, revealedHintCount };
   }
 
   private async getCompletedLevelIds(userId: string): Promise<string[]> {
@@ -196,6 +230,81 @@ export class CampaignService {
       throw new Error(ERR_LEVEL_LOCKED);
 
     return level.enemyScript;
+  }
+
+  /**
+   * Reveals a hint for the user by deducting points atomically.
+   * hintIndex 1 costs 10 points, hintIndex 2 costs 25 points.
+   * Idempotent: if the hint was already revealed, returns it without re-charging.
+   */
+  async revealHint(
+    userId: string,
+    levelId: string,
+    hintIndex: 1 | 2,
+  ): Promise<RevealHintResult> {
+    if (hintIndex !== 1 && hintIndex !== 2) {
+      throw new Error(ERR_INVALID_HINT_INDEX);
+    }
+
+    const level = getLevelById(levelId);
+    if (!level) throw new Error(ERR_LEVEL_NOT_FOUND);
+
+    const completed = await this.getCompletedLevelIds(userId);
+    if (!this.isLevelUnlocked(level, completed)) {
+      throw new Error(ERR_LEVEL_LOCKED);
+    }
+
+    // Check if already revealed — idempotent, no charge
+    const revealedIndices = await this.getRevealedHintIndices(userId, levelId);
+    if (revealedIndices.includes(hintIndex)) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { points: true },
+      });
+      return {
+        hint: level.hints[hintIndex],
+        pointsDeducted: 0,
+        remainingPoints: user?.points ?? 0,
+      };
+    }
+
+    const cost = HINT_COSTS[hintIndex];
+
+    // Atomically deduct points — only succeeds if user has enough
+    const updateResult = await this.prisma.user.updateMany({
+      where: { id: userId, points: { gte: cost } },
+      data: { points: { decrement: cost } },
+    });
+
+    if (updateResult.count === 0) {
+      // Either user not found or insufficient points — check which
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { points: true },
+      });
+      if (!user) throw new Error(ERR_USER_NOT_FOUND);
+      throw new Error(ERR_INSUFFICIENT_POINTS);
+    }
+
+    // Record revealed index in Redis
+    const updatedIndices = [...revealedIndices, hintIndex];
+    await this.redis.set(
+      campaignHintsKey(userId, levelId),
+      updatedIndices,
+      HINTS_CACHE_TTL,
+    );
+
+    // Fetch updated points
+    const updatedUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { points: true },
+    });
+
+    return {
+      hint: level.hints[hintIndex],
+      pointsDeducted: cost,
+      remainingPoints: updatedUser?.points ?? 0,
+    };
   }
 
   /**
