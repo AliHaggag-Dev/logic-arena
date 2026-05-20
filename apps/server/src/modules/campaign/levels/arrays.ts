@@ -36,6 +36,9 @@ SET i = i + 1
 IF i > 3 THEN
   SET i = 0
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'arr-02',
@@ -64,6 +67,9 @@ SET i = i + 1
 IF i > 3 THEN
   SET i = 0
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'arr-03',
@@ -98,6 +104,9 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'arr-04',
@@ -135,6 +144,9 @@ ELSE
   END
   MOVE RIGHT
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'arr-05',
@@ -169,6 +181,9 @@ IF _SYS_AT_TARGET == 1 THEN
 ELSE
   MOVE
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'arr-06',
@@ -207,6 +222,9 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'arr-07',
@@ -249,6 +267,9 @@ IF tick > 5 THEN
     SET idx = 0
   END
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'arr-08',
@@ -289,6 +310,9 @@ ELSE
   END
   MOVE RIGHT
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'arr-09',
@@ -343,6 +367,9 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 1500,
+    enemyHealth: 150,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
   {
     id: 'arr-10',
@@ -387,5 +414,8 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 1500,
+    enemyHealth: 180,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
 ];

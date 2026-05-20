@@ -38,6 +38,9 @@ IF depth < 1 THEN
   SET depth = 2
   SET ddir = 1
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'rec-02',
@@ -77,6 +80,9 @@ IF depth < 1 THEN
   SET depth = 2
   SET ddir = 1
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'rec-03',
@@ -118,6 +124,9 @@ IF depth < 1 THEN
     SET maxD = 2
   END
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'rec-04',
@@ -156,6 +165,9 @@ IF depth < 1 THEN
   SET depth = 1
   SET ddir = 1
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'rec-05',
@@ -196,6 +208,9 @@ ELSE
     SET b = 1
   END
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'rec-06',
@@ -240,6 +255,9 @@ IF depth < 1 THEN
   SET depth = 1
   SET ddir = 1
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'rec-07',
@@ -273,6 +291,9 @@ SET sp = sp + 1
 IF sp >= 4 THEN
   SET sp = 0
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'rec-08',
@@ -310,6 +331,9 @@ SET step = step + 1
 IF step > 3 THEN
   SET step = 0
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'rec-09',
@@ -355,6 +379,9 @@ ELSE
     SET depth = 0
   END
 END`,
+    maxTicks: 1500,
+    enemyHealth: 150,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
   {
     id: 'rec-10',
@@ -400,5 +427,8 @@ IF n > 3 THEN
     SET m = 0
   END
 END`,
+    maxTicks: 1500,
+    enemyHealth: 180,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
 ];

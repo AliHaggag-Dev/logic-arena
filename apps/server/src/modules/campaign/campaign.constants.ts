@@ -26,6 +26,12 @@ export interface CampaignTab {
   description: string;
 }
 
+export interface StarThresholds {
+  three: number;
+  two: number;
+  one: number;
+}
+
 export interface CampaignLevel {
   id: string;
   tabId: CampaignTabId;
@@ -36,6 +42,9 @@ export interface CampaignLevel {
   difficulty: CampaignDifficulty;
   pointsReward: number;
   enemyScript: string;
+  starThresholds?: StarThresholds;
+  maxTicks?: number;
+  enemyHealth?: number;
 }
 
 export const DIFFICULTY_POINTS: Record<CampaignDifficulty, number> = {

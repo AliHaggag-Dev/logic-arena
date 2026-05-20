@@ -33,6 +33,9 @@ ELSE
     END
   END
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'cond-02',
@@ -68,6 +71,9 @@ ELSE
   MOVE RIGHT
   SCAN
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'cond-03',
@@ -96,6 +102,9 @@ IF VISIBLE_ENEMY_COUNT > 0 THEN
 ELSE
   MOVE RIGHT
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'cond-04',
@@ -131,6 +140,9 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'cond-05',
@@ -167,6 +179,9 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'cond-06',
@@ -209,6 +224,9 @@ ELSE
   END
   MOVE
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'cond-07',
@@ -249,6 +267,9 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'cond-08',
@@ -295,6 +316,9 @@ ELSE
     END
   END
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'cond-09',
@@ -346,6 +370,9 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 1500,
+    enemyHealth: 150,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
   {
     id: 'cond-10',
@@ -409,5 +436,8 @@ ELSE
     MOVE RIGHT
   END
 END`,
+    maxTicks: 1500,
+    enemyHealth: 180,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
 ];

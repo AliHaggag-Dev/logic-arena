@@ -42,6 +42,9 @@ IF _SYS_AT_TARGET == 1 THEN
 ELSE
   MOVE
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'gfx-02',
@@ -75,6 +78,9 @@ ELSE
   END
   MOVE
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'gfx-03',
@@ -116,6 +122,9 @@ IF _SYS_AT_TARGET == 1 THEN
 ELSE
   MOVE
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'gfx-04',
@@ -156,6 +165,9 @@ IF _SYS_AT_TARGET == 1 THEN
 ELSE
   MOVE
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'gfx-05',
@@ -195,6 +207,9 @@ ELSE
   END
   MOVE
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'gfx-06',
@@ -238,6 +253,9 @@ END
 SET _SYS_TARGET_X = cx
 SET _SYS_TARGET_Y = cy
 MOVE`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'gfx-07',
@@ -289,6 +307,9 @@ IF _SYS_AT_TARGET == 1 THEN
   SET _SYS_AT_TARGET = 0
 END
 MOVE`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'gfx-08',
@@ -326,6 +347,9 @@ ELSE
   SCAN
 END
 MOVE`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'gfx-09',
@@ -371,6 +395,9 @@ ELSE
   SET _SYS_SPEED_MULT = 1.8
 END
 MOVE`,
+    maxTicks: 1500,
+    enemyHealth: 150,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
   {
     id: 'gfx-10',
@@ -427,5 +454,8 @@ ELSE
   SET _SYS_SPEED_MULT = 1.5
 END
 MOVE`,
+    maxTicks: 1500,
+    enemyHealth: 180,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
 ];

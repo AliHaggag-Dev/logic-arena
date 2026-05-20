@@ -41,6 +41,9 @@ ELSE
   END
   MOVE RIGHT
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'ds-02',
@@ -69,6 +72,9 @@ ELSE
   SCAN
 END
 MOVE`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'ds-03',
@@ -101,6 +107,9 @@ IF VISIBLE_ENEMY_COUNT > 0 THEN
   FIRE
 END
 MOVE`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'ds-04',
@@ -141,6 +150,9 @@ ELSE
     END
   END
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'ds-05',
@@ -181,6 +193,9 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'ds-06',
@@ -234,6 +249,9 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'ds-07',
@@ -274,6 +292,9 @@ ELSE
   SET _SYS_SPEED_MULT = 1.5
   BACKUP
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'ds-08',
@@ -328,6 +349,9 @@ SET _SYS_ORBIT_X = tgtX
 SET _SYS_ORBIT_Y = tgtY
 SET _SYS_ORBIT_R = 150
 MOVE`,
+    maxTicks: 1500,
+    enemyHealth: 150,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
   {
     id: 'ds-09',
@@ -381,6 +405,9 @@ SET q.arg = q.arg - 1
 IF q.arg <= 0 THEN
   SET q.task = "NONE"
 END`,
+    maxTicks: 1500,
+    enemyHealth: 150,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
   {
     id: 'ds-10',
@@ -438,5 +465,8 @@ SET _SYS_ORBIT_X = 400
 SET _SYS_ORBIT_Y = 300
 SET _SYS_ORBIT_R = 140
 MOVE`,
+    maxTicks: 1500,
+    enemyHealth: 180,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
 ];

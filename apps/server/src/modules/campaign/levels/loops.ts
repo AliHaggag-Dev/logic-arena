@@ -33,6 +33,9 @@ ELSE
     SET i = 0
   END
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'loop-02',
@@ -75,6 +78,9 @@ ELSE
     MOVE
   END
 END`,
+    maxTicks: 900,
+    enemyHealth: 80,
+    starThresholds: { three: 300, two: 600, one: 900 },
   },
   {
     id: 'loop-03',
@@ -116,6 +122,9 @@ ELSE
   SCAN
 END
 MOVE`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'loop-04',
@@ -149,6 +158,9 @@ ELSE
     SET round = 1
   END
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'loop-05',
@@ -204,6 +216,9 @@ ELSE
     MOVE
   END
 END`,
+    maxTicks: 900,
+    enemyHealth: 100,
+    starThresholds: { three: 360, two: 600, one: 900 },
   },
   {
     id: 'loop-06',
@@ -245,6 +260,9 @@ IF outer < 3 THEN
 ELSE
   SET outer = 0
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'loop-07',
@@ -289,6 +307,9 @@ ELSE
     MOVE RIGHT
   END
 END`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'loop-08',
@@ -334,6 +355,9 @@ ELSE
   END
 END
 SET tick = tick + 1`,
+    maxTicks: 1200,
+    enemyHealth: 120,
+    starThresholds: { three: 480, two: 780, one: 1200 },
   },
   {
     id: 'loop-09',
@@ -383,6 +407,9 @@ ELSE
     SET frenzy = 3
   END
 END`,
+    maxTicks: 1500,
+    enemyHealth: 150,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
   {
     id: 'loop-10',
@@ -450,5 +477,8 @@ ELSE
   SCAN
   MOVE RIGHT
 END`,
+    maxTicks: 1500,
+    enemyHealth: 180,
+    starThresholds: { three: 600, two: 1000, one: 1500 },
   },
 ];

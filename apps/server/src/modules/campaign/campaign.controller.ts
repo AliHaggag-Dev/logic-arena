@@ -80,7 +80,7 @@ export class CampaignController {
     if (!id?.trim()) throw new BadRequestException('Invalid level id');
 
     const userId = req.user.sub;
-    const { completionToken } = body;
+    const { completionToken, fightDurationTicks } = body;
 
     if (!completionToken) {
       throw new ForbiddenException('Missing completion token');
@@ -100,7 +100,7 @@ export class CampaignController {
     }
 
     try {
-      return await this.campaignService.completeLevel(userId, id);
+      return await this.campaignService.completeLevel(userId, id, fightDurationTicks);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
       if (msg === ERR_LEVEL_LOCKED)
