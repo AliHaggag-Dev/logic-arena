@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { SectionHeader, Toggle, useFeedback } from "./shared";
+import { useAuth } from "../../../../context/AuthContext";
 import { apiClient } from "../../../../lib/api-client";
 
 interface NotificationSettings {
@@ -31,22 +32,26 @@ export function NotificationsSection({ isGuest = false }: { isGuest?: boolean })
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSaved = useRef<NotificationSettings>(DEFAULT_SETTINGS);
 
-  // ── Load from backend on mount ─────────────────────────────────────────────
+  const { profile, loading: authLoading } = useAuth();
+
+  // ── Load from backend once via AuthContext ─────────────────────────────────
   useEffect(() => {
     if (isGuest) { setLoading(false); return; }
-    apiClient.get("/users/profile").then((res) => {
-      const ns = res.data.notificationSettings ?? DEFAULT_SETTINGS;
+    if (authLoading) return;
+    if (profile?.notificationSettings) {
+      const ns = profile.notificationSettings as NotificationSettings;
       setSettings(ns);
       lastSaved.current = ns;
-    }).catch(() => {
+    } else {
       // Graceful degradation to localStorage
       setSettings({
         challengeReqs:    localStorage.getItem("notif_challenges")  !== "false",
         tournamentAlerts: localStorage.getItem("notif_tournaments") !== "false",
         matchResults:     localStorage.getItem("notif_results")     !== "false",
       });
-    }).finally(() => setLoading(false));
-  }, [isGuest]);
+    }
+    setLoading(false);
+  }, [profile, authLoading, isGuest]);
 
   // ── Debounced persist ──────────────────────────────────────────────────────
   const persist = useCallback((patch: Partial<NotificationSettings>) => {

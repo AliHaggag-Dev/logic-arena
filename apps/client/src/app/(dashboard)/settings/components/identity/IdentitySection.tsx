@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { apiClient } from "../../../../../lib/api-client";
+import { useAuth } from "../../../../../context/AuthContext";
 import { useFeedback, SectionHeader } from "../shared";
+import { apiClient } from "../../../../../lib/api-client";
 import { getAuthUsername, setAuthSession, getAuthUserId, getAuthAvatarUrl } from "../../../../../lib/client-security";
 import { AvatarUpload } from "./AvatarUpload";
 import { IdentityFields } from "./IdentityFields";
@@ -30,24 +31,27 @@ export function IdentitySection({ isGuest = false }: { isGuest?: boolean }) {
   const [loadingUsername, setLoadingUsername] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
 
+  const { profile } = useAuth();
+
   useEffect(() => {
     const storedUsername = getAuthUsername() ?? "";
     const storedAvatar = getAuthAvatarUrl();
     setUsername(storedUsername);
     setInitials(storedUsername?.[0]?.toUpperCase() ?? "?");
     if (storedAvatar) setAvatarUrl(storedAvatar);
-
-    apiClient.get("/users/profile").then((res) => {
-      setEmail(res.data.email ?? "");
-      setOriginalEmail(res.data.email ?? "");
-      setHasGoogle(res.data.hasGoogle ?? false);
-      setHasGithub(res.data.hasGithub ?? false);
-      setUsername(res.data.username ?? storedUsername);
-      setOriginalUsername(res.data.username ?? storedUsername);
-      setInitials((res.data.username ?? storedUsername)?.[0]?.toUpperCase() ?? "?");
-      if (res.data.avatarUrl) setAvatarUrl(res.data.avatarUrl);
-    }).catch(() => { });
   }, []);
+
+  useEffect(() => {
+    if (!profile) return;
+    setEmail(profile.email ?? "");
+    setOriginalEmail(profile.email ?? "");
+    setHasGoogle(profile.hasGoogle ?? false);
+    setHasGithub(profile.hasGithub ?? false);
+    setUsername(profile.username ?? getAuthUsername() ?? "");
+    setOriginalUsername(profile.username ?? "");
+    setInitials((profile.username ?? getAuthUsername() ?? "")?.[0]?.toUpperCase() ?? "?");
+    if (profile.avatarUrl) setAvatarUrl(profile.avatarUrl);
+  }, [profile]);
 
   const handleAvatarUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

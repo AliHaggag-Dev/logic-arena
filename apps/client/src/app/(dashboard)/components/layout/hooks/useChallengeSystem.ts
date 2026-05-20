@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useGlobalSocket } from "../../../../../hooks/useGlobalSocket";
-import { apiClient } from "../../../../../lib/api-client";
+import { useAuth } from "../../../../../context/AuthContext";
 import { useSafeTimeout } from "../../../../../hooks/useSafeTimeout";
 
 export function useChallengeSystem() {
@@ -9,21 +9,13 @@ export function useChallengeSystem() {
   const [allowChallenges, setAllowChallenges] = useState(true);
   const { clearAllSafeTimeouts, setSafeTimeout } = useSafeTimeout();
 
+  const { profile } = useAuth();
+
   useEffect(() => {
-    let cancelled = false;
-
-    apiClient.get('/users/profile').then(res => {
-      if (cancelled) return;
-      const ns = res.data.notificationSettings;
-      if (ns) {
-        setAllowChallenges(ns.challengeReqs !== false);
-      }
-    }).catch(() => { });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (profile?.notificationSettings) {
+      setAllowChallenges(profile.notificationSettings.challengeReqs !== false);
+    }
+  }, [profile]);
 
   const showToast = useCallback((message: string, type: "info" | "error" = "info") => {
     clearAllSafeTimeouts();

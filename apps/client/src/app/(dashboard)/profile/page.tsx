@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { apiClient }            from "../../../lib/api-client";
+import { useAuth }              from "../../../context/AuthContext";
 import { ProfileData, CombatStats } from "./types";
 import { EMPTY_STATS, STAT_COLORS } from "./constants";
 import { useMediaQuery }        from "../../../hooks/useMediaQuery";
@@ -35,35 +35,29 @@ function makeAnonProfile(): ProfileData {
 export default function ProfilePage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
+  const { profile: ctxProfile, loading: ctxLoading, isGuest: ctxIsGuest, refresh: ctxRefresh } = useAuth();
+
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [errKind, setErrKind] = useState<ErrorKind>(null);
   const [isGuest, setIsGuest] = useState(false);
 
-  const load = async () => {
-    setLoading(true);
-    setErrKind(null);
-    try {
-      const res = await apiClient.get("/users/profile");
-      setProfile(res.data);
-    } catch (err: unknown) {
-      const e = err as { response?: { status?: number }; message?: string };
-      if (e.response?.status === 401) {
-        setIsGuest(true);
-        setProfile(makeAnonProfile());
-      } else if (e.message?.includes("Network") || e.message?.includes("timeout")) {
-        setErrKind("NETWORK");
-      } else {
-        setErrKind("UNKNOWN");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    load();
-  }, []);
+    if (ctxLoading) return;
+
+    if (ctxProfile) {
+      setProfile(ctxProfile as unknown as ProfileData);
+      setErrKind(null);
+      setIsGuest(false);
+    } else if (ctxIsGuest) {
+      setIsGuest(true);
+      setProfile(makeAnonProfile());
+      setErrKind(null);
+    } else {
+      setErrKind("UNKNOWN");
+    }
+    setLoading(false);
+  }, [ctxProfile, ctxLoading, ctxIsGuest]);
 
   const stats = profile?.combatStats ?? EMPTY_STATS;
 
@@ -125,11 +119,11 @@ export default function ProfilePage() {
           }}
         >
           {errKind ? (
-            <ProfileErrorState
-              isMobile={isMobile}
-              errorType={errKind}
-              onRetry={load}
-            />
+              <ProfileErrorState
+                isMobile={isMobile}
+                errorType={errKind}
+                onRetry={ctxRefresh}
+              />
           ) : (
             <>
               <HeroSection

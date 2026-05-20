@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { apiClient } from "../lib/api-client";
 import { clearAuthSession, getAuthSession, setAuthSession } from "../lib/client-security";
 
@@ -14,7 +15,8 @@ function readAuthState(): { isGuest: boolean; userId: string | null; username: s
 
 /**
  * Returns reactive `{ isGuest, username, avatarUrl }` backed by in-memory session metadata.
- * Sensitive account identifiers are intentionally never persisted to localStorage.
+ * Delegates to AuthContext when available (avoids duplicate /users/profile calls).
+ * Falls back to standalone fetch when used outside AuthProvider.
  */
 export function useAuthState(): {
   isGuest: boolean;
@@ -23,6 +25,19 @@ export function useAuthState(): {
   avatarUrl: string | null;
   refresh: () => void;
 } {
+  const ctx = useContext(AuthContext);
+
+  if (ctx) {
+    return {
+      isGuest: ctx.isGuest,
+      userId: ctx.userId,
+      username: ctx.username,
+      avatarUrl: ctx.avatarUrl,
+      refresh: ctx.refresh,
+    };
+  }
+
+  // Fallback for components rendered outside AuthProvider
   const [state, setState] = useState(readAuthState);
 
   const refresh = useCallback(() => {
@@ -67,4 +82,3 @@ export function useAuthState(): {
 
   return { ...state, refresh };
 }
-

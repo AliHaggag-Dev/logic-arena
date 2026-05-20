@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import "../garage.css";
 import { RobotViewer } from "../components/RobotViewer";
 import { Toast, type ToastState } from "../components/Toast";
+import { useAuth } from "../../../../context/AuthContext";
 import { apiClient } from "../../../../lib/api-client";
 import { useMediaQuery } from "../../../../hooks/useMediaQuery";
 import { ControlsPanel } from "./components/ControlsPanel";
@@ -49,22 +50,16 @@ export default function RobotDetailPage() {
     };
   }, []);
 
-  // Hydrate saved color from profile
+  const { profile } = useAuth();
+
+  // Hydrate saved color from cached profile
   useEffect(() => {
     if (isGuest) return;
-    apiClient
-      .get("/users/profile")
-      .then((res) => {
-        if (res.data.selectedRobotId === robotId) {
-          setColor(res.data.selectedColor ?? "DEFAULT");
-        }
-      })
-      .catch((err: unknown) => {
-        const status = (err as { response?: { status?: number } })?.response
-          ?.status;
-        if (status === 401) setIsGuest(true);
-      });
-  }, [robotId, isGuest]);
+    if (!profile) return;
+    if (profile.selectedRobotId === robotId) {
+      setColor(profile.selectedColor ?? "DEFAULT");
+    }
+  }, [profile, robotId, isGuest]);
 
   const handleSave = useCallback(async () => {
     if (saving) return;

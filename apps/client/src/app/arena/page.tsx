@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { apiClient } from '../../lib/api-client';
+import { useAuth } from '../../context/AuthContext';
 import { useGameState } from './hooks/game';
 import { Scene3D } from './components/Scene3D';
 import WinnerScreen from './components/WinnerScreen';
@@ -65,24 +65,26 @@ const ArenaPageContent = () => {
     return () => { if (projectileAnimRef.current) cancelAnimationFrame(projectileAnimRef.current); };
   }, []);
 
-  // Load arena preferences (skip for spectators — they don't have a robot)
+  const { profile, loading: authLoading } = useAuth();
+
+  // Load arena preferences from cached profile (skip for spectators)
   useEffect(() => {
     if (isSpectator) return;
-    apiClient.get('/users/profile').then((res) => {
-      const file = ROBOT_FILES[res.data.selectedRobotId] ?? '/robots/robot.glb';
-      setLocalRobotFile(file);
-      if (res.data.selectedColor) setLocalRobotColor(res.data.selectedColor);
+    if (authLoading || !profile) return;
 
-      const prefs = res.data.arenaPreferences;
-      if (prefs) {
-        setSoundFx(prefs.soundFx !== false);
-        if (prefs.graphicsQuality) setGraphicsQuality(prefs.graphicsQuality);
-        if (!res.data.selectedRobotId && prefs.defaultRobot) {
-          setLocalRobotFile(ROBOT_FILES[prefs.defaultRobot] ?? '/robots/robot.glb');
-        }
+    const file = ROBOT_FILES[profile.selectedRobotId ?? ''] ?? '/robots/robot.glb';
+    setLocalRobotFile(file);
+    if (profile.selectedColor) setLocalRobotColor(profile.selectedColor);
+
+    const prefs = profile.arenaPreferences;
+    if (prefs) {
+      setSoundFx(prefs.soundFx !== false);
+      if (prefs.graphicsQuality) setGraphicsQuality(prefs.graphicsQuality);
+      if (!profile.selectedRobotId && prefs.defaultRobot) {
+        setLocalRobotFile(ROBOT_FILES[prefs.defaultRobot] ?? '/robots/robot.glb');
       }
-    }).catch(() => { });
-  }, [isSpectator]);
+    }
+  }, [profile, authLoading, isSpectator]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">Loading Arena...</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">ERROR 404: {error}</div>;

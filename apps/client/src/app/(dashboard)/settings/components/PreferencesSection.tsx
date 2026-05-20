@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Bot, Lock } from "lucide-react";
 import { SectionHeader, Toggle, useFeedback } from "./shared";
+import { useAuth } from "../../../../context/AuthContext";
 import { apiClient } from "../../../../lib/api-client";
 
 interface ArenaPreferences {
@@ -34,14 +35,17 @@ export function PreferencesSection({ isGuest = false }: { isGuest?: boolean }) {
   // Keep a snapshot to roll back to on error
   const lastSaved = useRef<ArenaPreferences>(DEFAULT_PREFS);
 
-  // ── Load from backend on mount ─────────────────────────────────────────────
+  const { profile, loading: authLoading } = useAuth();
+
+  // ── Load from backend once via AuthContext ─────────────────────────────────
   useEffect(() => {
     if (isGuest) { setLoading(false); return; }
-    apiClient.get("/users/profile").then((res) => {
-      const ap = res.data.arenaPreferences ?? DEFAULT_PREFS;
+    if (authLoading) return;
+    if (profile?.arenaPreferences) {
+      const ap = profile.arenaPreferences as ArenaPreferences;
       setPrefs(ap);
       lastSaved.current = ap;
-    }).catch(() => {
+    } else {
       // Fallback to localStorage for graceful degradation
       setPrefs({
         defaultRobot: localStorage.getItem("defaultRobot") ?? DEFAULT_PREFS.defaultRobot,
@@ -49,8 +53,9 @@ export function PreferencesSection({ isGuest = false }: { isGuest?: boolean }) {
         music:        localStorage.getItem("music") !== "false",
         graphicsQuality: localStorage.getItem("graphicsQuality") ?? DEFAULT_PREFS.graphicsQuality,
       });
-    }).finally(() => setLoading(false));
-  }, [isGuest]);
+    }
+    setLoading(false);
+  }, [profile, authLoading, isGuest]);
 
   // ── Debounced persist to backend ───────────────────────────────────────────
   const persist = useCallback((patch: Partial<ArenaPreferences>) => {
