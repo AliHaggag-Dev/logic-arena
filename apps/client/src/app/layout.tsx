@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../providers/ThemeProvider";
+import { SoundProvider } from "../context/SoundContext";
 import { AuthProvider } from "../context/AuthContext";
 import Footer from "../components/Footer";
 import { MobileHeader } from "../components/MobileHeader";
@@ -124,6 +125,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh w-full flex flex-col bg-bg-primary">
         <ThemeProvider>
+          <SoundProvider>
           <AuthProvider>
           {/* Mobile-only top bar (self-guards via useMediaQuery) */}
           <MobileHeader />
@@ -142,6 +144,7 @@ export default function RootLayout({
           {/* Global AI Tutor — ARIA */}
           <AiTutor />
           </AuthProvider>
+          </SoundProvider>
         </ThemeProvider>
 
         <ServiceWorkerRegistrar />

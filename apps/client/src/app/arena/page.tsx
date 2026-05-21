@@ -8,6 +8,7 @@ import { Scene3D } from './components/Scene3D';
 import WinnerScreen from './components/WinnerScreen';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { getAuthUserId } from '../../lib/client-security';
+import { useSoundContext } from '../../context/SoundContext';
 
 // Refactored Components
 import { useFPS } from './hooks/useFPS';
@@ -43,8 +44,8 @@ const ArenaPageContent = () => {
   const { script, loading, error, resolvedScriptId } = useScriptResolver(urlScriptId, isSpectator);
   const [localRobotFile, setLocalRobotFile] = useState('/robots/robot.glb');
   const [localRobotColor, setLocalRobotColor] = useState('#22d3ee');
-  const [soundFx, setSoundFx] = useState(true);
   const [graphicsQuality, setGraphicsQuality] = useState('medium');
+  const { arenaSoundsEnabled } = useSoundContext();
 
   const {
     socket, gameStateRef, obstaclesRef, uiState,
@@ -78,11 +79,7 @@ const ArenaPageContent = () => {
 
     const prefs = profile.arenaPreferences;
     if (prefs) {
-      setSoundFx(prefs.soundFx !== false);
       if (prefs.graphicsQuality) setGraphicsQuality(prefs.graphicsQuality);
-      if (!profile.selectedRobotId && prefs.defaultRobot) {
-        setLocalRobotFile(ROBOT_FILES[prefs.defaultRobot] ?? '/robots/robot.glb');
-      }
     }
   }, [profile, authLoading, isSpectator]);
 
@@ -150,7 +147,7 @@ const ArenaPageContent = () => {
           firedTracer={firedTracer ?? null}
           speechBubble={speechBubble ?? null}
           fogEnabled={fogEnabled}
-          soundFx={soundFx}
+          soundFx={arenaSoundsEnabled}
           graphicsQuality={graphicsQuality}
           localRobotFile={localRobotFile}
           localRobotColor={localRobotColor}

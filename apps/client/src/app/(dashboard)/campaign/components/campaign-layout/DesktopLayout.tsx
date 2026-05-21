@@ -6,7 +6,7 @@ import { GitBranch, Star, Swords } from "lucide-react";
 import { TAB_ICONS } from "./tabMeta";
 import type { CampaignViewProps } from "./types";
 import { LevelCard } from "./LevelCard";
-import { useSoundEffects } from "../../../../../hooks/useSoundEffects";
+
 import type { CampaignTabId } from "../../constants/campaign.constants";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -20,18 +20,15 @@ export const DesktopLayout = memo(function DesktopLayout({
   setActiveTabId,
   setSelectedLevel,
 }: CampaignViewProps) {
-  const { playHover, playClick } = useSoundEffects();
+  const handleTabClick = useCallback((tabId: CampaignTabId): void => {
+    setActiveTabId(tabId);
+  }, [setActiveTabId]);
+
+  // ── Active tab ────────────────────────────────────────────────────────────
   const activeTab = useMemo(
     () => tabs.find((t) => t.id === activeTabId) ?? tabs[0],
     [activeTabId, tabs],
   );
-  const handleTabHover = useCallback((): void => {
-    playHover();
-  }, [playHover]);
-  const handleTabClick = useCallback((tabId: CampaignTabId): void => {
-    playClick();
-    setActiveTabId(tabId);
-  }, [playClick, setActiveTabId]);
 
   // ── Global progress stats ──────────────────────────────────────────────────
   const allLevels = useMemo(() => tabs.flatMap((t) => t.levels), [tabs]);
@@ -100,7 +97,6 @@ export const DesktopLayout = memo(function DesktopLayout({
               type="button"
               aria-pressed={isActive}
               aria-label={`${tab.label} — ${done} of ${total} complete`}
-              onMouseEnter={handleTabHover}
               onClick={() => handleTabClick(tab.id)}
               className={`desktop-layout__tab-btn ${isActive ? "desktop-layout__tab-btn--active" : ""}`}
             >

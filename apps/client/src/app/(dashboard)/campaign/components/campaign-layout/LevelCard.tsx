@@ -7,7 +7,7 @@ import { Check, Info, Lock, Zap, Star } from "lucide-react";
 import { DIFFICULTY_CONFIG } from "../../constants/difficulty.constants";
 import type { ApiLevelInfo } from "../../types/campaign.types";
 import { useCampaignPrefetch } from "../../hooks/useCampaignPrefetch";
-import { useSoundEffects } from "../../../../../hooks/useSoundEffects";
+
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 const MAX_STARS   = 3;
@@ -49,28 +49,24 @@ export const LevelCard = memo(function LevelCard({
 }: LevelCardProps) {
   const router = useRouter();
   const { prefetchLevel } = useCampaignPrefetch();
-  const { playHover, playClick } = useSoundEffects();
   const dc = DIFFICULTY_CONFIG[level.difficulty] ?? DIFFICULTY_CONFIG.EASY;
 
   const handlePrefetch = useCallback((): void => {
     if (!level.unlocked) return;
-    playHover();
     void prefetchLevel(level.id);
-  }, [level.id, level.unlocked, playHover, prefetchLevel]);
+  }, [level.id, level.unlocked, prefetchLevel]);
 
   const handleCardClick = useCallback(() => {
     if (!level.unlocked) return;
-    playClick();
     router.push(`/campaign/${level.id}`);
-  }, [level.id, level.unlocked, playClick, router]);
+  }, [level.id, level.unlocked, router]);
 
   const handleInfoClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
-      playClick();
       onInfoClick(level);
     },
-    [level, onInfoClick, playClick],
+    [level, onInfoClick],
   );
 
   // ── Locked state ────────────────────────────────────────────────────────────

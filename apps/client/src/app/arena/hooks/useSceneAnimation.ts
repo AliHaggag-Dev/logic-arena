@@ -15,7 +15,7 @@ const FOV_DOT_THRESHOLD = Math.cos(Math.PI / 6);
  * Manages scene animations, including robot movement, hit effects, and collision sounds.
  */
 export const useSceneAnimation = (robots: RobotState[], firedTracer: FiredTracer | null, soundFx = true) => {
-  const { playHit, playClang, playLaser } = useGameSounds({ volume: 0.5, enabled: soundFx });
+  const { playHit, playClang, playLaser } = useGameSounds({ enabled: soundFx });
   const collisionCooldownRef = useRef<Map<string, number>>(new Map());
   const lastLaserRef = useRef<string | null>(null);
 
