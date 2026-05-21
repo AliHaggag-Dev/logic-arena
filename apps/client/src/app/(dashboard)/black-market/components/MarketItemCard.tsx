@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Zap, Lock, CheckCircle, ShoppingCart, UserX } from "lucide-react";
 import { MarketItem } from "../types";
 import { RARITY_STYLES } from "../constants";
@@ -29,6 +29,9 @@ export const MarketItemCard = React.memo(function MarketItemCard({
   onPurchase,
 }: MarketItemCardProps) {
   const styles = RARITY_STYLES[item.rarity];
+  const [imgError, setImgError] = useState(false);
+  const thumbnailUrl = `/thumbnails/${item.id}.png`;
+  
   const handlePreview = () => onPreview(item);
   const handlePreviewKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -87,16 +90,25 @@ export const MarketItemCard = React.memo(function MarketItemCard({
       )}
 
       <div className="relative z-10 p-4">
-        {/* Color swatch + rarity */}
+        {/* Thumbnail + rarity */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div
-              className="w-7 h-7 rounded-md border border-white/10 flex-shrink-0"
-              style={{
-                background: item.color,
-                boxShadow: `0 0 10px ${item.glowColor}60`,
-              }}
-            />
+          <div className="flex items-center gap-3">
+            {!imgError ? (
+              <img
+                src={thumbnailUrl}
+                alt={item.name}
+                onError={() => setImgError(true)}
+                className="w-12 h-12 rounded-xl object-contain bg-accent/5 border border-white/5"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-xl border border-white/10 flex-shrink-0"
+                style={{
+                  background: item.color === "DEFAULT" ? "rgba(var(--accent-rgb),0.2)" : item.color,
+                  boxShadow: `0 0 10px ${item.glowColor}60`,
+                }}
+              />
+            )}
             <span
               className={`text-[8px] font-bold tracking-[0.22em] px-1.5 py-0.5 rounded border ${styles.badge}`}
             >

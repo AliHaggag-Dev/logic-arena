@@ -77,7 +77,7 @@ export function VaultItemCard({
             src={thumbnailUrl}
             alt={item.name}
             onError={() => setImgError(true)}
-            className="w-14 h-14 rounded-xl object-contain bg-black/20 border border-white/5"
+            className="w-14 h-14 rounded-xl object-contain bg-accent/5 border border-white/5"
           />
         ) : (
           <div
