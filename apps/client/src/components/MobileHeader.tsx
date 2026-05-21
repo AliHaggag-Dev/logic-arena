@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ThemeSwitcher } from "./ui/ThemeSwitcher";
 import { useAuthState } from "../hooks/useAuthState";
 import { clearAuthSession, clearSensitiveBrowserStorage } from "../lib/client-security";
+import { LogIn, LogOut, LayoutDashboard, UserPlus } from "lucide-react";
 
 export function MobileHeader() {
   const pathname = usePathname() || "";
@@ -35,72 +36,39 @@ export function MobileHeader() {
     router.push("/login");
   };
 
+  const getIconButton = (icon: React.ReactNode, onClick: () => void, label: string) => (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 group cursor-pointer"
+      style={{
+        background: 'rgba(var(--accent-rgb),0.08)',
+        border: '1px solid rgba(var(--accent-rgb),0.15)',
+      }}
+      onMouseEnter={(e) => { (e.currentTarget).style.background = 'rgba(var(--accent-rgb),0.15)'; }}
+      onMouseLeave={(e) => { (e.currentTarget).style.background = 'rgba(var(--accent-rgb),0.08)'; }}
+    >
+      <div className="text-accent group-hover:scale-110 transition-transform duration-200">
+        {icon}
+      </div>
+    </button>
+  );
+
   let authButtonContent = null;
 
   if (isLoggedIn) {
     if (isAuthPage) {
-      authButtonContent = (
-        <button
-          type="button"
-          onClick={() => router.push("/dashboard")}
-          className="text-[9.5px] font-bold tracking-[0.15em] uppercase text-accent/50 hover:text-accent transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
-        >
-          [ DASHBOARD ]
-        </button>
-      );
+      authButtonContent = getIconButton(<LayoutDashboard size={16} />, () => router.push("/dashboard"), "Dashboard");
     } else {
-      authButtonContent = (
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="text-[9.5px] font-bold tracking-[0.15em] uppercase text-red-500/50 hover:text-red-500 transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--color-red-500),0.6)]"
-        >
-          [ LOGOUT ]
-        </button>
-      );
+      authButtonContent = getIconButton(<LogOut size={16} />, handleLogout, "Logout");
     }
   } else {
+    // If we're on login, show register. If on register, show login. Otherwise show login.
     if (pathname === "/login") {
-      authButtonContent = (
-        <button
-          type="button"
-          onClick={() => router.push("/register")}
-          className="text-[9.5px] font-bold tracking-[0.15em] uppercase text-accent/50 hover:text-accent transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
-        >
-          [ REGISTER ]
-        </button>
-      );
-    } else if (pathname === "/register" || (isAuthPage && pathname !== "/login")) {
-      authButtonContent = (
-        <button
-          type="button"
-          onClick={() => router.push("/login")}
-          className="text-[9.5px] font-bold tracking-[0.15em] uppercase text-accent/50 hover:text-accent transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
-        >
-          [ LOGIN ]
-        </button>
-      );
+      authButtonContent = getIconButton(<UserPlus size={16} />, () => router.push("/register"), "Register");
     } else {
-      // Masterclass UX: Split pill button for non-auth browsing pages
-      authButtonContent = (
-        <div className="flex items-center gap-2 bg-accent/5 border border-accent/20 px-2.5 py-1.5 rounded-lg shadow-[inset_0_0_8px_rgba(var(--accent-rgb),0.05)]">
-          <button
-            type="button"
-            onClick={() => router.push("/login")}
-            className="text-[8.5px] font-black tracking-[0.2em] uppercase text-accent/50 hover:text-accent transition-all duration-300"
-          >
-            LOGIN
-          </button>
-          <span className="text-[9px] text-accent/30 font-light drop-shadow-[0_0_2px_rgba(var(--accent-rgb),0.3)]">/</span>
-          <button
-            type="button"
-            onClick={() => router.push("/register")}
-            className="text-[8.5px] font-black tracking-[0.2em] uppercase text-accent hover:text-accent drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.5)] hover:drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.8)] transition-all duration-300"
-          >
-            REGISTER
-          </button>
-        </div>
-      );
+      authButtonContent = getIconButton(<LogIn size={16} />, () => router.push("/login"), "Login");
     }
   }
 
@@ -123,10 +91,11 @@ export function MobileHeader() {
           priority
         />
       </button>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         {authButtonContent}
         <ThemeSwitcher variant="minimal" />
       </div>
     </header>
   );
 }
+

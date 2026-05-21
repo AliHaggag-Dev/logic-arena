@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Lightbulb, Play, Wand2 } from "lucide-react";
-import { useSoundEffects } from "../../hooks/useSoundEffects";
 
 const PRIMARY_HAPTIC_MS = 50;
 
@@ -15,12 +14,10 @@ interface EditorToolbarProps {
 }
 
 export function EditorToolbar({ onRun, onHint, onFormat, disabled, isMobile }: EditorToolbarProps) {
-  const { playClick } = useSoundEffects();
   const buttonHeightClass = isMobile ? "h-12" : "h-9";
   const iconButtonWidthClass = isMobile ? "min-w-[48px]" : "min-w-[44px]";
 
   const handleRun = (): void => {
-    playClick();
     navigator.vibrate?.(PRIMARY_HAPTIC_MS);
     onRun();
   };

@@ -18,6 +18,10 @@ export class EmailService {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS, // Gmail App Password (16 chars, no spaces)
       },
+      // Fail fast — prevents hanging the HTTP request for minutes when SMTP is unreachable
+      connectionTimeout: 8_000,  // 8 s to establish TCP connection
+      socketTimeout:     8_000,  // 8 s idle timeout after connection established
+      greetingTimeout:   5_000,  // 5 s for the SMTP EHLO greeting
     });
 
     // Verify connection on startup so misconfiguration is caught early

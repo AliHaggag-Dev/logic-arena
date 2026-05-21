@@ -1,34 +1,58 @@
+"use client";
 import React from "react";
-import { AuthBackground } from "./AuthBackground";
 
 interface Props {
-  isMobile: boolean;
-  nodeName: string;
   children: React.ReactNode;
-  variant?: 'default' | 'danger';
+  isMobile: boolean;
 }
 
-export function AuthContainer({ isMobile, nodeName, children, variant = 'default' }: Props) {
-  const isDanger = variant === 'danger';
-
+export function AuthContainer({ children, isMobile }: Props) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-primary font-mono selection:bg-accent/30 relative overflow-hidden p-4 pt-16 sm:p-6 sm:pt-20">
-      <AuthBackground />
-      <div className={`w-full max-w-[420px] bg-card/60 backdrop-blur-xl border border-accent/20 rounded-xl ${isMobile ? "p-6" : "p-8"} relative z-20 shadow-[0_0_50px_rgba(0,0,0,0.8),inset_0_0_20px_rgba(var(--accent-rgb),0.05)] animate-[fadeInScale_0.4s_ease-out] ${isMobile ? (isDanger ? "shadow-[inset_3px_0_0_0_var(--color-red-500)]" : "shadow-[inset_3px_0_0_0_var(--accent)]") : ""}`}>
-        
-        {/* Decorative Corner Accents */}
-        {!isMobile && (
-          <>
-            <div className={`absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 ${isDanger ? "border-red-500/40" : "border-accent/60"} rounded-tl-xl`} />
-            <div className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 ${isDanger ? "border-red-500/40" : "border-accent/60"} rounded-br-xl`} />
-          </>
-        )}
+    <div className="min-h-screen flex items-center justify-center bg-bg-primary font-sans selection:bg-accent/30 relative overflow-hidden px-4 py-16">
+      <style>{`
+        @keyframes auth-fade-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
 
-        <div className={`absolute top-3 right-4 text-[9px] ${isDanger ? "text-red-500/30" : "text-accent/30"} tracking-[0.2em] pointer-events-none`}>
-          {nodeName}
+      {/* Background: mesh gradient + grid */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(var(--accent-rgb),0.08) 0%, transparent 70%)',
+      }} />
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: 'linear-gradient(rgba(var(--accent-rgb),0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.04) 1px, transparent 1px)',
+        backgroundSize: '60px 60px',
+      }} />
+
+      {/* Card with gradient border */}
+      <div
+        className="relative w-full z-20"
+        style={{
+          maxWidth: 420,
+          animation: 'auth-fade-up 0.45s cubic-bezier(0.22,1,0.36,1) both',
+        }}
+      >
+        {/* Gradient border wrapper */}
+        <div
+          className="absolute -inset-px rounded-2xl pointer-events-none"
+          style={{
+            background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.4) 0%, rgba(var(--accent-rgb),0.05) 50%, rgba(var(--accent-rgb),0.2) 100%)',
+          }}
+        />
+        {/* Card body */}
+        <div
+          className="relative rounded-2xl overflow-hidden"
+          style={{
+            background: 'color-mix(in srgb, var(--card) 90%, transparent)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            padding: isMobile ? '28px 24px' : '40px 36px',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)',
+          }}
+        >
+          {children}
         </div>
-
-        {children}
       </div>
     </div>
   );

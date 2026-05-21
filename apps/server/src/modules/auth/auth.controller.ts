@@ -43,9 +43,9 @@ import {
 
 /**
  * Auth endpoints are protected by a strict per-IP rate limit:
- *   5 requests per 15 minutes (defined as the "auth" throttler in AppModule).
+ *   50 requests per 15 minutes (defined as the "auth" throttler in AppModule).
  */
-@Throttle({ auth: { limit: 5, ttl: 900_000 } })
+@Throttle({ auth: { limit: 50, ttl: 900_000 } })
 @Controller('auth')
 export class AuthController {
   constructor(

@@ -5,123 +5,132 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
+import { parseApiErrorFull } from "../utils/parseApiError";
 import { AuthContainer } from "../components/AuthContainer";
+import { AuthInput } from "../components/AuthInput";
+import { AuthButton } from "../components/AuthButton";
+import { AuthStatusMessage } from "../components/AuthStatusMessage";
 import { AuthLoadingFallback } from "../components/AuthLoadingFallback";
+import { ShieldCheck, ArrowLeft } from "lucide-react";
+
+interface StatusState {
+  message?: string;
+  errors?: string[];
+  type: "error" | "success" | "info" | "loading" | null;
+}
 
 function ResetPasswordContent() {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [status, setStatus] = useState<{
-    message: string;
-    type: "error" | "success" | null;
-  }>({ message: "", type: null });
+  const [status, setStatus] = useState<StatusState>({ type: null });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
+  const email = searchParams.get("email") ?? "";
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { setSafeTimeout } = useSafeTimeout();
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setStatus({ message: "UPDATING PASSWORD...", type: null });
+    setStatus({ message: "Updating your password...", type: "loading" });
 
     try {
       await apiClient.post("/auth/reset-password", { email, code, newPassword });
-      setStatus({
-        message: "PASSWORD UPDATED SUCCESSFULLY.",
-        type: "success"
-      });
+      setStatus({ message: "Password updated successfully! Taking you to sign in...", type: "success" });
       setSafeTimeout(() => router.push("/login"), 1500);
-    } catch (err: any) {
-      setStatus({
-        message: `ERROR: ${err.response?.data?.message || err.message}`,
-        type: "error"
-      });
+    } catch (error: unknown) {
+      const parsed = parseApiErrorFull(error);
+      if (parsed.kind === "redirect") {
+        setStatus({ message: parsed.message, type: "info" });
+      } else {
+        setStatus({ errors: parsed.messages, type: "error" });
+      }
       setIsLoading(false);
     }
   };
 
   return (
-    <AuthContainer isMobile={isMobile} nodeName="v1.1">
-      <div className="mb-10 text-center flex flex-col items-center">
-        <div className="w-10 h-10 mb-4 border border-accent/30 rounded-full flex items-center justify-center bg-accent/5 shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]">
-          <span className="text-accent shadow-accent">{'\u2699'}</span>
+    <AuthContainer isMobile={isMobile}>
+      {/* Header */}
+      <div className="mb-8 text-center flex flex-col items-center gap-3">
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center mb-1"
+          style={{
+            background: 'rgba(var(--accent-rgb),0.1)',
+            border: '1px solid rgba(var(--accent-rgb),0.2)',
+            boxShadow: '0 0 20px rgba(var(--accent-rgb),0.1)',
+          }}
+        >
+          <ShieldCheck className="w-6 h-6 text-accent" aria-hidden="true" />
         </div>
-        <h1 className={`${isMobile ? "text-2xl" : "text-3xl"} text-accent font-black tracking-[0.2em] drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.6)] mb-2 uppercase`}>
-          RESET PASSWORD
-        </h1>
-        <h2 className="text-accent/60 text-[10px] tracking-[0.3em] uppercase">
-          Enter details to reset
-        </h2>
+        <div>
+          <h1
+            className="font-black tracking-[0.1em] uppercase text-accent"
+            style={{ fontSize: isMobile ? 22 : 26 }}
+          >
+            New Password
+          </h1>
+          <p className="text-text-secondary text-sm mt-1">
+            {email ? `Enter the code sent to ${email.split("@")[0]}***@${email.split("@")[1]}` : "Enter the code from your email"}
+          </p>
+        </div>
       </div>
 
-      <form onSubmit={handleReset} className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2 relative">
-          <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="code">
-            // RESET CODE (6-DIGIT)
+      <form onSubmit={handleReset} className="flex flex-col gap-5" noValidate>
+        {/* OTP Code input - large centered style */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="code" className="text-xs font-semibold tracking-wide text-text-secondary">
+            6-digit reset code
           </label>
           <input
-            type="text"
             id="code"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent text-center tracking-[0.5em] outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-sm placeholder:opacity-60`}
-            placeholder="000000"
+            type="text"
+            inputMode="numeric"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="000000"
             required
-            minLength={6}
             maxLength={6}
             disabled={isLoading}
+            autoComplete="one-time-code"
+            autoFocus
+            className="w-full rounded-xl text-3xl font-black text-center tracking-[0.5em] text-text-primary placeholder:text-text-secondary/20 outline-none transition-all duration-200 disabled:opacity-50"
+            style={{
+              background: 'rgba(var(--accent-rgb),0.04)',
+              border: '1px solid rgba(var(--accent-rgb),0.15)',
+              padding: '16px',
+              letterSpacing: '0.4em',
+            }}
           />
         </div>
 
-        <div className="flex flex-col gap-2 relative">
-          <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="newPassword">
-            // NEW PASSWORD
-          </label>
-          <input
-            type="password"
-            id="newPassword"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
-            placeholder={'\u2022'.repeat(12)}
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-            disabled={isLoading}
-          />
-        </div>
+        <AuthInput
+          id="newPassword"
+          label="New password"
+          type="password"
+          value={newPassword}
+          onChange={setNewPassword}
+          placeholder="Create a new password"
+          required
+          disabled={isLoading}
+          autoComplete="new-password"
+        />
 
-        <div className="min-h-[48px] flex items-start justify-center">
-          {status.message && (
-            <div className={`w-full p-3.5 rounded-lg border text-[10px] tracking-[0.1em] text-center font-bold break-words transition-all ${status.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-500 shadow-[0_0_15px_rgba(var(--color-emerald-500),0.2)]"
-              : status.type === "error"
-                ? "bg-red-500/10 border-red-500/40 text-red-500 animate-pulse"
-                : "bg-accent/10 border-accent/40 text-accent animate-pulse"
-              }`}>
-              {status.message}
-            </div>
-          )}
-        </div>
+        <AuthStatusMessage status={status} />
 
-        <div className="flex flex-col gap-5 pt-2">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full ${isMobile ? "py-5" : "py-4"} bg-accent/10 border border-accent/40 text-accent font-black text-[11px] hover:bg-accent/20 hover:border-accent/80 transition-all duration-300 rounded-lg uppercase tracking-[0.3em] shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)] hover:shadow-[0_0_25px_rgba(var(--accent-rgb),0.3)] hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-50 disabled:translate-y-0`}
-          >
-            {isLoading ? "UPDATING PASSWORD..." : "RESET PASSWORD"}
-          </button>
+        <AuthButton isLoading={isLoading} loadingText="Updating password...">
+          Set New Password
+        </AuthButton>
 
-          <button
-            type="button"
-            onClick={() => router.push("/login")}
-            className="text-accent/70 hover:text-accent text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
-          >
-            [ Cancel ]
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => router.push("/login")}
+          className="flex items-center justify-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors mx-auto"
+        >
+          <ArrowLeft size={14} />
+          Back to Sign In
+        </button>
       </form>
     </AuthContainer>
   );
@@ -129,7 +138,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<AuthLoadingFallback label="LOADING RESET TERMINAL..." />}>
+    <Suspense fallback={<AuthLoadingFallback label="Loading..." />}>
       <ResetPasswordContent />
     </Suspense>
   );

@@ -2,27 +2,30 @@
 
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Diamond } from "lucide-react";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
-import { parseApiError } from "../utils/parseApiError";
+import { parseApiErrorFull } from "../utils/parseApiError";
 import { AuthContainer } from "../components/AuthContainer";
 import { AuthHeader } from "../components/AuthHeader";
 import { AuthSocials } from "../components/AuthSocials";
-import { AuthStatusTerminal } from "../components/AuthStatusTerminal";
-import { clearSensitiveBrowserStorage } from "../../../lib/client-security";
+import { AuthStatusMessage } from "../components/AuthStatusMessage";
+import { AuthInput } from "../components/AuthInput";
+import { AuthButton } from "../components/AuthButton";
 import { PasswordStrengthIndicator } from "../components/PasswordStrengthIndicator";
+import { clearSensitiveBrowserStorage } from "../../../lib/client-security";
 import { useSafeTimeout } from "../../../hooks/useSafeTimeout";
+
+interface StatusState {
+  message?: string;
+  errors?: string[];
+  type: "error" | "success" | "info" | "loading" | null;
+}
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState<{
-    message: string;
-    errors: string[];
-    type: "error" | "success" | null;
-  }>({ message: "", errors: [], type: null });
+  const [status, setStatus] = useState<StatusState>({ type: null });
   const [isLoading, setIsLoading] = useState(false);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -33,7 +36,6 @@ export default function RegisterPage() {
     clearSensitiveBrowserStorage();
   }, [router]);
 
-  // ── Password strength ────────────────────────────────────────────────────
   const checks = useMemo(() => ({
     length: password.length >= 8,
     upper: /[A-Z]/.test(password),
@@ -43,125 +45,112 @@ export default function RegisterPage() {
   }), [password]);
 
   const score = Object.values(checks).filter(Boolean).length;
-  const strengthLabel = score <= 1 ? "WEAK" : score <= 3 ? "FAIR" : score === 4 ? "STRONG" : "MAX_SEC";
-  const strengthColor = score <= 1 ? "var(--color-red-500)" : score <= 3 ? "#f59e0b" : score === 4 ? "var(--accent)" : "var(--accent)";
+  const isEmpty = password.length === 0;
+  const strengthLabel = isEmpty ? "REQUIRED" : score <= 1 ? "WEAK" : score <= 3 ? "FAIR" : score === 4 ? "STRONG" : "MAX_SEC";
+  const strengthColor = isEmpty ? "var(--text-secondary)" : score <= 1 ? "rgb(248,113,113)" : score <= 3 ? "rgb(251,191,36)" : "var(--accent)";
 
-  // ── Handler ──────────────────────────────────────────────────────────────
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (score < 5) {
+      setStatus({ errors: ["Please complete all password requirements before continuing."], type: "error" });
+      return;
+    }
+
     setIsLoading(true);
-    setStatus({ message: "INITIALIZING UPLINK...", errors: [], type: null });
+    setStatus({ message: "Creating your account...", type: "loading" });
 
     try {
       await apiClient.post("/auth/register", { email, username, password });
-      setStatus({ message: "ACCOUNT CREATED SUCCESSFULLY. REDIRECTING...", errors: [], type: "success" });
+      setStatus({ message: "Account created! Sending you to email verification...", type: "success" });
       setSafeTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(email)}`), 1500);
-    } catch (error: any) {
-      const errs = parseApiError(error);
-      setStatus({ message: "", errors: errs, type: "error" });
-      setIsLoading(false);
+    } catch (error: unknown) {
+      const parsed = parseApiErrorFull(error);
+      if (parsed.kind === "redirect") {
+        // Account created but email failed — still redirect to verify-email
+        setStatus({ message: parsed.message, type: "info" });
+        setSafeTimeout(() => router.push(`${parsed.to}?email=${encodeURIComponent(email)}`), 2500);
+      } else {
+        setStatus({ errors: parsed.messages, type: "error" });
+        setIsLoading(false);
+      }
     }
   };
 
   return (
-    <AuthContainer isMobile={isMobile} nodeName="// v2.1">
-      <AuthHeader isMobile={isMobile} subtitle={isMobile ? "REGISTER" : "Sign Up"} icon={<Diamond className="w-5 h-5 fill-current" />} />
+    <AuthContainer isMobile={isMobile}>
+      <AuthHeader isMobile={isMobile} subtitle="Create your account" />
       <AuthSocials isMobile={isMobile} />
 
-      <form onSubmit={handleRegister} className="flex flex-col gap-5">
-        <div className="flex flex-col gap-2 relative">
-          <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="username">
-            // USERNAME
-          </label>
-          <input
-            type="text"
-            id="username"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
-            placeholder="ENTER USERNAME..."
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            disabled={isLoading}
-          />
-        </div>
+      <form onSubmit={handleRegister} className="flex flex-col gap-5" noValidate>
+        <AuthInput
+          id="username"
+          label="Username"
+          type="text"
+          value={username}
+          onChange={setUsername}
+          placeholder="Choose a username"
+          required
+          disabled={isLoading}
+          autoComplete="username"
+          autoFocus
+        />
 
-        <div className="flex flex-col gap-2 relative">
-          <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="email">
-            // EMAIL ADDRESS
-          </label>
-          <input
-            type="email"
-            id="email"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
-            placeholder="ENTER EMAIL ADDRESS..."
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={isLoading}
-          />
-        </div>
+        <AuthInput
+          id="email"
+          label="Email address"
+          type="email"
+          value={email}
+          onChange={setEmail}
+          placeholder="your@email.com"
+          required
+          disabled={isLoading}
+          autoComplete="email"
+        />
 
-        <div className="flex flex-col gap-2 relative">
-          <label className="text-[10px] text-accent/50 uppercase tracking-[0.25em] font-black ml-1" htmlFor="password">
-            // PASSWORD
-          </label>
-          <input
-            type="password"
+        <div className="flex flex-col gap-1.5">
+          <AuthInput
             id="password"
-            className={`w-full bg-bg-primary/80 border border-accent/20 rounded-lg ${isMobile ? "p-4" : "p-3.5"} text-accent outline-none focus:border-accent/60 focus:bg-accent/5 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-xs placeholder:opacity-60 focus:shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]`}
-            placeholder="••••••••••••"
+            label="Password"
+            type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={setPassword}
+            placeholder="Create a strong password"
             required
             disabled={isLoading}
+            autoComplete="new-password"
           />
-          {password.length > 0 && (
-            <PasswordStrengthIndicator
-              score={score}
-              checks={checks}
-              strengthColor={strengthColor}
-              strengthLabel={strengthLabel}
-              isMobile={isMobile}
-            />
-          )}
+          <PasswordStrengthIndicator
+            score={score}
+            checks={checks}
+            strengthColor={strengthColor}
+            strengthLabel={strengthLabel}
+            isMobile={isMobile}
+          />
         </div>
 
-        <AuthStatusTerminal status={status} />
+        <AuthStatusMessage status={status} />
 
-        <div className="flex flex-col gap-4 mt-1">
+        <AuthButton isLoading={isLoading} loadingText="Creating account...">
+          Create Account
+        </AuthButton>
+
+        <div className="flex flex-col items-center gap-3 pt-1">
           <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full ${isMobile ? "py-5" : "py-4"} bg-accent/10 border border-accent/40 text-accent font-black text-[11px] hover:bg-accent/20 hover:border-accent/80 transition-all duration-300 rounded-lg uppercase tracking-[0.3em] shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)] hover:shadow-[0_0_25px_rgba(var(--accent-rgb),0.3)] hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed`}
+            type="button"
+            onClick={() => router.push("/login")}
+            className="text-sm text-text-secondary hover:text-text-primary transition-colors"
           >
-            {isLoading ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"}
+            Already have an account? <span className="text-accent font-semibold">Sign in</span>
           </button>
-
-          <div className="text-center flex flex-col gap-4">
-            <button
-              type="button"
-              onClick={() => router.push("/login")}
-              className="text-green-500 hover:text-green-600 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]"
-            >
-              [ Log In instead ]
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/verify-email")}
-              className="text-accent/30 hover:text-accent/60 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300"
-            >
-              [ Verify Email Code ]
-            </button>
-            <div className="mt-2 pt-2 border-t border-accent/10 w-full max-w-[200px] mx-auto">
-              <button
-                type="button"
-                onClick={() => router.push("/dashboard")}
-                className="text-accent/40 hover:text-accent/80 text-[10px] uppercase tracking-[0.25em] font-bold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.3)]"
-              >
-                [ Continue as Guest ]
-              </button>
-            </div>
-          </div>
+          <div className="w-full h-px" style={{ background: 'rgba(var(--accent-rgb),0.08)' }} />
+          <button
+            type="button"
+            onClick={() => router.push("/dashboard")}
+            className="text-xs text-text-secondary/50 hover:text-text-secondary transition-colors"
+          >
+            Continue as guest
+          </button>
         </div>
       </form>
     </AuthContainer>

@@ -120,12 +120,7 @@ export function useSoundEffects(): SoundEffects {
   }, []);
 
   const playHover = useCallback((): void => {
-    const now = Date.now();
-    if (now - lastHoverAt < HOVER_COOLDOWN_MS) return;
-    lastHoverAt = now;
-    playToneSequence([
-      { frequency: 740, duration: 0.035, startOffset: 0, gain: 0.32, type: "sine" },
-    ]);
+    // Disabled hover sound
   }, []);
 
   const playClick = useCallback((): void => {
@@ -167,3 +162,4 @@ export function useSoundEffects(): SoundEffects {
 
   return { playHover, playClick, playLaser, playExplosion, playVictory, playDefeat };
 }
+
