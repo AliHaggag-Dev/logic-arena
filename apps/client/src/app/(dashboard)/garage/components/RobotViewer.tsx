@@ -66,7 +66,7 @@ interface RobotViewerProps {
 
 export function RobotViewer({ file, color, scale, isMobile }: RobotViewerProps) {
   return (
-    <div className="w-full h-full rounded-2xl overflow-hidden border border-accent/10 bg-bg-secondary/20 backdrop-blur-sm relative shadow-2xl">
+    <div className="w-full h-full rounded-2xl overflow-hidden border border-accent/10 bg-bg-secondary/80 relative shadow-2xl">
       {/* Corner decorations */}
       <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-accent/40 rounded-tl-xl z-20 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-accent/40 rounded-br-xl z-20 pointer-events-none" />

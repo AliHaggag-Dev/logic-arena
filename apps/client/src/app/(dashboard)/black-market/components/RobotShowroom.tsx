@@ -219,7 +219,20 @@ interface RobotShowroomProps {
 export function RobotShowroom({ chassisId, paintColor, tracerColor, quality = "medium" }: RobotShowroomProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const highQuality = quality === "high";
-  const animate = !prefersReducedMotion && quality !== "low";
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { rootMargin: "50px", threshold: 0 }
+    );
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const shouldAnimate = !prefersReducedMotion && quality !== "low" && isVisible;
+
   const dpr = useMemo<[number, number]>(() => {
     if (quality === "low") return [1, 1];
     if (quality === "high") return [1, 2];
@@ -227,29 +240,31 @@ export function RobotShowroom({ chassisId, paintColor, tracerColor, quality = "m
   }, [quality]);
 
   return (
-    <Canvas
-      frameloop={animate ? "always" : "demand"}
-      dpr={dpr}
-      gl={{ antialias: quality !== "low", alpha: true, powerPreference: quality === "low" ? "low-power" : "high-performance" }}
-      camera={{ position: [0, 0.8, 3.8], fov: 45 }}
-      style={{ background: "transparent" }}
-    >
-      <SceneLights color={paintColor} highQuality={highQuality} />
-      {quality !== "low" && <Environment preset="city" />}
-      <RobotMesh chassisId={chassisId} paintColor={paintColor} tracerColor={tracerColor} animate={animate} />
-      <OrbitControls
-        enablePan={true}
-        enableZoom={true}
-        enableRotate={true}
-        minDistance={0.5}
-        maxDistance={10.0}
-        minPolarAngle={0}
-        maxPolarAngle={Math.PI / 1.5}
-        panSpeed={1.2}
-        enableDamping={true}
-        dampingFactor={0.05}
-        autoRotate={false}
-      />
-    </Canvas>
+    <div ref={containerRef} className="w-full h-full" style={{ touchAction: "pan-y" }}>
+      <Canvas
+        frameloop={shouldAnimate ? "always" : "demand"}
+        dpr={dpr}
+        gl={{ antialias: quality !== "low", alpha: true, powerPreference: quality === "low" ? "low-power" : "high-performance" }}
+        camera={{ position: [0, 0.8, 3.8], fov: 45 }}
+        style={{ background: "transparent" }}
+      >
+        <SceneLights color={paintColor} highQuality={highQuality} />
+        {quality !== "low" && <Environment preset="city" />}
+        <RobotMesh chassisId={chassisId} paintColor={paintColor} tracerColor={tracerColor} animate={shouldAnimate} />
+        <OrbitControls
+          enablePan={true}
+          enableZoom={true}
+          enableRotate={true}
+          minDistance={0.5}
+          maxDistance={10.0}
+          minPolarAngle={0}
+          maxPolarAngle={Math.PI / 1.5}
+          panSpeed={1.2}
+          enableDamping={true}
+          dampingFactor={0.05}
+          autoRotate={false}
+        />
+      </Canvas>
+    </div>
   );
 }
