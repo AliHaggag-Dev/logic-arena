@@ -14,18 +14,18 @@ export const StatItem = ({ label, value, accent, isMobile, brandColor }: StatIte
     {!isMobile && (
       <span
         className="font-mono text-[8px] tracking-widest mb-1"
-        style={{ color: accent ? "rgba(255,0,85,0.7)" : `${brandColor}80` }}
+        style={{ color: accent ? "rgba(var(--arena-red-rgb),0.7)" : `color-mix(in oklab, ${brandColor} 50%, transparent)` }}
       >
         {label}
       </span>
     )}
-    <span className={`font-mono font-bold tabular-nums ${isMobile ? "text-[8px]" : "text-sm"} ${accent ? "text-[#ff0055]" : "text-white"}`}>
+    <span className={`font-mono font-bold tabular-nums ${isMobile ? "text-[8px]" : "text-sm"} ${accent ? "text-arena-red" : "text-white"}`}>
       {value}
     </span>
     {isMobile && (
       <span
         className="font-mono text-[5px] uppercase mt-0.5"
-        style={{ color: accent ? "#ff0055" : brandColor, opacity: 0.5 }}
+        style={{ color: accent ? "var(--arena-red)" : brandColor, opacity: 0.5 }}
       >
         {label}
       </span>

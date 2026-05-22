@@ -46,13 +46,14 @@ export function MobileControls({
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-row items-end gap-4 pointer-events-auto">
         {/* ⚡ ZEN EDITOR — pure code */}
         <button
-          type='button'
+          type="button"
+          aria-label="Open code editor"
           onClick={() => setActiveSheet(activeSheet === 'script' ? null : 'script')}
           className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${activeSheet === 'script' ? 'scale-105' : ''}`}
         >
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${activeSheet === 'script'
-            ? 'bg-purple-500/90 shadow-[0_0_20px_rgba(168,85,247,0.6),0_0_40px_rgba(168,85,247,0.2)] border border-purple-400/50'
-            : 'bg-black/80 border border-purple-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
+            ? 'bg-purple-500/90 shadow-[0_0_20px_rgba(var(--arena-purple-rgb),0.6),0_0_40px_rgba(var(--arena-purple-rgb),0.2)] border border-purple-400/50'
+            : 'bg-black/80 border border-purple-500/20 shadow-[0_4px_20px_rgba(var(--arena-black-rgb),0.8)]'
             }`}>
             <Zap className="w-5 h-5 text-purple-300" />
           </div>
@@ -63,13 +64,14 @@ export function MobileControls({
 
         {/* 📟 COMMAND HUB — controls, bots, handbook */}
         <button
-          type='button'
+          type="button"
+          aria-label="Open command hub"
           onClick={() => setActiveSheet(activeSheet === 'controls' ? null : 'controls')}
           className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${activeSheet === 'controls' ? 'scale-105' : ''}`}
         >
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${activeSheet === 'controls'
-            ? 'bg-cyan-500/90 shadow-[0_0_20px_rgba(34,211,238,0.6),0_0_40px_rgba(34,211,238,0.2)] border border-cyan-400/50'
-            : 'bg-black/80 border border-cyan-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.8)]'
+            ? 'bg-cyan-500/90 shadow-[0_0_20px_rgba(var(--arena-cyan-rgb),0.6),0_0_40px_rgba(var(--arena-cyan-rgb),0.2)] border border-cyan-400/50'
+            : 'bg-black/80 border border-cyan-500/20 shadow-[0_4px_20px_rgba(var(--arena-black-rgb),0.8)]'
             }`}>
             <Terminal className="w-5 h-5 text-cyan-300" />
           </div>

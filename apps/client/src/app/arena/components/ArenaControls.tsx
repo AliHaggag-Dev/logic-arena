@@ -29,12 +29,13 @@ export const ArenaControls: React.FC<ArenaControlsProps> = ({
       {/* Override Console */}
       <form
         onSubmit={handleCommandSubmit}
-        className={`flex items-center gap-2 bg-black/40 border border-cyan-900/50 rounded-lg p-3 focus-within:border-cyan-500/50 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] ${
+        className={`flex items-center gap-2 bg-black/40 border border-cyan-900/50 rounded-lg p-3 focus-within:border-cyan-500/50 transition-all shadow-[inset_0_2px_10px_rgba(var(--arena-black-rgb),0.5)] ${
           isMobile ? 'py-4' : 'p-2'
         }`}
       >
         <span className="text-cyan-500 font-bold ml-1">{'>'}</span>
         <input
+          aria-label="Enter command"
           placeholder="Run override command (e.g. FIRE)"
           type="text"
           className="flex-grow bg-transparent outline-none text-cyan-300 text-xs font-mono placeholder-cyan-900"

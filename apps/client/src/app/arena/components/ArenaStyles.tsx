@@ -6,8 +6,8 @@ export function ArenaStyles() {
   return (
     <style jsx global>{`
       @keyframes neural-pulse {
-        0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(34,211,238,0.1), inset 0 0 2px rgba(34,211,238,0.05); }
-        50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(34,211,238,0.4), inset 0 0 8px rgba(34,211,238,0.2); border-color: rgba(34,211,238,0.7); }
+        0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(var(--arena-cyan-rgb),0.1), inset 0 0 2px rgba(var(--arena-cyan-rgb),0.05); }
+        50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(var(--arena-cyan-rgb),0.4), inset 0 0 8px rgba(var(--arena-cyan-rgb),0.2); border-color: rgba(var(--arena-cyan-rgb),0.7); }
       }
       .animate-neural-pulse { animation: neural-pulse 3s ease-in-out infinite; }
       .animate-neural-pulse-delayed { animation: neural-pulse 3s ease-in-out 1s infinite; }

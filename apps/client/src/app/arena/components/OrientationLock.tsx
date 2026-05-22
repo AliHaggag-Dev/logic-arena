@@ -2,13 +2,17 @@
 
 import React from 'react';
 
+type LockableScreenOrientation = ScreenOrientation & {
+  lock?: (orientation: 'landscape') => Promise<void>;
+};
+
 export function OrientationLock() {
   return (
     <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center overflow-hidden">
       <div
         className="absolute inset-0 z-0 opacity-10 pointer-events-none"
         style={{
-          backgroundImage: 'linear-gradient(rgba(34,211,238,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.2) 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(rgba(var(--arena-cyan-rgb),0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--arena-cyan-rgb),0.2) 1px, transparent 1px)',
           backgroundSize: '30px 30px'
         }}
       />
@@ -18,7 +22,7 @@ export function OrientationLock() {
       <div className="relative mb-12">
         <div className="w-32 h-32 border-2 border-cyan-500/20 rounded-full animate-ping opacity-20 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         <div className="relative animate-[rotate-phone_3s_ease-in-out_infinite]">
-          <div className="w-16 h-28 border-4 border-cyan-500 rounded-2xl relative shadow-[0_0_30px_rgba(34,211,238,0.3)]">
+          <div className="w-16 h-28 border-4 border-cyan-500 rounded-2xl relative shadow-[0_0_30px_rgba(var(--arena-cyan-rgb),0.3)]">
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-cyan-700 rounded-full" />
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 border-2 border-cyan-700 rounded-full" />
             <div className="absolute inset-2 bg-cyan-500/10 rounded-sm overflow-hidden">
@@ -30,19 +34,21 @@ export function OrientationLock() {
       </div>
       <div className="relative z-10 flex flex-col items-center gap-4">
         <div className="flex items-center gap-3">
-          <span className="w-3 h-3 bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]" />
+          <span className="w-3 h-3 bg-red-500 animate-pulse shadow-[0_0_10px_rgba(var(--sem-danger-rgb),0.8)]" />
           <h2 className="text-cyan-400 text-xl font-black tracking-[0.2em] uppercase italic">Orientation_Lock</h2>
         </div>
         <p className="text-cyan-500/60 text-xs tracking-[0.3em] font-bold max-w-[240px] uppercase leading-relaxed">
           Combat systems optimized for horizontal field of view.
         </p>
-        <button 
+        <button
+          type="button"
           onClick={async () => {
             try {
               if (document.documentElement.requestFullscreen) {
                 await document.documentElement.requestFullscreen();
-                if (screen && screen.orientation && 'lock' in screen.orientation) {
-                  await (screen.orientation as any).lock('landscape');
+                const orientation: LockableScreenOrientation | undefined = screen?.orientation as LockableScreenOrientation | undefined;
+                if (typeof orientation?.lock === 'function') {
+                  await orientation.lock('landscape');
                 }
               }
             } catch (err) {

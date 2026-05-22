@@ -43,6 +43,50 @@
   --docs-slate: #94a3b8;
   --docs-pink: #ec4899;
   --docs-rose: #f43f5e;
+
+  /* Arena HUD Colors */
+  --arena-cyan: #22d3ee;
+  --arena-red: #ff0055;
+  --arena-yellow: #ffcc00;
+  --arena-green: #4ade80;
+  --arena-amber: #f59e0b;
+  --arena-bg-dark: #020813;
+  --arena-bg-overlay: rgba(2, 8, 19, 0.85);
+  --arena-fps-good: #4ade80;
+  --arena-fps-warn: #facc15;
+  --arena-fps-bad: #f87171;
+  --arena-fps-warn-rgb: 250, 204, 21;
+  --arena-fps-bad-rgb: 248, 113, 113;
+  --arena-radar-scan: #22d3ee;
+  --arena-projectile: #facc15;
+  --arena-stasis: #4488ff;
+  --arena-stasis-rgb: 68, 136, 255;
+  --arena-training-brand: #00ffff;
+  --arena-racing-brand: #eab308;
+  --arena-finish: #00ff00;
+  --arena-white: #ffffff;
+  --arena-black: #000000;
+  --arena-surface-muted: #333333;
+  --arena-dummy-core-dead: #222222;
+  --arena-dummy-health-high: #00bbff;
+  --arena-dummy-health-mid: #0088ff;
+  --arena-dummy-health-low: #0055cc;
+  --arena-damage: #ff3355;
+  --arena-spectator-text: #c4b5fd;
+  --arena-spectator-bg-rgb: 109, 40, 217;
+  --arena-spectator-border-rgb: 167, 139, 250;
+  --arena-spectator-glow-rgb: 139, 92, 246;
+  --arena-exit-hover-rgb: 127, 29, 29;
+  --arena-purple-rgb: 168, 85, 247;
+  --arena-black-rgb: 0, 0, 0;
+  --arena-white-rgb: 255, 255, 255;
+  --arena-cyan-rgb: 34, 211, 238;
+  --arena-red-rgb: 255, 0, 85;
+  --arena-yellow-rgb: 255, 204, 0;
+  --arena-green-rgb: 74, 222, 128;
+  --arena-amber-rgb: 245, 158, 11;
+  --arena-racing-brand-rgb: 234, 179, 8;
+  --arena-training-brand-rgb: 0, 255, 255;
 }
 
 /* ── VIOLET SOVEREIGN — Premium light, deep violet authority ── */
@@ -174,6 +218,22 @@
   --color-red-950:     color-mix(in oklab, var(--sem-danger) 18%, transparent);
   --color-amber-400:   var(--sem-warning);
   --color-yellow-500:  var(--sem-warning);
+  --color-arena-cyan: var(--arena-cyan);
+  --color-arena-red: var(--arena-red);
+  --color-arena-yellow: var(--arena-yellow);
+  --color-arena-green: var(--arena-green);
+  --color-arena-amber: var(--arena-amber);
+  --color-arena-bg-dark: var(--arena-bg-dark);
+  --color-arena-fps-good: var(--arena-fps-good);
+  --color-arena-fps-warn: var(--arena-fps-warn);
+  --color-arena-fps-bad: var(--arena-fps-bad);
+  --color-arena-radar-scan: var(--arena-radar-scan);
+  --color-arena-projectile: var(--arena-projectile);
+  --color-arena-stasis: var(--arena-stasis);
+  --color-arena-training-brand: var(--arena-training-brand);
+  --color-arena-racing-brand: var(--arena-racing-brand);
+  --color-arena-finish: var(--arena-finish);
+  --color-arena-damage: var(--arena-damage);
 }
 
 html {

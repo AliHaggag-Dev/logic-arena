@@ -20,7 +20,7 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
   fps, fogEnabled, setFogEnabled, socket, isConnected,
   robots, projectiles, displayMode,
 }) => {
-  const fpsColor = fps >= 50 ? '#4ade80' : fps >= 30 ? '#facc15' : '#f87171';
+  const fpsColor = fps >= 50 ? 'var(--arena-fps-good)' : fps >= 30 ? 'var(--arena-fps-warn)' : 'var(--arena-fps-bad)';
   const [lockVision, setLockVision] = useState(false);
 
   const dummies = robots.filter(r => r.id.startsWith('dummy-'));
@@ -70,11 +70,11 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
             <button
               type="button"
               onClick={handleResetGame}
-              className="group flex items-center gap-1.5 px-2 py-1.5 bg-black/50 backdrop-blur-md border border-red-500/30 rounded-lg hover:border-red-400/60 hover:bg-red-950/30 active:scale-95 transition-all shadow-[0_0_8px_rgba(239,68,68,0.1)] hover:shadow-[0_0_12px_rgba(239,68,68,0.3)]"
+              className="group flex items-center gap-1.5 px-2 py-1.5 bg-black/50 backdrop-blur-md border border-red-500/30 rounded-lg hover:border-red-400/60 hover:bg-red-950/30 active:scale-95 transition-all shadow-[0_0_8px_rgba(var(--sem-danger-rgb),0.1)] hover:shadow-[0_0_12px_rgba(var(--sem-danger-rgb),0.3)]"
             >
               <span className="relative flex items-center justify-center w-2 h-2">
                 <span className="absolute w-2 h-2 rounded-full bg-red-500/30 animate-ping" />
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.8)]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_4px_rgba(var(--sem-danger-rgb),0.8)]" />
               </span>
               <span className="text-[7px] text-red-400/70 font-black tracking-widest uppercase">Respawn</span>
             </button>
@@ -84,17 +84,17 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
               onClick={() => socket?.emit('respawnDummies')}
               className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${
                 allDead
-                  ? 'bg-[#00ffff]/20 border-[#00ffff]/60 shadow-[0_0_12px_rgba(0,255,255,0.4)] animate-pulse'
-                  : 'bg-[#00ffff]/5 border-[#00ffff]/20 hover:border-[#00ffff]/50'
+                  ? 'bg-arena-training-brand/20 border-arena-training-brand/60 shadow-[0_0_12px_rgba(var(--arena-training-brand-rgb),0.4)] animate-pulse'
+                  : 'bg-arena-training-brand/5 border-arena-training-brand/20 hover:border-arena-training-brand/50'
               }`}
             >
               <span className="relative flex items-center justify-center w-2 h-2">
-                <span className={`w-1.5 h-1.5 rounded-full bg-[#00ffff] shadow-[0_0_4px_rgba(0,255,255,0.8)]`} />
+                <span className="w-1.5 h-1.5 rounded-full bg-arena-training-brand shadow-[0_0_4px_rgba(var(--arena-training-brand-rgb),0.8)]" />
               </span>
-              <span className="text-[7px] text-[#00ffff]/80 font-black tracking-widest uppercase flex items-center gap-1">
+              <span className="text-[7px] text-arena-training-brand/80 font-black tracking-widest uppercase flex items-center gap-1">
                 RESPAWN DUMMIES
                 {dummies.length > 0 && (
-                  <span className={`px-1 py-0.5 rounded text-[6px] ${allDead ? 'bg-[#ff0055] text-white' : 'bg-[#00ffff]/20 text-[#00ffff]'}`}>
+                  <span className={`px-1 py-0.5 rounded text-[6px] ${allDead ? 'bg-arena-red text-white' : 'bg-arena-training-brand/20 text-arena-training-brand'}`}>
                     {aliveDummies}/{dummies.length}
                   </span>
                 )}
@@ -106,14 +106,14 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
             type="button"
             onClick={() => setFogEnabled((prev: boolean) => !prev)}
             className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${fogEnabled
-              ? 'bg-cyan-950/40 border-cyan-500/40 hover:border-cyan-400/70 hover:bg-cyan-900/30 shadow-[0_0_8px_rgba(34,211,238,0.15)] hover:shadow-[0_0_12px_rgba(34,211,238,0.35)]'
+              ? 'bg-cyan-950/40 border-cyan-500/40 hover:border-cyan-400/70 hover:bg-cyan-900/30 shadow-[0_0_8px_rgba(var(--arena-cyan-rgb),0.15)] hover:shadow-[0_0_12px_rgba(var(--arena-cyan-rgb),0.35)]'
               : 'bg-black/50 border-white/10 hover:border-white/25 hover:bg-white/5'
               }`}
           >
             <span className="relative flex items-center justify-center w-2 h-2">
               {fogEnabled && <span className="absolute w-2 h-2 rounded-full bg-cyan-500/30 animate-ping" />}
               <span className={`w-1.5 h-1.5 rounded-full transition-all ${fogEnabled
-                ? 'bg-cyan-400 shadow-[0_0_4px_rgba(34,211,238,0.8)]'
+                ? 'bg-cyan-400 shadow-[0_0_4px_rgba(var(--arena-cyan-rgb),0.8)]'
                 : 'bg-white/25'
                 }`} />
             </span>
@@ -127,14 +127,14 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
             type="button"
             onClick={handleToggleLockVision}
             className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${lockVision
-              ? 'bg-amber-950/40 border-amber-500/40 hover:border-amber-400/70 hover:bg-amber-900/30 shadow-[0_0_8px_rgba(245,158,11,0.15)] hover:shadow-[0_0_12px_rgba(245,158,11,0.35)]'
+              ? 'bg-amber-950/40 border-amber-500/40 hover:border-amber-400/70 hover:bg-amber-900/30 shadow-[0_0_8px_rgba(var(--arena-amber-rgb),0.15)] hover:shadow-[0_0_12px_rgba(var(--arena-amber-rgb),0.35)]'
               : 'bg-black/50 border-white/10 hover:border-white/25 hover:bg-white/5'
               }`}
           >
             <span className="relative flex items-center justify-center w-2 h-2">
               {lockVision && <span className="absolute w-2 h-2 rounded-full bg-amber-500/30 animate-ping" />}
               <span className={`w-1.5 h-1.5 rounded-full transition-all ${lockVision
-                ? 'bg-amber-400 shadow-[0_0_4px_rgba(245,158,11,0.8)]'
+                ? 'bg-amber-400 shadow-[0_0_4px_rgba(var(--arena-amber-rgb),0.8)]'
                 : 'bg-white/25'
                 }`} />
             </span>
@@ -158,7 +158,7 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
         </div>
         <div className="flex items-center gap-1 px-2 py-0.5 bg-black/30 backdrop-blur-sm border border-white/5 rounded-full">
           <span className={`w-1 h-1 rounded-full ${isConnected
-            ? 'bg-cyan-400 shadow-[0_0_4px_rgba(34,211,238,0.8)]'
+            ? 'bg-cyan-400 shadow-[0_0_4px_rgba(var(--arena-cyan-rgb),0.8)]'
             : 'bg-yellow-400 animate-pulse'
             }`} />
           <span className="text-[7px] font-mono text-white/20 tracking-widest uppercase">

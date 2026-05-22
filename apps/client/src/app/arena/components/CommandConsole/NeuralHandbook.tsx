@@ -34,7 +34,7 @@ export const NeuralHandbook: React.FC<NeuralHandbookProps> = ({ isOpen, onSelect
 
     const innerClass = fullWidth
         ? "flex flex-col gap-3 h-full"
-        : "border border-cyan-800/60 bg-black/80 rounded-lg p-4 shadow-[0_0_20px_rgba(34,211,238,0.15)] flex flex-col gap-3 h-full min-w-[18rem]";
+        : "border border-cyan-800/60 bg-black/80 rounded-lg p-4 shadow-[0_0_20px_rgba(var(--arena-cyan-rgb),0.15)] flex flex-col gap-3 h-full min-w-[18rem]";
 
     return (
         <div className={outerClass}>
@@ -44,6 +44,7 @@ export const NeuralHandbook: React.FC<NeuralHandbookProps> = ({ isOpen, onSelect
                 <div className="flex gap-2 shrink-0">
                     {(["Control", "Haptic", "Math"] as const).map(tab => (
                         <button
+                            type="button"
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`flex-1 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded border ${activeTab === tab ? "bg-cyan-900/50 text-cyan-300 border-cyan-500/50" : "bg-transparent text-cyan-700 border-cyan-900/30 hover:bg-cyan-900/20"}`}
@@ -60,6 +61,7 @@ export const NeuralHandbook: React.FC<NeuralHandbookProps> = ({ isOpen, onSelect
                             <div className="flex items-start gap-2">
                                 <pre className="text-cyan-300 text-[10px] whitespace-pre-wrap font-mono flex-1">{item.cmd}</pre>
                                 <button
+                                    type="button"
                                     onClick={() => onSelect(item.cmd)}
                                     className={`text-[10px] bg-cyan-900/40 text-cyan-400 px-2.5 py-1.5 rounded font-bold tracking-wider transition-all shrink-0 ${
                                         fullWidth

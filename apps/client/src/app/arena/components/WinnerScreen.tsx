@@ -32,24 +32,24 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
   const title = draw ? 'DRAW' : isWinner ? 'VICTORY' : 'DEFEATED';
 
   const titleColor = draw
-    ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]'
+    ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(var(--arena-fps-warn-rgb),0.8)]'
     : isWinner
-      ? 'text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]'
-      : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]';
+      ? 'text-cyan-400 drop-shadow-[0_0_15px_rgba(var(--arena-cyan-rgb),0.8)]'
+      : 'text-red-500 drop-shadow-[0_0_15px_rgba(var(--sem-danger-rgb),0.8)]';
 
   const orbGlow = draw
-    ? 'shadow-[0_0_50px_rgba(250,204,21,0.6)] border-yellow-400/50'
+    ? 'shadow-[0_0_50px_rgba(var(--arena-fps-warn-rgb),0.6)] border-yellow-400/50'
     : isWinner
-      ? 'shadow-[0_0_50px_rgba(34,211,238,0.6)] border-cyan-400/50'
-      : 'shadow-[0_0_50px_rgba(239,68,68,0.6)] border-red-500/50';
+      ? 'shadow-[0_0_50px_rgba(var(--arena-cyan-rgb),0.6)] border-cyan-400/50'
+      : 'shadow-[0_0_50px_rgba(var(--sem-danger-rgb),0.6)] border-red-500/50';
 
   // Efficiency score for the current player
   const myScore = currentUserId ? (efficiencyScores?.[currentUserId] ?? null) : null;
   const scoreColor =
     myScore === null ? 'text-white/40' :
-      myScore >= 50 ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]' :
-        myScore >= 20 ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]' :
-          'text-red-400  drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]';
+      myScore >= 50 ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(var(--arena-cyan-rgb),0.6)]' :
+        myScore >= 20 ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(var(--sem-warning-rgb),0.5)]' :
+          'text-red-400  drop-shadow-[0_0_8px_rgba(var(--sem-danger-rgb),0.5)]';
 
   const handleRematch = () => {
     socket.emit('resetGame', { matchId });
@@ -64,9 +64,9 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
       <div className="absolute inset-0 z-0">
         <div
           className="absolute inset-0 opacity-30"
-          style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '100px 100px' }}
+          style={{ backgroundImage: 'radial-gradient(circle at center, var(--arena-white) 1px, transparent 1px)', backgroundSize: '100px 100px' }}
         />
-        <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-10 bg-[length:100%_2px,3px_100%]" />
+        <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(var(--arena-black-rgb),0)_50%,rgba(var(--arena-black-rgb),0.25)_50%),linear-gradient(90deg,rgba(var(--arena-red-rgb),0.06),rgba(var(--arena-green-rgb),0.02),rgba(var(--arena-stasis-rgb),0.06))] z-10 bg-[length:100%_2px,3px_100%]" />
         <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,var(--accent)_1px,transparent_1px),linear-gradient(to_bottom,var(--accent)_1px,transparent_1px)] bg-[size:40px_40px] [transform:perspective(500px)_rotateX(60deg)] [transform-origin:top]" />
       </div>
 
@@ -93,9 +93,9 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
             <div className={`absolute inset-0 -m-4 rounded-full border animate-[spin_15s_linear_infinite_reverse] opacity-40 ${isWinner ? 'border-cyan-400' : 'border-red-500'}`} />
             <div
               className={`w-32 h-32 rounded-full border-2 animate-pulse flex items-center justify-center ${orbGlow}`}
-              style={{ backgroundColor: `${winner.color}33` }}
+              style={{ backgroundColor: `color-mix(in oklab, ${winner.color} 20%, transparent)` }}
             >
-              <div className="w-16 h-16 rounded-full shadow-[inset_0_0_20px_rgba(255,255,255,0.5)]" style={{ backgroundColor: winner.color }} />
+              <div className="w-16 h-16 rounded-full shadow-[inset_0_0_20px_rgba(var(--arena-white-rgb),0.5)]" style={{ backgroundColor: winner.color }} />
             </div>
           </div>
         )}
@@ -133,12 +133,22 @@ const WinnerScreen: React.FC<WinnerScreenProps> = ({
 
         {/* Action buttons */}
         <div className="flex flex-col gap-6 w-72">
-          <button onClick={handleRematch} className="group relative px-8 py-4 bg-transparent transition-all overflow-hidden">
-            <div className="absolute inset-0 border border-cyan-500/50 group-hover:border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.2)] group-hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] transition-all" />
+          <button
+            type="button"
+            aria-label="Rematch"
+            onClick={handleRematch}
+            className="group relative px-8 py-4 bg-transparent transition-all overflow-hidden"
+          >
+            <div className="absolute inset-0 border border-cyan-500/50 group-hover:border-cyan-400 shadow-[0_0_15px_rgba(var(--arena-cyan-rgb),0.2)] group-hover:shadow-[0_0_25px_rgba(var(--arena-cyan-rgb),0.5)] transition-all" />
             <div className="absolute inset-0 bg-cyan-500/5 group-hover:bg-cyan-500/10 transition-all" />
             <span className="relative z-10 text-cyan-400 font-black tracking-[0.3em] text-sm group-hover:text-cyan-300">REINIT_SESSION</span>
           </button>
-          <button onClick={handleReturnToLobby} className="group relative px-8 py-4 bg-transparent transition-all overflow-hidden">
+          <button
+            type="button"
+            aria-label="Return to lobby"
+            onClick={handleReturnToLobby}
+            className="group relative px-8 py-4 bg-transparent transition-all overflow-hidden"
+          >
             <div className="absolute inset-0 border border-white/10 group-hover:border-white/20 transition-all" />
             <div className="absolute inset-0 bg-white/5 group-hover:bg-white/10 transition-all" />
             <span className="relative z-10 text-white/40 font-black tracking-[0.3em] text-sm group-hover:text-white/60">ABORT_TO_LOBBY</span>

@@ -22,12 +22,12 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
 }) => {
   const containerClasses = isMobile && isExpanded
     ? "w-full h-full p-4"
-    : "relative w-full h-[calc(100%-30px)] p-0 overflow-hidden bg-[radial-gradient(circle,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:20px_20px]";
+    : "relative w-full h-[calc(100%-30px)] p-0 overflow-hidden bg-[radial-gradient(circle,rgba(var(--arena-cyan-rgb),0.05)_1px,transparent_1px)] bg-[size:20px_20px]";
 
   return (
     <div className={containerClasses}>
       {/* Scan line */}
-      <div className="absolute top-0 left-0 w-full h-px bg-cyan-400/30 shadow-[0_0_8px_#22d3ee] animate-scan z-10" />
+      <div className="absolute top-0 left-0 w-full h-px bg-arena-radar-scan/30 shadow-[0_0_8px_var(--arena-radar-scan)] animate-scan z-10" />
 
       {/* Grid */}
       <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 opacity-10 pointer-events-none">
@@ -47,6 +47,7 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
 
         const dotSize = isMobile && !isExpanded ? 'w-2 h-2' : 'w-2.5 h-2.5';
         const barWidth = isMobile && !isExpanded ? 'w-4' : 'w-6';
+        const robotRadarColor = robot.color || 'var(--arena-training-brand)';
 
         return (
           <div
@@ -63,15 +64,15 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
               {/* Ping ring */}
               <div
                 className="absolute w-4 h-4 rounded-full border border-current opacity-20 animate-ping"
-                style={{ color: robot.color || '#00ffff' }}
+                style={{ color: robotRadarColor }}
               />
 
               {/* Dot blip instead of triangle */}
               <div
                 className={`${dotSize} rounded-full shadow-[0_0_6px_currentColor]`}
                 style={{
-                  backgroundColor: robot.color || '#00ffff',
-                  color: robot.color || '#00ffff',
+                  backgroundColor: robotRadarColor,
+                  color: robotRadarColor,
                 }}
               />
 
@@ -115,7 +116,7 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <div className="w-1 h-1 rounded-full bg-yellow-400 shadow-[0_0_4px_#facc15]" />
+          <div className="w-1 h-1 rounded-full bg-arena-projectile shadow-[0_0_4px_var(--arena-projectile)]" />
         </div>
       ))}
 

@@ -66,14 +66,16 @@ export function DesktopHUD({
   return (
     <>
       <button
+        type="button"
+        aria-label={isLeftPanelOpen ? 'Collapse arena HUD panel' : 'Expand arena HUD panel'}
         onClick={() => setIsLeftPanelOpen(prev => !prev)}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-12 h-40 bg-black/80 backdrop-blur-xl border-y border-r border-cyan-500/50 rounded-r-2xl cursor-pointer group hover:w-16 hover:bg-cyan-950/80 transition-all shadow-[8px_0_30px_rgba(0,0,0,0.8),inset_0_0_15px_rgba(34,211,238,0.2)]"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-12 h-40 bg-black/80 backdrop-blur-xl border-y border-r border-cyan-500/50 rounded-r-2xl cursor-pointer group hover:w-16 hover:bg-cyan-950/80 transition-all shadow-[8px_0_30px_rgba(var(--arena-black-rgb),0.8),inset_0_0_15px_rgba(var(--arena-cyan-rgb),0.2)]"
       >
         <div className="flex flex-col items-center justify-center gap-4 h-full w-full">
           <span className="text-cyan-400 font-black tracking-[0.2em] transform -rotate-90 whitespace-nowrap text-[10px] opacity-50 group-hover:opacity-100 transition-opacity">
             {isLeftPanelOpen ? 'ZEN_MODE' : 'SYS_HUD'}
           </span>
-          <span className={`text-cyan-400 font-mono text-2xl font-black transition-transform duration-500 drop-shadow-[0_0_10px_#22d3ee] ${isLeftPanelOpen ? 'rotate-0' : 'rotate-180'}`}>
+          <span className={`text-cyan-400 font-mono text-2xl font-black transition-transform duration-500 drop-shadow-[0_0_10px_var(--arena-cyan)] ${isLeftPanelOpen ? 'rotate-0' : 'rotate-180'}`}>
             {'<'}
           </span>
         </div>
@@ -82,7 +84,7 @@ export function DesktopHUD({
       <div className={`absolute inset-0 z-30 pointer-events-none transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isLeftPanelOpen ? 'translate-x-0' : '-translate-x-[120%]'}`}>
         <div className="absolute top-6 left-8 pointer-events-none flex flex-col gap-1">
           <div className="flex items-end gap-6">
-            <h1 className="text-4xl font-black tracking-tighter text-cyan-400 italic leading-none drop-shadow-[0_0_20px_rgba(34,211,238,0.6)]">
+            <h1 className="text-4xl font-black tracking-tighter text-cyan-400 italic leading-none drop-shadow-[0_0_20px_rgba(var(--arena-cyan-rgb),0.6)]">
               LOGIC ARENA
             </h1>
             <h2 className="text-sm font-bold text-white/40 tracking-[0.4em] uppercase italic mb-0.5">
@@ -90,9 +92,9 @@ export function DesktopHUD({
             </h2>
           </div>
           <div className="flex items-center gap-2 ml-1 mt-0.5">
-            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${displayMode === 'RACING' ? 'bg-yellow-400 shadow-[0_0_8px_#facc15]' :
-              displayMode === 'TRAINING_SOLO' ? 'bg-green-400 shadow-[0_0_8px_#4ade80]' :
-                'bg-red-500 shadow-[0_0_8px_#ef4444]'
+            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${displayMode === 'RACING' ? 'bg-yellow-400 shadow-[0_0_8px_var(--arena-projectile)]' :
+              displayMode === 'TRAINING_SOLO' ? 'bg-green-400 shadow-[0_0_8px_var(--arena-green)]' :
+                'bg-red-500 shadow-[0_0_8px_var(--sem-danger)]'
               }`} />
             <p className={`text-[10px] tracking-[0.25em] font-bold ${displayMode === 'RACING' ? 'text-yellow-400/80' :
               displayMode === 'TRAINING_SOLO' ? 'text-green-400/80' : 'text-red-400/80'
@@ -102,13 +104,13 @@ export function DesktopHUD({
           </div>
         </div>
 
-        <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-2 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 p-2 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.8),inset_0_0_15px_rgba(34,211,238,0.05)]">
+        <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-2 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 p-2 rounded-xl shadow-[0_8px_32px_rgba(var(--arena-black-rgb),0.8),inset_0_0_15px_rgba(var(--arena-cyan-rgb),0.05)]">
           {!isPvP && displayMode !== 'TRAINING_SOLO' && (
             <>
               <button
                 type="button"
                 onClick={handleResetGame}
-                className="group relative flex items-center gap-2 border border-red-500/30 bg-red-950/40 text-red-400 text-[10px] font-black px-4 py-2 rounded-lg transition-all hover:bg-red-500/20 hover:border-red-500 hover:text-red-300 tracking-[0.15em] overflow-hidden shadow-[inset_0_0_10px_rgba(239,68,68,0.1)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                className="group relative flex items-center gap-2 border border-red-500/30 bg-red-950/40 text-red-400 text-[10px] font-black px-4 py-2 rounded-lg transition-all hover:bg-red-500/20 hover:border-red-500 hover:text-red-300 tracking-[0.15em] overflow-hidden shadow-[inset_0_0_10px_rgba(var(--sem-danger-rgb),0.1)] hover:shadow-[0_0_15px_rgba(var(--sem-danger-rgb),0.4)]"
               >
                 <RefreshCw size={13} className="group-hover:rotate-180 transition-transform duration-500" />
                 <span className="relative z-10 mt-[1px]">RESPAWN</span>
@@ -122,7 +124,7 @@ export function DesktopHUD({
             type="button"
             onClick={() => setFogEnabled((prev: boolean) => !prev)}
             className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${fogEnabled
-              ? 'border-cyan-500/50 bg-cyan-900/40 text-cyan-300 hover:bg-cyan-500/30 hover:border-cyan-400 hover:text-cyan-200 shadow-[inset_0_0_10px_rgba(34,211,238,0.2)] hover:shadow-[0_0_15px_rgba(34,211,238,0.4)]'
+              ? 'border-cyan-500/50 bg-cyan-900/40 text-cyan-300 hover:bg-cyan-500/30 hover:border-cyan-400 hover:text-cyan-200 shadow-[inset_0_0_10px_rgba(var(--arena-cyan-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--arena-cyan-rgb),0.4)]'
               : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
               }`}
           >
@@ -137,7 +139,7 @@ export function DesktopHUD({
             type="button"
             onClick={handleToggleLockVision}
             className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${lockVision
-              ? 'border-amber-500/50 bg-amber-900/40 text-amber-300 hover:bg-amber-500/30 hover:border-amber-400 hover:text-amber-200 shadow-[inset_0_0_10px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+              ? 'border-amber-500/50 bg-amber-900/40 text-amber-300 hover:bg-amber-500/30 hover:border-amber-400 hover:text-amber-200 shadow-[inset_0_0_10px_rgba(var(--arena-amber-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--arena-amber-rgb),0.4)]'
               : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
               }`}
             title="Link scanner (FOV) to body rotation. When ON, the scanner follows the robot body."
