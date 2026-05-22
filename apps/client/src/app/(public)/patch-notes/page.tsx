@@ -42,6 +42,22 @@ const TAG_ICONS: Record<Tag, React.ReactNode> = {
 
 const RELEASES: Release[] = [
   {
+    version: "v3.0.0",
+    date: "2026-05-19",
+    headline: "The Architecture Mastery Update & Full Campaign Mode",
+    summary: "A colossal milestone encompassing five major updates (v2.6.0 - v3.0.0). Introduced a live 2D streaming campaign battle system, Swarm Intelligence APIs, the Black Market economy, and a massive architectural refactor that transformed Logic Arena into an enterprise-grade platform.",
+    changes: [
+      { tag: "COMBAT", text: "Live 2D Campaign Battle System — Watch your AliScript fight enemy AI in real-time with 20fps frame-by-frame streaming directly from the server." },
+      { tag: "ENGINE", text: "Deterministic Execution (AliScript v2.4) — Replaced hardware-dependent timing with a strict 2,000 operations/tick quota, enforcing O(1) Big O optimizations." },
+      { tag: "ENGINE", text: "Swarm Intelligence API — Added BROADCAST() and RECEIVE() for secure, deep-copied inter-robot communication and coordination." },
+      { tag: "GARAGE", text: "Black Market Economy & AAA Models — Earn points to purchase custom Chassis, Neon Paints, and Tracer Rounds, featuring premium .glb models." },
+      { tag: "QOL", text: "LeetCode-Style Campaign — Expanded the campaign to a 60-level algorithmic proving ground across 6 categories (Conditionals, Loops, Arrays, etc.)." },
+      { tag: "ENGINE", text: "AliScript Semantic Warning System — Real-time compile checks for logical contradictions (e.g. PATHFIND then STOP) and dead code." },
+      { tag: "QOL", text: "Legendary Identity System — PWA fullscreen support, secure Cloudinary avatar uploads, and a global Live Spectator Mode." },
+      { tag: "BUG FIX", text: "Massive Monorepo Refactor & Security Audit — Dismantled all monoliths, hardened JWT security with HttpOnly cookies, and neutralized ReDoS vulnerabilities." },
+    ],
+  },
+  {
     version: "v2.5.0",
     date: "2026-04-27",
     headline: "The Arena Mastery Update — Performance, Modes & Engine Hardening",
