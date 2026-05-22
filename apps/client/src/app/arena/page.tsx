@@ -58,13 +58,7 @@ const ArenaPageContent = () => {
   } = useGameState(isSpectator ? null : resolvedScriptId, urlMode, isSpectator);
 
   const displayMode = serverConfirmedMode;
-  const projectileAnimRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    const animate = () => { projectileAnimRef.current = requestAnimationFrame(animate); };
-    projectileAnimRef.current = requestAnimationFrame(animate);
-    return () => { if (projectileAnimRef.current) cancelAnimationFrame(projectileAnimRef.current); };
-  }, []);
 
   const { profile, loading: authLoading } = useAuth();
 

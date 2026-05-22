@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo, MutableRefObject, useRef, useState, useEffect } from 'react';
+import React, { useMemo, MutableRefObject, useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import {
   GameState, RobotState, ObstacleState,
@@ -56,7 +56,7 @@ export const ArenaModels = ({
 }) => {
   const { scene } = useThree();
   const robotMeshesRef = useRef<THREE.Group[]>([]);
-  const [renderTick, setRenderTick] = useState(0);
+  const [, setRenderTick] = useState(0);
   const lastUpdateRef = useRef(0);
 
   // BUG FIX: Clear existing static meshes on unmount to prevent 3+ robot duplication on reconnect
@@ -65,11 +65,12 @@ export const ArenaModels = ({
       robotMeshesRef.current.forEach(mesh => {
         if (mesh) {
           scene.remove(mesh);
-          mesh.traverse((child: any) => {
-            if (child.isMesh) {
-              child.geometry?.dispose();
-              if (Array.isArray(child.material)) child.material.forEach((m: any) => m.dispose());
-              else child.material?.dispose();
+          mesh.traverse((child: THREE.Object3D) => {
+            if ((child as THREE.Mesh).isMesh) {
+              const m = child as THREE.Mesh;
+              m.geometry?.dispose();
+              if (Array.isArray(m.material)) m.material.forEach((mat: THREE.Material) => mat.dispose());
+              else (m.material as THREE.Material)?.dispose();
             }
           });
         }
@@ -80,7 +81,7 @@ export const ArenaModels = ({
     };
   }, [scene]);
 
-  // Throttle renders to ~20fps (50ms) — matches the server broadcast rate
+  // Throttled re-render at ~20fps (50ms) — needed so JSX picks up new gameStateRef data
   useFrame(() => {
     const now = performance.now();
     if (now - lastUpdateRef.current < 50) return;
@@ -168,6 +169,7 @@ export const ArenaModels = ({
                       energy={robot.energy ?? 1000}
                       maxEnergy={robot.maxEnergy ?? 1000}
                       inStasis={robot.inStasis ?? false}
+                      inFog={inFog}
                       fov={robot.fov}
                       fovDirection={robot.fovDirection}
                       hideHealthBar={displayMode === 'TRAINING_SOLO'}

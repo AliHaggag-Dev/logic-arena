@@ -1,8 +1,8 @@
 "use client";
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { HitBurstEffectProps, HitParticlesProps } from "../../../types";
+import { HitBurstEffectProps, HitParticlesProps, HitBurst } from "../../../types";
 import { HIT_BURST_LIFETIME, HIT_BURST_PARTICLES } from "../sceneConstants";
 
 const hashStringToSeed = (value: string) => {
@@ -90,12 +90,28 @@ export const HitBurstEffect = ({ burst }: HitBurstEffectProps) => {
 };
 
 export const HitParticles = ({ bursts, setBursts }: HitParticlesProps) => {
+  // Keep a ref copy of bursts to avoid stale closure in useFrame
+  const burstsRef = useRef<HitBurst[]>(bursts);
+  const prevCountRef = useRef(bursts.length);
+
+  // Sync ref whenever bursts prop changes (driven by useSceneAnimation state)
+  useEffect(() => {
+    burstsRef.current = bursts;
+  }, [bursts]);
+
   useFrame(() => {
-    if (bursts.length === 0) return;
+    if (burstsRef.current.length === 0) return;
     const now = performance.now() / 1000;
-    const hasExpired = bursts.some(burst => now - burst.createdAt >= HIT_BURST_LIFETIME);
+    const hasExpired = burstsRef.current.some(b => now - b.createdAt >= HIT_BURST_LIFETIME);
     if (!hasExpired) return;
-    setBursts(current => current.filter(burst => now - burst.createdAt < HIT_BURST_LIFETIME));
+
+    // Filter expired bursts — only call setBursts when count actually changes
+    const alive = burstsRef.current.filter(b => now - b.createdAt < HIT_BURST_LIFETIME);
+    if (alive.length !== prevCountRef.current) {
+      prevCountRef.current = alive.length;
+      burstsRef.current = alive;
+      setBursts(alive);
+    }
   });
 
   return (

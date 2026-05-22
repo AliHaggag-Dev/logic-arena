@@ -1,11 +1,9 @@
 "use client";
-import React, { useMemo } from "react";
+import React from "react";
 import { useSceneSetup } from "../../hooks/useSceneSetup";
 import { SceneLighting } from "./SceneLighting";
 import { ArenaModels } from "./ArenaModels";
 import { Scene3DComponentProps } from "../../types/scene.types";
-import * as THREE from "three";
-import { BoundaryLine } from "./models/BoundaryLine";
 import { TrainingEnvironment } from "../TrainingMode/TrainingEnvironment";
 
 /**
@@ -14,25 +12,6 @@ import { TrainingEnvironment } from "../TrainingMode/TrainingEnvironment";
  */
 export const SceneContent = (props: Scene3DComponentProps) => {
   const { arena } = useSceneSetup();
-
-  const boundaryPoints = useMemo(
-    () =>
-      new Float32Array([
-        -10,
-        0,
-        -7.5,
-        10,
-        0,
-        -7.5,
-        10,
-        0,
-        7.5,
-        -10,
-        0,
-        7.5
-      ]),
-    []
-  );
 
   return (
     <>
@@ -73,10 +52,7 @@ export const SceneContent = (props: Scene3DComponentProps) => {
         />
       </mesh>
 
-      {/* Boundary Line (Neon Rectangle) */}
-      <BoundaryLine points={boundaryPoints} />
-
-      {/* MODE-SPECIFIC ADDONS */}
+      {/* MODE-SPECIFIC ADDONS — BoundaryLine is rendered inside ArenaModels */}
       {props.displayMode === 'TRAINING_SOLO' && (
         <TrainingEnvironment width={arena.width} height={arena.height} />
       )}

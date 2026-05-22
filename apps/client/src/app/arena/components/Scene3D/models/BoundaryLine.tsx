@@ -1,37 +1,44 @@
 "use client";
 import { useRef } from "react";
-import * as THREE from "three";
+import { Line } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
+import type { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { BoundaryLineProps } from "../../../types";
 
-export const BoundaryLine = ({ points }: BoundaryLineProps) => {
-    const materialRef = useRef<THREE.LineBasicMaterial>(null);
+const BOUNDARY_CORNERS: [number, number, number][] = [
+  [-10, 0, -7.5],
+  [10,  0, -7.5],
+  [10,  0,  7.5],
+  [-10, 0,  7.5],
+  [-10, 0, -7.5], // close the loop
+];
 
-    useFrame(state => {
-        const pulse = 0.75 + 0.25 * Math.sin(state.clock.elapsedTime * 2);
-        if (materialRef.current) {
-            materialRef.current.opacity = pulse;
-        }
-    });
+const BOUNDARY_COLOR = "#00FFFF";
+const BOUNDARY_LINE_WIDTH = 2;
 
-    return (
-        <lineLoop>
-            <bufferGeometry attach="geometry">
-                <bufferAttribute
-                    attach="attributes-position"
-                    count={4}
-                    itemSize={3}
-                    args={[points, 3]}
-                />
-            </bufferGeometry>
-            <lineBasicMaterial
-                ref={materialRef}
-                attach="material"
-                color="#00FFFF"
-                linewidth={2}
-                transparent
-                opacity={0.9}
-            />
-        </lineLoop>
-    );
+/**
+ * Renders the arena boundary as a thick neon rectangle.
+ * Uses drei's <Line> (LineMaterial) which correctly supports lineWidth on WebGL,
+ * unlike the native <lineLoop> whose linewidth is always 1px on most drivers.
+ */
+export const BoundaryLine = ({ points: _points }: BoundaryLineProps) => {
+  const lineRef = useRef<Line2>(null);
+
+  useFrame(state => {
+    const pulse = 0.75 + 0.25 * Math.sin(state.clock.elapsedTime * 2);
+    if (lineRef.current?.material) {
+      (lineRef.current.material as { opacity?: number }).opacity = pulse;
+    }
+  });
+
+  return (
+    <Line
+      ref={lineRef}
+      points={BOUNDARY_CORNERS}
+      color={BOUNDARY_COLOR}
+      lineWidth={BOUNDARY_LINE_WIDTH}
+      transparent
+      opacity={0.9}
+    />
+  );
 };

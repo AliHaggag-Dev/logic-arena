@@ -72,6 +72,8 @@ export interface RobotModelProps {
   modelFile?: string;
   hideHealthBar?: boolean;
   speechBubble?: string | null;
+  /** When true the robot is hidden by fog of war — render at low opacity with blue-gray tint */
+  inFog?: boolean;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,13 +1,28 @@
 "use client";
+
 /**
  * Configures the lighting for the 3D scene.
+ * Includes a shadow-casting DirectionalLight so meshes with castShadow/receiveShadow
+ * actually produce shadows (previously no light had castShadow={true}).
  */
 export const SceneLighting = () => {
-    return (
-        <>
-            <ambientLight intensity={0.85} />
-            <pointLight position={[10, 10, 10]} intensity={1.6} />
-        </>
-    );
+  return (
+    <>
+      <ambientLight intensity={0.85} />
+      <pointLight position={[10, 10, 10]} intensity={1.6} />
+      <directionalLight
+        position={[5, 20, 10]}
+        intensity={1.2}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-near={0.5}
+        shadow-camera-far={60}
+        shadow-camera-left={-15}
+        shadow-camera-right={15}
+        shadow-camera-top={12}
+        shadow-camera-bottom={-12}
+      />
+    </>
+  );
 };
-

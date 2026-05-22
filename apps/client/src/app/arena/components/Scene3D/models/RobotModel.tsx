@@ -79,7 +79,7 @@ export const HealthBarSprite = ({ health }: HealthBarSpriteProps) => {
 export const RobotModelInner = memo(({
   scene, color, position, health, velocity, rotation, hitTimestamp, spotted,
   energy = 1000, maxEnergy = 1000, inStasis = false, fovDirection,
-  scale = 2, hideHealthBar = false, speechBubble
+  scale = 2, hideHealthBar = false, speechBubble, inFog = false
 }: RobotModelProps & { scene: THREE.Group; scale?: number }) => {
   const groupRef = useRef<THREE.Group>(null);
   const targetPosition = useRef(new THREE.Vector3(...position));
@@ -87,6 +87,11 @@ export const RobotModelInner = memo(({
   const hoverOffset = useRef(0);
   const flashWhite = useRef(new THREE.Color('#ffffff'));
   const stasisBlue = useRef(new THREE.Color('#4488ff'));
+  const fogGray = useRef(new THREE.Color('#3a4a5c'));
+  // Dirty-flag refs: only iterate meshList when these change
+  const prevHitTimestampRef = useRef<number | null | undefined>(hitTimestamp);
+  const prevInStasisRef = useRef(inStasis);
+  const prevInFogRef = useRef(inFog);
 
   const clonedScene = useMemo(() => {
     const clone = SkeletonUtils.clone(scene);
@@ -146,6 +151,26 @@ export const RobotModelInner = memo(({
   useEffect(() => { hoverOffset.current = Math.random() * Math.PI * 2; }, []);
   useEffect(() => { targetPosition.current.set(...position); }, [position]);
 
+  // Fix 10: Dispose cloned materials on unmount to prevent GPU memory leak
+  useEffect(() => {
+    return () => {
+      clonedScene.traverse((child: THREE.Object3D) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          const disposeMat = (mat: THREE.Material) => {
+            (mat as THREE.MeshStandardMaterial).map?.dispose();
+            mat.dispose();
+          };
+          if (Array.isArray(mesh.material)) {
+            mesh.material.forEach(disposeMat);
+          } else {
+            disposeMat(mesh.material);
+          }
+        }
+      });
+    };
+  }, [clonedScene]);
+
   const resolveRotation = (value?: number) => {
     if (typeof value !== 'number' || Number.isNaN(value)) return null;
     return Math.abs(value) > Math.PI * 2 ? THREE.MathUtils.degToRad(value) : value;
@@ -192,35 +217,78 @@ export const RobotModelInner = memo(({
     group.position.y = basePosition.current.y + hover;
     group.position.z = basePosition.current.z;
 
-    // Hit flash / stasis tint
-    const now = performance.now() / 1000;
-    const timeSinceHit = hitTimestamp ? now - hitTimestamp : Infinity;
-    const flash = timeSinceHit < HIT_FLASH_DURATION ? 1 - timeSinceHit / HIT_FLASH_DURATION : 0;
+    // Fix 11: Dirty flag — only iterate meshes when hit/stasis/fog state actually changed
+    const hitChanged = hitTimestamp !== prevHitTimestampRef.current;
+    const stasisChanged = inStasis !== prevInStasisRef.current;
+    const fogChanged = inFog !== prevInFogRef.current;
+    const needsMeshUpdate = hitChanged || stasisChanged || fogChanged;
 
-    for (const mesh of meshList) {
-      const mat = mesh.material as THREE.MeshStandardMaterial;
-      if (!mat) continue;
+    if (needsMeshUpdate) {
+      prevHitTimestampRef.current = hitTimestamp;
+      prevInStasisRef.current = inStasis;
+      prevInFogRef.current = inFog;
 
-      if (flash > 0) {
-        // Hit flash → white
-        mat.emissive.copy(flashWhite.current);
-        mat.emissiveIntensity = flash * 2;
-      } else if (inStasis) {
-        // Stasis → faint blue tint
-        mat.emissive.copy(stasisBlue.current);
-        mat.emissiveIntensity = 0.4;
-        mat.opacity = 0.7;
-        mat.transparent = true;
-      } else {
-        // Reset to original
-        if (mat.userData.origEmissive) {
-          mat.emissive.copy(mat.userData.origEmissive);
+      // Hit flash / stasis / fog tint
+      const now = performance.now() / 1000;
+      const timeSinceHit = hitTimestamp ? now - hitTimestamp : Infinity;
+      const flash = timeSinceHit < HIT_FLASH_DURATION ? 1 - timeSinceHit / HIT_FLASH_DURATION : 0;
+
+      for (const mesh of meshList) {
+        const mat = mesh.material as THREE.MeshStandardMaterial;
+        if (!mat) continue;
+
+        if (flash > 0) {
+          mat.emissive.copy(flashWhite.current);
+          mat.emissiveIntensity = flash * 2;
+          mat.opacity = 1;
+          mat.transparent = false;
+        } else if (inFog) {
+          // Fog of war: dim to near-invisible with blue-gray tint
+          mat.emissive.copy(fogGray.current);
+          mat.emissiveIntensity = 0.1;
+          mat.opacity = 0.15;
+          mat.transparent = true;
+        } else if (inStasis) {
+          mat.emissive.copy(stasisBlue.current);
+          mat.emissiveIntensity = 0.4;
+          mat.opacity = 0.7;
+          mat.transparent = true;
         } else {
-          mat.emissive.setHex(0x000000);
+          if (mat.userData.origEmissive) {
+            mat.emissive.copy(mat.userData.origEmissive);
+          } else {
+            mat.emissive.setHex(0x000000);
+          }
+          mat.emissiveIntensity = mat.userData.origEmissiveIntensity ?? 1;
+          mat.opacity = 1;
+          mat.transparent = false;
         }
-        mat.emissiveIntensity = mat.userData.origEmissiveIntensity ?? 1;
-        mat.opacity = 1;
-        mat.transparent = false;
+      }
+    } else if (hitTimestamp) {
+      // Still in the middle of a flash — keep updating opacity even without a state change
+      const now = performance.now() / 1000;
+      const timeSinceHit = now - hitTimestamp;
+      if (timeSinceHit < HIT_FLASH_DURATION) {
+        const flash = 1 - timeSinceHit / HIT_FLASH_DURATION;
+        for (const mesh of meshList) {
+          const mat = mesh.material as THREE.MeshStandardMaterial;
+          if (mat) {
+            mat.emissive.copy(flashWhite.current);
+            mat.emissiveIntensity = flash * 2;
+          }
+        }
+      } else if (prevHitTimestampRef.current !== null) {
+        // Flash just expired — reset once
+        prevHitTimestampRef.current = null;
+        for (const mesh of meshList) {
+          const mat = mesh.material as THREE.MeshStandardMaterial;
+          if (!mat) continue;
+          if (mat.userData.origEmissive) mat.emissive.copy(mat.userData.origEmissive);
+          else mat.emissive.setHex(0x000000);
+          mat.emissiveIntensity = mat.userData.origEmissiveIntensity ?? 1;
+          mat.opacity = 1;
+          mat.transparent = false;
+        }
       }
     }
   });

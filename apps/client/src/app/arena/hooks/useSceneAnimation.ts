@@ -3,13 +3,14 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { HitBurst, RobotState, FiredTracer } from "../types";
 import { useGameSounds } from "./useGameSounds";
-
-const HIT_FLASH_DURATION = 0.22;
-const HIT_BURST_LIFETIME = 0.35;
-const COLLISION_RADIUS = 30;
-const COLLISION_COOLDOWN = 0.35;
-const FOV_DISTANCE = 1000;
-const FOV_DOT_THRESHOLD = Math.cos(Math.PI / 6);
+import {
+  HIT_FLASH_DURATION,
+  HIT_BURST_LIFETIME,
+  COLLISION_RADIUS,
+  COLLISION_COOLDOWN,
+  FOV_DISTANCE,
+  FOV_DOT_THRESHOLD,
+} from "../components/Scene3D/sceneConstants";
 
 /**
  * Manages scene animations, including robot movement, hit effects, and collision sounds.

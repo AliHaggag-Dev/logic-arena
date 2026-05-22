@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { FovConeProps } from '../../../types';
@@ -109,6 +109,14 @@ export const FovCone = ({ position, color, fov, fovDirection }: FovConeProps) =>
       }),
     [color]
   );
+
+  // Dispose GPU resources when component unmounts to prevent memory leak
+  useEffect(() => {
+    return () => {
+      geometry.dispose();
+      material.dispose();
+    };
+  }, [geometry, material]);
 
   // Update rotation and inject time each frame via ref mutations
   useFrame(({ clock }) => {
