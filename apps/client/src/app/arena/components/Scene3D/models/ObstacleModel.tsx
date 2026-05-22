@@ -12,6 +12,7 @@ export const ObstaclesInstanced = memo(function ObstaclesInstanced({ obstacles }
     const trapMeshRef = useRef<THREE.InstancedMesh>(null);
     const lavaMeshRef = useRef<THREE.InstancedMesh>(null);
     const finishMeshRef = useRef<THREE.InstancedMesh>(null);
+    const mineMeshRef = useRef<THREE.InstancedMesh>(null);
 
     const uniforms = useMemo(() => ({
         uTime: { value: 0 }
@@ -26,13 +27,15 @@ export const ObstaclesInstanced = memo(function ObstaclesInstanced({ obstacles }
         const trap = obstacles.filter(o => o.type === "TRAP");
         const lava = obstacles.filter(o => o.type === "LAVA");
         const finish = obstacles.filter(o => o.type === "FINISH_LINE");
-        return { solid, trap, lava, finish };
+        const mine = obstacles.filter(o => o.type === "MINE");
+        return { solid, trap, lava, finish, mine };
     }, [obstacles]);
 
     const solidGeo = useMemo(() => new THREE.BoxGeometry(1, 0.7, 1), []);
     const trapGeo = useMemo(() => new THREE.CircleGeometry(1, 32), []);
     const lavaGeo = useMemo(() => new THREE.CylinderGeometry(1, 1.15, 0.18, 6), []);
     const finishGeo = useMemo(() => new THREE.PlaneGeometry(1, 1), []);
+    const mineGeo = useMemo(() => new THREE.CylinderGeometry(1, 0.75, 0.16, 12), []);
 
     const solidMat = useMemo(() => new THREE.MeshStandardMaterial({
         color: "#0d0d2e",
@@ -120,12 +123,36 @@ export const ObstaclesInstanced = memo(function ObstaclesInstanced({ obstacles }
         return mat;
     }, [uniforms]);
 
+    const mineMat = useMemo(() => {
+        const mat = new THREE.MeshStandardMaterial({
+            color: "#2a0000",
+            emissive: "#ff0000",
+            metalness: 0.75,
+            roughness: 0.18,
+        });
+        mat.onBeforeCompile = (shader) => {
+            shader.uniforms.uTime = uniforms.uTime;
+            shader.fragmentShader = shader.fragmentShader.replace(
+                'void main() {',
+                'uniform float uTime;\nvoid main() {'
+            ).replace(
+                '#include <emissivemap_fragment>',
+                `
+                #include <emissivemap_fragment>
+                float blink = step(0.35, abs(sin(uTime * 7.0)));
+                totalEmissiveRadiance *= 0.35 + blink * 1.4;
+                `
+            );
+        };
+        return mat;
+    }, [uniforms]);
+
     useEffect(() => {
         return () => {
-            solidGeo.dispose(); trapGeo.dispose(); lavaGeo.dispose(); finishGeo.dispose();
-            solidMat.dispose(); trapMat.dispose(); lavaMat.dispose(); finishMat.dispose();
+            solidGeo.dispose(); trapGeo.dispose(); lavaGeo.dispose(); finishGeo.dispose(); mineGeo.dispose();
+            solidMat.dispose(); trapMat.dispose(); lavaMat.dispose(); finishMat.dispose(); mineMat.dispose();
         };
-    }, [solidGeo, trapGeo, lavaGeo, finishGeo, solidMat, trapMat, lavaMat, finishMat]);
+    }, [solidGeo, trapGeo, lavaGeo, finishGeo, mineGeo, solidMat, trapMat, lavaMat, finishMat, mineMat]);
 
     useEffect(() => {
         const dummy = new THREE.Object3D();
@@ -149,7 +176,7 @@ export const ObstaclesInstanced = memo(function ObstaclesInstanced({ obstacles }
                 
                 if (obs.type === "SOLID" || obs.type === "FINISH_LINE") {
                     dummy.scale.set(w, 1, h);
-                } else if (obs.type === "TRAP" || obs.type === "LAVA") {
+                } else if (obs.type === "TRAP" || obs.type === "LAVA" || obs.type === "MINE") {
                     const radius = Math.max(0.15, w / 2);
                     dummy.scale.set(radius, 1, radius);
                 }
@@ -164,6 +191,7 @@ export const ObstaclesInstanced = memo(function ObstaclesInstanced({ obstacles }
         updateInstances(trapMeshRef.current, groups.trap, 0.02, -Math.PI / 2);
         updateInstances(lavaMeshRef.current, groups.lava, 0.09, 0);
         updateInstances(finishMeshRef.current, groups.finish, 0.03, -Math.PI / 2);
+        updateInstances(mineMeshRef.current, groups.mine, 0.08, 0);
     }, [groups]);
 
     return (
@@ -172,6 +200,7 @@ export const ObstaclesInstanced = memo(function ObstaclesInstanced({ obstacles }
             {groups.trap.length > 0 && <instancedMesh ref={trapMeshRef} args={[trapGeo, trapMat, groups.trap.length]} />}
             {groups.lava.length > 0 && <instancedMesh ref={lavaMeshRef} args={[lavaGeo, lavaMat, groups.lava.length]} />}
             {groups.finish.length > 0 && <instancedMesh ref={finishMeshRef} args={[finishGeo, finishMat, groups.finish.length]} receiveShadow />}
+            {groups.mine.length > 0 && <instancedMesh ref={mineMeshRef} args={[mineGeo, mineMat, groups.mine.length]} castShadow />}
         </group>
     );
 });

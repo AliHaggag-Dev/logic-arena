@@ -12,10 +12,12 @@ export function executeActionIfOffCooldown(
   const cmd = action.command.toUpperCase();
   if (CONTINUOUS_MOVEMENT_COMMANDS.includes(cmd)) {
     // Movement is continuous — no cooldown gate needed
-    actionExecutor.executeAction(robotId, action, memory);
-    actionExecutor.markBareActionExecuted(robotId, cmd);
+    if (actionExecutor.executeAction(robotId, action, memory)) {
+      actionExecutor.markBareActionExecuted(robotId, cmd);
+    }
   } else if (actionExecutor.isBareActionOffCooldown(robotId, cmd)) {
-    actionExecutor.executeAction(robotId, action, memory);
-    actionExecutor.markBareActionExecuted(robotId, cmd);
+    if (actionExecutor.executeAction(robotId, action, memory)) {
+      actionExecutor.markBareActionExecuted(robotId, cmd);
+    }
   }
 }

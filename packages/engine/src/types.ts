@@ -113,6 +113,17 @@ export interface Robot {
   /** Internal NPC flag: commands execute without energy deduction or STASIS. */
   ignoreEnergyCost?: boolean;
 
+  /** Temporary invulnerability buff. Projectiles are absorbed while active. */
+  isShielded?: boolean;
+  /** Physics ticks remaining for the shield buff. */
+  shieldTicksRemaining?: number;
+  /** Timestamp updated when a projectile is absorbed by the shield. */
+  shieldHitTimestamp?: number;
+  /** Temporary stealth buff. Cloaked robots are excluded from enemy FOV scans. */
+  isCloaked?: boolean;
+  /** Physics ticks remaining for the cloak buff. */
+  cloakTicksRemaining?: number;
+
   // --- Field of View (Feature 1) ---
   /**
    * FOV cone configuration. Defaults to { angle: 120, range: 300 }.
@@ -153,7 +164,7 @@ export interface Projectile {
  *  TRAP  — Slowdown zone. Reduces robot velocity by 60% while inside.
  *  LAVA  — Damage zone. Deducts 5 HP/sec while robot is inside.
  */
-export type ObstacleType = 'SOLID' | 'TRAP' | 'LAVA' | 'FINISH_LINE';
+export type ObstacleType = 'SOLID' | 'TRAP' | 'LAVA' | 'FINISH_LINE' | 'MINE';
 
 export interface Obstacle {
   id: string;
@@ -163,6 +174,9 @@ export interface Obstacle {
   height: number;    // collision height
   rotation: number;    // rotation in radians for visual variety
   health?: number;    // optional — destructible obstacles
+  ownerId?: string;   // robot that spawned the obstacle, used by MINE arming
+  createdAt?: number; // timestamp used for transient obstacles
+  triggered?: boolean; // set true when a MINE detonates
 }
 
 // ---------------------------------------------------------------------------

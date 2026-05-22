@@ -10,6 +10,12 @@ export const ENERGY_COSTS: Readonly<Record<string, number>> = {
   ROTATE:      0,
   FIRE:        8,
   BURST_FIRE:  18,
+  TELEPORT:    80,
+  SHIELD:      60,
+  CLOAK:       50,
+  DASH:        30,
+  MINE:        40,
+  TAUNT:       5,
   SCAN:        3,
   PATHFIND:    3,
   // Free — cognitive only:
@@ -52,6 +58,12 @@ export const STASIS_BLOCKED_COMMANDS = new Set([
   'FIRE',
   'BURST_FIRE',
   'PATHFIND',
+  'TELEPORT',
+  'SHIELD',
+  'CLOAK',
+  'DASH',
+  'MINE',
+  'TAUNT',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -111,6 +123,10 @@ export class EnergyManager {
     }
 
     const cost = ENERGY_COSTS[cmd] ?? 0;
+    if ((robot.energy ?? 0) < cost) {
+      return false;
+    }
+
     if (cost > 0) {
       robot.energy = Math.max(STASIS_ENTRY_THRESHOLD, (robot.energy ?? 0) - cost);
       robot.totalEnergyConsumed = (robot.totalEnergyConsumed ?? 0) + cost;
@@ -118,11 +134,6 @@ export class EnergyManager {
       // Enter stasis when energy hits zero
       if ((robot.energy ?? 0) <= STASIS_ENTRY_THRESHOLD) {
         robot.inStasis = true;
-        // Block the command that caused the depletion too —
-        // prevents a final MOVE/FIRE from executing at zero energy.
-        if (STASIS_BLOCKED_COMMANDS.has(cmd)) {
-          return false;
-        }
       }
     }
 

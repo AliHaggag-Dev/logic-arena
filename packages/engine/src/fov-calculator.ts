@@ -60,6 +60,7 @@ export class FovCalculator {
     for (const candidate of candidateRobots) {
       if (candidate.id === robot.id) continue;
       if (!candidate.isAlive) continue;
+      if (candidate.isCloaked) continue;
       if (!isInCone(robot.position, candidate.position, fx, fy, cosHalf, rangeSquared)) {
         continue;
       }

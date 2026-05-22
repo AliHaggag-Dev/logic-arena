@@ -117,7 +117,11 @@ export class CampaignFightRunner {
       ],
       { obstacles: mappedObstacles },
       (event, payload) => {
-        if (event === 'logicExecuted' && payload.action === 'SCAN') {
+        if (
+          event === 'logicExecuted' &&
+          payload.action === 'SCAN' &&
+          typeof payload.robotId === 'string'
+        ) {
           lastScanTicks.set(payload.robotId, stepCount);
         }
       },

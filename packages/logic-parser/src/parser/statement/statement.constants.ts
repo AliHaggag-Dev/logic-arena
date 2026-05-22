@@ -1,5 +1,11 @@
 export const ACTION_KEYWORDS = new Set([
     "FIRE",
+    "TELEPORT",
+    "SHIELD",
+    "CLOAK",
+    "DASH",
+    "MINE",
+    "TAUNT",
     "MOVE",
     "STOP",
     "MOVE_FAST",

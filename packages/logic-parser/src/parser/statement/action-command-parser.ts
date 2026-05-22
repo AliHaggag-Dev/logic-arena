@@ -7,7 +7,7 @@ import {
     TokenType,
 } from "../../types";
 import type { Parser } from "../parser";
-import { peekTokenIs } from "../token-guards";
+import { peekTokenIs, consumeIfPeek } from "../token-guards";
 
 export function peekCanStartActionArgument(parser: Parser): boolean {
     return peekTokenIs(parser, TokenType.NUMBER)
@@ -32,6 +32,26 @@ export function isActionArgument(expression: Expression): expression is NonNulla
 export function parseActionStatement(parser: Parser): ActionStatement {
     const command = parser.currentToken.value;
     const args: ActionStatement["consequence"]["args"] = [];
+
+    if (peekTokenIs(parser, TokenType.LPAREN)) {
+        parser.nextToken();
+        if (!consumeIfPeek(parser, TokenType.RPAREN)) {
+            parser.nextToken();
+            const firstArg = parser.expressionParser.parseExpression();
+            if (firstArg && isActionArgument(firstArg)) args.push(firstArg);
+
+            while (peekTokenIs(parser, TokenType.COMMA)) {
+                parser.nextToken();
+                parser.nextToken();
+                const arg = parser.expressionParser.parseExpression();
+                if (arg && isActionArgument(arg)) args.push(arg);
+            }
+
+            consumeIfPeek(parser, TokenType.RPAREN);
+        }
+
+        return { type: NodeType.ActionStatement, consequence: { type: NodeType.ActionExpression, command, args } };
+    }
 
     while (peekCanStartActionArgument(parser)) {
         parser.nextToken();

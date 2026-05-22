@@ -1,9 +1,18 @@
-import { GameLoop, EnergyManager } from '@logic-arena/engine';
-import { Socket } from 'socket.io';
+import {
+  ARENA_HEIGHT,
+  ARENA_WIDTH,
+  EnergyManager,
+  GameLoop,
+  Obstacle,
+  Robot,
+} from '@logic-arena/engine';
 import {
   ActionExpression,
   NodeType,
+  NumberLiteral,
   ScanStatement,
+  StringLiteral,
+  Identifier,
 } from '../../../../../../packages/logic-parser/src';
 import { Pathfinder } from '../pathfinder/index';
 import { CooldownManager } from './cooldown-manager';
@@ -12,6 +21,10 @@ import { CombatExecutor } from './combat-executor';
 import { ScanExecutor } from './scan-executor';
 
 export class ActionExecutor {
+  private static readonly SHIELD_DURATION_TICKS = 30;
+  private static readonly CLOAK_DURATION_TICKS = 40;
+  private static readonly MINE_SIZE = 24;
+
   private cooldowns = new CooldownManager();
   private movementExecutor: MovementExecutor;
   private combatExecutor: CombatExecutor;
@@ -22,7 +35,9 @@ export class ActionExecutor {
 
   constructor(
     private gameLoop: GameLoop,
-    private onEvent: ((event: string, payload: any) => void) | undefined,
+    private onEvent:
+      | ((event: string, payload: Record<string, unknown>) => void)
+      | undefined,
     private pathfinder: Pathfinder,
     private energyManager: EnergyManager,
   ) {
@@ -91,7 +106,7 @@ export class ActionExecutor {
     robotId: string,
     action: ActionExpression | ScanStatement,
     memory: Record<string, unknown>,
-  ): void {
+  ): boolean {
     const actionCommand =
       action.type === 'ScanStatement' ? 'SCAN' : action.command.toUpperCase();
 
@@ -100,7 +115,11 @@ export class ActionExecutor {
     // visibility check first, then deducts energy only if a valid target exists.
     // All other commands go through the upfront gate as normal.
     const robot = this.gameLoop.getRobots().find((r) => r.id === robotId);
-    if (!robot) return;
+    if (!robot) return false;
+
+    if (!this.hasValidActionArgs(actionCommand, action, memory)) {
+      return false;
+    }
 
     const isCombatCommand =
       actionCommand === 'FIRE' || actionCommand === 'BURST_FIRE';
@@ -108,7 +127,7 @@ export class ActionExecutor {
     if (!isCombatCommand) {
       const allowed = this.energyManager.deduct(robot, actionCommand);
       if (!allowed) {
-        return;
+        return false;
       }
     }
 
@@ -118,11 +137,13 @@ export class ActionExecutor {
     }
 
     // --- Buffer action for emit at end of tick ---
-    const buffer = this.tickActionBuffer.get(robotId);
-    if (buffer) {
-      buffer.push(actionCommand);
-    } else {
-      this.tickActionBuffer.set(robotId, [actionCommand]);
+    if (actionCommand !== 'TAUNT') {
+      const buffer = this.tickActionBuffer.get(robotId);
+      if (buffer) {
+        buffer.push(actionCommand);
+      } else {
+        this.tickActionBuffer.set(robotId, [actionCommand]);
+      }
     }
 
     // --- Dispatch ---
@@ -145,12 +166,151 @@ export class ActionExecutor {
         this.movementExecutor.execute(robotId, actionCommand, memory, direction);
         break;
       }
+      case 'TELEPORT':
+        this.executeTeleport(robot, action as ActionExpression, memory);
+        break;
+      case 'SHIELD':
+        robot.isShielded = true;
+        robot.shieldTicksRemaining = ActionExecutor.SHIELD_DURATION_TICKS;
+        break;
+      case 'CLOAK':
+        robot.isCloaked = true;
+        robot.cloakTicksRemaining = ActionExecutor.CLOAK_DURATION_TICKS;
+        break;
+      case 'DASH':
+        this.executeDash(robot, action as ActionExpression, memory);
+        break;
+      case 'MINE':
+        this.spawnMine(robot);
+        break;
+      case 'TAUNT':
+        this.executeTaunt(robotId, action as ActionExpression, memory);
+        break;
       case 'SCAN':
         this.scanExecutor.execute(robotId, memory);
         break;
       default:
         console.warn(`[ActionExecutor] Unknown command: ${actionCommand}`);
+        return false;
     }
+
+    return true;
+  }
+
+  private hasValidActionArgs(
+    actionCommand: string,
+    action: ActionExpression | ScanStatement,
+    memory: Record<string, unknown>,
+  ): boolean {
+    if (action.type === 'ScanStatement') return true;
+    if (actionCommand === 'TELEPORT') {
+      return (
+        this.resolveNumberArg(action.args?.[0], memory) !== null &&
+        this.resolveNumberArg(action.args?.[1], memory) !== null
+      );
+    }
+    if (actionCommand === 'DASH') {
+      return this.resolveNumberArg(action.args?.[0], memory) !== null;
+    }
+    return true;
+  }
+
+  private executeTeleport(
+    robot: Robot,
+    action: ActionExpression,
+    memory: Record<string, unknown>,
+  ): void {
+    const x = this.resolveNumberArg(action.args?.[0], memory);
+    const y = this.resolveNumberArg(action.args?.[1], memory);
+    if (x === null || y === null) return;
+
+    robot.position.x = this.clamp(x, 0, ARENA_WIDTH);
+    robot.position.y = this.clamp(y, 0, ARENA_HEIGHT);
+    robot.velocity.x = 0;
+    robot.velocity.y = 0;
+  }
+
+  private executeDash(
+    robot: Robot,
+    action: ActionExpression,
+    memory: Record<string, unknown>,
+  ): void {
+    const distance = this.resolveNumberArg(action.args?.[0], memory);
+    if (distance === null) return;
+
+    const direction = robot.facingDirection ?? robot.rotation;
+    robot.position.x = this.clamp(
+      robot.position.x + Math.cos(direction) * distance,
+      0,
+      ARENA_WIDTH,
+    );
+    robot.position.y = this.clamp(
+      robot.position.y + Math.sin(direction) * distance,
+      0,
+      ARENA_HEIGHT,
+    );
+    robot.velocity.x = 0;
+    robot.velocity.y = 0;
+  }
+
+  private spawnMine(robot: Robot): void {
+    const mine: Obstacle = {
+      id: `mine-${robot.id}-${Date.now()}`,
+      type: 'MINE',
+      position: { ...robot.position },
+      width: ActionExecutor.MINE_SIZE,
+      height: ActionExecutor.MINE_SIZE,
+      rotation: robot.rotation,
+      ownerId: robot.id,
+      createdAt: Date.now(),
+    };
+    this.gameLoop.getObstacles().push(mine);
+  }
+
+  private executeTaunt(
+    robotId: string,
+    action: ActionExpression,
+    memory: Record<string, unknown>,
+  ): void {
+    const message = this.resolveStringArg(action.args?.[0], memory) ?? 'TAUNT';
+    if (this.onEvent) {
+      this.onEvent('logicExecuted', {
+        robotId,
+        action: 'TAUNT',
+        message,
+      });
+    }
+  }
+
+  private resolveNumberArg(
+    arg: Identifier | NumberLiteral | StringLiteral | undefined,
+    memory: Record<string, unknown>,
+  ): number | null {
+    if (!arg) return null;
+    if (arg.type === NodeType.NumberLiteral) return arg.value;
+    if (arg.type === NodeType.Identifier) {
+      const value = memory[arg.value];
+      return typeof value === 'number' && Number.isFinite(value) ? value : null;
+    }
+    const parsed = Number(arg.value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  private resolveStringArg(
+    arg: Identifier | NumberLiteral | StringLiteral | undefined,
+    memory: Record<string, unknown>,
+  ): string | null {
+    if (!arg) return null;
+    if (arg.type === NodeType.StringLiteral) return arg.value;
+    if (arg.type === NodeType.NumberLiteral) return String(arg.value);
+    const value = memory[arg.value];
+    return typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : arg.value;
+  }
+
+  private clamp(value: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, value));
   }
 
   /**

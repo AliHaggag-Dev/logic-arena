@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { GameState, Projectile, Robot, Vector2, ModeData } from '@logic-arena/engine';
+import { GameState, Obstacle, Projectile, Robot, Vector2, ModeData } from '@logic-arena/engine';
 
 export type AuthenticatedSocket = Socket & {
   userId?: string;
@@ -21,6 +21,9 @@ export const TRACKED_ROBOT_PROPS = [
   'inStasis',
   'fovDirection',
   'hitWallTimestamp',
+  'isShielded',
+  'isCloaked',
+  'shieldHitTimestamp',
 ] as const;
 
 export type TrackedRobotProp = (typeof TRACKED_ROBOT_PROPS)[number];
@@ -41,7 +44,7 @@ export interface SafeProjectileSnapshot {
 export interface SafeGameSnapshot {
   robots: SafeRobotSnapshot[];
   projectiles: SafeProjectileSnapshot[];
-  obstacles?: undefined;
+  obstacles: Obstacle[];
   modeData?: ModeData;
 }
 
@@ -56,6 +59,6 @@ export type GameStateDelta =
   | { type: 'full'; state: GameState; modeData?: ModeData }
   | {
       type: 'delta';
-      diff: { robots: RobotDelta[]; projectiles: ProjectileDelta };
+      diff: { robots: RobotDelta[]; projectiles: ProjectileDelta; obstacles?: Obstacle[] };
       modeData?: ModeData;
     };

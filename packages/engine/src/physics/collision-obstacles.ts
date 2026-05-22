@@ -1,6 +1,8 @@
 import { Robot, Obstacle } from "../types";
 
 const ROBOT_RADIUS = 15;
+const MINE_DAMAGE = 35;
+const MINE_ARM_DELAY_MS = 250;
 
 /**
  * Checks and resolves a robot vs obstacle collision.
@@ -60,6 +62,29 @@ export function checkObstacleCollision(robot: Robot, obstacle: Obstacle): void {
       // Inject shockwave telemetry logic and give immunity to steering overrides
       robot.hitWallTimestamp = Date.now();
       robot.collisionCooldown = 20;
+    }
+    return;
+  }
+
+  if (obstacle.type === 'MINE') {
+    if (
+      obstacle.ownerId === robot.id &&
+      Date.now() - (obstacle.createdAt ?? 0) < MINE_ARM_DELAY_MS
+    ) {
+      return;
+    }
+
+    const dx = robot.position.x - obstacle.position.x;
+    const dy = robot.position.y - obstacle.position.y;
+    const triggerRadius = Math.max(obstacle.width, obstacle.height) / 2 + ROBOT_RADIUS;
+    if (dx * dx + dy * dy <= triggerRadius * triggerRadius) {
+      obstacle.triggered = true;
+      if (!robot.isShielded) {
+        robot.health = Math.max(0, robot.health - MINE_DAMAGE);
+        if (robot.health === 0) robot.isAlive = false;
+      } else {
+        robot.shieldHitTimestamp = Date.now();
+      }
     }
     return;
   }

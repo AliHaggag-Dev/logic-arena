@@ -55,7 +55,7 @@ export class MatchEngine {
       initialFovDirection?: number;
     }[],
     config?: GameConfig,
-    private onEvent?: (event: string, payload: any) => void,
+    private onEvent?: (event: string, payload: Record<string, unknown>) => void,
   ) {
     this.matchId = matchId;
     this.config = config;

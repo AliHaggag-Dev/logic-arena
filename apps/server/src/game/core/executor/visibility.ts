@@ -26,6 +26,7 @@ export function computeImmediateVisibility(
     robots: allRobots.filter((candidate: Robot): boolean => (
       candidate.id !== robot.id &&
       candidate.isAlive &&
+      !candidate.isCloaked &&
       isInCone(robot.position, candidate.position, fx, fy, cosHalf, rangeSquared)
     )),
     projectiles: allProjectiles.filter((projectile: Projectile): boolean => (

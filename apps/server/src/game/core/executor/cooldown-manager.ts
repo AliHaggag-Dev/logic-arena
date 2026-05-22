@@ -15,6 +15,15 @@ export class CooldownManager {
 
   private readonly FIRE_COOLDOWN_MS = 500;
   private readonly ACTION_COOLDOWN_MS = 500;
+  private readonly TICK_MS = 1000 / 60;
+  private readonly COMMAND_COOLDOWN_MS: Readonly<Record<string, number>> = {
+    TELEPORT: 10 * this.TICK_MS,
+    SHIELD: 60 * this.TICK_MS,
+    CLOAK: 80 * this.TICK_MS,
+    DASH: 0,
+    MINE: 0,
+    TAUNT: 0,
+  };
 
   /** When non-null, used instead of Date.now() — enables headless simulation mode. */
   private virtualTime: number | null = null;
@@ -32,9 +41,9 @@ export class CooldownManager {
     const robotCooldowns = this.actionCooldowns.get(robotId) ?? new Map();
     if (!this.actionCooldowns.has(robotId))
       this.actionCooldowns.set(robotId, robotCooldowns);
-    return (
-      now - (robotCooldowns.get(actionCommand) ?? 0) >= this.ACTION_COOLDOWN_MS
-    );
+    const cooldown =
+      this.COMMAND_COOLDOWN_MS[actionCommand] ?? this.ACTION_COOLDOWN_MS;
+    return now - (robotCooldowns.get(actionCommand) ?? 0) >= cooldown;
   }
 
   markExecuted(robotId: string, actionCommand: string): void {

@@ -44,8 +44,8 @@ export function createRobot(
     memory: {},
     // Energy fields — EnergyManager.initRobot() will also set these,
     // but we set them here for clarity and to avoid undefined on first tick.
-    energy: 100,
-    maxEnergy: 100,
+    energy: 1000,
+    maxEnergy: 1000,
     inStasis: false,
     totalEnergyConsumed: 0,
     totalDamageDealt: 0,

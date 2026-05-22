@@ -143,7 +143,7 @@ export const useGameState = (
         parsed.obstacles = Array.isArray(obsRaw) ? (obsRaw as ObstacleState[]) : [];
       }
 
-      if (parsed.obstacles && parsed.obstacles.length > 0 && obstaclesRef.current.length === 0) {
+      if (parsed.obstacles) {
         obstaclesRef.current = parsed.obstacles;
       }
 

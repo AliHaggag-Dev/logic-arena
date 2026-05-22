@@ -1,6 +1,7 @@
 import { Projectile, Robot, Obstacle, Vector2 } from "../types";
 
 const ROBOT_RADIUS = 15;
+const PROJECTILE_DAMAGE = 10;
 
 /**
  * Advances all projectiles one frame and resolves hits.
@@ -47,7 +48,12 @@ export function updateProjectiles(
           const dx = p.position.x - robot.position.x;
           const dy = p.position.y - robot.position.y;
           if (dx * dx + dy * dy < ROBOT_RADIUS * ROBOT_RADIUS) {
-            robot.health = Math.max(0, robot.health - 10);
+            if (robot.isShielded) {
+              robot.shieldHitTimestamp = Date.now();
+              return false;
+            }
+
+            robot.health = Math.max(0, robot.health - PROJECTILE_DAMAGE);
             if (robot.health === 0) robot.isAlive = false;
             return false; // destroy projectile immediately on first hit
           }
@@ -103,4 +109,4 @@ export function spawnProjectile(
     },
     color,
   };
-}
+}

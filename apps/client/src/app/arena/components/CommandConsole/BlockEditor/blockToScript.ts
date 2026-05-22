@@ -30,10 +30,19 @@ function generateBlockLines(block: BlockNode, indent: number): string[] {
     case "BACKUP":
     case "FIRE":
     case "BURST_FIRE":
+    case "SHIELD":
+    case "CLOAK":
+    case "MINE":
     case "SCAN":
     case "PATHFIND":
     case "STOP":
       return [indentLine(actionLine(block.type), indent)];
+    case "TELEPORT":
+      return [indentLine(`TELEPORT (${asString(inputs.x, "400")}, ${asString(inputs.y, "300")})`, indent)];
+    case "DASH":
+      return [indentLine(`DASH (${asString(inputs.distance, "80")})`, indent)];
+    case "TAUNT":
+      return [indentLine(`TAUNT (${asString(inputs.message, '"COME AT ME"')})`, indent)];
     case "WAIT":
       return [indentLine(`WAIT ${asString(inputs.ticks, "1")}`, indent)];
     case "IF_THEN":

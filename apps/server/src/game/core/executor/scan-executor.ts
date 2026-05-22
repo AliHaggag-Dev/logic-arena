@@ -22,7 +22,7 @@ export class ScanExecutor {
       // following FIRE uses the same FOV-gated combat path as normal gameplay.
       const range = robot.fov?.range ?? 300;
       const nearest = robots
-        .filter((r) => r.id !== robotId && r.isAlive)
+        .filter((r) => r.id !== robotId && r.isAlive && !r.isCloaked)
         .map((r) => ({
           robot: r,
           dist: Math.hypot(r.position.x - robot.position.x, r.position.y - robot.position.y),

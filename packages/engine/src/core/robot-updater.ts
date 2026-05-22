@@ -17,6 +17,20 @@ export function updateRobotPhysics(
     return;
   }
 
+  if ((robot.shieldTicksRemaining ?? 0) > 0) {
+    robot.shieldTicksRemaining = robot.shieldTicksRemaining! - 1;
+    robot.isShielded = robot.shieldTicksRemaining > 0;
+  } else {
+    robot.isShielded = false;
+  }
+
+  if ((robot.cloakTicksRemaining ?? 0) > 0) {
+    robot.cloakTicksRemaining = robot.cloakTicksRemaining! - 1;
+    robot.isCloaked = robot.cloakTicksRemaining > 0;
+  } else {
+    robot.isCloaked = false;
+  }
+
   // --- Passive energy regeneration (conditional per tick) ---
   // Regen runs unconditionally here, but EnergyManager decides the amount.
   energyManager.regen(robot);

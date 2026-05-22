@@ -79,7 +79,8 @@ export const HealthBarSprite = ({ health }: HealthBarSpriteProps) => {
 export const RobotModelInner = memo(({
   scene, color, position, health, velocity, rotation, hitTimestamp, spotted,
   energy = 1000, maxEnergy = 1000, inStasis = false, fovDirection,
-  scale = 2, hideHealthBar = false, speechBubble, inFog = false
+  scale = 2, hideHealthBar = false, speechBubble, inFog = false,
+  isShielded = false, isCloaked = false
 }: RobotModelProps & { scene: THREE.Group; scale?: number }) => {
   const groupRef = useRef<THREE.Group>(null);
   const targetPosition = useRef(new THREE.Vector3(...position));
@@ -92,6 +93,8 @@ export const RobotModelInner = memo(({
   const prevHitTimestampRef = useRef<number | null | undefined>(hitTimestamp);
   const prevInStasisRef = useRef(inStasis);
   const prevInFogRef = useRef(inFog);
+  const prevIsCloakedRef = useRef(isCloaked);
+  const SNAP_DISTANCE = 3;
 
   const clonedScene = useMemo(() => {
     const clone = SkeletonUtils.clone(scene);
@@ -181,13 +184,24 @@ export const RobotModelInner = memo(({
   // Formula: rotation.y = Math.PI / 2 - arenaAngle
   const HALF_PI = Math.PI / 2;
 
+  const getMeshMaterials = (mesh: THREE.Mesh): THREE.MeshStandardMaterial[] => {
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    return materials.filter(
+      (mat): mat is THREE.MeshStandardMaterial => mat instanceof THREE.MeshStandardMaterial,
+    );
+  };
+
   useFrame((state, delta) => {
     const group = groupRef.current;
     if (!group) return;
 
     // Smooth position lerp
     const lerpFactor = 1 - Math.pow(0.01, delta * 10);
-    basePosition.current.lerp(targetPosition.current, lerpFactor);
+    if (basePosition.current.distanceTo(targetPosition.current) > SNAP_DISTANCE) {
+      basePosition.current.copy(targetPosition.current);
+    } else {
+      basePosition.current.lerp(targetPosition.current, lerpFactor);
+    }
 
     // Rotation lerp — convert 2D arena angle to Three.js Y-rotation
     // The robot BODY always follows `rotation` (tracks/movement direction).
@@ -221,12 +235,14 @@ export const RobotModelInner = memo(({
     const hitChanged = hitTimestamp !== prevHitTimestampRef.current;
     const stasisChanged = inStasis !== prevInStasisRef.current;
     const fogChanged = inFog !== prevInFogRef.current;
-    const needsMeshUpdate = hitChanged || stasisChanged || fogChanged;
+    const cloakChanged = isCloaked !== prevIsCloakedRef.current;
+    const needsMeshUpdate = hitChanged || stasisChanged || fogChanged || cloakChanged;
 
     if (needsMeshUpdate) {
       prevHitTimestampRef.current = hitTimestamp;
       prevInStasisRef.current = inStasis;
       prevInFogRef.current = inFog;
+      prevIsCloakedRef.current = isCloaked;
 
       // Hit flash / stasis / fog tint
       const now = performance.now() / 1000;
@@ -234,34 +250,35 @@ export const RobotModelInner = memo(({
       const flash = timeSinceHit < HIT_FLASH_DURATION ? 1 - timeSinceHit / HIT_FLASH_DURATION : 0;
 
       for (const mesh of meshList) {
-        const mat = mesh.material as THREE.MeshStandardMaterial;
-        if (!mat) continue;
+        mesh.castShadow = !isCloaked;
 
-        if (flash > 0) {
-          mat.emissive.copy(flashWhite.current);
-          mat.emissiveIntensity = flash * 2;
-          mat.opacity = 1;
-          mat.transparent = false;
-        } else if (inFog) {
-          // Fog of war: dim to near-invisible with blue-gray tint
-          mat.emissive.copy(fogGray.current);
-          mat.emissiveIntensity = 0.1;
-          mat.opacity = 0.15;
-          mat.transparent = true;
-        } else if (inStasis) {
-          mat.emissive.copy(stasisBlue.current);
-          mat.emissiveIntensity = 0.4;
-          mat.opacity = 0.7;
-          mat.transparent = true;
-        } else {
-          if (mat.userData.origEmissive) {
-            mat.emissive.copy(mat.userData.origEmissive);
+        for (const mat of getMeshMaterials(mesh)) {
+          if (flash > 0) {
+            mat.emissive.copy(flashWhite.current);
+            mat.emissiveIntensity = flash * 2;
+            mat.opacity = isCloaked ? 0.15 : 1;
+            mat.transparent = isCloaked;
+          } else if (isCloaked || inFog) {
+            // Fog of war / cloak: dim to near-invisible with blue-gray tint
+            mat.emissive.copy(fogGray.current);
+            mat.emissiveIntensity = 0.1;
+            mat.opacity = 0.15;
+            mat.transparent = true;
+          } else if (inStasis) {
+            mat.emissive.copy(stasisBlue.current);
+            mat.emissiveIntensity = 0.4;
+            mat.opacity = 0.7;
+            mat.transparent = true;
           } else {
-            mat.emissive.setHex(0x000000);
+            if (mat.userData.origEmissive) {
+              mat.emissive.copy(mat.userData.origEmissive);
+            } else {
+              mat.emissive.setHex(0x000000);
+            }
+            mat.emissiveIntensity = mat.userData.origEmissiveIntensity ?? 1;
+            mat.opacity = 1;
+            mat.transparent = false;
           }
-          mat.emissiveIntensity = mat.userData.origEmissiveIntensity ?? 1;
-          mat.opacity = 1;
-          mat.transparent = false;
         }
       }
     } else if (hitTimestamp) {
@@ -271,8 +288,7 @@ export const RobotModelInner = memo(({
       if (timeSinceHit < HIT_FLASH_DURATION) {
         const flash = 1 - timeSinceHit / HIT_FLASH_DURATION;
         for (const mesh of meshList) {
-          const mat = mesh.material as THREE.MeshStandardMaterial;
-          if (mat) {
+          for (const mat of getMeshMaterials(mesh)) {
             mat.emissive.copy(flashWhite.current);
             mat.emissiveIntensity = flash * 2;
           }
@@ -281,13 +297,13 @@ export const RobotModelInner = memo(({
         // Flash just expired — reset once
         prevHitTimestampRef.current = null;
         for (const mesh of meshList) {
-          const mat = mesh.material as THREE.MeshStandardMaterial;
-          if (!mat) continue;
-          if (mat.userData.origEmissive) mat.emissive.copy(mat.userData.origEmissive);
-          else mat.emissive.setHex(0x000000);
-          mat.emissiveIntensity = mat.userData.origEmissiveIntensity ?? 1;
-          mat.opacity = 1;
-          mat.transparent = false;
+          for (const mat of getMeshMaterials(mesh)) {
+            if (mat.userData.origEmissive) mat.emissive.copy(mat.userData.origEmissive);
+            else mat.emissive.setHex(0x000000);
+            mat.emissiveIntensity = mat.userData.origEmissiveIntensity ?? 1;
+            mat.opacity = isCloaked ? 0.15 : 1;
+            mat.transparent = isCloaked;
+          }
         }
       }
     }
@@ -298,6 +314,22 @@ export const RobotModelInner = memo(({
       <primitive object={clonedScene} scale={scale} position={[0, 0, 0]} />
       {inStasis && (
         <pointLight position={[0, 0.4, 0]} intensity={1.0} distance={5} color="#4488ff" />
+      )}
+      {isShielded && (
+        <mesh>
+          <sphereGeometry args={[0.5, 32, 32]} />
+          <meshPhysicalMaterial
+            color="#66f7ff"
+            emissive="#ffd166"
+            emissiveIntensity={0.55}
+            clearcoat={1}
+            transmission={0.9}
+            transparent
+            opacity={0.28}
+            roughness={0.05}
+            depthWrite={false}
+          />
+        </mesh>
       )}
 
       {/* Spotted indicator */}

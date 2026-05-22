@@ -28,6 +28,12 @@ export const ALLOWED_ACTION_COMMANDS = new Set<string>([
   'SCAN',
   'FIRE',
   'BURST_FIRE',
+  'TELEPORT',
+  'SHIELD',
+  'CLOAK',
+  'DASH',
+  'MINE',
+  'TAUNT',
 ]);
 
 // ── Commands blocked during STASIS (user's script can still read IN_STASIS and branch)
@@ -39,4 +45,10 @@ export const STASIS_BLOCKED_ACTION_CMDS = new Set<string>([
   'PATHFIND',
   'FIRE',
   'BURST_FIRE',
+  'TELEPORT',
+  'SHIELD',
+  'CLOAK',
+  'DASH',
+  'MINE',
+  'TAUNT',
 ]);

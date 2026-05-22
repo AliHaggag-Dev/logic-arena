@@ -44,7 +44,9 @@ export class CombatExecutor {
         { x: targetRobot.position.x, y: targetRobot.position.y },
         robot.tracerColor,
       );
-      this.energyManager.recordDamage(robot, FIRE_DAMAGE);
+      if (!targetRobot.isShielded) {
+        this.energyManager.recordDamage(robot, FIRE_DAMAGE);
+      }
       return;
     }
 
@@ -74,7 +76,9 @@ export class CombatExecutor {
           },
           robot.tracerColor,
         );
-        this.energyManager.recordDamage(robot, BURST_DAMAGE);
+        if (!targetRobot.isShielded) {
+          this.energyManager.recordDamage(robot, BURST_DAMAGE);
+        }
       }
     }
   }

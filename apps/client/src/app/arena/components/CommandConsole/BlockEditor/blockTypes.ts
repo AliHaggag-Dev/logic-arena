@@ -6,6 +6,12 @@ export type BlockType =
   | "BACKUP"
   | "FIRE"
   | "BURST_FIRE"
+  | "TELEPORT"
+  | "SHIELD"
+  | "CLOAK"
+  | "DASH"
+  | "MINE"
+  | "TAUNT"
   | "SCAN"
   | "PATHFIND"
   | "STOP"
@@ -65,6 +71,12 @@ export const ACTION_OPTIONS: string[] = [
   "BACKUP",
   "FIRE",
   "BURST_FIRE",
+  "TELEPORT",
+  "SHIELD",
+  "CLOAK",
+  "DASH",
+  "MINE",
+  "TAUNT",
   "SCAN",
   "PATHFIND",
   "STOP",
@@ -170,6 +182,12 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   { type: "BACKUP", label: "BACKUP", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: {} },
   { type: "FIRE", label: "FIRE", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: {} },
   { type: "BURST_FIRE", label: "BURST_FIRE", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: {} },
+  { type: "TELEPORT", label: "TELEPORT", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: { x: 400, y: 300 } },
+  { type: "SHIELD", label: "SHIELD", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: {} },
+  { type: "CLOAK", label: "CLOAK", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: {} },
+  { type: "DASH", label: "DASH", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: { distance: 80 } },
+  { type: "MINE", label: "MINE", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: {} },
+  { type: "TAUNT", label: "TAUNT", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: { message: '"COME AT ME"' } },
   { type: "SCAN", label: "SCAN", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: {} },
   { type: "PATHFIND", label: "PATHFIND", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: {} },
   { type: "STOP", label: "STOP", category: "ACTIONS", colorVar: "var(--arena-cyan)", defaultInputs: {} },

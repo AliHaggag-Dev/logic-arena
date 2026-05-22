@@ -115,6 +115,17 @@ function InputControls({
   switch (block.type) {
     case "WAIT":
       return <NumberInput label="Wait ticks" value={numberValue("ticks", 1)} onChange={(value) => change("ticks", value)} />;
+    case "TELEPORT":
+      return (
+        <>
+          <NumberInput label="Teleport x" value={numberValue("x", 400)} onChange={(value) => change("x", value)} />
+          <NumberInput label="Teleport y" value={numberValue("y", 300)} onChange={(value) => change("y", value)} />
+        </>
+      );
+    case "DASH":
+      return <NumberInput label="Dash distance" value={numberValue("distance", 80)} onChange={(value) => change("distance", value)} />;
+    case "TAUNT":
+      return <SelectInput label="Taunt message" value={stringValue("message", '"COME AT ME"')} options={['"COME AT ME"', '"TOO SLOW"', '"TARGET LOCKED"']} onChange={(value) => change("message", value)} />;
     case "IF_THEN":
     case "IF_THEN_ELSE":
     case "WHILE_DO":

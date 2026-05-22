@@ -1,4 +1,4 @@
-import { GameState, Projectile, Robot, Vector2 } from '@logic-arena/engine';
+import { GameState, Obstacle, Projectile, Robot, Vector2 } from '@logic-arena/engine';
 import {
   GameStateDelta,
   ProjectileDelta,
@@ -23,6 +23,33 @@ function arraysEqualUnordered(a: string[], b: string[]): boolean {
   const aSorted = [...a].sort();
   const bSorted = [...b].sort();
   return aSorted.every((value, index) => value === bSorted[index]);
+}
+
+function cloneObstacle(obstacle: Obstacle): Obstacle {
+  return {
+    ...obstacle,
+    position: { ...obstacle.position },
+  };
+}
+
+function obstaclesEqual(a: Obstacle[], b: Obstacle[]): boolean {
+  if (a.length !== b.length) return false;
+
+  const previousById = new Map(b.map((obstacle) => [obstacle.id, obstacle]));
+  return a.every((obstacle) => {
+    const previous = previousById.get(obstacle.id);
+    return (
+      previous !== undefined &&
+      obstacle.type === previous.type &&
+      obstacle.width === previous.width &&
+      obstacle.height === previous.height &&
+      obstacle.rotation === previous.rotation &&
+      obstacle.ownerId === previous.ownerId &&
+      obstacle.createdAt === previous.createdAt &&
+      obstacle.triggered === previous.triggered &&
+      vectorsEqual(obstacle.position, previous.position)
+    );
+  });
 }
 
 function propChanged(
@@ -141,6 +168,10 @@ export function computeDeltaDiff(
     })
     .filter((delta): delta is RobotDelta => delta !== null);
 
+  const obstacleDiff = obstaclesEqual(state.obstacles, prevState.obstacles)
+    ? undefined
+    : state.obstacles.map(cloneObstacle);
+
   return {
     type: 'delta',
     diff: {
@@ -149,6 +180,7 @@ export function computeDeltaDiff(
         state.projectiles,
         prevState.projectiles,
       ),
+      ...(obstacleDiff ? { obstacles: obstacleDiff } : {}),
     },
     modeData: state.modeData,
   };
@@ -169,7 +201,7 @@ export function generateSafeSnapshot(state: GameState): SafeGameSnapshot {
       return snap;
     }),
     projectiles: state.projectiles.map(toSafeProjectile),
-    obstacles: undefined,
+    obstacles: state.obstacles.map(cloneObstacle),
     modeData: state.modeData,
   };
 }

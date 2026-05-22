@@ -13,7 +13,7 @@ export interface GameDependencies {
 
 export function createGameDependencies(
   gameLoop: GameLoop,
-  onEvent?: (event: string, payload: any) => void,
+  onEvent?: (event: string, payload: Record<string, unknown>) => void,
 ): GameDependencies {
   // Reuse the EnergyManager that lives on the GameLoop instance,
   // so both the physics tick and the action executor share the same state.

@@ -147,6 +147,7 @@ export class GameLoop {
         deltaTime
       );
     });
+    this.obstacles = this.obstacles.filter((obstacle) => !obstacle.triggered);
 
     // 3. Robot-vs-Robot Collision — Spatial Grid accelerated
     this.spatialGrid.clear();

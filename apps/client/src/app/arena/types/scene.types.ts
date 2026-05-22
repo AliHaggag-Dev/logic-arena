@@ -20,6 +20,9 @@ export interface RobotState {
   energy?: number;
   maxEnergy?: number;
   inStasis?: boolean;
+  isShielded?: boolean;
+  isCloaked?: boolean;
+  shieldHitTimestamp?: number;
   // FOV (Feature 1)
   fov?: { angle: number; range: number };
   fovDirection?: number;
@@ -40,7 +43,7 @@ export interface ProjectileState {
 // ---------------------------------------------------------------------------
 // Obstacle state
 // ---------------------------------------------------------------------------
-export type ObstacleType = 'SOLID' | 'TRAP' | 'LAVA' | 'FINISH_LINE';
+export type ObstacleType = 'SOLID' | 'TRAP' | 'LAVA' | 'FINISH_LINE' | 'MINE';
 
 export interface ObstacleState {
   id: string;
@@ -66,6 +69,9 @@ export interface RobotModelProps {
   energy?: number;
   maxEnergy?: number;
   inStasis?: boolean;
+  isShielded?: boolean;
+  isCloaked?: boolean;
+  shieldHitTimestamp?: number;
   // FOV additions
   fov?: { angle: number; range: number };
   fovDirection?: number;

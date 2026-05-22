@@ -4,6 +4,7 @@ export const KEYWORDS = new Set([
   "FOR", "TO",
   "FUNCTION", "CALL", "RETURN",
   "FIRE", "BURST_FIRE",
+  "TELEPORT", "SHIELD", "CLOAK", "DASH", "MINE", "TAUNT",
   "MOVE", "MOVE_FAST", "STOP", "BACKUP",
   "PATHFIND", "SET",
   "NOT", "AND", "OR",
