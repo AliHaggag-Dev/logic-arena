@@ -125,12 +125,12 @@ export function DocsSectionNav({ isMobile }: DocsSectionNavProps) {
         zIndex: 40,
         display: 'flex',
         flexDirection: 'column',
-        padding: '10px 4px',
+        padding: '14px 8px',
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
         border: '1px solid rgba(var(--accent-rgb), 0.12)',
         borderRight: 'none',
-        borderRadius: '14px 0 0 14px',
+        borderRadius: '16px 0 0 16px',
         boxShadow: '-6px 0 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.04)',
       }}
     >

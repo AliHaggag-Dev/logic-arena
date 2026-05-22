@@ -54,13 +54,13 @@
 
 /* Panel header label — adapts to theme text color */
 .docs-snav-header {
-  font-size: 7px;
+  font-size: 9px;
   font-family: monospace;
   font-weight: 700;
   letter-spacing: 0.18em;
-  color: rgba(var(--accent-rgb), 0.4);
+  color: rgba(var(--accent-rgb), 0.6);
   text-align: center;
-  padding: 2px 10px 0;
+  padding: 4px 12px 0;
 }
 
 /* Thin divider below header */
@@ -75,17 +75,17 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 10px 5px 8px;
+  gap: 10px;
+  padding: 7px 14px 7px 10px;
   border-radius: 8px;
-  font-size: 8px;
+  font-size: 10.5px;
   font-family: monospace;
   font-weight: 700;
   letter-spacing: 0.13em;
   white-space: nowrap;
   border: none;
   background: transparent;
-  color: rgba(var(--accent-rgb), 0.35);
+  color: rgba(var(--accent-rgb), 0.55);
   cursor: pointer;
   text-align: left;
   width: 100%;
