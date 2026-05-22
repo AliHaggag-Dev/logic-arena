@@ -1,4 +1,4 @@
-import { Robot, GameState, Obstacle, Vector2, Projectile, GameConfig, GameMode, ModeData } from '../types';
+import { Robot, GameState, Obstacle, Vector2, Projectile, GameConfig, GameMode, ModeData, MapTheme } from '../types';
 import { spawnProjectile, updateProjectiles } from '../physics/collision-projectiles';
 import { checkRobotRobotCollision } from '../physics/collision-robots';
 import { SpatialGrid } from '../physics/spatial-grid';
@@ -19,6 +19,7 @@ export class GameLoop {
   private readonly ARENA = { width: ARENA_WIDTH, height: ARENA_HEIGHT };
   private config?: GameConfig;
   private modeData?: ModeData;
+  private readonly mapTheme: MapTheme;
 
   /**
    * Spatial grid for O(1) robot neighbour lookup.
@@ -38,16 +39,26 @@ export class GameLoop {
 
   constructor(config?: GameConfig) {
     this.config = config;
+    this.mapTheme = config?.mapTheme ?? 'CYBER';
     this.fovCalculator = new FovCalculator(this.spatialGrid);
 
     if (this.config?.obstacles) {
-      this.obstacles = this.config.obstacles;
+      this.obstacles = this.config.obstacles.map((obstacle) => ({
+        ...obstacle,
+        position: { ...obstacle.position },
+      }));
     } else if (this.config?.mode === 'RACING') {
-      this.obstacles = RACING_OBSTACLES;
+      this.obstacles = RACING_OBSTACLES.map((obstacle) => ({
+        ...obstacle,
+        position: { ...obstacle.position },
+      }));
     } else if (this.config?.mode === 'TRAINING_SOLO' || this.config?.mode === ('SANDBOX' as GameMode)) {
       this.obstacles = [];
     } else {
-      this.obstacles = DEFAULT_OBSTACLES;
+      this.obstacles = DEFAULT_OBSTACLES.map((obstacle) => ({
+        ...obstacle,
+        position: { ...obstacle.position },
+      }));
     }
   }
 
@@ -79,6 +90,7 @@ export class GameLoop {
       robots: this.robots,
       projectiles: this.projectiles,
       obstacles: this.obstacles,
+      mapTheme: this.mapTheme,
       modeData: this.modeData,
     };
   }

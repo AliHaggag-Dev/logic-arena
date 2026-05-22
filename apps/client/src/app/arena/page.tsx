@@ -149,6 +149,7 @@ const ArenaPageContent = () => {
           localRobotFile={localRobotFile}
           localRobotColor={localRobotColor}
           displayMode={displayMode}
+          mapTheme={uiState?.mapTheme || searchParams.get('theme') || 'CYBER'}
         />
       </div>
 

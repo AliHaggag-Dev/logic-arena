@@ -4,7 +4,7 @@ import { RedisService } from '../../../common/redis.service';
 import { MatchState } from './match.state';
 import { AuthenticatedSocket } from './types';
 import { MatchEngine } from '../match.engine';
-import { GameMode } from '@logic-arena/engine';
+import { GameMode, MapTheme } from '@logic-arena/engine';
 import * as crypto from 'crypto';
 import { loadPlayerScriptAndLoadout, createAndStartMatch } from './match.lobby-init';
 
@@ -33,6 +33,7 @@ export class MatchLobbyManager {
       matchId: string;
       scriptId: string;
       mode?: GameMode;
+      mapTheme?: MapTheme;
     },
   ) {
     if (!client.userId) {
@@ -50,8 +51,10 @@ export class MatchLobbyManager {
     let match = this.state.matches.get(data.matchId);
     const currentMode = this.state.matchModes.get(data.matchId);
     const mode = data.mode || 'COMBAT';
+    const currentTheme = match?.getState().mapTheme || 'CYBER';
+    const requestedTheme = data.mapTheme || 'CYBER';
 
-    if (match && currentMode && currentMode !== mode) {
+    if (match && ((currentMode && currentMode !== mode) || currentTheme !== requestedTheme)) {
       match.stop();
       this.state.cleanupMatch(data.matchId);
       match = undefined;
@@ -71,6 +74,7 @@ export class MatchLobbyManager {
           tracerColor: loadout.selectedTracerColor,
         },
         mode,
+        data.mapTheme || 'CYBER',
       );
     } else {
       if (this.state.lobbyMatches.has(data.matchId)) {
@@ -103,7 +107,7 @@ export class MatchLobbyManager {
     client.matchId = data.matchId;
     client.join(data.matchId);
     client.emit('matchJoinedInfo', { mode });
-    this.server.to(data.matchId).emit('gameState', match.getState());
+    this.server.to(data.matchId).emit('gameState', { type: 'full', state: match.getState() });
 
     if (client.userId && !client.isGuest) {
       this.state.userStatus.set(client.userId, {
@@ -191,7 +195,7 @@ export class MatchLobbyManager {
     if (client.matchId && this.state.matches.has(client.matchId)) {
       const match = this.state.matches.get(client.matchId);
       match?.reset();
-      this.server.to(client.matchId).emit('gameState', match?.getState());
+      this.server.to(client.matchId).emit('gameState', { type: 'full', state: match?.getState() });
     }
   }
 
@@ -265,6 +269,6 @@ export class MatchLobbyManager {
     }
     // Clear the killed-set so the same dummies can fire dummyKilled again
     this.state.dummyKilledThisTick.delete(client.matchId);
-    this.server.to(client.matchId).emit('gameState', match.getState());
+    this.server.to(client.matchId).emit('gameState', { type: 'full', state: match.getState() });
   }
 }

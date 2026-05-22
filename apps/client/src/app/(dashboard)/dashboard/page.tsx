@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useScripts } from "./hooks/useScripts";
-import { CustomSelect } from "./components/CustomSelect";
+import { ArenaSelector } from "./components/ArenaSelector";
 import { ScriptSkeleton } from "./components/ScriptSkeleton";
 import { ScriptCard } from "./components/script-card/ScriptCard";
 import { ProtocolForm } from "./components/ProtocolForm";
@@ -21,6 +21,7 @@ export default function DashboardPage() {
     const {
         scripts, initialLoad, newScriptTitle, setNewScriptTitle,
         status, isLoading, selectedMode, setSelectedMode,
+        selectedTheme, setSelectedTheme,
         editingScript, setEditingScript, isGuest, showAuthModal, setShowAuthModal,
         handleCreateScript, handleGoToArena, handleGoToLobby, handleEditScript,
         handleOptimisticUpdate, handleRevert, handleDeleteScript
@@ -77,6 +78,14 @@ export default function DashboardPage() {
                     </div>
                 </Link>
 
+                {/* Arena Selector Hero Section */}
+                <ArenaSelector
+                    selectedMode={selectedMode}
+                    setSelectedMode={setSelectedMode}
+                    selectedTheme={selectedTheme}
+                    setSelectedTheme={setSelectedTheme}
+                />
+
                 <div className="flex flex-col md:grid md:grid-cols-3 gap-6 md:gap-8">
                     
                     {/* Create Script Form */}
@@ -95,12 +104,6 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between gap-3 w-full mb-0 md:mb-2">
                             <h3 className="hidden md:block text-accent/80 uppercase tracking-widest text-xs font-bold w-auto">AVAILABLE SCRIPTS</h3>
                             <div className="flex items-center gap-3 w-full md:w-auto md:justify-end">
-                                <div className="flex-1 md:flex-none md:w-auto">
-                                    <CustomSelect
-                                        value={selectedMode}
-                                        onChange={(val) => setSelectedMode(val as GameMode)}
-                                    />
-                                </div>
                                 <div className="md:hidden bg-accent/10 border border-accent/20 rounded-full px-4 py-2 flex items-center gap-2 shrink-0 h-11">
                                     <Terminal size={10} className="text-accent" />
                                     <span className="text-[10px] font-bold text-accent tracking-tighter">TOTAL: {scripts.length}</span>
@@ -124,7 +127,7 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col gap-4 md:gap-3">
+                            <div className="flex flex-col gap-4 md:gap-3 max-h-[40vh] overflow-y-auto pr-2 pb-4 scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent">
                                 {scripts.map((script) => (
                                     <ScriptCard
                                         key={script.id}

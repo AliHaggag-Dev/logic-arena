@@ -33,7 +33,7 @@ export class SpectatorManager {
     const spectators = this.state.spectatorSockets.get(data.matchId)!;
     spectators.add(client.id);
 
-    client.emit('gameState', match.getState());
+    client.emit('gameState', { type: 'full', state: match.getState() });
     this.server.to(data.matchId).emit('spectatorCount', spectators.size);
     client.emit('spectateJoined', { matchId: data.matchId });
   }

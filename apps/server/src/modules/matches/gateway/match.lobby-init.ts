@@ -4,7 +4,7 @@ import { RedisService } from '../../../common/redis.service';
 import { MatchState } from './match.state';
 import { AuthenticatedSocket } from './types';
 import { MatchEngine } from '../match.engine';
-import { GameMode } from '@logic-arena/engine';
+import { GameMode, MapTheme } from '@logic-arena/engine';
 import { BLACK_MARKET_ITEMS } from '../../users/black-market.constants';
 import { combatLoadoutKey } from '../../users/types';
 
@@ -76,6 +76,7 @@ export async function createAndStartMatch(
     tracerColor: string;
   },
   mode: GameMode,
+  mapTheme: MapTheme = 'CYBER',
 ): Promise<MatchEngine> {
   let initialPlayers: { id: string; script: string; color: string; model: string; tracerColor?: string; spawnPosition?: { x: number; y: number }; initialFovDirection?: number }[];
 
@@ -111,7 +112,7 @@ export async function createAndStartMatch(
   const match = new MatchEngine(
     matchId,
     initialPlayers,
-    { mode, disableProjectiles: mode === 'RACING' },
+    { mode, mapTheme, disableProjectiles: mode === 'RACING' },
     (event, payload) => {
       server.to(matchId).emit(event, payload);
     },

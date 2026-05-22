@@ -1,4 +1,4 @@
-import { RobotState, ProjectileState, ObstacleState, Vec2 } from "./scene.types";
+import { RobotState, ProjectileState, ObstacleState, Vec2, MapTheme } from "./scene.types";
 
 // ---------------------------------------------------------------------------
 // Mode Data — Client-side mirrors of engine types
@@ -45,5 +45,6 @@ export interface GameState {
   robots: RobotState[];
   projectiles: ProjectileState[];
   obstacles: ObstacleState[];
+  mapTheme?: MapTheme;
   modeData?: ModeData;
 }

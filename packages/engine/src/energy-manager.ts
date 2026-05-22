@@ -26,6 +26,13 @@ export const ENERGY_COSTS: Readonly<Record<string, number>> = {
   WAIT:        0,
 };
 
+const ICE_FREE_MOVEMENT_COMMANDS = new Set([
+  'MOVE',
+  'MOVE_FAST',
+  'BACKUP',
+  'PATHFIND',
+]);
+
 // ---------------------------------------------------------------------------
 // Thresholds and defaults
 // ---------------------------------------------------------------------------
@@ -122,7 +129,9 @@ export class EnergyManager {
       return false;
     }
 
-    const cost = ENERGY_COSTS[cmd] ?? 0;
+    const cost = robot.insideIcePatch && ICE_FREE_MOVEMENT_COMMANDS.has(cmd)
+      ? 0
+      : ENERGY_COSTS[cmd] ?? 0;
     if ((robot.energy ?? 0) < cost) {
       return false;
     }

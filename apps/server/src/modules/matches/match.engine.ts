@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { GameLoop, Robot, GameConfig, GameMode, ModeData, KothModeData, CtfModeData, SurvivalModeData } from '@logic-arena/engine';
+import { ARENA_HEIGHT, ARENA_WIDTH, GameLoop, Robot, GameConfig, GameMode, ModeData, KothModeData, CtfModeData, SurvivalModeData, Obstacle, MapTheme } from '@logic-arena/engine';
 import {
   processKothTick,
   processCtfTick,
@@ -23,6 +23,14 @@ import {
 } from '@logic-arena/logic-parser';
 
 export class MatchEngine {
+  private static readonly LAVA_POOL_RADIUS = 40;
+  private static readonly ICE_PATCH_RADIUS = 50;
+  private static readonly EMP_STRIKE_RADIUS = 60;
+  private static readonly EMP_SPAWN_INTERVAL_TICKS = 200;
+  private static readonly EMP_EXPLODE_AFTER_TICKS = 20;
+  private static readonly EMP_ENERGY_DAMAGE = 100;
+  private static readonly LAVA_DAMAGE_PER_TICK = 1;
+
   private readonly logger = new Logger(MatchEngine.name);
   private gameLoop: GameLoop;
   private sandboxRunner: SandboxRunner;
@@ -39,6 +47,8 @@ export class MatchEngine {
   private tickInterval: NodeJS.Timeout | null = null;
   private matchId: string;
   private config?: GameConfig;
+  private readonly mapTheme: MapTheme;
+  private tickCount: number = 0;
 
   /** Accumulate match-level tracking for efficiency score */
   private lastTickTime: number = Date.now();
@@ -58,7 +68,8 @@ export class MatchEngine {
     private onEvent?: (event: string, payload: Record<string, unknown>) => void,
   ) {
     this.matchId = matchId;
-    this.config = config;
+    this.mapTheme = config?.mapTheme ?? 'CYBER';
+    this.config = { ...config, mapTheme: this.mapTheme };
     this.gameLoop = new GameLoop(this.config);
     this.sandboxRunner = new SandboxRunner();
     this.deps = createGameDependencies(this.gameLoop, this.onEvent);
@@ -72,6 +83,7 @@ export class MatchEngine {
     });
 
     this.initModeData();
+    this.initEnvironmentHazards();
   }
 
   private initModeData() {
@@ -114,6 +126,7 @@ export class MatchEngine {
     this.stop();
     this.gameLoop = new GameLoop(this.config);
     this.deps = createGameDependencies(this.gameLoop, this.onEvent);
+    this.tickCount = 0;
     this.initialPlayers.forEach((p, i) => {
       this.gameLoop.addRobot(
         createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor, p.spawnPosition, p.initialFovDirection),
@@ -121,6 +134,7 @@ export class MatchEngine {
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
     this.initModeData();
+    this.initEnvironmentHazards();
     this.start();
   }
 
@@ -145,6 +159,9 @@ export class MatchEngine {
   // ---------------------------------------------------------------------------
 
   tick(): void {
+    this.tickCount += 1;
+    this.processHazards();
+
     this.gameLoop.getRobots().forEach((robot) => {
       if (!robot.isAlive) return;
       // Clear flag so logic executor can set it if an action is performed
@@ -170,6 +187,125 @@ export class MatchEngine {
         }
       }
     }
+  }
+
+  private initEnvironmentHazards(): void {
+    if (this.mapTheme === 'LAVA') {
+      this.spawnThemeHazards('LAVA_POOL', MatchEngine.LAVA_POOL_RADIUS, this.randomInt(3, 4));
+    } else if (this.mapTheme === 'ICE') {
+      this.spawnThemeHazards('ICE_PATCH', MatchEngine.ICE_PATCH_RADIUS, this.randomInt(2, 3));
+    }
+  }
+
+  private spawnThemeHazards(type: 'LAVA_POOL' | 'ICE_PATCH', radius: number, count: number): void {
+    const obstacles = this.gameLoop.getObstacles();
+    for (let index = 0; index < count; index += 1) {
+      obstacles.push(this.createCircularHazard(
+        `${type.toLowerCase()}-${this.matchId}-${index}`,
+        type,
+        radius,
+      ));
+    }
+  }
+
+  private processHazards(): void {
+    const obstacles = this.gameLoop.getObstacles();
+    const robots = this.gameLoop.getRobots();
+
+    for (const robot of robots) {
+      robot.insideIcePatch = false;
+    }
+
+    for (const obstacle of obstacles) {
+      if (obstacle.type !== 'LAVA_POOL' && obstacle.type !== 'ICE_PATCH') {
+        continue;
+      }
+
+      const radius = obstacle.width / 2;
+      for (const robot of robots) {
+        if (!robot.isAlive || !this.isRobotInsideHazard(robot, obstacle, radius)) {
+          continue;
+        }
+
+        if (obstacle.type === 'LAVA_POOL') {
+          robot.health = Math.max(0, robot.health - MatchEngine.LAVA_DAMAGE_PER_TICK);
+          if (robot.health === 0) robot.isAlive = false;
+        } else {
+          robot.insideIcePatch = true;
+        }
+      }
+    }
+
+    if (this.mapTheme === 'CYBER') {
+      this.processCyberStorm(obstacles, robots);
+    }
+  }
+
+  private processCyberStorm(obstacles: Obstacle[], robots: Robot[]): void {
+    if (this.tickCount % MatchEngine.EMP_SPAWN_INTERVAL_TICKS === 0) {
+      obstacles.push(this.createCircularHazard(
+        `emp-strike-${this.matchId}-${this.tickCount}`,
+        'EMP_STRIKE',
+        MatchEngine.EMP_STRIKE_RADIUS,
+        this.tickCount,
+      ));
+    }
+
+    for (let index = obstacles.length - 1; index >= 0; index -= 1) {
+      const obstacle = obstacles[index];
+      if (obstacle.type !== 'EMP_STRIKE') continue;
+
+      const createdAtTick = obstacle.createdAt ?? this.tickCount;
+      if (this.tickCount - createdAtTick < MatchEngine.EMP_EXPLODE_AFTER_TICKS) {
+        continue;
+      }
+
+      for (const robot of robots) {
+        if (!robot.isAlive || !this.isRobotInsideHazard(robot, obstacle, MatchEngine.EMP_STRIKE_RADIUS)) {
+          continue;
+        }
+
+        robot.energy = Math.max(0, (robot.energy ?? 0) - MatchEngine.EMP_ENERGY_DAMAGE);
+        if ((robot.energy ?? 0) <= 0) {
+          robot.inStasis = true;
+        }
+      }
+      obstacles.splice(index, 1);
+    }
+  }
+
+  private createCircularHazard(
+    id: string,
+    type: 'LAVA_POOL' | 'ICE_PATCH' | 'EMP_STRIKE',
+    radius: number,
+    createdAt?: number,
+  ): Obstacle {
+    return {
+      id,
+      type,
+      position: {
+        x: this.randomFloat(radius, ARENA_WIDTH - radius),
+        y: this.randomFloat(radius, ARENA_HEIGHT - radius),
+      },
+      width: radius * 2,
+      height: radius * 2,
+      rotation: Math.random() * Math.PI * 2,
+      createdAt,
+    };
+  }
+
+  private isRobotInsideHazard(robot: Robot, obstacle: Obstacle, radius: number): boolean {
+    const dx = robot.position.x - obstacle.position.x;
+    const dy = robot.position.y - obstacle.position.y;
+    return dx * dx + dy * dy <= radius * radius;
+  }
+
+  private randomFloat(min: number, max: number): number {
+    return min + Math.random() * (max - min);
+  }
+
+  private randomInt(min: number, max: number): number {
+    return Math.floor(this.randomFloat(min, max + 1));
   }
 
   private spawnSurvivalWave(wave: number): void {

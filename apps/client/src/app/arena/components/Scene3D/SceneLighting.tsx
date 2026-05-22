@@ -1,15 +1,23 @@
 "use client";
 
+import { MapTheme } from "../../types";
+
+const FILL_LIGHT_COLORS: Record<MapTheme, string> = {
+  CYBER: "#ffffff",
+  LAVA: "#ff7a1a",
+  ICE: "#7dd3fc",
+};
+
 /**
  * Configures the lighting for the 3D scene.
  * Includes a shadow-casting DirectionalLight so meshes with castShadow/receiveShadow
  * actually produce shadows (previously no light had castShadow={true}).
  */
-export const SceneLighting = () => {
+export const SceneLighting = ({ mapTheme }: { mapTheme: MapTheme }) => {
   return (
     <>
       <ambientLight intensity={0.85} />
-      <pointLight position={[10, 10, 10]} intensity={1.6} />
+      <pointLight position={[10, 10, 10]} intensity={1.6} color={FILL_LIGHT_COLORS[mapTheme]} />
       <directionalLight
         position={[5, 20, 10]}
         intensity={1.2}

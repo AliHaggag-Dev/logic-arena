@@ -84,6 +84,11 @@ export interface Robot {
    * Reset to 1.0 at the start of each robot's update.
    */
   speedMultiplier?: number;
+  /**
+   * Set to true by arena hazards when the robot is inside an ICE_PATCH.
+   * Movement commands become free, but steering/STOP cannot change velocity.
+   */
+  insideIcePatch?: boolean;
 
   // --- Energy / Battery (Feature 2) ---
   /**
@@ -164,7 +169,15 @@ export interface Projectile {
  *  TRAP  — Slowdown zone. Reduces robot velocity by 60% while inside.
  *  LAVA  — Damage zone. Deducts 5 HP/sec while robot is inside.
  */
-export type ObstacleType = 'SOLID' | 'TRAP' | 'LAVA' | 'FINISH_LINE' | 'MINE';
+export type ObstacleType =
+  | 'SOLID'
+  | 'TRAP'
+  | 'LAVA'
+  | 'FINISH_LINE'
+  | 'MINE'
+  | 'LAVA_POOL'
+  | 'ICE_PATCH'
+  | 'EMP_STRIKE';
 
 export interface Obstacle {
   id: string;
@@ -229,6 +242,7 @@ export interface GameState {
   robots: Robot[];
   projectiles: Projectile[];
   obstacles: Obstacle[];
+  mapTheme?: MapTheme;
   modeData?: ModeData;
 }
 
@@ -243,8 +257,11 @@ export type GameMode =
   | 'KING_OF_THE_HILL'
   | 'CAPTURE_THE_FLAG';
 
+export type MapTheme = 'CYBER' | 'LAVA' | 'ICE';
+
 export interface GameConfig {
   mode?: GameMode;
+  mapTheme?: MapTheme;
   disableProjectiles?: boolean;
   obstacles?: Obstacle[];
 }

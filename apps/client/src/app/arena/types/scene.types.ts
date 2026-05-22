@@ -43,7 +43,17 @@ export interface ProjectileState {
 // ---------------------------------------------------------------------------
 // Obstacle state
 // ---------------------------------------------------------------------------
-export type ObstacleType = 'SOLID' | 'TRAP' | 'LAVA' | 'FINISH_LINE' | 'MINE';
+export type MapTheme = 'CYBER' | 'LAVA' | 'ICE';
+
+export type ObstacleType =
+  | 'SOLID'
+  | 'TRAP'
+  | 'LAVA'
+  | 'FINISH_LINE'
+  | 'MINE'
+  | 'LAVA_POOL'
+  | 'ICE_PATCH'
+  | 'EMP_STRIKE';
 
 export interface ObstacleState {
   id: string;
@@ -52,6 +62,7 @@ export interface ObstacleState {
   width: number;
   height: number;
   rotation?: number;
+  createdAt?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -127,6 +138,7 @@ export interface Scene3DComponentProps {
   /** Hex color saved in the local player's loadout — used to identify their robot in the scene */
   localRobotColor?: string;
   displayMode?: string;
+  mapTheme?: string;
 }
 
 export interface HealthBarSpriteProps {

@@ -47,6 +47,7 @@ export const ArenaModels = ({
   localRobotFile,
   localRobotColor,
   displayMode,
+  mapTheme,
 }: {
   gameStateRef: MutableRefObject<GameState>;
   obstacles?: ObstacleState[];
@@ -57,6 +58,7 @@ export const ArenaModels = ({
   localRobotFile?: string;
   localRobotColor?: string;
   displayMode?: string;
+  mapTheme?: string;
 }) => {
   const { scene } = useThree();
   const robotMeshesRef = useRef<THREE.Group[]>([]);
@@ -122,7 +124,7 @@ export const ArenaModels = ({
       <BoundaryLine points={boundaryPoints} />
       <HitParticles bursts={hitBursts} setBursts={setHitBursts} />
 
-      <ObstaclesInstanced obstacles={obstacles} />
+      <ObstaclesInstanced obstacles={obstacles} mapTheme={mapTheme as any} />
 
       {/* Mode-specific 3D elements */}
       {(() => {

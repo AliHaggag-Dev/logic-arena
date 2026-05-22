@@ -40,6 +40,10 @@ export class MovementExecutor {
       return;
     }
 
+    if (robot.insideIcePatch) {
+      return;
+    }
+
     if (actionCommand === 'PATHFIND') {
       robot.isBackingUp = false;
       this.pathfinder.executePathfind(robot, memory);

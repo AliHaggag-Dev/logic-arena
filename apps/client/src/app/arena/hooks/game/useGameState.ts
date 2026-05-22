@@ -17,6 +17,7 @@ export const useGameState = (
 ) => {
   const searchParams = useSearchParams();
   const matchIdFromUrl = searchParams.get('matchId');
+  const themeFromUrl = searchParams.get('theme') || 'CYBER';
 
   const socket = useSocket();
   const { speechBubble, setRobotBubble, cleanupBubbles } = useSpeechBubbles();
@@ -67,7 +68,7 @@ export const useGameState = (
       if (isSpectator) {
         socket.emit('spectate', { matchId });
       } else if (scriptId) {
-        socket.emit('joinMatch', { matchId, scriptId, mode: mode || 'COMBAT' });
+        socket.emit('joinMatch', { matchId, scriptId, mode: mode || 'COMBAT', mapTheme: themeFromUrl });
       }
     };
 
@@ -240,7 +241,7 @@ export const useGameState = (
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
       cleanupBubbles();
     };
-  }, [socket, scriptId, matchIdFromUrl, mode, isSpectator, setRobotBubble, cleanupBubbles]);
+  }, [socket, scriptId, matchIdFromUrl, mode, isSpectator, themeFromUrl, setRobotBubble, cleanupBubbles]);
 
   const availableRobots = useMemo(() => uiState.robots.map(r => r.id), [uiState.robots]);
 

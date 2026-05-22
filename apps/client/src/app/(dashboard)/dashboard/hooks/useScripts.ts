@@ -6,7 +6,7 @@ import { useAuthState } from "../../../../hooks/useAuthState";
 import { setSelectedScriptId } from "../../../../lib/client-security";
 import { useSafeTimeout } from "../../../../hooks/useSafeTimeout";
 
-export type GameMode = "COMBAT" | "RACING" | "TRAINING_SOLO";
+export type GameMode = "COMBAT" | "SURVIVAL" | "CAPTURE_THE_FLAG" | "KING_OF_THE_HILL" | "RACING" | "TRAINING_SOLO";
 
 export const GUEST_SCRIPT: RobotScript = {
     id: "guest-script",
@@ -23,6 +23,7 @@ export function useScripts() {
     const [status, setStatus] = useState<{ message: string; type: "error" | "success" | null }>({ message: "", type: null });
     const [isLoading, setIsLoading] = useState(false);
     const [selectedMode, setSelectedMode] = useState<GameMode>("COMBAT");
+    const [selectedTheme, setSelectedTheme] = useState<string>("CYBER");
     const [editingScript, setEditingScript] = useState<RobotScript | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const router = useRouter();
@@ -107,8 +108,8 @@ export function useScripts() {
     };
 
     const handleGoToArena = useCallback((scriptId: string) => {
-        router.push(`/arena?scriptId=${scriptId}&mode=${selectedMode}`);
-    }, [router, selectedMode]);
+        router.push(`/arena?scriptId=${scriptId}&mode=${selectedMode}&theme=${selectedTheme}`);
+    }, [router, selectedMode, selectedTheme]);
 
     const handleGoToLobby = useCallback((scriptId: string) => {
         setSelectedScriptId(scriptId);
@@ -172,6 +173,8 @@ export function useScripts() {
         isLoading,
         selectedMode,
         setSelectedMode,
+        selectedTheme,
+        setSelectedTheme,
         editingScript,
         setEditingScript,
         isGuest,
