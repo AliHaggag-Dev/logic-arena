@@ -91,32 +91,32 @@
 
 /* ── VIOLET SOVEREIGN — Premium light, deep violet authority ── */
 [data-theme='light'] {
-  --bg-primary:      #f0f2fa;
-  --bg-secondary:    #e4e8f5;
-  --text-primary:    #0b0d1a;
-  --text-secondary:  #4a5272;
-  --accent:          #5b21b6;
-  --accent-rgb:      91, 33, 182;
-  --accent-bright:   #7c3aed;
-  --accent-glow:     rgba(91, 33, 182, 0.12);
-  --border:          rgba(91, 33, 182, 0.20);
-  --border-subtle:   rgba(91, 33, 182, 0.10);
+  --bg-primary:      #fdfdff;
+  --bg-secondary:    #f4f5f8;
+  --text-primary:    #120c23;
+  --text-secondary:  #554d6b;
+  --accent:          #6200ea;
+  --accent-rgb:      98, 0, 234;
+  --accent-bright:   #7c4dff;
+  --accent-glow:     rgba(98, 0, 234, 0.18);
+  --border:          rgba(98, 0, 234, 0.28);
+  --border-subtle:   rgba(98, 0, 234, 0.15);
   --card:            #ffffff;
-  --card-hover:      #f5f3ff;
-  --surface-1:       #f0f2fa;
-  --surface-2:       #e4e8f5;
-  --surface-3:       #d8dcf0;
-  --card-shadow:     0 2px 16px rgba(91, 33, 182, 0.09), 0 1px 0 rgba(91, 33, 182, 0.06) inset;
-  --btn-bg:          rgba(91, 33, 182, 0.07);
-  --btn-bg-hover:    rgba(91, 33, 182, 0.14);
-  --btn-bg-active:   rgba(91, 33, 182, 0.24);
+  --card-hover:      #f7f5fb;
+  --surface-1:       #fdfdff;
+  --surface-2:       #f4f5f8;
+  --surface-3:       #e6e8f0;
+  --card-shadow:     0 8px 30px rgba(98, 0, 234, 0.1), 0 2px 8px rgba(98, 0, 234, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1);
+  --btn-bg:          rgba(98, 0, 234, 0.10);
+  --btn-bg-hover:    rgba(98, 0, 234, 0.18);
+  --btn-bg-active:   rgba(98, 0, 234, 0.30);
   /* Semantic colors — deeper, richer on light surfaces */
-  --sem-success:     #16a34a;
-  --sem-success-rgb: 22, 163, 74;
-  --sem-danger:      #dc2626;
-  --sem-danger-rgb:  220, 38, 38;
-  --sem-warning:     #d97706;
-  --sem-warning-rgb: 217, 119, 6;
+  --sem-success:     #059669;
+  --sem-success-rgb: 5, 150, 105;
+  --sem-danger:      #e11d48;
+  --sem-danger-rgb:  225, 29, 72;
+  --sem-warning:     #ea580c;
+  --sem-warning-rgb: 234, 88, 12;
   --sem-info:        #4f46e5;
   --sem-info-rgb:    79, 70, 229;
   /* Rank medal tokens — same universally, override if needed */
@@ -125,8 +125,8 @@
   --rank-bronze: #CD7F32;
   /* Efficiency tier tokens */
   --eff-optimal:  var(--accent);
-  --eff-moderate: #d97706;
-  --eff-low:      #dc2626;
+  --eff-moderate: #ea580c;
+  --eff-low:      #e11d48;
 
   /* ── Docs Syntax Variables (Light) ── */
   --docs-orange: #9a3412;
