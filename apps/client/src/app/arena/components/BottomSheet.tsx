@@ -83,17 +83,18 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       {/* Sheet — 85dvh gives nearly full-screen with peek at arena behind */}
       <div
         ref={sheetRef}
-        className="fixed bottom-0 left-0 right-0 z-[100] bg-black/95 backdrop-blur-2xl border-t border-cyan-500/30 rounded-t-2xl shadow-[0_-10px_60px_rgba(var(--arena-black-rgb),0.9),0_-4px_20px_rgba(var(--arena-cyan-rgb),0.08)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-[100] backdrop-blur-2xl border-t border-cyan-500/30 rounded-t-3xl shadow-[0_-10px_60px_rgba(var(--arena-black-rgb),0.9),0_-4px_20px_rgba(var(--arena-cyan-rgb),0.08)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col"
         style={{
-          height: '85dvh',
-          maxHeight: 'calc(100vh - 40px)',
+          height: '96dvh',
+          maxHeight: 'calc(100vh - 8px)',
+          background: "rgba(var(--arena-black-rgb),0.92)",
           transform: `translateY(${translateY}%)`,
           touchAction: 'none',
         }}
       >
         {/* Drag Handle */}
         <div
-          className="w-full flex flex-col items-center pt-3 pb-2 cursor-grab active:cursor-grabbing shrink-0"
+          className="w-full flex flex-col items-center pt-2 pb-1 cursor-grab active:cursor-grabbing shrink-0"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -102,7 +103,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3 border-b border-cyan-500/15 shrink-0">
+        <div className="flex items-center justify-between px-3 pb-2 border-b border-cyan-500/15 shrink-0">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_6px_rgba(var(--arena-cyan-rgb),0.8)]" />
             <span className="text-cyan-400 text-[9px] font-black tracking-[0.4em] uppercase">{title}</span>
@@ -111,7 +112,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-cyan-600 hover:text-cyan-300 text-sm transition-colors"
+            className="w-11 h-11 flex items-center justify-center rounded-2xl text-cyan-600 hover:text-cyan-300 text-sm transition-colors"
+            style={{
+              background: "rgba(var(--arena-white-rgb),0.07)",
+              border: "1px solid rgba(var(--arena-white-rgb),0.12)",
+              boxShadow: "inset 0 1px 0 rgba(var(--arena-white-rgb),0.08)",
+            }}
           >
             ✕
           </button>
@@ -119,7 +125,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
         {/* Content — fills remaining space with flex-1 + overflow scroll */}
         <div
-          className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden px-5 py-4 min-h-0"
+          className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden px-3 py-3 min-h-0"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {children}
