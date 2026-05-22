@@ -55,6 +55,7 @@ const ArenaPageContent = () => {
     socketUserId,
     firedTracer, speechBubble,
     spectatorCount,
+    clearMatchResult,
   } = useGameState(isSpectator ? null : resolvedScriptId, urlMode, isSpectator);
 
   const displayMode = serverConfirmedMode;
@@ -131,6 +132,7 @@ const ArenaPageContent = () => {
           currentUserId={activeUserId}
           socket={socket}
           matchId={matchId}
+          onRematchClient={clearMatchResult}
         />
       )}
 

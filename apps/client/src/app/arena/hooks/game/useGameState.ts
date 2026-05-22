@@ -262,5 +262,6 @@ export const useGameState = (
     setFogEnabled,
     socketUserId,
     spectatorCount,
+    clearMatchResult: () => setMatchResult(null),
   };
 };
