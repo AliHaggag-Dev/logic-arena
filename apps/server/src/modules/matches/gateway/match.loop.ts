@@ -31,7 +31,7 @@ export class MatchLoopManager {
 
         // 2. Win condition checks
         const mode = this.state.matchModes.get(matchId) || 'COMBAT';
-        const { matchIsOver, winner } = checkWinCondition(state, mode);
+        const { matchIsOver, winner } = checkWinCondition(state, mode, state.modeData);
 
         if (matchIsOver) {
           if (this.state.savingMatches.has(matchId)) continue;

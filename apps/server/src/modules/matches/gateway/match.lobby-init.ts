@@ -4,6 +4,7 @@ import { RedisService } from '../../../common/redis.service';
 import { MatchState } from './match.state';
 import { AuthenticatedSocket } from './types';
 import { MatchEngine } from '../match.engine';
+import { GameMode } from '@logic-arena/engine';
 import { BLACK_MARKET_ITEMS } from '../../users/black-market.constants';
 import { combatLoadoutKey } from '../../users/types';
 
@@ -74,22 +75,38 @@ export async function createAndStartMatch(
     model: string;
     tracerColor: string;
   },
-  mode: 'COMBAT' | 'RACING' | 'TRAINING_SOLO',
+  mode: GameMode,
 ): Promise<MatchEngine> {
-  const initialPlayers =
-    mode === 'RACING'
-      ? [playerToken]
-      : mode === 'TRAINING_SOLO'
-        ? [
-            playerToken,
-            { id: 'dummy-1', script: '', color: '#ef4444', model: 'dummy' },
-            { id: 'dummy-2', script: '', color: '#eab308', model: 'dummy' },
-            { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
-          ]
-        : [
-            playerToken,
-            { id: 'bot-2', script: '', color: '#ff00ff', model: 'unit-02' },
-          ];
+  let initialPlayers: { id: string; script: string; color: string; model: string; tracerColor?: string; spawnPosition?: { x: number; y: number }; initialFovDirection?: number }[];
+
+  if (mode === 'RACING') {
+    initialPlayers = [playerToken];
+  } else if (mode === 'TRAINING_SOLO') {
+    initialPlayers = [
+      playerToken,
+      { id: 'dummy-1', script: '', color: '#ef4444', model: 'dummy' },
+      { id: 'dummy-2', script: '', color: '#eab308', model: 'dummy' },
+      { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
+    ];
+  } else if (mode === 'SURVIVAL') {
+    initialPlayers = [
+      playerToken,
+      { id: 'dummy-1', script: '', color: '#ef4444', model: 'dummy' },
+      { id: 'dummy-2', script: '', color: '#eab308', model: 'dummy' },
+      { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
+    ];
+  } else if (mode === 'CAPTURE_THE_FLAG') {
+    initialPlayers = [
+      { ...playerToken, spawnPosition: { x: 100, y: 300 }, initialFovDirection: 0 },
+      { id: 'bot-2', script: '', color: '#ff00ff', model: 'unit-02', spawnPosition: { x: 700, y: 300 }, initialFovDirection: Math.PI },
+    ];
+  } else {
+    // COMBAT and KING_OF_THE_HILL
+    initialPlayers = [
+      playerToken,
+      { id: 'bot-2', script: '', color: '#ff00ff', model: 'unit-02' },
+    ];
+  }
 
   const match = new MatchEngine(
     matchId,

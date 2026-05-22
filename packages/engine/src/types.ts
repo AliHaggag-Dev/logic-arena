@@ -166,18 +166,68 @@ export interface Obstacle {
 }
 
 // ---------------------------------------------------------------------------
+// Mode Data — Discriminated union for mode-specific state
+// ---------------------------------------------------------------------------
+
+/** KOTH capture zone definition */
+export interface KothZone {
+  x: number;
+  y: number;
+  radius: number;
+}
+
+export interface KothModeData {
+  type: 'KOTH';
+  zone: KothZone;
+  zoneScores: Record<string, number>;
+  scoreTarget: number;
+}
+
+/** A single CTF flag entity */
+export interface CtfFlag {
+  team: 'A' | 'B';
+  position: Vector2;
+  carrierId?: string;
+  atBase: boolean;
+}
+
+export interface CtfModeData {
+  type: 'CTF';
+  flags: CtfFlag[];
+  teamScores: Record<string, number>;
+  scoreTarget: number;
+  bases: Record<string, Vector2>;
+}
+
+export interface SurvivalModeData {
+  type: 'SURVIVAL';
+  wave: number;
+  enemiesRemaining: number;
+  totalKills: number;
+}
+
+export type ModeData = KothModeData | CtfModeData | SurvivalModeData;
+
+// ---------------------------------------------------------------------------
 // Game State
 // ---------------------------------------------------------------------------
 export interface GameState {
   robots: Robot[];
   projectiles: Projectile[];
   obstacles: Obstacle[];
+  modeData?: ModeData;
 }
 
 // ---------------------------------------------------------------------------
 // Game Config
 // ---------------------------------------------------------------------------
-export type GameMode = 'COMBAT' | 'RACING' | 'TRAINING_SOLO';
+export type GameMode =
+  | 'COMBAT'
+  | 'RACING'
+  | 'TRAINING_SOLO'
+  | 'SURVIVAL'
+  | 'KING_OF_THE_HILL'
+  | 'CAPTURE_THE_FLAG';
 
 export interface GameConfig {
   mode?: GameMode;

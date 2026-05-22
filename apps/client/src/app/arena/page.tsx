@@ -87,6 +87,7 @@ const ArenaPageContent = () => {
   const isConnected = !!socket?.connected;
   const activeUserId = getAuthUserId() || socketUserId;
   const matchId = searchParams.get('matchId') || 'default-match';
+  const modeData = gameStateRef.current?.modeData;
 
   const isPvP = availableRobots.length >= 2 && !availableRobots.some(id => id.toLowerCase().includes('bot'));
 
@@ -185,6 +186,7 @@ const ArenaPageContent = () => {
                 robots={robots}
                 projectiles={projectiles}
                 displayMode={displayMode}
+                modeData={modeData}
               />
               <MobileControls
                 socket={socket}
@@ -197,6 +199,7 @@ const ArenaPageContent = () => {
           ) : (
             <DesktopHUD
               displayMode={displayMode}
+              modeData={modeData}
               scriptTitle={script?.title}
               socket={socket}
               fogEnabled={fogEnabled}

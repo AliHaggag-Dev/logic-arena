@@ -1,4 +1,5 @@
 import { MatchEngine } from '../match.engine';
+import { ModeData } from '@logic-arena/engine';
 
 export type UserMatchStatus = { status: 'idle' } | { status: 'in-match'; matchId: string };
 
@@ -15,6 +16,7 @@ export class MatchState {
   savingMatches = new Set<string>();
   matchModes = new Map<string, string>();
   dummyKilledThisTick = new Map<string, Set<string>>();
+  modeDataMap = new Map<string, ModeData>();
 
   /** Tracks per-user match status for the leaderboard presence system */
   userStatus = new Map<string, UserMatchStatus>();
@@ -32,5 +34,6 @@ export class MatchState {
     this.savingMatches.delete(matchId);
     this.dummyKilledThisTick.delete(matchId);
     this.spectatorSockets.delete(matchId);
+    this.modeDataMap.delete(matchId);
   }
 }

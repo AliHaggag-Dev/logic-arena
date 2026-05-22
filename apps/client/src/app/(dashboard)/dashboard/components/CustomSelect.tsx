@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-const GAME_MODE_OPTIONS = ["COMBAT", "RACING", "TRAINING_SOLO"] as const;
+const GAME_MODE_OPTIONS = ["COMBAT", "RACING", "TRAINING_SOLO", "SURVIVAL", "KING_OF_THE_HILL", "CAPTURE_THE_FLAG"] as const;
 
 export const CustomSelect = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
     const [isOpen, setIsOpen] = useState(false);

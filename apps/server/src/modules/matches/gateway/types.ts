@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { GameState, Projectile, Robot, Vector2 } from '@logic-arena/engine';
+import { GameState, Projectile, Robot, Vector2, ModeData } from '@logic-arena/engine';
 
 export type AuthenticatedSocket = Socket & {
   userId?: string;
@@ -42,6 +42,7 @@ export interface SafeGameSnapshot {
   robots: SafeRobotSnapshot[];
   projectiles: SafeProjectileSnapshot[];
   obstacles?: undefined;
+  modeData?: ModeData;
 }
 
 export type RobotDelta = Partial<SafeRobotSnapshot> & { id: string };
@@ -52,8 +53,9 @@ export interface ProjectileDelta {
 }
 
 export type GameStateDelta =
-  | { type: 'full'; state: GameState }
+  | { type: 'full'; state: GameState; modeData?: ModeData }
   | {
       type: 'delta';
       diff: { robots: RobotDelta[]; projectiles: ProjectileDelta };
+      modeData?: ModeData;
     };

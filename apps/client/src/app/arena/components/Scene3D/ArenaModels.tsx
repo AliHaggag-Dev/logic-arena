@@ -18,6 +18,10 @@ import { BoundaryLine } from './models/BoundaryLine';
 import { FovCone } from './models/FovCone';
 import { StasisEffect } from './effects/StasisEffect';
 import { TrainingDummy } from '../TrainingMode/TrainingDummy';
+import { KothZone } from './models/KothZone';
+import { CtfFlagModel } from './models/CtfFlag';
+import { CtfBase } from './models/CtfBase';
+import { ModeData, CtfFlag as CtfFlagType } from '../../types';
 
 /** Convert arena units (0–800, 0–600) to 3D scene units (-10→10, -7.5→7.5) */
 const toSceneX = (x: number) => (x / 40) - 10;
@@ -119,6 +123,47 @@ export const ArenaModels = ({
       <HitParticles bursts={hitBursts} setBursts={setHitBursts} />
 
       <ObstaclesInstanced obstacles={obstacles} />
+
+      {/* Mode-specific 3D elements */}
+      {(() => {
+        const modeData = gameStateRef.current?.modeData;
+        if (!modeData) return null;
+        if (modeData.type === 'KOTH') {
+          return <KothZone zone={modeData.zone} />;
+        }
+        if (modeData.type === 'CTF') {
+          return (
+            <>
+              {/* Team bases */}
+              {Object.entries(modeData.bases).map(([team, pos]) => (
+                <CtfBase
+                  key={`base-${team}`}
+                  position={pos}
+                  teamColor={team === 'A' ? '#22d3ee' : '#e879f9'}
+                />
+              ))}
+              {/* Flags */}
+              {modeData.flags.map((flag) => {
+                let carrierPos: [number, number, number] | undefined;
+                if (flag.carrierId) {
+                  const carrier = robots.find(r => r.id === flag.carrierId);
+                  if (carrier) {
+                    carrierPos = [toSceneX(carrier.position.x), 0.15, toSceneZ(carrier.position.y)];
+                  }
+                }
+                return (
+                  <CtfFlagModel
+                    key={`flag-${flag.team}`}
+                    flag={flag}
+                    carrierPosition={carrierPos}
+                  />
+                );
+              })}
+            </>
+          );
+        }
+        return null;
+      })()}
 
       {robots.map(robot => {
         const sx = toSceneX(robot.position.x);

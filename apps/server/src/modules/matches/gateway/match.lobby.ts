@@ -4,6 +4,7 @@ import { RedisService } from '../../../common/redis.service';
 import { MatchState } from './match.state';
 import { AuthenticatedSocket } from './types';
 import { MatchEngine } from '../match.engine';
+import { GameMode } from '@logic-arena/engine';
 import * as crypto from 'crypto';
 import { loadPlayerScriptAndLoadout, createAndStartMatch } from './match.lobby-init';
 
@@ -31,7 +32,7 @@ export class MatchLobbyManager {
     data: {
       matchId: string;
       scriptId: string;
-      mode?: 'COMBAT' | 'RACING' | 'TRAINING_SOLO';
+      mode?: GameMode;
     },
   ) {
     if (!client.userId) {

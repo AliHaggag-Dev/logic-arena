@@ -3,9 +3,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { TacticalRadar } from './TacticalRadar';
-import { RobotState, ProjectileState } from '../types';
+import { RobotState, ProjectileState, ModeData } from '../types';
+import { Users, ShieldAlert, Target } from 'lucide-react';
 
 interface MobileHUDProps {
+  modeData?: ModeData;
   fps: number;
   fogEnabled: boolean;
   setFogEnabled: React.Dispatch<React.SetStateAction<boolean>>;
@@ -17,7 +19,7 @@ interface MobileHUDProps {
 }
 
 export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
-  fps, fogEnabled, setFogEnabled, socket, isConnected,
+  modeData, fps, fogEnabled, setFogEnabled, socket, isConnected,
   robots, projectiles, displayMode,
 }) => {
   const fpsColor = fps >= 50 ? 'var(--arena-fps-good)' : fps >= 30 ? 'var(--arena-fps-warn)' : 'var(--arena-fps-bad)';
@@ -144,6 +146,40 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
             </span>
           </button>
         </div>
+
+        {/* Compact Mode Indicator */}
+        {modeData && (
+          <div className="flex flex-col gap-1 items-end mt-1">
+            <div className="flex items-center gap-1.5 h-8 px-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-lg">
+              {modeData.type === 'KOTH' && (
+                <>
+                  <Target size={12} className="text-amber-400" />
+                  <div className="flex gap-1 text-[10px] font-mono font-bold">
+                    <span className="text-[#22d3ee]">{Math.floor((modeData.zoneScores?.A || 0) / modeData.scoreTarget * 100)}%</span>
+                    <span className="text-white/30">|</span>
+                    <span className="text-[#e879f9]">{Math.floor((modeData.zoneScores?.B || 0) / modeData.scoreTarget * 100)}%</span>
+                  </div>
+                </>
+              )}
+              {modeData.type === 'CTF' && (
+                <>
+                  <Users size={12} className="text-purple-400" />
+                  <div className="flex gap-1 text-[10px] font-mono font-bold">
+                    <span className="text-[#22d3ee]">{modeData.teamScores?.A || 0}</span>
+                    <span className="text-white/30">-</span>
+                    <span className="text-[#e879f9]">{modeData.teamScores?.B || 0}</span>
+                  </div>
+                </>
+              )}
+              {modeData.type === 'SURVIVAL' && (
+                <>
+                  <ShieldAlert size={12} className="text-red-400" />
+                  <span className="text-red-400 text-[10px] font-mono font-bold">W{modeData.wave}</span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-1">

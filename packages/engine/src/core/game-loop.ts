@@ -1,4 +1,4 @@
-import { Robot, GameState, Obstacle, Vector2, Projectile, GameConfig, GameMode } from '../types';
+import { Robot, GameState, Obstacle, Vector2, Projectile, GameConfig, GameMode, ModeData } from '../types';
 import { spawnProjectile, updateProjectiles } from '../physics/collision-projectiles';
 import { checkRobotRobotCollision } from '../physics/collision-robots';
 import { SpatialGrid } from '../physics/spatial-grid';
@@ -18,6 +18,7 @@ export class GameLoop {
   private obstacles: Obstacle[] = [];
   private readonly ARENA = { width: ARENA_WIDTH, height: ARENA_HEIGHT };
   private config?: GameConfig;
+  private modeData?: ModeData;
 
   /**
    * Spatial grid for O(1) robot neighbour lookup.
@@ -78,7 +79,16 @@ export class GameLoop {
       robots: this.robots,
       projectiles: this.projectiles,
       obstacles: this.obstacles,
+      modeData: this.modeData,
     };
+  }
+
+  getModeData(): ModeData | undefined {
+    return this.modeData;
+  }
+
+  setModeData(data: ModeData | undefined): void {
+    this.modeData = data;
   }
 
   // -------------------------------------------------------------------------

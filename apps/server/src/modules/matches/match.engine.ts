@@ -1,5 +1,18 @@
 import { Logger } from '@nestjs/common';
-import { GameLoop, Robot, GameConfig, GameMode } from '@logic-arena/engine';
+import { GameLoop, Robot, GameConfig, GameMode, ModeData, KothModeData, CtfModeData, SurvivalModeData } from '@logic-arena/engine';
+import {
+  processKothTick,
+  processCtfTick,
+  processSurvivalTick,
+  KOTH_ZONE_CENTER_X,
+  KOTH_ZONE_CENTER_Y,
+  KOTH_ZONE_RADIUS,
+  KOTH_SCORE_TARGET,
+  CTF_SCORE_TARGET,
+  SURVIVAL_BASE_ENEMIES,
+  SURVIVAL_MAX_ENEMIES,
+  SURVIVAL_HEALTH_BOOST_INTERVAL
+} from './mode-processors';
 import { SandboxRunner } from '../../common/sandbox.runner';
 import { createRobot, parseAndSetLogic } from './robot-factory';
 import { createGameDependencies, GameDependencies } from './game-dependencies';
@@ -57,6 +70,40 @@ export class MatchEngine {
       );
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
+
+    this.initModeData();
+  }
+
+  private initModeData() {
+    if (this.config?.mode === 'KING_OF_THE_HILL') {
+      const modeData: KothModeData = {
+        type: 'KOTH',
+        zone: { x: KOTH_ZONE_CENTER_X, y: KOTH_ZONE_CENTER_Y, radius: KOTH_ZONE_RADIUS },
+        zoneScores: { A: 0, B: 0 },
+        scoreTarget: KOTH_SCORE_TARGET,
+      };
+      this.gameLoop.setModeData(modeData);
+    } else if (this.config?.mode === 'CAPTURE_THE_FLAG') {
+      const modeData: CtfModeData = {
+        type: 'CTF',
+        flags: [
+          { team: 'A', position: { x: 100, y: 300 }, atBase: true },
+          { team: 'B', position: { x: 700, y: 300 }, atBase: true },
+        ],
+        teamScores: { A: 0, B: 0 },
+        scoreTarget: CTF_SCORE_TARGET,
+        bases: { A: { x: 100, y: 300 }, B: { x: 700, y: 300 } },
+      };
+      this.gameLoop.setModeData(modeData);
+    } else if (this.config?.mode === 'SURVIVAL') {
+      const modeData: SurvivalModeData = {
+        type: 'SURVIVAL',
+        wave: 1,
+        enemiesRemaining: SURVIVAL_BASE_ENEMIES,
+        totalKills: 0,
+      };
+      this.gameLoop.setModeData(modeData);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -73,6 +120,7 @@ export class MatchEngine {
       );
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
+    this.initModeData();
     this.start();
   }
 
@@ -106,6 +154,71 @@ export class MatchEngine {
       // been evaluated — prevents command alternation spam in the display.
       this.deps.actionExecutor.flushEmits(robot.id);
     });
+
+    const modeData = this.gameLoop.getModeData();
+    if (modeData) {
+      const robots = this.gameLoop.getRobots();
+      if (modeData.type === 'KOTH') {
+        this.gameLoop.setModeData(processKothTick(robots, modeData));
+      } else if (modeData.type === 'CTF') {
+        this.gameLoop.setModeData(processCtfTick(robots, modeData));
+      } else if (modeData.type === 'SURVIVAL') {
+        const result = processSurvivalTick(robots, modeData);
+        this.gameLoop.setModeData(result.modeData);
+        if (result.waveComplete) {
+          this.spawnSurvivalWave(result.modeData.wave);
+        }
+      }
+    }
+  }
+
+  private spawnSurvivalWave(wave: number): void {
+    const robots = this.gameLoop.getRobots();
+    const player = robots.find(r => !r.id.startsWith('dummy-'));
+    if (player) {
+      player.health = 100;
+      if (player.energy !== undefined) {
+        player.energy = player.maxEnergy ?? 100;
+      }
+      player.inStasis = false;
+    }
+
+    // Remove all existing dummy robots
+    const dummies = robots.filter(r => r.id.startsWith('dummy-'));
+    for (const dummy of dummies) {
+      this.gameLoop.removeRobot(dummy.id);
+      this.deps.logicEvaluator.clearLogicForRobot(dummy.id);
+    }
+
+    const enemyCount = Math.min(wave + 2, SURVIVAL_MAX_ENEMIES);
+    const enemyHealth = 100 + Math.floor((wave - 1) / SURVIVAL_HEALTH_BOOST_INTERVAL) * 20;
+
+    const colors = ['#ef4444', '#eab308', '#3b82f6', '#8b5cf6', '#ec4899', '#f97316'];
+
+    for (let i = 1; i <= enemyCount; i++) {
+      const id = `dummy-${i}`;
+      const color = colors[(i - 1) % colors.length];
+      const spawnX = Math.random() > 0.5 ? 50 : 750;
+      const spawnY = Math.random() * 500 + 50;
+
+      const dummy = createRobot(
+        id,
+        '',
+        i, // index
+        color,
+        'unit-02',
+        color,
+        { x: spawnX, y: spawnY }
+      );
+      dummy.health = enemyHealth;
+      dummy.ignoreEnergyCost = true;
+      
+      this.gameLoop.addRobot(dummy);
+    }
+
+    if (this.onEvent) {
+      this.onEvent('survivalWaveComplete', { wave });
+    }
   }
 
   // ---------------------------------------------------------------------------

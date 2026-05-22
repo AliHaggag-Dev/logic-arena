@@ -5,9 +5,12 @@ import { Socket } from 'socket.io-client';
 import { CommandConsole } from './CommandConsole';
 import { TacticalRadar } from './TacticalRadar';
 import { RefreshCw, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
-import { RobotState, ProjectileState } from '../types';
+import { RobotState, ProjectileState, ModeData } from '../types';
 
 interface DesktopHUDProps {
+  robots: RobotState[];
+  projectiles: ProjectileState[];
+  modeData?: ModeData;
   displayMode: string;
   scriptTitle?: string;
   socket: Socket | null;
@@ -17,13 +20,14 @@ interface DesktopHUDProps {
   availableRobots: string[];
   setSelectedRobotId: (id: string) => void;
   isMobile: boolean;
-  robots: RobotState[];
-  projectiles: ProjectileState[];
   isConnected: boolean;
   isPvP?: boolean;
 }
 
 export function DesktopHUD({
+  robots,
+  projectiles,
+  modeData,
   displayMode,
   scriptTitle,
   socket,
@@ -33,8 +37,6 @@ export function DesktopHUD({
   availableRobots,
   setSelectedRobotId,
   isMobile,
-  robots,
-  projectiles,
   isConnected,
   isPvP = false,
 }: DesktopHUDProps) {
@@ -104,52 +106,96 @@ export function DesktopHUD({
           </div>
         </div>
 
-        <div className="absolute top-28 left-8 pointer-events-auto flex items-center gap-2 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 p-2 rounded-xl shadow-[0_8px_32px_rgba(var(--arena-black-rgb),0.8),inset_0_0_15px_rgba(var(--arena-cyan-rgb),0.05)]">
-          {!isPvP && displayMode !== 'TRAINING_SOLO' && (
-            <>
-              <button
-                type="button"
-                onClick={handleResetGame}
-                className="group relative flex items-center gap-2 border border-red-500/30 bg-red-950/40 text-red-400 text-[10px] font-black px-4 py-2 rounded-lg transition-all hover:bg-red-500/20 hover:border-red-500 hover:text-red-300 tracking-[0.15em] overflow-hidden shadow-[inset_0_0_10px_rgba(var(--sem-danger-rgb),0.1)] hover:shadow-[0_0_15px_rgba(var(--sem-danger-rgb),0.4)]"
-              >
-                <RefreshCw size={13} className="group-hover:rotate-180 transition-transform duration-500" />
-                <span className="relative z-10 mt-[1px]">RESPAWN</span>
-                <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-red-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
-              </button>
-              <div className="h-6 w-px bg-cyan-500/20 mx-1" />
-            </>
+        <div className="absolute top-28 left-8 pointer-events-auto flex flex-col gap-4">
+          <div className="flex items-center gap-2 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 p-2 rounded-xl shadow-[0_8px_32px_rgba(var(--arena-black-rgb),0.8),inset_0_0_15px_rgba(var(--arena-cyan-rgb),0.05)]">
+            {!isPvP && displayMode !== 'TRAINING_SOLO' && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleResetGame}
+                  className="group relative flex items-center gap-2 border border-red-500/30 bg-red-950/40 text-red-400 text-[10px] font-black px-4 py-2 rounded-lg transition-all hover:bg-red-500/20 hover:border-red-500 hover:text-red-300 tracking-[0.15em] overflow-hidden shadow-[inset_0_0_10px_rgba(var(--sem-danger-rgb),0.1)] hover:shadow-[0_0_15px_rgba(var(--sem-danger-rgb),0.4)]"
+                >
+                  <RefreshCw size={13} className="group-hover:rotate-180 transition-transform duration-500" />
+                  <span className="relative z-10 mt-[1px]">RESPAWN</span>
+                  <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-red-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+                </button>
+                <div className="h-6 w-px bg-cyan-500/20 mx-1" />
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setFogEnabled((prev: boolean) => !prev)}
+              className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${fogEnabled
+                ? 'border-cyan-500/50 bg-cyan-900/40 text-cyan-300 hover:bg-cyan-500/30 hover:border-cyan-400 hover:text-cyan-200 shadow-[inset_0_0_10px_rgba(var(--arena-cyan-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--arena-cyan-rgb),0.4)]'
+                : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
+                }`}
+            >
+              {fogEnabled ? <Eye size={13} className="group-hover:scale-110 transition-transform" /> : <EyeOff size={13} className="opacity-50 group-hover:scale-110 transition-transform" />}
+              <span className="relative z-10 mt-[1px]">FOG: {fogEnabled ? 'ON' : 'OFF'}</span>
+              {fogEnabled && (
+                <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-cyan-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleToggleLockVision}
+              className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${lockVision
+                ? 'border-amber-500/50 bg-amber-900/40 text-amber-300 hover:bg-amber-500/30 hover:border-amber-400 hover:text-amber-200 shadow-[inset_0_0_10px_rgba(var(--arena-amber-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--arena-amber-rgb),0.4)]'
+                : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
+                }`}
+              title="Link scanner (FOV) to body rotation. When ON, the scanner follows the robot body."
+            >
+              {lockVision ? <Lock size={13} className="group-hover:scale-110 transition-transform" /> : <Unlock size={13} className="opacity-50 group-hover:scale-110 transition-transform" />}
+              <span className="relative z-10 mt-[1px]">LOCK: {lockVision ? 'ON' : 'OFF'}</span>
+              {lockVision && (
+                <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-amber-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+              )}
+            </button>
+          </div>
+
+          {modeData && (
+            <div className="bg-black/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-3 shadow-2xl flex flex-col gap-2">
+              {modeData.type === 'KOTH' && (
+                <>
+                  <div className="text-xs font-mono text-cyan-400/70 tracking-widest uppercase mb-1">ZONE CONTROL</div>
+                  <div className="flex flex-col gap-2">
+                    <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
+                      <div 
+                        className="absolute left-0 top-0 h-full bg-[#22d3ee] transition-all duration-300"
+                        style={{ width: `${Math.min(100, (modeData.zoneScores?.A || 0) / modeData.scoreTarget * 100)}%` }}
+                      />
+                    </div>
+                    <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
+                      <div 
+                        className="absolute left-0 top-0 h-full bg-[#e879f9] transition-all duration-300"
+                        style={{ width: `${Math.min(100, (modeData.zoneScores?.B || 0) / modeData.scoreTarget * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+              {modeData.type === 'CTF' && (
+                <>
+                  <div className="text-xs font-mono text-cyan-400/70 tracking-widest uppercase mb-1">FLAG CAPTURES</div>
+                  <div className="flex justify-between font-mono text-sm">
+                    <span className="text-[#22d3ee]">TEAM A: {modeData.teamScores?.A || 0}/{modeData.scoreTarget}</span>
+                    <span className="text-[#e879f9]">TEAM B: {modeData.teamScores?.B || 0}/{modeData.scoreTarget}</span>
+                  </div>
+                </>
+              )}
+              {modeData.type === 'SURVIVAL' && (
+                <>
+                  <div className="text-xs font-mono text-red-400/70 tracking-widest uppercase mb-1">SURVIVAL</div>
+                  <div className="flex justify-between font-mono text-sm">
+                    <span className="text-white">WAVE: {modeData.wave}</span>
+                    <span className="text-red-400">ENEMIES: {modeData.enemiesRemaining}</span>
+                  </div>
+                </>
+              )}
+            </div>
           )}
-
-          <button
-            type="button"
-            onClick={() => setFogEnabled((prev: boolean) => !prev)}
-            className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${fogEnabled
-              ? 'border-cyan-500/50 bg-cyan-900/40 text-cyan-300 hover:bg-cyan-500/30 hover:border-cyan-400 hover:text-cyan-200 shadow-[inset_0_0_10px_rgba(var(--arena-cyan-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--arena-cyan-rgb),0.4)]'
-              : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
-              }`}
-          >
-            {fogEnabled ? <Eye size={13} className="group-hover:scale-110 transition-transform" /> : <EyeOff size={13} className="opacity-50 group-hover:scale-110 transition-transform" />}
-            <span className="relative z-10 mt-[1px]">FOG: {fogEnabled ? 'ON' : 'OFF'}</span>
-            {fogEnabled && (
-              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-cyan-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleToggleLockVision}
-            className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${lockVision
-              ? 'border-amber-500/50 bg-amber-900/40 text-amber-300 hover:bg-amber-500/30 hover:border-amber-400 hover:text-amber-200 shadow-[inset_0_0_10px_rgba(var(--arena-amber-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--arena-amber-rgb),0.4)]'
-              : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
-              }`}
-            title="Link scanner (FOV) to body rotation. When ON, the scanner follows the robot body."
-          >
-            {lockVision ? <Lock size={13} className="group-hover:scale-110 transition-transform" /> : <Unlock size={13} className="opacity-50 group-hover:scale-110 transition-transform" />}
-            <span className="relative z-10 mt-[1px]">LOCK: {lockVision ? 'ON' : 'OFF'}</span>
-            {lockVision && (
-              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-amber-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
-            )}
-          </button>
         </div>
 
         <div className="absolute left-8 top-44 bottom-8 pointer-events-auto flex" style={{ minWidth: '400px' }}>
@@ -167,9 +213,16 @@ export function DesktopHUD({
         <div className="absolute inset-0 bg-cyan-950/10 backdrop-blur-xl border border-cyan-500/20 rounded-sm overflow-hidden transition-all group-hover:border-cyan-400/50 shadow-2xl">
           <div className="bg-cyan-900/20 px-3 py-2 flex justify-between items-center border-b border-cyan-500/20">
             <span className="text-cyan-400 text-[10px] font-black tracking-[0.3em]">RADAR VIEW</span>
-            <div className="flex gap-1">
-              <span className="w-1 h-1 bg-cyan-500/40 animate-pulse" />
-              <span className="w-1 h-1 bg-cyan-500/40 animate-pulse [animation-delay:200ms]" />
+            <div className="flex items-center gap-2 px-3 py-1 bg-cyan-950/50 rounded-full border border-cyan-500/30">
+              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              <span className="text-[10px] font-mono text-cyan-400 tracking-wider">
+                {displayMode === 'TRAINING_SOLO' ? '[TRAINING MODE]' : 
+                 displayMode === 'RACING' ? '[RACING MODE]' : 
+                 displayMode === 'KING_OF_THE_HILL' ? '[KING OF THE HILL]' :
+                 displayMode === 'CAPTURE_THE_FLAG' ? '[CAPTURE THE FLAG]' :
+                 displayMode === 'SURVIVAL' ? '[SURVIVAL]' :
+                 '[COMBAT MODE]'}
+              </span>
             </div>
           </div>
           <TacticalRadar

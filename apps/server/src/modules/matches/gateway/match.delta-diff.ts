@@ -99,7 +99,7 @@ export function computeDeltaDiff(
   state: GameState,
   prevState: SafeGameSnapshot | null | undefined,
 ): GameStateDelta {
-  if (!prevState) return { type: 'full', state };
+  if (!prevState) return { type: 'full', state, modeData: state.modeData };
 
   const previousRobotsById = new Map(
     prevState.robots.map((robot) => [robot.id, robot]),
@@ -150,6 +150,7 @@ export function computeDeltaDiff(
         prevState.projectiles,
       ),
     },
+    modeData: state.modeData,
   };
 }
 
@@ -169,5 +170,6 @@ export function generateSafeSnapshot(state: GameState): SafeGameSnapshot {
     }),
     projectiles: state.projectiles.map(toSafeProjectile),
     obstacles: undefined,
+    modeData: state.modeData,
   };
 }

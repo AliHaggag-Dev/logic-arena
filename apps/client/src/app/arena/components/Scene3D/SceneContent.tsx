@@ -34,8 +34,14 @@ export const SceneContent = (props: Scene3DComponentProps) => {
         args={[
           20, 
           props.displayMode === 'TRAINING_SOLO' ? 40 : 20, 
-          props.displayMode === 'TRAINING_SOLO' ? "#00ffcc" : "#1a1a4a", 
-          props.displayMode === 'TRAINING_SOLO' ? "#003333" : "#0d0d2a"
+          props.displayMode === 'TRAINING_SOLO' ? "#00ffcc" : 
+          props.displayMode === 'KING_OF_THE_HILL' ? "#92400e" :
+          props.displayMode === 'CAPTURE_THE_FLAG' ? "#6b21a8" :
+          props.displayMode === 'SURVIVAL' ? "#991b1b" : "#1a1a4a", 
+          props.displayMode === 'TRAINING_SOLO' ? "#003333" : 
+          props.displayMode === 'KING_OF_THE_HILL' ? "#451a03" :
+          props.displayMode === 'CAPTURE_THE_FLAG' ? "#3b0764" :
+          props.displayMode === 'SURVIVAL' ? "#450a0a" : "#0d0d2a"
         ]} 
         scale={[1, 1, 0.75]} 
         position={[0, 0.01, 0]} 
@@ -46,7 +52,12 @@ export const SceneContent = (props: Scene3DComponentProps) => {
         <planeGeometry args={[arena.width, arena.height]} />
         <meshStandardMaterial 
           color={props.displayMode === 'TRAINING_SOLO' ? "#020813" : "#050510"} 
-          emissive={props.displayMode === 'TRAINING_SOLO' ? "#001122" : "#000000"}
+          emissive={
+            props.displayMode === 'TRAINING_SOLO' ? "#001122" : 
+            props.displayMode === 'KING_OF_THE_HILL' ? "#110800" :
+            props.displayMode === 'CAPTURE_THE_FLAG' ? "#0a0014" :
+            props.displayMode === 'SURVIVAL' ? "#140000" : "#000000"
+          }
           roughness={props.displayMode === 'TRAINING_SOLO' ? 0.7 : 0.95} 
           metalness={props.displayMode === 'TRAINING_SOLO' ? 0.8 : 0.1} 
         />
