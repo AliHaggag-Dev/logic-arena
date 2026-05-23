@@ -1,6 +1,5 @@
 import React from 'react';
 import { GameMode } from '../hooks/useScripts';
-import { Swords, Shield, Flag, Crown, Car, Target } from 'lucide-react';
 
 interface ArenaSelectorProps {
     selectedMode: GameMode;
@@ -9,39 +8,42 @@ interface ArenaSelectorProps {
     setSelectedTheme: (theme: string) => void;
 }
 
-const MODES: { value: GameMode; label: string; icon: React.ReactNode; description: string }[] = [
-    { value: 'COMBAT', label: 'DEATHMATCH', icon: <Swords size={24} />, description: 'Classic 1v1 destruction' },
-    { value: 'SURVIVAL', label: 'SURVIVAL', icon: <Shield size={24} />, description: 'Outlast endless waves' },
-    { value: 'CAPTURE_THE_FLAG', label: 'CTF', icon: <Flag size={24} />, description: 'Infiltrate & Extract' },
-    { value: 'KING_OF_THE_HILL', label: 'KOTH', icon: <Crown size={24} />, description: 'Control the center zone' },
-    { value: 'RACING', label: 'RACING', icon: <Car size={24} />, description: 'High-speed circuits' },
-    { value: 'TRAINING_SOLO', label: 'TRAINING', icon: <Target size={24} />, description: 'Test your logic' },
+const MODES: { value: GameMode; label: string; description: string; image: string }[] = [
+    { value: 'COMBAT', label: 'DEATHMATCH', description: 'Classic 1v1 destruction', image: '/thumbnails/mode-combat.png' },
+    { value: 'SURVIVAL', label: 'SURVIVAL', description: 'Outlast endless waves', image: '/thumbnails/mode-survival.png' },
+    { value: 'CAPTURE_THE_FLAG', label: 'CTF', description: 'Infiltrate & Extract', image: '/thumbnails/mode-ctf.png' },
+    { value: 'KING_OF_THE_HILL', label: 'KOTH', description: 'Control the center zone', image: '/thumbnails/mode-koth.png' },
+    { value: 'RACING', label: 'RACING', description: 'High-speed circuits', image: '/thumbnails/mode-racing.png' },
+    { value: 'TRAINING_SOLO', label: 'TRAINING', description: 'Test your logic', image: '/thumbnails/mode-training.png' },
 ];
 
-const THEMES: { value: string; label: string; colorClass: string; borderClass: string; bgClass: string; glowClass: string }[] = [
+const THEMES: { value: string; label: string; colorClass: string; borderClass: string; bgClass: string; glowClass: string; image: string }[] = [
     { 
         value: 'CYBER', 
         label: 'NEO-CYBER', 
         colorClass: 'text-[var(--accent)]', 
-        borderClass: 'border-[var(--accent)]',
-        bgClass: 'bg-[var(--accent)]/10',
-        glowClass: 'shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]'
+        borderClass: 'border-[var(--accent)]/50',
+        bgClass: 'bg-[var(--accent)]/5',
+        glowClass: 'shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]',
+        image: '/thumbnails/env-cyber.png'
     },
     { 
         value: 'LAVA', 
         label: 'MAGMA CORE', 
         colorClass: 'text-[#f97316]', 
-        borderClass: 'border-[#f97316]',
-        bgClass: 'bg-[#f97316]/10',
-        glowClass: 'shadow-[0_0_20px_rgba(249,115,22,0.4)]'
+        borderClass: 'border-[#f97316]/50',
+        bgClass: 'bg-[#f97316]/5',
+        glowClass: 'shadow-[0_0_15px_rgba(249,115,22,0.15)]',
+        image: '/thumbnails/env-lava.png'
     },
     { 
         value: 'ICE', 
         label: 'GLACIAL TUNDRA', 
         colorClass: 'text-[#22d3ee]', 
-        borderClass: 'border-[#22d3ee]',
-        bgClass: 'bg-[#22d3ee]/10',
-        glowClass: 'shadow-[0_0_20px_rgba(34,211,238,0.4)]'
+        borderClass: 'border-[#22d3ee]/50',
+        bgClass: 'bg-[#22d3ee]/5',
+        glowClass: 'shadow-[0_0_15px_rgba(34,211,238,0.15)]',
+        image: '/thumbnails/env-ice.png'
     },
 ];
 
@@ -52,93 +54,113 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
     setSelectedTheme
 }) => {
     return (
-        <section className="flex flex-col gap-6 p-6 md:p-8 rounded-2xl border border-[var(--accent)]/30 bg-bg-secondary/40 backdrop-blur-md relative overflow-hidden">
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent)] opacity-[0.03] rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2" />
+        <section className="flex flex-col gap-5 p-5 md:p-6 rounded-[24px] border border-accent/15 bg-card/45 backdrop-blur-xl relative overflow-hidden shadow-[var(--card-shadow)]">
+            {/* Background dynamic ambient glow element */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-accent opacity-[0.03] rounded-full blur-[64px] pointer-events-none translate-x-1/4 -translate-y-1/4" />
             
-            <header>
-                <h3 className="text-xl md:text-2xl font-black uppercase tracking-[0.2em] text-text-primary mb-2 flex items-center gap-3">
-                    <span className="w-2 h-6 bg-[var(--accent)] rounded-sm" />
+            <header className="flex flex-col gap-1">
+                <h3 className="text-lg md:text-xl font-black uppercase tracking-[0.18em] text-text-primary flex items-center gap-2">
+                    <span className="w-1.5 h-5 bg-accent rounded-sm animate-pulse" />
                     CAMPAIGN NEXUS
                 </h3>
-                <p className="text-[10px] md:text-xs text-text-secondary tracking-[0.1em] uppercase ml-5">
+                <p className="text-[10px] text-text-secondary tracking-wide uppercase ml-3.5">
                     Select your engagement protocol and environmental parameters
                 </p>
             </header>
 
-            <div className="flex flex-col gap-8 md:gap-10">
+            <div className="flex flex-col gap-5">
                 {/* Mode Selector */}
-                <div className="flex flex-col gap-3">
-                    <h4 className="text-[10px] font-bold text-text-secondary tracking-widest uppercase ml-1">
+                <div className="flex flex-col gap-2">
+                    <h4 className="text-[10px] font-bold text-accent/80 tracking-widest uppercase ml-1">
                         1. Select Protocol
                     </h4>
-                    <div className="flex gap-3 overflow-x-auto pb-4 pt-1 px-1 -mx-1 snap-x scrollbar-hide">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
                         {MODES.map(mode => (
                             <button
                                 key={mode.value}
                                 type="button"
                                 aria-label={`Select Mode: ${mode.label}`}
                                 onClick={() => setSelectedMode(mode.value)}
-                                className={`flex flex-col items-start gap-2 p-4 rounded-xl border-2 transition-all duration-300 min-w-[200px] snap-center shrink-0 group hover:scale-[1.02] ${
+                                className={`relative overflow-hidden flex flex-col justify-end p-3 rounded-2xl border transition-all duration-500 hover:scale-[1.02] aspect-[16/10] md:h-[85px] group text-left ${
                                     selectedMode === mode.value 
-                                    ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]' 
-                                    : 'border-transparent bg-bg-primary hover:bg-[var(--accent)]/5 hover:border-[var(--accent)]/40'
+                                    ? 'border-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)] text-text-primary' 
+                                    : 'border-accent/15 hover:border-accent/35 text-text-secondary hover:text-text-primary'
                                 }`}
                             >
-                                <div className="flex items-center gap-3 w-full">
-                                    <span className="text-2xl drop-shadow-md">{mode.icon}</span>
-                                    <span className={`font-black tracking-[0.15em] text-sm md:text-base ${
-                                        selectedMode === mode.value ? 'text-[var(--accent)] drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]' : 'text-text-primary'
+                                {/* Background environment/mode image with YouTube thumbnail CSS filters */}
+                                <div className="absolute inset-0 z-0">
+                                    <img
+                                        src={mode.image}
+                                        alt={mode.label}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108 filter brightness-[1.1] contrast-[1.2] saturate-[1.3]"
+                                    />
+                                    {/* Dark gradient overlay for text readability */}
+                                    <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10 transition-opacity duration-300 ${
+                                        selectedMode === mode.value ? 'opacity-85' : 'opacity-90 group-hover:opacity-75'
+                                    }`} />
+                                </div>
+
+                                {/* Content overlay */}
+                                <div className="relative z-10 flex flex-col gap-0.5">
+                                    <span className={`font-black tracking-wider text-xs md:text-sm transition-all duration-300 flex items-center gap-1.5 ${
+                                        selectedMode === mode.value ? 'text-accent drop-shadow-[0_0_4px_rgba(var(--accent-rgb),0.4)]' : 'text-text-primary'
                                     }`}>
+                                        {selectedMode === mode.value && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />}
                                         {mode.label}
                                     </span>
+                                    <span className="text-[8.5px] opacity-75 line-clamp-1">
+                                        {mode.description}
+                                    </span>
                                 </div>
-                                <span className={`text-[10px] font-medium tracking-wide mt-1 ${
-                                    selectedMode === mode.value ? 'text-text-primary' : 'text-text-secondary'
-                                }`}>
-                                    {mode.description}
-                                </span>
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {/* Theme Selector */}
-                <div className="flex flex-col gap-3">
-                    <h4 className="text-[10px] font-bold text-text-secondary tracking-widest uppercase ml-1">
+                <div className="flex flex-col gap-2">
+                    <h4 className="text-[10px] font-bold text-accent/80 tracking-widest uppercase ml-1">
                         2. Select Environment
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 gap-2.5">
                         {THEMES.map(theme => (
                             <button
                                 key={theme.value}
                                 type="button"
                                 aria-label={`Select Theme: ${theme.label}`}
                                 onClick={() => setSelectedTheme(theme.value)}
-                                className={`relative overflow-hidden flex flex-col items-center justify-center p-8 rounded-xl border-2 transition-all duration-300 hover:scale-[1.03] group ${
+                                className={`relative overflow-hidden flex items-end justify-between p-3.5 rounded-2xl border transition-all duration-500 hover:scale-[1.02] md:h-[85px] group text-left ${
                                     selectedTheme === theme.value 
-                                    ? `${theme.borderClass} ${theme.bgClass} ${theme.glowClass}` 
-                                    : 'border-[var(--accent)]/10 bg-bg-primary hover:border-[var(--accent)]/30'
+                                    ? `${theme.borderClass} ${theme.glowClass}` 
+                                    : 'border-accent/15 hover:border-accent/35'
                                 }`}
                             >
-                                <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-black/50 to-transparent pointer-events-none" />
+                                {/* Background environment image with YouTube thumbnail CSS filters */}
+                                <div className="absolute inset-0 z-0">
+                                    <img
+                                        src={theme.image}
+                                        alt={theme.label}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108 filter brightness-[1.1] contrast-[1.2] saturate-[1.3]"
+                                    />
+                                    {/* Dark gradient overlay */}
+                                    <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10 transition-opacity duration-300 ${
+                                        selectedTheme === theme.value ? 'opacity-85' : 'opacity-90 group-hover:opacity-75'
+                                    }`} />
+                                </div>
                                 
-                                <h4 className={`text-lg font-black tracking-[0.25em] uppercase z-10 transition-colors ${
+                                <span className={`text-xs md:text-sm font-black tracking-[0.1em] uppercase z-10 transition-colors relative ${
                                     selectedTheme === theme.value ? theme.colorClass : 'text-text-secondary group-hover:text-text-primary'
                                 }`}>
                                     {theme.label}
-                                </h4>
+                                </span>
                                 
-                                {selectedTheme === theme.value && (
-                                    <div className={`absolute top-3 right-3 flex items-center justify-center w-5 h-5 rounded-full border border-current ${theme.colorClass} bg-bg-primary`}>
-                                        <div className="w-2 h-2 rounded-full bg-current shadow-[0_0_8px_currentcolor]" />
+                                {selectedTheme === theme.value ? (
+                                    <div className={`flex items-center justify-center w-4 h-4 rounded-full border border-current ${theme.colorClass} bg-bg-primary/95 z-10 shadow-[0_0_8px_currentcolor]`}>
+                                        <div className="w-1 h-1 rounded-full bg-current" />
                                     </div>
+                                ) : (
+                                    <div className="w-4 h-4 rounded-full border border-accent/25 bg-bg-primary/50 group-hover:border-accent/40 z-10 transition-colors" />
                                 )}
-                                
-                                {/* Background glow accent for unselected on hover */}
-                                <div className={`absolute -bottom-8 -right-8 w-24 h-24 rounded-full blur-2xl transition-opacity duration-500 opacity-0 ${
-                                    selectedTheme !== theme.value ? 'group-hover:opacity-20' : ''
-                                }`} style={{ backgroundColor: theme.colorClass.replace('text-[', '').replace(']', '') }} />
                             </button>
                         ))}
                     </div>

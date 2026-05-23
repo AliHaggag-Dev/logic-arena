@@ -51,36 +51,35 @@ export const ScriptCard = React.memo(({
     }, [confirmDelete, cancelConfirm]);
 
     const getActionRow = () => (
-        <div className="mt-4 flex justify-end">
+        <div className="flex justify-end">
             {confirmDelete ? (
-                <div className="flex items-center gap-3 w-full animate-in fade-in zoom-in-95 duration-200">
-                    <span className="text-red-400 text-[10px] md:text-xs font-black tracking-[0.15em] uppercase flex-1 text-right mr-1 md:mr-2">
-                        CONFIRM DELETE?
+                <div className="flex items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
+                    <span className="text-red-400 text-[9px] font-black tracking-widest uppercase">
+                        SURE?
                     </span>
-                    <div className="flex items-center p-1 bg-red-950/20 backdrop-blur-xl rounded-2xl border border-red-500/20 shadow-[inset_0_1px_1px_rgba(var(--accent-rgb),0.05)]">
+                    <div className="flex items-center p-0.5 bg-red-950/20 backdrop-blur-xl rounded-lg border border-red-500/20 shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
                         <button
                             type="button"
                             aria-label="Confirm delete"
                             onClick={confirmAndDelete}
-                            className="flex items-center justify-center px-5 py-2 md:py-2.5 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/40 text-[10px] md:text-xs font-black tracking-widest transition-all active:scale-95"
+                            className="px-2.5 py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/40 text-[9px] font-black tracking-widest transition-all active:scale-95"
                         >
                             YES
                         </button>
-                        <div className="w-[1px] h-5 bg-red-500/20 mx-1"></div>
                         <button
                             type="button"
                             aria-label="Cancel delete"
                             onClick={cancelConfirm}
-                            className="flex items-center justify-center px-5 py-2 md:py-2.5 rounded-xl text-text-secondary hover:bg-accent/10 hover:text-text-primary text-[10px] md:text-xs font-black tracking-widest transition-all active:scale-95"
+                            className="px-2.5 py-1 rounded text-text-secondary hover:bg-accent/10 hover:text-text-primary text-[9px] font-black tracking-widest transition-all active:scale-95"
                         >
                             NO
                         </button>
                     </div>
                 </div>
             ) : (
-                <div className="flex items-center p-1 bg-card/60 backdrop-blur-2xl rounded-2xl border border-accent/10 shadow-[inset_0_1px_1px_rgba(var(--accent-rgb),0.05),0_8px_32px_rgba(0,0,0,0.1)]">
+                <div className="flex items-center p-0.5 bg-bg-secondary/60 backdrop-blur-2xl rounded-xl border border-accent/15 shadow-[inset_0_1px_1px_rgba(var(--accent-rgb),0.05),0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 group-hover:border-accent/30">
                     <ActionButton
-                        icon={<Pencil size={18} strokeWidth={2} />}
+                        icon={<Pencil size={14} strokeWidth={2.5} />}
                         tooltip={isGuest ? "LOCKED" : "EDIT SCRIPT"}
                         onClick={() => !isGuest && onEditBrain(script.id)}
                         disabled={isGuest}
@@ -88,9 +87,9 @@ export const ScriptCard = React.memo(({
                         glowColor="rgba(var(--accent-rgb), 0.4)"
                         borderColor="border-accent/30"
                     />
-                    <div className="w-[1px] h-6 bg-accent/10 mx-0.5"></div>
+                    <div className="w-[1px] h-4 bg-accent/10 mx-0.5"></div>
                     <ActionButton
-                        icon={<Swords size={18} strokeWidth={2} />}
+                        icon={<Swords size={14} strokeWidth={2.5} />}
                         tooltip={isGuest ? "LOCKED" : "DEPLOY TO LOBBY"}
                         onClick={() => !isGuest && onDeployToLobby(script.id)}
                         disabled={isGuest}
@@ -98,9 +97,9 @@ export const ScriptCard = React.memo(({
                         glowColor="rgba(168,85,247, 0.4)"
                         borderColor="border-purple-500/30"
                     />
-                    <div className="w-[1px] h-6 bg-accent/10 mx-0.5"></div>
+                    <div className="w-[1px] h-4 bg-accent/10 mx-0.5"></div>
                     <ActionButton
-                        icon={<Trophy size={18} strokeWidth={2} />}
+                        icon={<Trophy size={14} strokeWidth={2.5} />}
                         tooltip="DEPLOY TO ARENA"
                         onClick={() => onDeployToArena(script.id)}
                         disabled={false}
@@ -108,9 +107,9 @@ export const ScriptCard = React.memo(({
                         glowColor="rgba(34,197,94, 0.4)"
                         borderColor="border-green-500/30"
                     />
-                    <div className="w-[1px] h-6 bg-accent/10 mx-0.5"></div>
+                    <div className="w-[1px] h-4 bg-accent/10 mx-0.5"></div>
                     <ActionButton
-                        icon={<Trash2 size={18} strokeWidth={2} />}
+                        icon={<Trash2 size={14} strokeWidth={2.5} />}
                         tooltip={isGuest ? "LOCKED" : "DELETE SCRIPT"}
                         onClick={() => !isGuest && startConfirm()}
                         disabled={isGuest}
@@ -126,38 +125,44 @@ export const ScriptCard = React.memo(({
     return (
         <>
             {/* Mobile Card */}
-            <div className="md:hidden group relative flex flex-col w-full bg-card border border-accent/50 rounded-2xl overflow-hidden transition-all duration-200" style={{ boxShadow: "inset 3px 0 0 var(--accent), 0 1px 3px rgba(0,0,0,0.2)" }}>
-                <div className="p-5 flex flex-col gap-1">
-                    <h3 className="text-base font-bold text-accent tracking-wide group-active:text-accent/80">
+            <div className="md:hidden group relative flex items-center justify-between w-full bg-card/45 backdrop-blur-xl p-3 px-4 rounded-xl border border-accent/25 overflow-hidden transition-all duration-200 pl-6" style={{ boxShadow: "inset 3px 0 0 var(--accent), 0 1px 3px rgba(0,0,0,0.2)" }}>
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent/40 rounded-l-xl" />
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-3">
+                    <h3 className="text-sm font-black text-accent tracking-wide group-active:text-accent/80 truncate">
                         {script.title}
                     </h3>
-                    <div className="flex items-center gap-2 text-[10px] text-text-secondary font-medium tracking-widest">
-                        <span>v{script.version}</span>
+                    <div className="flex items-center gap-2 text-[9px] text-text-secondary font-bold tracking-widest">
+                        <span className="bg-accent/5 px-1 py-0.2 rounded border border-accent/10 text-accent">v{script.version}</span>
                         <span className="opacity-30">·</span>
-                        <span>
+                        <span className="truncate">
                             {mounted ? new Date(script.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" }) : ""}
                         </span>
                     </div>
+                </div>
+                <div className="shrink-0 z-10">
                     {getActionRow()}
                 </div>
             </div>
 
             {/* Desktop Card */}
-            <div className="hidden md:flex flex-col bg-card/60 backdrop-blur-md p-5 rounded-xl border border-accent/20 hover:border-accent/50 hover:bg-accent/5 transition-colors duration-150 group shadow-[var(--card-shadow)]">
-                <div className="flex flex-col gap-1">
-                    <h3 className="text-lg font-bold text-accent tracking-wider group-hover:text-accent transition-colors wrap-break-word">
+            <div className="hidden md:flex items-center justify-between bg-card/40 backdrop-blur-xl p-3.5 px-5 rounded-2xl border border-accent/15 hover:border-accent/40 hover:bg-accent/5 transition-all duration-300 group shadow-[var(--card-shadow)] hover:scale-[1.01] relative overflow-hidden pl-7">
+                {/* Left accent glowing line */}
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent/20 rounded-l-2xl group-hover:bg-accent group-hover:shadow-[0_0_10px_rgba(var(--accent-rgb),0.6)] transition-all duration-300" />
+                
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-4">
+                    <h3 className="text-sm font-black text-text-primary tracking-wider group-hover:text-accent transition-all duration-300 truncate wrap-break-word group-hover:drop-shadow-[0_0_6px_rgba(var(--accent-rgb),0.4)]">
                         {script.title}
                     </h3>
-                    <div className="flex flex-wrap gap-4 text-[10px] text-text-secondary tracking-widest font-bold mb-1">
-                        <span>V.{script.version}</span>
-                        <span className="hidden sm:inline">|</span>
-                        <span>INIT: {mounted ? new Date(script.createdAt).toLocaleDateString() : ""}</span>
+                    <div className="flex items-center gap-2.5 text-[9px] text-text-secondary tracking-widest font-black uppercase">
+                        <span className="bg-accent/10 text-accent px-1.5 py-0.5 rounded-md border border-accent/15 transition-all group-hover:bg-accent/20 group-hover:border-accent/30">V.{script.version}</span>
+                        <span className="opacity-30">•</span>
+                        <span className="truncate">INIT: {mounted ? new Date(script.createdAt).toLocaleDateString() : ""}</span>
                     </div>
                 </div>
 
-                <div className="w-full h-px bg-accent/20 mt-3 group-hover:bg-accent/20 transition-colors" />
-
-                {getActionRow()}
+                <div className="shrink-0 z-10">
+                    {getActionRow()}
+                </div>
             </div>
         </>
     );

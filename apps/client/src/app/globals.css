@@ -694,3 +694,16 @@ textarea::selection,
   96%  { opacity: 1; }
   100% { top: calc(100% + 1px); opacity: 0; }
 }
+
+/* ── Hide scrollbar utilities ── */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+}
+
+.no-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
