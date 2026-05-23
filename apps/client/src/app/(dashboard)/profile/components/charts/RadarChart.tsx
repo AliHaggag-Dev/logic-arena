@@ -22,11 +22,14 @@ export function RadarChart({ stats, size = 280 }: Props) {
   const [animated, setAnimated] = useState<CombatStats>({
     efficiency: 0, aggression: 0, defense: 0, precision: 0, speed: 0,
   });
+  const animatedRef = useRef<CombatStats>({
+    efficiency: 0, aggression: 0, defense: 0, precision: 0, speed: 0,
+  });
   const rafRef = useRef<number | null>(null);
   const startRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const from = { efficiency: 0, aggression: 0, defense: 0, precision: 0, speed: 0 };
+    const from = { ...animatedRef.current };
     const to = stats;
 
     const animate = (ts: number) => {
@@ -35,13 +38,16 @@ export function RadarChart({ stats, size = 280 }: Props) {
       const t = Math.min(elapsed / DURATION, 1);
       const ease = easeOutCubic(t);
 
-      setAnimated({
+      const next = {
         efficiency: from.efficiency + (to.efficiency - from.efficiency) * ease,
         aggression: from.aggression + (to.aggression - from.aggression) * ease,
         defense: from.defense + (to.defense - from.defense) * ease,
         precision: from.precision + (to.precision - from.precision) * ease,
         speed: from.speed + (to.speed - from.speed) * ease,
-      });
+      };
+
+      animatedRef.current = next;
+      setAnimated(next);
 
       if (t < 1) {
         rafRef.current = requestAnimationFrame(animate);
@@ -52,7 +58,7 @@ export function RadarChart({ stats, size = 280 }: Props) {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(animate);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [stats]);
+  }, [stats.efficiency, stats.aggression, stats.defense, stats.precision, stats.speed]);
 
   const cx = size / 2;
   const cy = size / 2;
