@@ -14,26 +14,14 @@ export const metadata: Metadata = {
 const SECTIONS: PublicSection[] = [
   { id: "what-are-cookies", title: "What Are Cookies?", label: "What Are Cookies?" },
   { id: "essential-cookies", title: "Essential Cookies", label: "Essential" },
-  { id: "analytics-cookies", title: "Analytics Cookies", label: "Analytics" },
+  { id: "analytics-cookies", title: "Zero Analytics & Tracking", label: "No Analytics" },
+  { id: "local-storage", title: "Local Storage", label: "Local Storage" },
   { id: "third-party-cookies", title: "Third-Party Cookies", label: "Third-Party" },
   { id: "managing-preferences", title: "Managing Preferences", label: "Manage Prefs" },
-  { id: "cookie-lifespan", title: "Cookie Lifespan", label: "Lifespan" },
   { id: "policy-updates", title: "Policy Updates", label: "Updates" },
 ];
 
 interface CookieEntry { name: string; purpose: string; lifespan: string; }
-
-const ESSENTIAL: CookieEntry[] = [
-  { name: "auth_session", purpose: "Maintains your authenticated session across page loads. Without it, you cannot stay logged in.", lifespan: "7 days (idle) / 30 days (remembered)" },
-  { name: "csrf_token", purpose: "Cryptographic token embedded in each form submission to prevent cross-site request forgery attacks.", lifespan: "Session" },
-  { name: "theme_prefs", purpose: "Stores your chosen display theme (Cyberpunk, Light, Obsidian Ember) so it persists without an account.", lifespan: "365 days" },
-];
-
-const ANALYTICS: CookieEntry[] = [
-  { name: "_arena_analytics", purpose: "Tracks aggregate page views and feature engagement. All data is anonymised — no individual profiling.", lifespan: "12 months" },
-  { name: "_session_duration", purpose: "Measures session length to help optimise performance and identify drop-off points.", lifespan: "Session" },
-  { name: "_feature_flags", purpose: "Used to A/B test new features on a randomised subset of users. No PII attached.", lifespan: "30 days" },
-];
 
 function CookieTable({ cookies }: { cookies: CookieEntry[] }) {
   return (
@@ -69,24 +57,31 @@ export default function CookiesPage() {
         <div className="flex flex-col gap-5">
           <div className="flex gap-3 items-start p-4 rounded-xl" style={{ background: "rgba(var(--sem-success-rgb,34,197,94),0.06)", border: "1px solid rgba(var(--sem-success-rgb,34,197,94),0.18)" }}>
             <ShieldCheck size={14} className="shrink-0 mt-0.5" style={{ color: "var(--sem-success,#22c55e)" }} />
-            <p className="text-[12px] leading-[1.8]" style={{ color: "rgba(var(--sem-success-rgb,34,197,94),0.8)", fontFamily: "var(--font-mono)" }}><strong>Always active.</strong> Essential cookies are required for core functionality. They cannot be disabled without breaking authentication, security, or theme persistence. No consent is required — they fall under the strictly necessary exemption.</p>
+            <p className="text-[12px] leading-[1.8]" style={{ color: "rgba(var(--sem-success-rgb,34,197,94),0.8)", fontFamily: "var(--font-mono)" }}><strong>Always active.</strong> We use exactly one essential cookie. It cannot be disabled without breaking authentication and security. No consent is required — it falls strictly under the necessary exemption.</p>
           </div>
-          <CookieTable cookies={ESSENTIAL} />
+          <CookieTable cookies={[
+            { name: "la_session", purpose: "HttpOnly, Secure cookie containing your JWT (JSON Web Token). This is how the server knows you are logged in. It cannot be accessed by client-side JavaScript.", lifespan: "7 days (idle) / 30 days (remembered)" }
+          ]} />
         </div>
       </PublicSectionCard>
 
-      <PublicSectionCard id="analytics-cookies" index={3} title="Analytics Cookies" icon={<FlaskConical size={16} />}>
-        <div className="flex flex-col gap-5">
-          <div className="flex gap-3 items-start p-4 rounded-xl" style={{ background: "rgba(var(--accent-rgb),0.05)", border: "1px solid rgba(var(--accent-rgb),0.18)" }}>
-            <ToggleRight size={14} className="shrink-0 mt-0.5" style={{ color: "var(--accent)" }} />
-            <p className="text-[12px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb),0.75)", fontFamily: "var(--font-mono)" }}><strong>Opt-in only.</strong> Analytics cookies are inactive by default. They activate only if you grant consent through our cookie banner. Withdrawal of consent takes immediate effect and does not affect platform access.</p>
-          </div>
-          <PublicBody>All analytics data is aggregated and anonymised before analysis. No individual user profile is built from these cookies — they exist purely to help us prioritise the development roadmap.</PublicBody>
-          <CookieTable cookies={ANALYTICS} />
+      <PublicSectionCard id="analytics-cookies" index={3} title="Zero Analytics & Tracking" icon={<FlaskConical size={16} />}>
+        <div className="flex flex-col gap-4">
+          <PublicBody>We believe in absolute privacy. Logic Arena <strong>does not use any analytics, telemetry, or tracking cookies</strong>. We do not track your session duration, page views, or click behavior.</PublicBody>
+          <PublicBody>Because we have zero tracking cookies, we do not require a cookie consent banner. You will never be asked to &quot;Accept All&quot; because there is nothing to accept.</PublicBody>
         </div>
       </PublicSectionCard>
 
-      <PublicSectionCard id="third-party-cookies" index={4} title="Third-Party Cookies" icon={<Info size={16} />}>
+      <PublicSectionCard id="local-storage" index={4} title="Local Storage (Not Cookies)" icon={<Info size={16} />}>
+        <div className="flex flex-col gap-4">
+          <PublicBody>Instead of cookies, we use your browser&apos;s native `localStorage` for non-sensitive UI preferences. This data never leaves your device and is never sent to our servers.</PublicBody>
+          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(var(--accent-rgb),0.12)" }}>
+            <PublicDefinition term="theme">Stores your chosen display theme (Cyberpunk, Light, Obsidian Ember) so it persists when you close the browser.</PublicDefinition>
+          </div>
+        </div>
+      </PublicSectionCard>
+
+      <PublicSectionCard id="third-party-cookies" index={5} title="Third-Party Cookies" icon={<Info size={16} />}>
         <div className="flex flex-col gap-4">
           <PublicBody>Logic Arena does not embed third-party advertising, social widgets, or tracking pixels. We do not use Google Analytics, Facebook Pixel, or any similar external tracking service.</PublicBody>
           <PublicBody>The only third-party context where cookies may be set is during the OAuth 2.0 sign-in flow via Google or GitHub. When you authenticate through those providers, they may set their own cookies according to their own policies — which we do not control.</PublicBody>
@@ -94,25 +89,12 @@ export default function CookiesPage() {
         </div>
       </PublicSectionCard>
 
-      <PublicSectionCard id="managing-preferences" index={5} title="Managing Preferences" icon={<ToggleRight size={16} />}>
+      <PublicSectionCard id="managing-preferences" index={6} title="Managing Preferences" icon={<ToggleRight size={16} />}>
         <div className="flex flex-col gap-4">
-          <PublicBody>You have full control over which cookies are active. Manage them at any time through your browser&apos;s native settings — no platform account required.</PublicBody>
+          <PublicBody>You have full control over your session. You can clear your session cookie and local storage at any time through your browser&apos;s native settings.</PublicBody>
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(var(--accent-rgb),0.12)" }}>
-            <PublicDefinition term="Disable all cookies">You may block all cookies via browser settings. This will prevent login and break preference persistence. Essential functionality will be degraded.</PublicDefinition>
-            <PublicDefinition term="Delete existing cookies">Clear cookies through your browser&apos;s &quot;Clear browsing data&quot; panel. This logs you out immediately.</PublicDefinition>
-            <PublicDefinition term="Withdraw analytics consent">If you previously consented to analytics cookies, you may withdraw consent at any time. The cookies are deactivated immediately, with no effect on platform access.</PublicDefinition>
-          </div>
-        </div>
-      </PublicSectionCard>
-
-      <PublicSectionCard id="cookie-lifespan" index={6} title="Cookie Lifespan" icon={<RefreshCw size={16} />}>
-        <div className="flex flex-col gap-4">
-          <PublicBody>Cookie lifespans vary by purpose. Here is a precise summary:</PublicBody>
-          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(var(--accent-rgb),0.12)" }}>
-            <PublicDefinition term="Session Cookies">Deleted automatically when you close your browser or the tab becomes inactive beyond the idle timeout.</PublicDefinition>
-            <PublicDefinition term="Auth Cookies">The <code style={{ fontFamily: "var(--font-mono)", color: "var(--accent)", fontSize: "11px" }}>auth_session</code> cookie persists for 7 days (or 30 days with &quot;Remember me&quot;). After expiry, re-authentication is required.</PublicDefinition>
-            <PublicDefinition term="Preference Cookies">Theme and UI preference cookies persist for 365 days from the last time you updated your preference.</PublicDefinition>
-            <PublicDefinition term="Analytics Cookies">When consented, analytics cookies are retained for a maximum of 12 months before automatic expiry.</PublicDefinition>
+            <PublicDefinition term="Disable all cookies">You may block all cookies via browser settings. This will prevent login entirely, as we cannot authenticate you without the `la_session` cookie.</PublicDefinition>
+            <PublicDefinition term="Log out">Clicking &quot;Log out&quot; in the application will instruct the server to immediately invalidate and delete your `la_session` cookie.</PublicDefinition>
           </div>
         </div>
       </PublicSectionCard>
@@ -120,7 +102,6 @@ export default function CookiesPage() {
       <PublicSectionCard id="policy-updates" index={7} title="Policy Updates" icon={<RefreshCw size={16} />}>
         <div className="flex flex-col gap-4">
           <PublicBody>We may update this Cookie Policy when we introduce new platform features that require new cookies, or when applicable regulations change. Updates will be reflected on this page with a revised date.</PublicBody>
-          <PublicBody>Material changes — such as introducing a new category of non-essential cookie — will trigger a renewed consent prompt on your next visit to the platform.</PublicBody>
         </div>
       </PublicSectionCard>
 

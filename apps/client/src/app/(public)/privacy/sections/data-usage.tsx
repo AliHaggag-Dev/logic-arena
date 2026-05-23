@@ -10,7 +10,6 @@ export function DataUsage() {
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(var(--accent-rgb), 0.12)" }}>
             <PublicDefinition term="Account Data">Your username, email address, custom uploaded avatars (processed securely via Cloudinary), and — when you authenticate via Google or GitHub — your public OAuth profile name. We do not collect passwords when you use OAuth. If you register with an email and password directly, your password is stored as a one-way bcrypt hash and is never readable by our team.</PublicDefinition>
             <PublicDefinition term="Platform Data">Match results, ELO rating history, AliScript program versions you submit, campaign progress, Black Market points, Garage cosmetic selections, and session metadata. This data is the engine of Logic Arena — it powers rankings, matchmaking, and replay systems.</PublicDefinition>
-            <PublicDefinition term="Usage Analytics">Aggregate, anonymised telemetry about feature engagement (e.g., which editor tools are used most). No individual user is identifiable in this data.</PublicDefinition>
           </div>
           <PublicBody>We do not collect payment information. Logic Arena does not currently offer paid subscriptions or in-app purchases.</PublicBody>
         </div>
@@ -23,7 +22,6 @@ export function DataUsage() {
             ["Platform Operation", "Running real-time multiplayer matches, maintaining persistent rankings, and delivering your campaign progress across sessions."],
             ["Skill-Based Matchmaking", "Calculating ELO deltas and pairing you against opponents of comparable ability. Without this data, competitive integrity is impossible."],
             ["Service Notifications", "Sending transactional emails such as email verification, security alerts, and critical service updates. Marketing emails are opt-in only."],
-            ["Platform Improvement", "Analysing aggregate usage trends to prioritise development roadmap items. No individual is profiled for this purpose."],
             ["Legal Compliance", "Meeting any obligations required by applicable law, such as responding to a valid legal request from a competent authority."],
           ].map(([heading, body]) => (
             <div key={heading} className="flex gap-4 items-start py-3 border-b last:border-0" style={{ borderColor: "rgba(var(--accent-rgb), 0.08)" }}>
