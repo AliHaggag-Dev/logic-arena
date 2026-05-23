@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useCallback, useState } from "react";
+import { highlightCode } from "../../../../../components/shared-script-editor";
+import { useParserWorker } from "../../../../../components/shared-script-editor";
+import { useAutocompleteFast } from "../../../../../components/shared-script-editor";
+import { AutocompleteDropdown } from "../../../../../components/shared-script-editor";
+import { WarningPanel } from "../../../../../components/shared-script-editor";
+import { DETAIL_COLORS_HEX, LINE_HEIGHT_CAMPAIGN } from "../../../../../components/shared-script-editor";
+import { sanitizeHtml } from "../../../../../lib/client-security";
 
 interface EditScriptEditorProps {
     content: string;
@@ -9,18 +16,22 @@ interface EditScriptEditorProps {
 
 export function EditScriptEditor({ content, setContent }: EditScriptEditorProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const lineNumbersRef = useRef<HTMLDivElement>(null);
-    
-    useEffect(() => { textareaRef.current?.focus(); }, []);
+    const highlightRef = useRef<HTMLDivElement>(null);
+    const { syntaxValid, validateSyntax, warnings } = useParserWorker();
+    const [showWarnings, setShowWarnings] = useState(false);
+    const { suggestions, activeIdx, caretXY, handleChange, handleKeyDown: autoKeyDown, acceptSuggestion, clearSuggestions } = useAutocompleteFast(
+        setContent, () => {}, textareaRef, validateSyntax
+    );
 
-    const syncScroll = () => {
-        if (lineNumbersRef.current && textareaRef.current) {
-            lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
+    const handleScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
+        if (highlightRef.current) {
+            highlightRef.current.scrollTop = e.currentTarget.scrollTop;
+            highlightRef.current.scrollLeft = e.currentTarget.scrollLeft;
         }
-    };
+    }, []);
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Tab") {
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Tab" && suggestions.length === 0) {
             e.preventDefault();
             const ta = e.currentTarget;
             const start = ta.selectionStart;
@@ -28,33 +39,74 @@ export function EditScriptEditor({ content, setContent }: EditScriptEditorProps)
             const next = content.substring(0, start) + "  " + content.substring(end);
             setContent(next);
             requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = start + 2; });
+            return;
         }
-    };
+        autoKeyDown(e);
+    }, [content, setContent, suggestions.length, autoKeyDown]);
 
-    const lineCount = Math.max(content.split("\n").length, 1);
+    const warningCount = warnings.length;
 
     return (
-        <div className="flex flex-1 min-h-0 overflow-hidden m-3 border border-accent/10 rounded-lg bg-bg-primary">
-            <div className="flex flex-col items-end py-4 pr-2.5 pl-3 border-r border-accent/10 overflow-hidden shrink-0 min-w-[2.75rem] bg-accent/5" ref={lineNumbersRef} aria-hidden="true">
-                {Array.from({ length: lineCount }, (_, i) => (
-                    <div key={i} className="font-mono text-[0.8125rem] leading-6 text-accent/20 text-right whitespace-nowrap h-6">{i + 1}</div>
-                ))}
+        <div className="relative flex flex-col flex-1 min-h-0 overflow-visible m-3">
+            <div className="relative flex-1 flex flex-col border border-accent/10 bg-bg-primary rounded-lg overflow-visible group min-h-0">
+                <div className="flex-1 min-h-0 relative overflow-hidden rounded-lg">
+                    <div
+                        ref={highlightRef}
+                        className="absolute inset-0 p-4 pointer-events-none font-mono text-[0.8125rem] leading-6 text-text-primary overflow-hidden"
+                        dangerouslySetInnerHTML={{
+                            __html: sanitizeHtml(highlightCode(content, {
+                                commandClass: 'text-[var(--sem-info)] drop-shadow-[0_0_4px_rgba(var(--sem-info-rgb),0.5)]',
+                                controlClass: 'text-[var(--sem-warning)] drop-shadow-[0_0_4px_rgba(var(--sem-warning-rgb),0.5)]',
+                                functionClass: 'text-[var(--accent)] drop-shadow-[0_0_4px_rgba(var(--accent-rgb),0.65)]',
+                                identifierClass: 'text-[var(--sem-success)] drop-shadow-[0_0_4px_rgba(var(--sem-success-rgb),0.5)]',
+                                lineNumberColor: 'rgba(var(--accent-rgb), 0.45)',
+                                lineNumberWidth: '32px',
+                                lineHeight: LINE_HEIGHT_CAMPAIGN,
+                                lineNumberPaddingRight: '8px',
+                                lineNumberMarginRight: '12px',
+                                borderColor: 'rgba(var(--accent-rgb), 0.2)',
+                            }))
+                        }}
+                    />
+                    <textarea
+                        ref={textareaRef}
+                        title="script editor"
+                        onScroll={handleScroll}
+                        className="relative w-full h-full p-4 font-mono text-[0.8125rem] leading-6 text-transparent caret-accent bg-transparent resize-none outline-none group-focus-within:border-accent/50 transition-colors custom-scrollbar selection:bg-accent/20"
+                        style={{ paddingLeft: "60px" }}
+                        spellCheck={false}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="off"
+                        aria-label="Script content editor"
+                        value={content}
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        onBlur={() => setTimeout(clearSuggestions, 150)}
+                    />
+                </div>
+                <div className="absolute top-2 right-4 flex items-center gap-2 text-[10px] tracking-[0.3em] font-black pointer-events-none select-none">
+                    <span className="text-accent/30">[ALISCRIPT_V2]</span>
+                    {syntaxValid === false && <span className="text-red-500 drop-shadow-[0_0_5px_rgba(var(--sem-danger-rgb),0.8)] animate-pulse">SYNTAX_ERR</span>}
+                    {warningCount > 0 && (
+                        <button
+                            type="button"
+                            aria-label={`${warningCount} semantic warning${warningCount > 1 ? 's' : ''}`}
+                            className="pointer-events-auto flex items-center gap-1 px-2 py-0.5 rounded bg-amber-900/30 border border-amber-500/40 text-amber-400 text-[9px] tracking-[0.15em] font-bold cursor-pointer hover:bg-amber-800/40 hover:border-amber-400 transition-all animate-pulse"
+                            onClick={() => setShowWarnings(!showWarnings)}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                            </svg>
+                            {warningCount}
+                        </button>
+                    )}
+                </div>
+                <AutocompleteDropdown suggestions={suggestions} activeIdx={activeIdx} caretXY={caretXY} onAccept={acceptSuggestion} detailColors={DETAIL_COLORS_HEX} useTop={false} />
+                {showWarnings && warningCount > 0 && (
+                    <WarningPanel warnings={warnings} onClose={() => setShowWarnings(false)} />
+                )}
             </div>
-
-            <textarea
-                ref={textareaRef}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onScroll={syncScroll}
-                className="flex-1 min-w-0 resize-none bg-transparent border-none outline-none p-4 font-mono text-[0.8125rem] leading-6 text-text-primary caret-accent whitespace-pre overflow-auto max-sm:text-sm selection:bg-accent/20 custom-scrollbar"
-                style={{ tabSize: 2 }}
-                spellCheck={false}
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-                aria-label="Script content editor"
-            />
         </div>
     );
 }
