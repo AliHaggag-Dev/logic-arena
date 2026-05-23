@@ -44,16 +44,24 @@ export function OrientationLock() {
           type="button"
           onClick={async () => {
             try {
+              // In PWA/standalone mode, requestFullscreen might fail, but orientation.lock can still work.
               if (document.documentElement.requestFullscreen) {
-                await document.documentElement.requestFullscreen();
-                const orientation: LockableScreenOrientation | undefined = screen?.orientation as LockableScreenOrientation | undefined;
-                if (typeof orientation?.lock === 'function') {
-                  await orientation.lock('landscape');
+                try {
+                  await document.documentElement.requestFullscreen();
+                } catch (fullscreenError) {
+                  console.warn("Fullscreen request skipped or failed (might be PWA):", fullscreenError);
                 }
               }
+
+              const orientation = screen?.orientation as LockableScreenOrientation | undefined;
+              if (typeof orientation?.lock === 'function') {
+                await orientation.lock('landscape');
+              } else {
+                alert("للأسف تليفونك أو متصفحك مابيدعمش لف الشاشة التلقائي.\n\nمن فضلك اقفل الـ Rotation Lock من إعدادات موبايلك ولف الموبايل بإيدك عشان تخش الحلبة.");
+              }
             } catch (err) {
-              console.warn("Fullscreen/Orientation lock failed:", err);
-              alert("Could not force rotation. Please ensure your device's Portrait Orientation Lock is turned OFF in your quick settings, then physically rotate your device.");
+              console.warn("Orientation lock failed:", err);
+              alert("مش قادرين نلف الشاشة تلقائياً. اتأكد إنك قافل الـ Rotation Lock في موبايلك ولفه بإيدك عشان تدخل الحلبة.");
             }
           }}
           className="mt-8 flex flex-col items-center px-6 py-4 border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/20 active:bg-cyan-500/30 transition-all rounded-lg cursor-pointer"

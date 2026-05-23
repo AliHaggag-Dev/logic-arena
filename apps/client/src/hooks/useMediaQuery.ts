@@ -7,9 +7,21 @@ export function useMediaQuery(query: string) {
     const mediaQueryList = window.matchMedia(query);
     setMatches(mediaQueryList.matches);
 
-    const listener = (event: MediaQueryListEvent) => setMatches(event.matches);
-    mediaQueryList.addEventListener("change", listener);
-    return () => mediaQueryList.removeEventListener("change", listener);
+    const listener = (event: MediaQueryListEvent | Event) => setMatches((event as MediaQueryListEvent).matches);
+    
+    if (mediaQueryList.addEventListener) {
+      mediaQueryList.addEventListener("change", listener);
+    } else {
+      mediaQueryList.addListener(listener);
+    }
+
+    return () => {
+      if (mediaQueryList.removeEventListener) {
+        mediaQueryList.removeEventListener("change", listener);
+      } else {
+        mediaQueryList.removeListener(listener);
+      }
+    };
   }, [query]);
 
   return matches;
