@@ -64,7 +64,7 @@ export const useGameState = (
 
     const handleConnect = () => {
       console.log('[Socket] Connected');
-      const matchId = matchIdFromUrl || 'default-match';
+      const matchId = matchIdFromUrl || crypto.randomUUID();
       if (isSpectator) {
         socket.emit('spectate', { matchId });
       } else if (scriptId) {

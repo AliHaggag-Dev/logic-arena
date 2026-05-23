@@ -173,6 +173,8 @@ export class MatchLobbyManager {
     });
     client.emit('matchCreated', { matchId });
     await this.publishLobbySnapshot();
+
+    return { matchId };
   }
 
   async handleGetLobby(client: AuthenticatedSocket) {
