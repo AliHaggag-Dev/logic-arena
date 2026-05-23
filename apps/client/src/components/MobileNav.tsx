@@ -99,8 +99,8 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={`
-                pointer-events-auto flex items-center gap-3 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-                ${isHubOpen ? `opacity-100 translate-y-0 scale-100 ${arcOffsets[index]}` : 'opacity-0 translate-y-12 scale-50 mr-2'}
+                flex items-center gap-3 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+                ${isHubOpen ? `pointer-events-auto opacity-100 translate-y-0 scale-100 ${arcOffsets[index]}` : 'pointer-events-none opacity-0 translate-y-12 scale-50 mr-2'}
               `}
               style={{ transitionDelay: `${index * 60}ms` }}
               onClick={() => setIsHubOpen(false)}
