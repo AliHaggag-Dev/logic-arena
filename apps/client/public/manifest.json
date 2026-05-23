@@ -1,6 +1,6 @@
 {
   "name": "Logic Arena",
-  "short_name": "LogicArena",
+  "short_name": "Logic Arena",
   "description": "Competitive real-time robot battle simulator",
   "display": "standalone",
   "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
