@@ -278,6 +278,9 @@ export function CampaignLayoutStyles() {
         overflow-x: auto;
         -ms-overflow-style: none;
         scrollbar-width: none;
+        touch-action: pan-x pan-y;
+        -webkit-overflow-scrolling: touch;
+        background: rgba(0, 0, 0, 0.001);
       }
       .mobile-layout__tab-strip::-webkit-scrollbar { display: none; }
 

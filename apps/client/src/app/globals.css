@@ -4,6 +4,7 @@
 :root,
 [data-theme='cyberpunk'] {
   --bg-primary: #030712;
+  --bg-primary-rgb: 3, 7, 18;
   --bg-secondary: #0a0f1c;
   --text-primary: #f8fafc;
   --text-secondary: #9ca3af;
@@ -92,6 +93,7 @@
 /* ── VIOLET SOVEREIGN — Premium light, deep violet authority ── */
 [data-theme='light'] {
   --bg-primary:      #fdfdff;
+  --bg-primary-rgb:  253, 253, 255;
   --bg-secondary:    #f4f5f8;
   --text-primary:    #120c23;
   --text-secondary:  #554d6b;
@@ -146,6 +148,7 @@
 /* ── OBSIDIAN EMBER — Volcanic dark, liquid gold fire ── */
 [data-theme='desert'] {
   --bg-primary:      #0e0a04;
+  --bg-primary-rgb:  14, 10, 4;
   --bg-secondary:    #17100a;
   --text-primary:    #f5e6c8;
   --text-secondary:  #a08060;
