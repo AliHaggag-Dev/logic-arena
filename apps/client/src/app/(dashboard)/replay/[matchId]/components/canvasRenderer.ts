@@ -85,7 +85,7 @@ export function drawFrame(
         ry = curr.position.y + curr.velocity.y * t;
       } else {
         const prev = prevSnap?.projectiles?.find(
-          (p) => (p.id && curr.id ? p.id === curr.id : p.ownerId === curr.ownerId)
+          (p) => p.id === curr.id
         );
         if (prev?.position) {
           rx = lerp(prev.position.x, curr.position.x, t);
@@ -145,8 +145,10 @@ export function drawFrame(
     // Body
     ctx.beginPath();
     ctx.arc(rx, ry, radius, 0, TWO_PI);
-    ctx.fillStyle = `${color}30`;
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.2;
     ctx.fill();
+    ctx.globalAlpha = 1.0;
     ctx.strokeStyle = color;
     ctx.lineWidth = 3;
     ctx.stroke();

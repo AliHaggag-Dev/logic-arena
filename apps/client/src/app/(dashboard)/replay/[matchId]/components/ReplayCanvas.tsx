@@ -5,7 +5,10 @@ import { CANVAS_W, CANVAS_H } from "./canvasRenderer";
 
 export const ReplayCanvas = forwardRef<HTMLCanvasElement>((props, ref) => {
   return (
-    <div className="relative w-full max-w-[800px] rounded-[14px] overflow-hidden border border-accent/20 shadow-[0_0_40px_rgba(var(--accent-rgb),0.06),0_0_0_1px_rgba(var(--accent-rgb),0.05)] bg-[#030712]">
+    <div 
+      className="relative w-full rounded-[14px] overflow-hidden border border-accent/20 shadow-[0_0_40px_rgba(var(--accent-rgb),0.06),0_0_0_1px_rgba(var(--accent-rgb),0.05)] bg-[#030712] mx-auto"
+      style={{ maxWidth: `min(800px, calc(55vh * ${CANVAS_W / CANVAS_H}))` }}
+    >
       {/* 
         We render the canvas at a high internal resolution (800x600) 
         and use CSS to scale it responsively to its container.
