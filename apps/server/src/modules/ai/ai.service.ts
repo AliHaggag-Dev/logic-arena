@@ -83,4 +83,44 @@ export class AiService {
       }
     }
   }
+
+  async generateMatchInsights(
+    scriptCode: string,
+    matchData: { isWinner: boolean; duration: number; score: number }
+  ): Promise<{ title: string; content: string; category: string }[]> {
+    const prompt = `Analyze this AliScript code from a Logic Arena match.
+Match result: ${matchData.isWinner ? 'Victory' : 'Defeat'}
+Duration: ${matchData.duration}s
+Energy Efficiency Score: ${matchData.score}/100
+
+Script Code:
+\`\`\`
+${scriptCode || '(Empty script)'}
+\`\`\`
+
+Generate exactly 2 to 3 concise, actionable insights for the player in clear, natural English (avoiding overly complex technical jargon, but keeping it professional and educational). Do not use placeholders, be specific to the script.
+Return ONLY a JSON array of objects with the following keys:
+- "title": A short catchy title (e.g., "Energy Management", "Radar Tactics")
+- "content": The advice text (1-3 sentences).
+- "category": Must be one of: "tactics", "energy", "code"
+`;
+
+    const model = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      generationConfig: {
+        temperature: 0.7,
+        responseMimeType: 'application/json',
+      },
+    });
+
+    try {
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      const parsed = JSON.parse(text);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.error('Failed to generate AI insights:', error);
+      return [];
+    }
+  }
 }

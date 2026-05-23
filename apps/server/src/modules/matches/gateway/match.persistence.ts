@@ -55,10 +55,20 @@ export async function persistMatchResults(
       .filter((r) => playerIdSet.has(r.id))
       .sort((a, b) => b.health - a.health);
 
-    const initialPlayerIds = matchRef
-      .getInitialPlayers()
+    const initialPlayers = matchRef.getInitialPlayers();
+    const initialPlayerIds = initialPlayers
       .map((p) => p.id)
       .filter((id) => playerIdSet.has(id));
+
+    const finalScripts = initialPlayers.reduce((acc, p) => {
+      acc[p.id] = p.script;
+      return acc;
+    }, {} as Record<string, string>);
+
+    const replayDataPayload = {
+      snapshots,
+      finalScripts,
+    };
 
     const scripts = await tx.robotScript.findMany({
       where: { userId: { in: initialPlayerIds } },
@@ -86,7 +96,7 @@ export async function persistMatchResults(
         duration: durationSecs,
         startedAt: new Date(startTime),
         endedAt: new Date(),
-        replayData: snapshots as Prisma.InputJsonValue,
+        replayData: replayDataPayload as Prisma.InputJsonValue,
         participants: { connect: playerIds.map((id) => ({ id })) },
       },
       update: {
@@ -95,7 +105,7 @@ export async function persistMatchResults(
         duration: durationSecs,
         startedAt: new Date(startTime),
         endedAt: new Date(),
-        replayData: snapshots as Prisma.InputJsonValue,
+        replayData: replayDataPayload as Prisma.InputJsonValue,
         participants: { connect: playerIds.map((id) => ({ id })) },
       },
     });
@@ -149,7 +159,7 @@ export async function persistMatchResults(
         })
       : null;
 
-    return { createdMatch, playerIds, updatedWinner };
+    return { createdMatch, playerIds, updatedWinner, replayDataPayload };
   });
 
   if (!persistenceResult) return;
@@ -173,7 +183,7 @@ export async function persistMatchResults(
       replayKey(matchId),
       {
         id: persistenceResult.createdMatch.id,
-        replayData: snapshots,
+        replayData: persistenceResult.replayDataPayload,
         winnerId: persistenceResult.createdMatch.winnerId,
         duration: persistenceResult.createdMatch.duration,
         createdAt: persistenceResult.createdMatch.createdAt,

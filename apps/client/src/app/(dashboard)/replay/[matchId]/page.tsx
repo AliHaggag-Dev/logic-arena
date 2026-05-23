@@ -37,7 +37,9 @@ export default function ReplayPage() {
         const res = await apiClient.get(`/users/matches/${matchId}/replay`);
         const data: ReplayData = res.data;
         setReplayData(data);
-        const snaps = Array.isArray(data.replayData) ? data.replayData : [];
+        const snaps = Array.isArray(data.replayData) 
+          ? data.replayData 
+          : (data.replayData?.snapshots ? data.replayData.snapshots : []);
         setSnapshots(snaps);
       } catch (e: unknown) {
         // Safe typed error handling

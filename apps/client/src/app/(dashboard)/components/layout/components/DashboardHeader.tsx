@@ -26,16 +26,14 @@ export function DashboardHeader({ username, avatarUrl }: DashboardHeaderProps) {
   useEffect(() => {
     if (!username) return;
 
-    const fetchUnread = async () => {
-      try {
-        const { data } = await apiClient.get<InsightsBadgeResponse>('/ai/insights', {
-          params: { page: 1, limit: 1 },
-        });
-        setUnreadCount(data.unreadCount ?? 0);
-      } catch {
-        /* silently ignore — user may not be authed yet */
-      }
-    };
+      const fetchUnread = async () => {
+        try {
+          const { data } = await apiClient.get<{ count: number }>('/ai/insights/unread-count');
+          setUnreadCount(data.count ?? 0);
+        } catch {
+          /* silently ignore — user may not be authed yet */
+        }
+      };
 
     fetchUnread();
     const interval = setInterval(fetchUnread, POLL_INTERVAL);
