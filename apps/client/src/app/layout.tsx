@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Geist_Mono, Alexandria } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "../providers/ThemeProvider";
 import { SoundProvider } from "../context/SoundContext";
@@ -148,6 +149,19 @@ export default function RootLayout({
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
+
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-1QN8VTS98H"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-1QN8VTS98H');
+          `}
+        </Script>
       </head>
       <body className="min-h-dvh w-full flex flex-col bg-bg-primary">
         {/* JSON-LD Structured Data for SEO */}
