@@ -95,8 +95,23 @@ const ArenaPageContent = () => {
     ? [activeUserId]
     : availableRobots;
 
+  const handleInteraction = async () => {
+    if (!isMobile) return;
+    try {
+      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (e) {
+      // Ignore silent failures if already in fullscreen or gesture not trusted
+    }
+  };
+
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden font-mono select-none">
+    <div 
+      className="relative w-full h-screen bg-black overflow-hidden font-mono select-none"
+      onClick={handleInteraction}
+      onTouchStart={handleInteraction}
+    >
       <ArenaStyles />
 
       {isMobile && isPortrait && <OrientationLock />}

@@ -22,6 +22,11 @@ export function MobileHeader() {
     "/patch-notes", "/linkedin", "/github", "/portfolio", "/terms", "/privacy", "/cookie", "/contact",
     "/bug-report", "/feature-requests"
   ];
+
+  if (pathname.startsWith("/arena") || pathname.startsWith("/replay")) {
+    return null;
+  }
+
   const isStaticPage = staticRoutes.some(route => pathname.startsWith(route)) || pathname === "/";
 
   const visibilityClass = (isAuthPage || isStaticPage) ? "flex" : "flex md:hidden";

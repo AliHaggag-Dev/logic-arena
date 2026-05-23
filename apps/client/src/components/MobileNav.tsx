@@ -56,10 +56,10 @@ export function MobileNav() {
     setIsHubOpen(false);
   }, [pathname]);
 
-  const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email"];
-  const isAuthPage = authRoutes.some(route => pathname.startsWith(route));
+  const hiddenRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/arena", "/replay"];
+  const isHiddenPage = hiddenRoutes.some(route => pathname.startsWith(route));
 
-  if (isAuthPage) return null;
+  if (isHiddenPage) return null;
 
   const visibleMainNavItems = isAdmin
     ? [
