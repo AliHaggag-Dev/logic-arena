@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     siteName: "Logic Arena",
     images: [
       {
-        url: "/logic-arena-logo.jpeg",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Logic Arena — Competitive Robot Coding Simulator",
@@ -88,7 +88,7 @@ export const metadata: Metadata = {
     title: "Logic Arena | Competitive Robot Coding Simulator",
     description:
       "Write code, battle robots, and climb the leaderboard in Logic Arena — the real-time programming battle simulator where your logic controls your robot.",
-    images: ["/logic-arena-logo.jpeg"],
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
