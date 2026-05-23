@@ -6,8 +6,8 @@ import { ThemeProvider as NextThemeProvider } from "next-themes";
 
 const THEME_COLORS: Record<string, string> = {
   cyberpunk: "#030712", // --bg-primary cyberpunk
-  light: "#f0f2fa",     // --bg-primary light (Violet Sovereign)
-  desert: "#0e0a04",   // --bg-primary desert (Obsidian Ember)
+  light: "#fdfdff",     // --bg-primary light (Violet Sovereign)
+  desert: "#0e0a04",    // --bg-primary desert (Obsidian Ember)
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -46,6 +46,10 @@ function ThemeMetaSync() {
     document
       .querySelector('meta[name="msapplication-navbutton-color"]')
       ?.setAttribute("content", color);
+
+    // Force Android Chrome bottom navigation bar to respect app theme instead of OS dark mode
+    const colorScheme = resolvedTheme === "light" ? "light" : "dark";
+    document.documentElement.style.setProperty("color-scheme", colorScheme);
   }, [resolvedTheme]);
 
   return null;
