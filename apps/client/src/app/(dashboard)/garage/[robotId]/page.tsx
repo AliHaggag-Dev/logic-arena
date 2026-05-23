@@ -118,34 +118,26 @@ export default function RobotDetailPage() {
           style={{ animation: "garageFadeIn 0.35s ease" }}
         >
           {/* ── Top bar ── */}
-          <div
-            className={`flex items-center justify-between border-b border-accent/10 ${isMobile ? "pb-4 mb-6" : "pb-5 mb-8"
-              }`}
-          >
-            <div>
-              <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-1 uppercase font-bold">
-                // ROBOT CONFIGURATION
-              </p>
-              <h1
-                className={`m-0 ${isMobile
-                    ? "text-xl"
-                    : "text-[clamp(20px,3.5vw,32px)]"
-                  } font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight uppercase`}
+          <div className={`border-b border-accent/10 ${isMobile ? "pb-4 mb-6" : "pb-5 mb-8"}`}>
+            <div className="flex flex-col gap-3 md:gap-4">
+              <button
+                type="button"
+                onClick={() => router.push("/garage")}
+                className="w-max bg-transparent border border-accent/15 rounded px-2.5 py-1 md:px-3 hover:border-accent/40 hover:bg-accent/20 text-accent/70 cursor-pointer text-[9px] md:text-[10px] tracking-[0.25em] font-mono flex items-center gap-1.5 transition-all duration-200 uppercase"
               >
-                {robot.name}
-              </h1>
+                ← <span className="md:hidden">GARAGE</span><span className="hidden md:inline">BACK TO GARAGE</span>
+              </button>
+              <div>
+                <p className="text-[9px] tracking-[0.28em] text-accent/35 mb-1 uppercase font-bold">
+                  // ROBOT CONFIGURATION
+                </p>
+                <h1
+                  className={`m-0 ${isMobile ? "text-xl" : "text-[clamp(20px,3.5vw,32px)]"} font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.7)] leading-tight uppercase`}
+                >
+                  {robot.name}
+                </h1>
+              </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => router.push("/garage")}
-              className={`${isMobile
-                  ? "text-[8px] px-3 py-1.5"
-                  : "text-[10px] px-4 py-2"
-                } tracking-[0.2em] text-accent/70 hover:text-accent/90 transition-colors duration-200 border border-accent/10 hover:border-accent/30 rounded-lg bg-accent/5 hover:bg-accent/10 uppercase font-bold font-mono`}
-            >
-              ← BACK
-            </button>
           </div>
 
           {/* ── Main layout: Viewer + Controls ── */}

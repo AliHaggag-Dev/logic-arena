@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Tournament } from "../../types";
 import { Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Props {
   tournament: Tournament;
@@ -14,6 +15,7 @@ interface Props {
 
 export function TournamentHeader({ tournament, userId, onStart, isMobile, isGuest, onShowAuth, startError }: Props) {
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  const router = useRouter();
 
   const isCreator = userId === tournament.creatorId;
   const statusColor =
@@ -25,14 +27,22 @@ export function TournamentHeader({ tournament, userId, onStart, isMobile, isGues
 
   return (
     <div className={`border-b border-accent/10 ${isMobile ? "pb-5 mb-6" : "pb-7 mb-8"} flex justify-between items-end flex-wrap gap-4`}>
-      <div className={isMobile ? "w-full" : ""}>
-        <p className="text-[10px] tracking-[0.4em] text-accent/25 mb-2 uppercase font-bold">
-          // TOURNAMENT_BRACKET_VIEW
-        </p>
-        <h1 className="m-0 text-[clamp(24px,4vw,40px)] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-tight uppercase">
-          {tournament.name}
-        </h1>
-        <div className="flex gap-3 items-center mt-3">
+      <div className={isMobile ? "w-full flex flex-col gap-3" : "flex flex-col gap-4"}>
+        <button
+          type="button"
+          onClick={() => router.push('/tournaments')}
+          className="w-max bg-transparent border border-accent/15 rounded px-2.5 py-1 md:px-3 hover:border-accent/40 hover:bg-accent/20 text-accent/70 cursor-pointer text-[9px] md:text-[10px] tracking-[0.25em] font-mono flex items-center gap-1.5 transition-all duration-200 uppercase"
+        >
+          ← <span className="md:hidden">TOURNAMENTS</span><span className="hidden md:inline">BACK TO TOURNAMENTS</span>
+        </button>
+        <div>
+          <p className="text-[10px] tracking-[0.4em] text-accent/25 mb-2 uppercase font-bold">
+            // TOURNAMENT_BRACKET_VIEW
+          </p>
+          <h1 className="m-0 text-[clamp(24px,4vw,40px)] font-black tracking-[0.18em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-tight uppercase">
+            {tournament.name}
+          </h1>
+          <div className="flex gap-3 items-center mt-3">
           <span
             className="px-3 py-1 rounded text-[10px] font-black tracking-[0.2em] border backdrop-blur-sm uppercase"
             style={{
@@ -46,6 +56,7 @@ export function TournamentHeader({ tournament, userId, onStart, isMobile, isGues
           <span className="text-[10px] text-accent/30 tracking-[0.15em] font-bold">
             {tournament.participants.length}/8 COMBATANTS_DETECTED
           </span>
+          </div>
         </div>
       </div>
 

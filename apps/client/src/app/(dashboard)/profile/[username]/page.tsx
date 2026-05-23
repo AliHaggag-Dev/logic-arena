@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { apiClient }            from "../../../../lib/api-client";
 import { ProfileData, CombatStats } from "../types";
 import { EMPTY_STATS, STAT_COLORS } from "../constants";
@@ -19,6 +19,7 @@ type ErrorKind = "NOT_FOUND" | "NETWORK" | "UNKNOWN" | null;
 export default function PublicProfilePage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const params = useParams<{ username: string }>();
+  const router = useRouter();
   const usernameParam = params?.username ?? "";
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -108,6 +109,15 @@ export default function PublicProfilePage() {
             padding:  isMobile ? "24px 16px 0" : "48px 32px 120px",
           }}
         >
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="w-max bg-transparent border border-accent/15 rounded px-2.5 py-1 md:px-3 hover:border-accent/40 hover:bg-accent/20 text-accent/70 cursor-pointer text-[9px] md:text-[10px] tracking-[0.25em] font-mono flex items-center gap-1.5 transition-all duration-200 uppercase"
+            >
+              ← <span className="md:hidden">BACK</span><span className="hidden md:inline">GO BACK</span>
+            </button>
+          </div>
           {errKind ? (
             <ProfileErrorState
               isMobile={isMobile}
