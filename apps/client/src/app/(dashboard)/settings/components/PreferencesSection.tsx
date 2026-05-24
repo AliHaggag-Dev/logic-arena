@@ -49,10 +49,8 @@ export function PreferencesSection({ isGuest = false }: { isGuest?: boolean }) {
   }, [profile, authLoading, isGuest]);
 
   // ── Debounced persist to backend ───────────────────────────────────────────
-  const persist = useCallback((patch: Partial<ArenaPreferences>) => {
+  const persist = useCallback(async (patch: Partial<ArenaPreferences>) => {
     if (isGuest) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
       try {
         await apiClient.put("/users/preferences", patch);
         lastSaved.current = { ...lastSaved.current, ...patch };
@@ -61,7 +59,6 @@ export function PreferencesSection({ isGuest = false }: { isGuest?: boolean }) {
         setPrefs(lastSaved.current);
         flash("error", "SAVE FAILED");
       }
-    }, DEBOUNCE_MS);
   }, [isGuest, flash]);
 
   // ── Optimistic update helpers ──────────────────────────────────────────────

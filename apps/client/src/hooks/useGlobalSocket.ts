@@ -30,7 +30,6 @@ export function useGlobalSocket(handlers: Handlers) {
 
     const socket = io(wsUrl, {
       withCredentials: true,
-      transports: ['websocket', 'polling']
     });
 
     socketRef.current = socket;

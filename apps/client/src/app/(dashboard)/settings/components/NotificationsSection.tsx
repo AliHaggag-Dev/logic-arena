@@ -54,10 +54,8 @@ export function NotificationsSection({ isGuest = false }: { isGuest?: boolean })
   }, [profile, authLoading, isGuest]);
 
   // ── Debounced persist ──────────────────────────────────────────────────────
-  const persist = useCallback((patch: Partial<NotificationSettings>) => {
+  const persist = useCallback(async (patch: Partial<NotificationSettings>) => {
     if (isGuest) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
       try {
         await apiClient.put("/users/notifications", patch);
         lastSaved.current = { ...lastSaved.current, ...patch };
@@ -66,7 +64,6 @@ export function NotificationsSection({ isGuest = false }: { isGuest?: boolean })
         setSettings(lastSaved.current);
         flash("error", "SAVE FAILED");
       }
-    }, DEBOUNCE_MS);
   }, [isGuest, flash]);
 
   // ── Optimistic update ──────────────────────────────────────────────────────

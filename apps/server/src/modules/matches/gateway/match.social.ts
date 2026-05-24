@@ -65,6 +65,17 @@ export class MatchSocialManager {
       CHALLENGE_TTL_SECONDS,
     );
 
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: data.targetUserId },
+      select: { notificationSettings: true },
+    });
+
+    const notifs = targetUser?.notificationSettings as { challengeReqs?: boolean } | null;
+    if (notifs && notifs.challengeReqs === false) {
+      client.emit('challenge-failed', { reason: 'TARGET_NOT_ACCEPTING' });
+      return;
+    }
+
     const challenger = await this.prisma.user.findUnique({
       where: { id: client.userId },
       select: { username: true },

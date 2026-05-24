@@ -28,7 +28,13 @@ export function useChallengeSystem() {
       if (allowChallenges) setIncoming(data);
     },
     onChallengeSent: () => showToast("⚔ CHALLENGE SENT — AWAITING RESPONSE"),
-    onChallengeFailed: () => showToast("TARGET IS OFFLINE", "error"),
+    onChallengeFailed: (reason) => {
+      if (reason === "TARGET_NOT_ACCEPTING") {
+        showToast("TARGET NOT ACCEPTING CHALLENGES", "error");
+      } else {
+        showToast("TARGET IS OFFLINE", "error");
+      }
+    },
     onChallengeAccepted: () => showToast("CHALLENGE ACCEPTED — DEPLOYING TO ARENA"),
   });
 
