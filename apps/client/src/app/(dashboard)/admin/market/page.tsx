@@ -58,7 +58,7 @@ export default function AdminMarketPage(): React.ReactElement {
             <KpiCard title="Total Points In Circulation" value={stats?.totalPointsInCirculation ?? 0} icon={<Coins className="h-5 w-5" />} isLoading={isLoading} />
             <KpiCard title="Avg Points Per User" value={stats?.avgPointsPerUser ?? 0} icon={<Sparkles className="h-5 w-5" />} isLoading={isLoading} />
             <KpiCard title="Most Unlocked Item" value={mostUnlockedItem} icon={<PackageOpen className="h-5 w-5" />} isLoading={isLoading} />
-            <KpiCard title="Most Popular Chassis" value={mostPopularChassis} icon={<Bot className="h-5 w-5" />} isLoading={isLoading} />
+            <KpiCard title="Most Popular Models" value={mostPopularChassis} icon={<Bot className="h-5 w-5" />} isLoading={isLoading} />
           </section>
 
           <section className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -67,7 +67,7 @@ export default function AdminMarketPage(): React.ReactElement {
           </section>
 
           <section className="mt-6 grid gap-6 lg:grid-cols-3">
-            <DonutChart data={chassisData} title="Popular Chassis" height={donutHeight} isLoading={isLoading} />
+            <DonutChart data={chassisData} title="Popular Models" height={donutHeight} isLoading={isLoading} />
             <DonutChart data={paintData} title="Popular Paints" height={donutHeight} isLoading={isLoading} />
             <DonutChart data={tracerData} title="Popular Tracers" height={donutHeight} isLoading={isLoading} />
           </section>

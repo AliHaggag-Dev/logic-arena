@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Plus, ChevronDown } from "lucide-react";
 
-interface ProtocolFormProps {
+interface ScriptFormProps {
     newScriptTitle: string;
     setNewScriptTitle: (val: string) => void;
     isLoading: boolean;
@@ -11,7 +11,7 @@ interface ProtocolFormProps {
     isGuest?: boolean;
 }
 
-export const ProtocolForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onSubmit, isGuest }: ProtocolFormProps) => {
+export const ScriptForm = ({ newScriptTitle, setNewScriptTitle, isLoading, onSubmit, isGuest }: ScriptFormProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (

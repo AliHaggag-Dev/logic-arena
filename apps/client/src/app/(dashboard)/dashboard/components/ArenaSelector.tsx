@@ -64,7 +64,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                     CAMPAIGN NEXUS
                 </h3>
                 <p className="text-[10px] text-text-secondary tracking-wide uppercase ml-3.5">
-                    Select your engagement protocol and environmental parameters
+                    Select your game mode and environment
                 </p>
             </header>
 
@@ -72,7 +72,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                 {/* Mode Selector */}
                 <div className="flex flex-col gap-2">
                     <h4 className="text-[10px] font-bold text-accent/80 tracking-widest uppercase ml-1">
-                        1. Select Protocol
+                        1. Select Game Mode
                     </h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
                         {MODES.map(mode => (

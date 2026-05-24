@@ -310,7 +310,7 @@ export default function LandingPage() {
          ══════════════════════════════════ */}
       <section className="py-20 px-4 max-w-7xl mx-auto bg-bg-secondary">
         <h2 className="text-accent text-3xl sm:text-4xl font-black tracking-[0.15em] text-center uppercase mb-16 drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]">
-          CHOOSE YOUR PROTOCOL
+          CHOOSE YOUR GAME MODE
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[
@@ -409,15 +409,15 @@ export default function LandingPage() {
           BUILD YOUR OPERATOR
         </h2>
         <p className="text-text-secondary text-center text-sm tracking-[0.2em] uppercase mb-14">
-          Choose your chassis. Paint it. Equip tracer rounds. Fight.
+          Choose your robot model. Paint it. Equip tracer rounds. Fight.
         </p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {[
             { name: "UNIT-01", img: "/thumbnails/chassis-unit-01.png", desc: "Standard issue. Balanced stats." },
             { name: "UNIT-02", img: "/thumbnails/chassis-unit-02.png", desc: "Heavy armor. Slower. Hits harder." },
-            { name: "SANDMAN", img: "/thumbnails/chassis-sandman.png", desc: "Desert operative. Agile." },
-            { name: "WRAITH", img: "/thumbnails/chassis-wraith.png", desc: "Stealth chassis. Reduced radar signature." },
+            { name: "SANDMAN", img: "/thumbnails/chassis-sandman.png", desc: "Desert robot. Agile." },
+            { name: "WRAITH", img: "/thumbnails/chassis-wraith.png", desc: "Stealth robot. Reduced radar signature." },
           ].map((chassis) => (
             <ImageCard
               key={chassis.name}

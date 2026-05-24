@@ -6,7 +6,7 @@ import { useScripts } from "./hooks/useScripts";
 import { ArenaSelector } from "./components/ArenaSelector";
 import { ScriptSkeleton } from "./components/ScriptSkeleton";
 import { ScriptCard } from "./components/script-card/ScriptCard";
-import { ProtocolForm } from "./components/ProtocolForm";
+import { ScriptForm } from "./components/ScriptForm";
 import dynamic from "next/dynamic";
 import { Terminal, Box, Swords } from "lucide-react";
 import { AuthModal } from "../../../components/AuthModal";
@@ -41,11 +41,11 @@ export default function DashboardPage() {
                             DASHBOARD
                         </h1>
                         <p className="sm:hidden text-[9px] text-text-secondary tracking-[0.18em] font-black uppercase opacity-70">
-                            Your neural scripts
+                            Your logic scripts
                         </p>
                         <h2 className="hidden sm:flex text-accent/60 text-[10px] tracking-widest uppercase items-center gap-2 font-black">
                             <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_var(--color-emerald-500)] shrink-0" />
-                            CONNECTED | NEURAL UPLINK
+                            CONNECTED | SYSTEM ONLINE
                         </h2>
                     </div>
                 </header>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
 
                         {/* Create Script Component - Sits above the list */}
                         <div className="mb-4 shrink-0">
-                            <ProtocolForm
+                            <ScriptForm
                                 newScriptTitle={newScriptTitle}
                                 setNewScriptTitle={setNewScriptTitle}
                                 isLoading={isLoading}

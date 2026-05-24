@@ -46,7 +46,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
       {/* Top accent line */}
       <div className="h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent opacity-60 shrink-0" />
 
-      {/* ── NEURAL UPLINK TERMINAL ── */}
+      {/* ── SYSTEM TERMINAL ── */}
       <div className="px-3 pt-3 pb-1.5 relative z-10 shrink-0">
         <div
           className="relative rounded border border-accent/[0.18] overflow-hidden"
@@ -76,7 +76,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
                 }`} />
               </span>
               <span className="text-[7px] font-bold tracking-[0.3em] uppercase text-accent/35 truncate">
-                {username ? 'UPLINK ACTIVE' : 'NO SIGNAL'}
+                {username ? 'SYSTEM ONLINE' : 'NO SIGNAL'}
               </span>
             </div>
 

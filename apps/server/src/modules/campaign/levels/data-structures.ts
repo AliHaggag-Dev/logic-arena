@@ -178,7 +178,7 @@ END`,
     id: 'ds-05',
     tabId: 'data-structures',
     order: 5,
-    title: 'NEMESIS PROTOCOL',
+    title: 'NEMESIS SCRIPT',
     difficulty: 'HARD',
     pointsReward: D.HARD,
     conceptTaught: 'Velocity-delta computation via history dictionary',
@@ -187,7 +187,7 @@ END`,
     hints: [
       'It reacts to your approach speed. Move laterally (strafe) to keep your distance delta near zero, confusing its velocity checks.',
       'delta = p3 - p1 (old_distance - current_distance). If delta > 20 (you closed 20+ units in 2 ticks) it backs up at 1.5x. If delta < -20 (you fled) it charges at 1.5x. Keep delta between -20 and 20 by strafing.',
-      'Lateral strafing keeps your distance nearly constant (delta ≈ 0), which triggers the strafe-fire branch — the weakest mode. Use: SET _SYS_STRAFE = 1, MOVE, FIRE. Stay perpendicular to its facing angle and maintain 200-unit distance.',
+      'Lateral strafing keeps your distance nearly constant (delta ≈ 0), which triggers the strafe-fire branch — the weakest mode. Use: SET _SYS_STRAFE = 1, MOVE, FIRE. Stay perpendicular to its facing angle and maintain 200-bot distance.',
     ],
     enemyScript: `IF NOT init THEN
   SET hist = { p1: 0, p2: 0, p3: 0 }

@@ -27,7 +27,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     color: "#ffffff",
     glowColor: "#ffffff",
     rarity: "COMMON",
-    description: "Original starter chassis. Balanced and iconic.",
+    description: "Original starter robot. Balanced and iconic.",
   },
   {
     id: "chassis-unit-02",
@@ -37,7 +37,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     color: "#ffffff",
     glowColor: "#ffffff",
     rarity: "COMMON",
-    description: "Classic backup chassis. Reliable performance.",
+    description: "Classic backup robot. Reliable performance.",
   },
 
   {
@@ -157,7 +157,7 @@ export const MARKET_ITEMS: MarketItem[] = [
 ];
 
 export const CATEGORY_LABELS: Record<ItemCategory, string> = {
-  chassis: "Robot Chassis",
+  chassis: "Robot Model",
   paint: "Neon Paints",
   tracer: "Tracer Rounds",
 };

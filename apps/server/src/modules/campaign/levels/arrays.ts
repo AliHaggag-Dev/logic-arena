@@ -363,11 +363,11 @@ END`,
     pointsReward: D.EXTREME,
     conceptTaught: 'Circular buffer distance sliding window analysis',
     description:
-      'It stores your last 5 detected distances in a circular buffer array. It computes the average. If the average is decreasing (you are approaching), it reverses polarity and orbits outwards. If you are fleeing, it speeds up to chase. A sliding-window temporal analysis algorithm.',
+      'It stores your last 5 detected distances in a circular buffer array. It computes the average. If the average is decreasing (you are approaching), it reverses defense mode and orbits outwards. If you are fleeing, it speeds up to chase. A sliding-window temporal analysis algorithm.',
     hints: [
       'It calculates average distance over time. Approach erratically to corrupt its ring buffer and prevent it from adopting an optimal combat stance.',
       'The buffer fills over the first 5 ticks. During fill (filled < 5), it uses standard fire. Only after tick 5 does it start orbit-switching. Exploit this early window: rush it in the first 5 ticks for maximum damage while it is in simple mode.',
-      'After the buffer fills: maintain a constant distance (prev_avg == avg). It will neither BURST orbit outward nor speed-chase. Hold a steady 200-unit range. Use: IF distance > 220 THEN MOVE ELSE IF distance < 180 THEN BACKUP END and FIRE each tick.',
+      'After the buffer fills: maintain a constant distance (prev_avg == avg). It will neither BURST orbit outward nor speed-chase. Hold a steady 200-bot range. Use: IF distance > 220 THEN MOVE ELSE IF distance < 180 THEN BACKUP END and FIRE each tick.',
     ],
     enemyScript: `IF NOT init THEN
   SET buf = [0, 0, 0, 0, 0]

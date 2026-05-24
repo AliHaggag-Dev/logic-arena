@@ -13,7 +13,7 @@ export const TerminalOutput: React.FC<{ output: string[] }> = ({ output }) => {
         <div className="w-full h-full p-3 font-mono text-[11px] leading-relaxed flex flex-col" ref={outputRef}>
             {output.map((line, index) => {
                 let colorClass = "text-cyan-600";
-                if (line.includes("[SYS]") || line.includes("[UPLINK]")) colorClass = "text-purple-400";
+                if (line.includes("[SYS]") || line.includes("[SYSTEM]")) colorClass = "text-purple-400";
                 if (line.includes("Logic Triggered")) colorClass = "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.4)]";
                 if (line.includes("[QUERY]")) colorClass = "text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.4)]";
                 if (line.includes("[ERR]")) colorClass = "text-red-400";
