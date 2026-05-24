@@ -1,51 +1,31 @@
-# Script Sandboxing (Server-Side Evaluator Pipeline)
+# Script Sandboxing & Deterministic Quotas
 
-To safely execute user-provided code continuously at 20 ticks per second, Logic Arena utilizes a bespoke AST (Abstract Syntax Tree) execution pipeline. This system runs natively within the NestJS backend, completely avoiding dangerous functions like `eval()` or unreliable virtual machines like `vm2`.
+Allowing users to submit arbitrary code to run on your backend server is inherently dangerous. Logic Arena mitigates this through a combination of AST (Abstract Syntax Tree) parsing, deterministic execution quotas, and isolated stateless evaluation.
 
-## AST Evaluator Architecture
+## 1. No `eval()` — The AST Compiler
+We do not use JavaScript's `eval()` or `new Function()`.
+Instead, the `@logic-arena/logic-parser` package implements a custom language lexer and parser.
 
-The parser (`packages/logic-parser`) breaks AliScript syntax cleanly into strongly-typed, predictable nodes (`AstNode`). The backend's `evaluator/` module reconstructs this pipeline deterministically without ever exposing the underlying Node.js V8 execution context to the user.
+*   **Tokenizer**: Scans the raw text string into safe, classified tokens (e.g., `KEYWORD_IF`, `IDENTIFIER`, `NUMBER`).
+*   **Parser**: Organizes the tokens into an Abstract Syntax Tree (AST). If the syntax is malformed, the parser aborts before execution ever begins.
+*   **Evaluator**: The server walks the AST tree. It only executes specific, whitelisted game commands (e.g., when it hits an `Identifier` named `MOVE`, it invokes the physics engine's `move()` function). There is zero access to the Node.js global scope, `process`, or `require`.
 
-### 1. `LogicFacade` & `ExpressionFacade`
-The evaluation boundaries are strictly decoupled. General structural blocks (like `IF`, `WHILE`, and variable assignments) are handled by the `LogicFacade`. Mathematical operations, distance lookups, and boolean comparisons (`+`, `-`, `>`, `AND`) evaluate deterministically through the `ExpressionFacade`.
+## 2. Deterministic Quotas (Time Limit Exceeded - TLE)
+A user could easily submit an infinite loop: `WHILE TRUE DO WAIT 0 END`. In a normal JavaScript environment, this would freeze the Node.js event loop and crash the server.
 
-### 2. `BlockExecutor` (The Loop Guard)
-Because AliScript is Turing-complete, users can accidentally (or maliciously) write infinite loops:
-```text
-WHILE 1 > 0 DO
-  MOVE
-END
-```
-All execution flows through the `BlockExecutor`. The executor tracks the number of instructions processed during the current tick and actively monitors block lengths to prevent catastrophic CPU spikes.
+To solve this, AliScript is fully **deterministic** and relies on an Operations Quota rather than wall-clock time.
 
-## Execution Constraints & Limits
+*   **2,000 Operations Per Tick**: Every single AST node evaluation (variable assignment, math operation, loop iteration) increments a shared execution counter.
+*   **Hard Cap**: If the counter exceeds 2,000 during a single 50ms tick, the evaluator throws a `[FATAL] TLE` (Time Limit Exceeded) error.
+*   **Consequence**: The robot immediately halts all logic execution for that tick. The player is forced to write more efficient O(N) algorithms instead of O(N²) nested loops.
 
-* **Time Limit Exceeded (TLE) Quotas:** To prevent infinite `WHILE` loops from crashing the main physical game loop, the sandbox hardcaps iteration cycles. The engine restricts scripts to a maximum of **10 loop iterations per tick**.
-* **Graceful Halting:** If a script exceeds its quota, the `BlockExecutor` silently halts the script's evaluation for the remainder of that 50ms tick. The engine immediately applies whatever intent the robot successfully computed before halting, and the script seamlessly resumes evaluation on the *next* tick.
-* **Strict Memory Isolation:** Scripts interact exclusively via a rigid dictionary array (`memory-sync.ts`). Local variables are isolated deterministically. Cross-robot data leakage or memory contamination is structurally impossible.
+## 3. Stateless Execution
+AliScript robots do not hold state in the global server memory between ticks.
+All variables defined via `SET` are stored in an isolated `Map<string, any>` specific to that robot's instance inside the match. When the match concludes or the robot dies, the Map is garbage collected by V8.
 
-## The 50ms Evaluation Pipeline
+## 4. Deep Copying & Swarm Security
+With the introduction of Swarm Intelligence (`BROADCAST` and `RECEIVE`), robots can send data payloads to their teammates.
+To prevent cross-robot memory aliasing (e.g., mutating an array in one robot's memory altering it in another's), all payloads are strictly **deep-copied** during transit using `structuredClone` (or equivalent parsing).
 
-1. **Parsing Phase:** When a user updates their script in the Dashboard, the `logic-parser` converts the raw text into a static AST JSON payload. This payload is stored securely in PostgreSQL.
-2. **Match Initialization:** The match orchestrator retrieves the AST and hydrates independent `LogicEvaluator` instances for each robot participating in the match.
-3. **Tick Evaluation:** Every 50ms, the engine loops through active evaluators, requesting a state mutation vector:
-   * The evaluator traverses its AST.
-   * It maps requested outputs (e.g., `FIRE`, `MOVE_FAST`) into a hardware physics intent buffer.
-   * The engine applies these intents deterministically across the spatial grid.
-
-```mermaid
-sequenceDiagram
-    participant GL as Game Loop (50ms Tick)
-    participant LE as Logic Evaluator
-    participant BE as Block Executor
-    participant MS as Memory Sync
-
-    GL->>LE: 1. Request Intended Actions
-    activate LE
-    LE->>MS: 2. Read Sensors (Distance, Health)
-    LE->>BE: 3. Execute AST Nodes
-    BE-->>BE: 4. Enforce Quotas (Max 10 loop iterations)
-    BE->>LE: 5. Return Intent (Move, Fire, Rotate)
-    LE->>GL: 6. Apply Actions to Physics Engine
-    deactivate LE
-```
+## 5. Mobile Block Editor Compilation
+On mobile devices, users interact with a visual Block Editor. The drag-and-drop `@dnd-kit` UI produces a JSON structure of the logic blocks. Before submission to the server, a recursive compiler traverses this visual JSON and translates it cleanly into raw AliScript text. The backend is completely unaware whether the script was typed on a desktop keyboard or assembled via mobile blocks—it parses the identical text string with the exact same sandbox guarantees.

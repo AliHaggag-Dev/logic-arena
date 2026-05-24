@@ -11,7 +11,7 @@
 * **Velocity:** (Vector2: vx, vy) - Current speed and direction vector.
 * **Rotation:** (Float) - Current orientation in radians.
 * **Health:** (Integer) - Hit points. Starts at 100. Reaching 0 means destruction.
-* **Energy:** (Integer) - Resource consumed by actions (movement, firing, scanning). Max is 100.
+* **Energy:** (Integer) - Resource consumed by actions (movement, firing, scanning, abilities). Max is 100.
 * **Radius:** (Float) - Physical size for collision detection.
 * **Sensor Range:** (Float) - Maximum distance robots can "see" objects via raycasting or FOV arrays.
 * **FOV Angle:** (Float) - Angle of vision strictly calculating observable bounds (Default 120°).
@@ -33,6 +33,15 @@
 * **Energy Regeneration:** Robots passively regenerate **3 energy per tick** (60 energy per second).
 * **STASIS:** If a robot's energy drops to 0 or below, it enters a `STASIS` condition. During STASIS, all energy-intensive commands (`MOVE`, `FIRE`, `PATHFIND`, `SCAN`, etc.) are blocked until energy passively regenerates back to **20 or higher**. Scripts continue executing—use `IF IN_STASIS THEN WAIT 10 END` to handle recharge phases strategically.
 
+## Tactical Super Powers (Abilities)
+Robots can deploy advanced abilities to gain tactical advantages.
+* **SHIELD**: Absorbs incoming damage for a short duration.
+* **CLOAK**: Turns the robot invisible to enemy FOV/sensors.
+* **DASH**: Instantaneous burst of high-speed velocity.
+* **TELEPORT**: Blink a short distance forward instantly.
+* **MINE**: Drop an explosive trap that detonates when enemies approach.
+* **TAUNT**: Force enemies within range to lock onto you temporarily.
+
 ## Vision and Scanning
 * **Line of Sight:** Robots can only "see" other robots or objects that are within their `Sensor Range` and bounded within their FOV Cone Angle. Solid obstacles block Line of Sight.
 * **Scanning:** A robot can perform an active `SCAN` action to sweep its environment (+15° rotation of the scanner per call independent of the body), fetching precise distances and tracking targets outside its immediate frontal vision.
@@ -53,6 +62,8 @@
 
 ## Match Modes & Win Conditions
 * **COMBAT (1v1 / FFA):** Last Robot Standing. If the time limit is reached, the robot with the highest remaining health wins.
+* **CAPTURE:** Control specific map zones for a duration to earn points.
+* **SURVIVAL:** Outlast endless waves of increasingly difficult NPC enemies or environmental hazards.
 * **RACING:** Specific waypoint completion algorithms dynamically resolved. The first robot to touch all checkpoints wins.
 * **CAMPAIGN:** Single-player LeetCode-style algorithmic challenges. You must defeat pre-programmed boss robots or navigate puzzle maps within strict memory or TLE constraints.
 * **TOURNAMENTS:** 4 or 8 player structured brackets. Matches run concurrently, and winners automatically advance to the semi-finals and finals. Spectators can watch these matches live.
