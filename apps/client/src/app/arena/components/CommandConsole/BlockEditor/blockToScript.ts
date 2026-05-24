@@ -1,7 +1,10 @@
 import type { BlockNode, BlockType } from "./blockTypes";
+import { QUERY_OPTIONS } from "./blockTypes";
 
 const INDENT_UNIT = "  ";
 const EMPTY_BRANCH_LINE = "WAIT 1";
+
+const GET_QUERY_TYPES = new Set<string>(QUERY_OPTIONS);
 
 function asString(value: string | number | boolean | undefined, fallback: string): string {
   if (value === undefined) return fallback;
@@ -24,6 +27,10 @@ function actionLine(type: BlockType): string {
 function generateBlockLines(block: BlockNode, indent: number): string[] {
   const inputs = block.inputs;
 
+  if (GET_QUERY_TYPES.has(block.type)) {
+    return [indentLine(block.type, indent)];
+  }
+
   switch (block.type) {
     case "MOVE":
     case "MOVE_FAST":
@@ -36,6 +43,9 @@ function generateBlockLines(block: BlockNode, indent: number): string[] {
     case "SCAN":
     case "PATHFIND":
     case "STOP":
+    case "BREAK":
+    case "CONTINUE":
+    case "RETURN":
       return [indentLine(actionLine(block.type), indent)];
     case "TELEPORT":
       return [indentLine(`TELEPORT (${asString(inputs.x, "400")}, ${asString(inputs.y, "300")})`, indent)];
@@ -97,6 +107,10 @@ function generateBlockLines(block: BlockNode, indent: number): string[] {
       return [indentLine(`${asString(inputs.query, "GET_HEALTH")}`, indent)];
     case "SET_FUNCTION":
       return [indentLine(`SET ${asString(inputs.target, "value")} = ${asString(inputs.expression, "RANDOM()")}`, indent)];
+    case "BROADCAST":
+      return [indentLine(`BROADCAST(${asString(inputs.payload, "state")})`, indent)];
+    case "RECEIVE_INBOX":
+      return [indentLine(`SET ${asString(inputs.target, "messages")} = RECEIVE()`, indent)];
     default:
       return [];
   }

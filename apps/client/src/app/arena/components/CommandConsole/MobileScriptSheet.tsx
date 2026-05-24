@@ -12,15 +12,13 @@ export const MobileScriptSheet: React.FC<MobileScriptSheetProps> = ({
     scriptInput, setScriptInput, handleDeployBrain, onDeployDone
 }) => {
     return (
-        <div className="flex flex-col gap-2 w-full flex-1 min-h-0 mobile-zen-sheet overflow-hidden">
-            <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                <BlockEditor
-                    scriptInput={scriptInput}
-                    setScriptInput={setScriptInput}
-                    handleDeployBrain={handleDeployBrain}
-                    onDeployDone={onDeployDone}
-                />
-            </div>
+        <div className="mobile-zen-sheet flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+            <BlockEditor
+                scriptInput={scriptInput}
+                setScriptInput={setScriptInput}
+                handleDeployBrain={handleDeployBrain}
+                onDeployDone={onDeployDone}
+            />
         </div>
     );
 };

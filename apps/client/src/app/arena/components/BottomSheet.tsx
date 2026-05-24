@@ -83,11 +83,15 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       {/* Sheet — 85dvh gives nearly full-screen with peek at arena behind */}
       <div
         ref={sheetRef}
-        className="fixed bottom-0 left-0 right-0 z-[100] backdrop-blur-2xl border-t border-cyan-500/30 rounded-t-3xl shadow-[0_-10px_60px_rgba(var(--arena-black-rgb),0.9),0_-4px_20px_rgba(var(--arena-cyan-rgb),0.08)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col rounded-t-2xl border-t transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
         style={{
-          height: '96dvh',
+          height: '92dvh',
           maxHeight: 'calc(100vh - 8px)',
-          background: "rgba(var(--arena-black-rgb),0.92)",
+          background: "color-mix(in srgb, var(--card) 14%, rgba(var(--arena-black-rgb),0.94))",
+          borderColor: "rgba(var(--arena-white-rgb),0.12)",
+          boxShadow: "0 -24px 64px rgba(var(--arena-black-rgb),0.75), inset 0 1px 0 rgba(var(--arena-white-rgb),0.06)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
           transform: `translateY(${translateY}%)`,
           touchAction: 'none',
         }}
@@ -99,24 +103,34 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="w-12 h-1 bg-cyan-500/40 rounded-full" />
+          <div
+            className="h-1 w-10 rounded-full"
+            style={{ background: "rgba(var(--arena-white-rgb),0.22)" }}
+          />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-3 pb-2 border-b border-cyan-500/15 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_6px_rgba(var(--arena-cyan-rgb),0.8)]" />
-            <span className="text-cyan-400 text-[9px] font-black tracking-[0.4em] uppercase">{title}</span>
+        <div
+          className="flex shrink-0 items-center justify-between border-b px-3 pb-2.5 pt-0.5"
+          style={{ borderColor: "rgba(var(--arena-white-rgb),0.08)" }}
+        >
+          <div>
+            <p className="text-xs font-semibold" style={{ color: "var(--arena-white)" }}>
+              {title}
+            </p>
+            <p className="text-[10px]" style={{ color: "rgba(var(--arena-white-rgb),0.45)" }}>
+              Visual block editor
+            </p>
           </div>
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="w-11 h-11 flex items-center justify-center rounded-2xl text-cyan-600 hover:text-cyan-300 text-sm transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-sm transition-colors duration-200"
             style={{
-              background: "rgba(var(--arena-white-rgb),0.07)",
-              border: "1px solid rgba(var(--arena-white-rgb),0.12)",
-              boxShadow: "inset 0 1px 0 rgba(var(--arena-white-rgb),0.08)",
+              color: "rgba(var(--arena-white-rgb),0.55)",
+              background: "rgba(var(--arena-white-rgb),0.06)",
+              border: "1px solid rgba(var(--arena-white-rgb),0.1)",
             }}
           >
             ✕
@@ -125,7 +139,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
         {/* Content — fills remaining space with flex-1 + overflow scroll */}
         <div
-          className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden px-3 py-3 min-h-0"
+          className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 py-3"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {children}

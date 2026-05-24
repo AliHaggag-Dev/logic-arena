@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { BlockSelect } from "./BlockSelect";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { BlockNode, BlockType } from "./blockTypes";
@@ -28,8 +29,8 @@ interface CustomBlockStyle extends React.CSSProperties {
   "--block-accent": string;
 }
 
-const NUMBER_INPUT_MIN_WIDTH_PX = 72;
-const ACTION_BUTTON_SIZE_PX = 48;
+const NUMBER_INPUT_MIN_WIDTH_PX = 64;
+const ACTION_BUTTON_SIZE_PX = 44;
 
 const OPERATOR_OPTIONS: string[] = ["+", "-", "*", "/", "%"];
 const ARRAY_LITERAL_OPTIONS: string[] = ["0, 1, 2", "NEAREST_VISIBLE_X, NEAREST_VISIBLE_Y", "GET_ALL_VISIBLE_ENEMIES()", "RECEIVE()"];
@@ -51,26 +52,7 @@ function SelectInput({
   options: string[];
   onChange: (value: string) => void;
 }): React.ReactElement {
-  return (
-    <select
-      aria-label={label}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className="min-h-12 max-w-full rounded-2xl px-3 text-[11px] font-black uppercase outline-none"
-      style={{
-        background: "rgba(var(--arena-white-rgb),0.1)",
-        border: "1px solid rgba(var(--arena-white-rgb),0.14)",
-        color: "var(--arena-white)",
-        boxShadow: "inset 0 1px 0 rgba(var(--arena-white-rgb),0.08)",
-      }}
-    >
-      {selectOptions(options, value).map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
+  return <BlockSelect label={label} value={value} options={selectOptions(options, value)} onChange={onChange} />;
 }
 
 function NumberInput({
@@ -89,7 +71,7 @@ function NumberInput({
       value={value}
       min={0}
       onChange={(event) => onChange(Number(event.target.value))}
-      className="min-h-12 rounded-2xl px-3 text-[11px] font-black outline-none"
+      className="min-h-10 rounded-xl px-2.5 text-[10px] font-medium outline-none"
       style={{
         minWidth: NUMBER_INPUT_MIN_WIDTH_PX,
         background: "rgba(var(--arena-white-rgb),0.1)",
@@ -193,6 +175,10 @@ function InputControls({
       );
     case "QUERY_SENSOR":
       return <SelectInput label="Sensor query" value={stringValue("query", "GET_HEALTH")} options={QUERY_OPTIONS} onChange={(value) => change("query", value)} />;
+    case "BROADCAST":
+      return <SelectInput label="Broadcast payload" value={stringValue("payload", "state")} options={WRITABLE_IDENTIFIERS} onChange={(value) => change("payload", value)} />;
+    case "RECEIVE_INBOX":
+      return <SelectInput label="Store in variable" value={stringValue("target", "messages")} options={WRITABLE_IDENTIFIERS} onChange={(value) => change("target", value)} />;
     case "SET_FUNCTION":
       return (
         <>
@@ -225,32 +211,32 @@ export function Block({
   return (
     <div ref={setNodeRef} style={style} className="min-w-0 touch-manipulation">
       <div
-        className="rounded-3xl p-2 shadow-lg backdrop-blur-xl"
+        className="rounded-2xl p-2"
         style={{
-          background: "linear-gradient(135deg, color-mix(in oklab, var(--block-accent) 18%, rgba(var(--arena-white-rgb),0.1)), rgba(var(--arena-black-rgb),0.62))",
-          border: "1px solid rgba(var(--arena-white-rgb),0.13)",
-          boxShadow: "0 14px 30px rgba(var(--arena-black-rgb),0.32), inset 0 1px 0 rgba(var(--arena-white-rgb),0.1)",
+          background: "color-mix(in srgb, var(--card) 8%, rgba(var(--arena-black-rgb),0.42))",
+          border: "1px solid rgba(var(--arena-white-rgb),0.1)",
+          boxShadow: "inset 0 1px 0 rgba(var(--arena-white-rgb),0.05)",
         }}
       >
-        <div className="grid min-h-12 grid-cols-[auto_minmax(5rem,auto)_1fr_auto] items-center gap-2">
+        <div className="grid min-h-11 grid-cols-[auto_minmax(4rem,auto)_1fr_auto] items-center gap-2">
           <button
             type="button"
             aria-label={`Drag ${definition.label} block`}
             title="Drag block"
             {...attributes}
             {...listeners}
-            className="shrink-0 rounded-2xl px-3 text-[14px] font-black"
+            className="flex shrink-0 items-center justify-center rounded-lg text-[11px]"
             style={{
               minHeight: ACTION_BUTTON_SIZE_PX,
               minWidth: ACTION_BUTTON_SIZE_PX,
-              color: "var(--arena-bg-dark)",
-              background: "var(--block-accent)",
-              boxShadow: "inset 0 1px 0 rgba(var(--arena-white-rgb),0.35)",
+              color: "rgba(var(--arena-white-rgb),0.55)",
+              background: "rgba(var(--arena-white-rgb),0.06)",
+              border: "1px solid rgba(var(--arena-white-rgb),0.1)",
             }}
           >
-            ::
+            ⋮⋮
           </button>
-          <span className="truncate text-[12px] font-black uppercase tracking-[0.12em]" style={{ color: "var(--arena-white)" }}>
+          <span className="truncate font-mono text-[11px] font-semibold" style={{ color: definition.colorVar }}>
             {definition.label}
           </span>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -261,32 +247,40 @@ export function Block({
             aria-label={`Delete ${definition.label} block`}
             title="Delete block"
             onClick={() => onDelete(block.id)}
-            className="rounded-2xl px-3 text-[12px] font-black"
+            className="flex items-center justify-center rounded-lg text-[11px] font-semibold"
             style={{
               minHeight: ACTION_BUTTON_SIZE_PX,
               minWidth: ACTION_BUTTON_SIZE_PX,
               color: "var(--arena-red)",
-              background: "rgba(var(--arena-red-rgb),0.12)",
-              border: "1px solid rgba(var(--arena-red-rgb),0.28)",
+              background: "rgba(var(--arena-red-rgb),0.1)",
+              border: "1px solid rgba(var(--arena-red-rgb),0.22)",
             }}
           >
-            X
+            ✕
           </button>
         </div>
 
         {definition.childSlots && (
-          <div className="mt-2 flex flex-col gap-2 rounded-2xl p-2" style={{ borderLeft: "3px solid var(--block-accent)", background: "rgba(var(--arena-white-rgb),0.055)" }}>
+          <div
+            className="mt-2 flex flex-col gap-2 rounded-xl p-2"
+            style={{ borderLeft: `2px solid ${definition.colorVar}`, background: "rgba(var(--arena-white-rgb),0.04)" }}
+          >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "color-mix(in oklab, var(--block-accent) 76%, var(--arena-white))" }}>
-                Inside
+              <span className="text-[10px] font-medium" style={{ color: "rgba(var(--arena-white-rgb),0.62)" }}>
+                Then
               </span>
               <button
                 type="button"
                 onClick={() => onAddChild(block.id, "children", "MOVE")}
-                className="rounded-2xl px-4 text-[10px] font-black uppercase tracking-[0.12em]"
-                style={{ minHeight: ACTION_BUTTON_SIZE_PX, color: "var(--arena-bg-dark)", background: "var(--block-accent)" }}
+                className="rounded-lg px-3 text-[10px] font-semibold"
+                style={{
+                  minHeight: ACTION_BUTTON_SIZE_PX,
+                  color: "var(--arena-white)",
+                  background: "rgba(var(--arena-white-rgb),0.08)",
+                  border: "1px solid rgba(var(--arena-white-rgb),0.12)",
+                }}
               >
-                Add
+                + Add block
               </button>
             </div>
             {childContent}
@@ -294,18 +288,23 @@ export function Block({
         )}
 
         {definition.childSlots === "thenElse" && (
-          <div className="mt-2 flex flex-col gap-2 rounded-2xl p-2" style={{ borderLeft: "3px solid var(--arena-amber)", background: "rgba(var(--arena-white-rgb),0.055)" }}>
+          <div className="mt-2 flex flex-col gap-2 rounded-xl p-2" style={{ borderLeft: "2px solid var(--arena-amber)", background: "rgba(var(--arena-white-rgb),0.04)" }}>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "var(--arena-amber)" }}>
+              <span className="text-[10px] font-medium" style={{ color: "rgba(var(--arena-amber-rgb),0.85)" }}>
                 Else
               </span>
               <button
                 type="button"
                 onClick={() => onAddChild(block.id, "elseChildren", "SCAN")}
-                className="rounded-2xl px-4 text-[10px] font-black uppercase tracking-[0.12em]"
-                style={{ minHeight: ACTION_BUTTON_SIZE_PX, color: "var(--arena-bg-dark)", background: "var(--arena-amber)" }}
+                className="rounded-lg px-3 text-[10px] font-semibold"
+                style={{
+                  minHeight: ACTION_BUTTON_SIZE_PX,
+                  color: "var(--arena-white)",
+                  background: "rgba(var(--arena-white-rgb),0.08)",
+                  border: "1px solid rgba(var(--arena-white-rgb),0.12)",
+                }}
               >
-                Add
+                + Add block
               </button>
             </div>
             {elseContent}

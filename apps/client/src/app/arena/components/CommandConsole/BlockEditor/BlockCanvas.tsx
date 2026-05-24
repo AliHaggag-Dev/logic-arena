@@ -16,13 +16,12 @@ interface BlockCanvasProps {
   onDelete: (blockId: string) => void;
 }
 
-const ROOT_CANVAS_MIN_HEIGHT_PX = 104;
-const NESTED_CANVAS_MIN_HEIGHT_PX = 58;
+const NESTED_CANVAS_MIN_HEIGHT_PX = 52;
 
 export function BlockCanvas({
   blocks,
   containerId = "root",
-  emptyLabel = "Tap a block below or drag it here",
+  emptyLabel = "Tap a command below or drag it here",
   depth = 0,
   onInputChange,
   onAddChild,
@@ -36,16 +35,22 @@ export function BlockCanvas({
     <SortableContext items={blockIds} strategy={verticalListSortingStrategy}>
       <div
         ref={setNodeRef}
-        className={`flex min-w-0 flex-col gap-2 rounded-2xl p-2 ${isRoot ? "flex-1 overflow-y-auto" : "shrink-0 overflow-visible"}`}
+        className={`flex min-w-0 flex-col gap-2 p-2 ${isRoot ? "h-full overflow-y-auto" : "shrink-0 overflow-visible"}`}
         style={{
-          minHeight: isRoot ? ROOT_CANVAS_MIN_HEIGHT_PX : NESTED_CANVAS_MIN_HEIGHT_PX,
-          background: isOver ? "rgba(var(--arena-cyan-rgb),0.12)" : "rgba(var(--arena-white-rgb),0.055)",
-          border: isOver ? "1px solid var(--arena-cyan)" : "1px solid rgba(var(--arena-white-rgb),0.12)",
-          boxShadow: isRoot ? "inset 0 1px 0 rgba(var(--arena-white-rgb),0.08)" : "none",
+          minHeight: isRoot ? undefined : NESTED_CANVAS_MIN_HEIGHT_PX,
+          background: isOver ? "rgba(var(--arena-cyan-rgb),0.08)" : "rgba(var(--arena-white-rgb),0.03)",
+          border: isOver ? "1px solid rgba(var(--arena-cyan-rgb),0.35)" : isRoot ? "none" : "1px dashed rgba(var(--arena-white-rgb),0.12)",
         }}
       >
         {blocks.length === 0 ? (
-          <div className="flex min-h-14 items-center justify-center rounded-xl px-4 text-center text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: "rgba(var(--arena-white-rgb),0.45)", border: "1px dashed rgba(var(--arena-white-rgb),0.18)" }}>
+          <div
+            className="flex min-h-[72px] flex-1 items-center justify-center rounded-xl px-4 text-center text-[11px]"
+            style={{
+              color: "rgba(var(--arena-white-rgb),0.42)",
+              border: "1px dashed rgba(var(--arena-white-rgb),0.14)",
+              background: "rgba(var(--arena-white-rgb),0.02)",
+            }}
+          >
             {emptyLabel}
           </div>
         ) : (
@@ -60,7 +65,7 @@ export function BlockCanvas({
                 <BlockCanvas
                   blocks={block.children ?? []}
                   containerId={`${block.id}:children`}
-                  emptyLabel="Drop inner blocks"
+                  emptyLabel="Drop blocks inside"
                   depth={depth + 1}
                   onInputChange={onInputChange}
                   onAddChild={onAddChild}
