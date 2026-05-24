@@ -11,6 +11,7 @@ import { MobileNav } from "../components/MobileNav";
 import PullToRefresh from "../components/PullToRefresh";
 import { ServiceWorkerRegistrar } from "../components/ServiceWorkerRegistrar";
 import { AiTutor } from "../components/AiTutor";
+import { PortraitGuard } from "../components/PortraitGuard";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-geist-sans",
@@ -227,6 +228,7 @@ export default function RootLayout({
         </ThemeProvider>
 
         <ServiceWorkerRegistrar />
+        <PortraitGuard />
       </body>
     </html>
   );
