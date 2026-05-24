@@ -76,15 +76,22 @@ export class MatchGateway
 
   async handleConnection(@ConnectedSocket() client: AuthenticatedSocket) {
     await authenticateSocket(client, this.redisService);
-    if (!client.isGuest && client.userId) this.cleanupManager.cancel(client.userId);
+    if (!client.isGuest && client.userId) {
+      client.join(client.userId);
+      this.cleanupManager.cancel(client.userId);
+    }
   }
 
   async handleDisconnect(@ConnectedSocket() client: AuthenticatedSocket) {
-    if (client.userId) {
+    const isActuallyOffline = client.userId 
+      ? (await this.server.in(client.userId).fetchSockets()).length === 0
+      : true;
+
+    if (client.userId && isActuallyOffline) {
       const ci = this.campaignIntervals.get(client.userId);
       if (ci) { clearInterval(ci); this.campaignIntervals.delete(client.userId); }
+      await this.redisService.del(`user:online:${client.userId}`);
     }
-    if (client.userId) await this.redisService.del(`user:online:${client.userId}`);
 
     this.spectatorManager.removeSpectator(client);
 
@@ -94,10 +101,14 @@ export class MatchGateway
         this.state.userStatus.set(client.userId, { status: 'idle' });
         this.server.to(LEADERBOARD_ROOM).emit('userStatusUpdate', { userId: client.userId, status: 'idle' });
       }
-      this.server.to(LEADERBOARD_ROOM).emit('userStatusUpdate', { userId: client.userId, status: 'idle', isOnline: false });
+      if (isActuallyOffline) {
+        this.server.to(LEADERBOARD_ROOM).emit('userStatusUpdate', { userId: client.userId, status: 'idle', isOnline: false });
+      }
     }
 
-    if (client.userId) this.cleanupManager.schedule(client.userId);
+    if (client.userId && isActuallyOffline) {
+      this.cleanupManager.schedule(client.userId);
+    }
 
     if (client.matchId && this.state.matches.has(client.matchId)) {
       const numClients = this.server.sockets.adapter.rooms.get(client.matchId)?.size ?? 0;

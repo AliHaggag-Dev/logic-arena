@@ -49,11 +49,8 @@ export class MatchSocialManager {
       return;
     }
 
-    const sockets = await this.server.fetchSockets();
-    const targetSocket = sockets.find(
-      (s: any) => s.userId === data.targetUserId,
-    );
-    if (!targetSocket) {
+    const targetSockets = await this.server.in(data.targetUserId).fetchSockets();
+    if (targetSockets.length === 0) {
       client.emit('challenge-failed', { reason: 'TARGET_OFFLINE' });
       return;
     }
@@ -73,7 +70,7 @@ export class MatchSocialManager {
       select: { username: true },
     });
 
-    targetSocket.emit('challenge-received', {
+    this.server.to(data.targetUserId).emit('challenge-received', {
       challengerId: client.userId,
       challengerName: challenger?.username ?? 'UNKNOWN',
     });
@@ -101,12 +98,6 @@ export class MatchSocialManager {
 
     client.emit('challenge-accepted', { matchId });
 
-    const sockets = await this.server.fetchSockets();
-    const challengerSocket = sockets.find(
-      (s: any) => s.userId === data.challengerId,
-    );
-    if (challengerSocket) {
-      challengerSocket.emit('challenge-accepted', { matchId });
-    }
+    this.server.to(data.challengerId).emit('challenge-accepted', { matchId });
   }
 }
