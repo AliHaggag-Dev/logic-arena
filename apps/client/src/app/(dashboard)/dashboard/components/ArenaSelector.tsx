@@ -1,5 +1,7 @@
-import React from 'react';
+"use client";
+import React, { useRef, useState, useEffect } from 'react';
 import { GameMode } from '../hooks/useScripts';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ArenaSelectorProps {
     selectedMode: GameMode;
@@ -53,118 +55,168 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
     selectedTheme,
     setSelectedTheme
 }) => {
+    const modesRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(true);
+
+    const handleScroll = () => {
+        if (modesRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = modesRef.current;
+            setCanScrollLeft(scrollLeft > 5);
+            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+        }
+    };
+
+    useEffect(() => {
+        handleScroll();
+        window.addEventListener('resize', handleScroll);
+        return () => window.removeEventListener('resize', handleScroll);
+    }, []);
+
+    const scroll = (dir: 'left' | 'right') => {
+        if (modesRef.current) {
+            const scrollAmount = dir === 'left' ? -350 : 350;
+            modesRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
+
+    const currentMode = MODES.find(m => m.value === selectedMode) || MODES[0];
+    const currentTheme = THEMES.find(t => t.value === selectedTheme) || THEMES[0];
+
     return (
-        <section className="flex flex-col gap-5 p-5 md:p-6 rounded-[24px] border border-accent/15 bg-card/45 backdrop-blur-xl relative overflow-hidden shadow-[var(--card-shadow)]">
-            {/* Background dynamic ambient glow element */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-accent opacity-[0.03] rounded-full blur-[64px] pointer-events-none translate-x-1/4 -translate-y-1/4" />
-            
-            <header className="flex flex-col gap-1">
-                <h3 className="text-lg md:text-xl font-black uppercase tracking-[0.18em] text-text-primary flex items-center gap-2">
-                    <span className="w-1.5 h-5 bg-accent rounded-sm animate-pulse" />
-                    CAMPAIGN NEXUS
-                </h3>
-                <p className="text-[10px] text-text-secondary tracking-wide uppercase ml-3.5">
-                    Select your game mode and environment
-                </p>
-            </header>
+        <section className="flex flex-col gap-6 p-1 relative w-full">
+            {/* 1. Hero Presentation Box */}
+            <div className={`relative w-full shrink-0 h-56 md:h-[340px] rounded-[24px] overflow-hidden border transition-all duration-700 bg-black ${currentTheme.borderClass} ${currentTheme.glowClass}`}>
+                {/* Background Image */}
+                <img 
+                    key={currentMode.value}
+                    src={currentMode.image} 
+                    alt={currentMode.label}
+                    className="absolute inset-0 w-full h-full object-cover filter brightness-[1.15] saturate-[1.2] animate-in fade-in zoom-in-[0.98] duration-700"
+                />
+                
+                {/* Ambient Theme Glow over the image */}
+                <div className={`absolute inset-0 opacity-40 mix-blend-overlay transition-colors duration-700 ${currentTheme.bgClass}`} />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#030712] via-[#030712]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#030712]/90 via-[#030712]/20 to-transparent" />
 
-            <div className="flex flex-col gap-5">
-                {/* Mode Selector */}
-                <div className="flex flex-col gap-2">
-                    <h4 className="text-[10px] font-bold text-accent/80 tracking-widest uppercase ml-1">
-                        1. Select Game Mode
-                    </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
-                        {MODES.map(mode => (
-                            <button
-                                key={mode.value}
-                                type="button"
-                                aria-label={`Select Mode: ${mode.label}`}
-                                onClick={() => setSelectedMode(mode.value)}
-                                className={`relative overflow-hidden flex flex-col justify-end p-3 rounded-2xl border transition-all duration-500 hover:scale-[1.02] aspect-[16/10] md:h-[85px] group text-left ${
-                                    selectedMode === mode.value 
-                                    ? 'border-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)] text-text-primary' 
-                                    : 'border-accent/15 hover:border-accent/35 text-text-secondary hover:text-text-primary'
-                                }`}
-                            >
-                                {/* Background environment/mode image with YouTube thumbnail CSS filters */}
-                                <div className="absolute inset-0 z-0">
-                                    <img
-                                        src={mode.image}
-                                        alt={mode.label}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108 filter brightness-[1.1] contrast-[1.2] saturate-[1.3]"
-                                    />
-                                    {/* Dark gradient overlay for text readability */}
-                                    <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10 transition-opacity duration-300 ${
-                                        selectedMode === mode.value ? 'opacity-85' : 'opacity-90 group-hover:opacity-75'
-                                    }`} />
-                                </div>
-
-                                {/* Content overlay */}
-                                <div className="relative z-10 flex flex-col gap-0.5">
-                                    <span className={`font-black tracking-wider text-xs md:text-sm transition-all duration-300 flex items-center gap-1.5 ${
-                                        selectedMode === mode.value ? 'text-accent drop-shadow-[0_0_4px_rgba(var(--accent-rgb),0.4)]' : 'text-text-primary'
-                                    }`}>
-                                        {selectedMode === mode.value && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />}
-                                        {mode.label}
-                                    </span>
-                                    <span className="text-[8.5px] opacity-75 line-clamp-1">
-                                        {mode.description}
-                                    </span>
-                                </div>
-                            </button>
-                        ))}
+                {/* Content inside Hero */}
+                <div className="absolute bottom-0 left-0 w-full p-6 md:p-10 flex flex-col gap-1.5 z-10">
+                    <div className="flex items-center gap-2 mb-1 animate-in fade-in slide-in-from-left-4 duration-500 delay-100 fill-mode-both">
+                        <span className={`w-2 h-2 rounded-full animate-pulse bg-current shadow-[0_0_8px_currentcolor] ${currentTheme.colorClass}`} />
+                        <span className={`text-[10px] md:text-xs font-black tracking-[0.3em] uppercase ${currentTheme.colorClass}`}>
+                            {currentTheme.label} ENVIRONMENT
+                        </span>
                     </div>
+                    <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-[0.15em] drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150 fill-mode-both leading-none">
+                        {currentMode.label}
+                    </h2>
+                    <p className="text-xs md:text-sm text-text-secondary font-medium tracking-widest uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] max-w-md mt-2 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200 fill-mode-both">
+                        {currentMode.description}
+                    </p>
                 </div>
 
-                {/* Theme Selector */}
-                <div className="flex flex-col gap-2">
-                    <h4 className="text-[10px] font-bold text-accent/80 tracking-widest uppercase ml-1">
-                        2. Select Environment
+                {/* Top Right "Campaign Nexus" badge inside Hero */}
+                <div className="absolute top-5 right-5 z-10 flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />
+                    <span className="text-[9px] font-black tracking-[0.2em] text-white uppercase">Campaign Nexus</span>
+                </div>
+            </div>
+
+            {/* 2. Scrollable Selection Areas */}
+            <div className="flex flex-col gap-6 w-full pb-4">
+                
+                {/* Game Modes Horizontal Carousel */}
+                <div className="flex flex-col gap-3 w-full group/carousel">
+                    <h4 className="text-[10px] font-black text-accent tracking-[0.2em] uppercase ml-1 flex items-center gap-3">
+                        SELECT PROTOCOL
+                        <span className="h-px bg-accent/20 flex-1" />
                     </h4>
-                    <div className="grid grid-cols-3 gap-2.5">
-                        {THEMES.map(theme => (
-                            <button
-                                key={theme.value}
-                                type="button"
-                                aria-label={`Select Theme: ${theme.label}`}
-                                onClick={() => setSelectedTheme(theme.value)}
-                                className={`relative overflow-hidden flex items-end justify-between p-3.5 rounded-2xl border transition-all duration-500 hover:scale-[1.02] md:h-[85px] group text-left ${
-                                    selectedTheme === theme.value 
-                                    ? `${theme.borderClass} ${theme.glowClass}` 
-                                    : 'border-accent/15 hover:border-accent/35'
-                                }`}
-                            >
-                                {/* Background environment image with YouTube thumbnail CSS filters */}
-                                <div className="absolute inset-0 z-0">
-                                    <img
-                                        src={theme.image}
-                                        alt={theme.label}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108 filter brightness-[1.1] contrast-[1.2] saturate-[1.3]"
-                                    />
-                                    {/* Dark gradient overlay */}
-                                    <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10 transition-opacity duration-300 ${
-                                        selectedTheme === theme.value ? 'opacity-85' : 'opacity-90 group-hover:opacity-75'
-                                    }`} />
-                                </div>
-                                
-                                <span className={`text-xs md:text-sm font-black tracking-[0.1em] uppercase z-10 transition-colors relative ${
-                                    selectedTheme === theme.value ? theme.colorClass : 'text-text-secondary group-hover:text-text-primary'
-                                }`}>
-                                    {theme.label}
-                                </span>
-                                
-                                {selectedTheme === theme.value ? (
-                                    <div className={`flex items-center justify-center w-4 h-4 rounded-full border border-current ${theme.colorClass} bg-bg-primary/95 z-10 shadow-[0_0_8px_currentcolor]`}>
-                                        <div className="w-1 h-1 rounded-full bg-current" />
+                    
+                    <div className="relative w-full">
+                        {/* Left Arrow Overlay */}
+                        <div className={`hidden md:flex absolute top-0 bottom-0 left-0 w-24 bg-gradient-to-r from-[#030712] via-[#030712]/80 to-transparent items-center justify-start z-10 transition-all duration-300 pointer-events-none pb-4 ${canScrollLeft ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                            <button onClick={() => scroll('left')} className="pointer-events-auto ml-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
+                                <ChevronLeft size={24} strokeWidth={3} className="drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] group-hover/arrow:drop-shadow-[0_0_8px_currentColor]" />
+                            </button>
+                        </div>
+                        
+                        {/* Right Arrow Overlay */}
+                        <div className={`hidden md:flex absolute top-0 bottom-0 right-0 w-24 bg-gradient-to-l from-[#030712] via-[#030712]/80 to-transparent items-center justify-end z-10 transition-all duration-300 pointer-events-none pb-4 ${canScrollRight ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
+                            <button onClick={() => scroll('right')} className="pointer-events-auto mr-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
+                                <ChevronRight size={24} strokeWidth={3} className="drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] group-hover/arrow:drop-shadow-[0_0_8px_currentColor]" />
+                            </button>
+                        </div>
+
+                        <div ref={modesRef} onScroll={handleScroll} className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory px-1 w-full scrollbar-hide" style={{ WebkitOverflowScrolling: "touch" }}>
+                        {MODES.map(mode => {
+                            const isSelected = selectedMode === mode.value;
+                            return (
+                                <button
+                                    key={mode.value}
+                                    type="button"
+                                    onClick={() => setSelectedMode(mode.value)}
+                                    className={`relative flex-shrink-0 w-[160px] md:w-[200px] aspect-[16/10] rounded-[20px] overflow-hidden snap-start transition-all duration-300 group border text-left ${
+                                        isSelected 
+                                        ? 'border-accent shadow-[0_0_25px_rgba(var(--accent-rgb),0.25)] scale-[1.02] bg-accent/5' 
+                                        : 'border-white/10 hover:border-accent/40 opacity-60 hover:opacity-100 hover:bg-white/5'
+                                    }`}
+                                >
+                                    <img src={mode.image} alt={mode.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-[1.1] saturate-[1.2]" />
+                                    <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-300 ${isSelected ? 'from-[#030712] via-[#030712]/50 to-transparent' : 'from-black/95 via-black/60 to-black/30 group-hover:from-black/90 group-hover:via-black/50'}`} />
+                                    
+                                    <div className="absolute bottom-4 left-4 right-4 flex flex-col gap-0.5">
+                                        <span className={`text-xs md:text-sm font-black tracking-[0.15em] uppercase transition-colors flex items-center gap-2 ${isSelected ? 'text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]' : 'text-white'}`}>
+                                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse shadow-[0_0_8px_currentcolor]" />}
+                                            {mode.label}
+                                        </span>
                                     </div>
-                                ) : (
-                                    <div className="w-4 h-4 rounded-full border border-accent/25 bg-bg-primary/50 group-hover:border-accent/40 z-10 transition-colors" />
-                                )}
-                            </button>
-                        ))}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
+            </div>
+
+                {/* Environments Horizontal Carousel */}
+                <div className="flex flex-col gap-3 w-full">
+                    <h4 className="text-[10px] font-black text-accent tracking-[0.2em] uppercase ml-1 flex items-center gap-3">
+                        SELECT ENVIRONMENT
+                        <span className="h-px bg-accent/20 flex-1" />
+                    </h4>
+                    <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory px-1 w-full scrollbar-hide" style={{ WebkitOverflowScrolling: "touch" }}>
+                        {THEMES.map(theme => {
+                            const isSelected = selectedTheme === theme.value;
+                            return (
+                                <button
+                                    key={theme.value}
+                                    type="button"
+                                    onClick={() => setSelectedTheme(theme.value)}
+                                    className={`relative flex-shrink-0 w-[140px] md:w-[180px] aspect-video rounded-[16px] overflow-hidden snap-start transition-all duration-300 group border text-left ${
+                                        isSelected 
+                                        ? `${theme.borderClass} ${theme.glowClass} scale-[1.02] ${theme.bgClass}` 
+                                        : 'border-white/10 hover:border-white/40 opacity-60 hover:opacity-100 hover:bg-white/5'
+                                    }`}
+                                >
+                                    <img src={theme.image} alt={theme.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-[1.1] saturate-[1.2]" />
+                                    <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-300 ${isSelected ? 'from-[#030712] via-[#030712]/40 to-transparent' : 'from-black/95 via-black/50 to-black/20 group-hover:from-black/90 group-hover:via-black/40'}`} />
+                                    
+                                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                                        <span className={`text-[10px] md:text-xs font-black tracking-[0.15em] uppercase transition-colors ${isSelected ? theme.colorClass : 'text-white'}`}>
+                                            {theme.label}
+                                        </span>
+                                        {isSelected && (
+                                            <div className={`flex items-center justify-center w-4 h-4 rounded-full border border-current ${theme.colorClass} bg-[#030712]/95 shadow-[0_0_8px_currentcolor]`}>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-current" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+                
             </div>
         </section>
     );

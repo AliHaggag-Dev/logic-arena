@@ -28,9 +28,9 @@ export const ActionButton = ({ icon, tooltip, onClick, disabled, colorClass, glo
             />
         )}
 
-        <span className={`absolute right-full top-1/2 -translate-y-1/2 mr-3 px-2.5 py-1 bg-bg-secondary/95 backdrop-blur-xl border ${borderColor} text-text-primary text-[9px] font-bold tracking-widest rounded-lg opacity-0 group-hover/btn:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-20 shadow-2xl translate-x-1 group-hover/btn:translate-x-0 hidden md:block`}>
+        <span className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-bg-secondary/95 backdrop-blur-xl border ${borderColor} text-text-primary text-[9px] font-bold tracking-widest rounded-lg opacity-0 group-hover/btn:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-20 shadow-2xl translate-y-1 group-hover/btn:translate-y-0 hidden md:block`}>
             {tooltip}
-            <span className={`absolute -right-[3.5px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-bg-secondary/95 border-t border-r ${borderColor} rotate-45`}></span>
+            <span className={`absolute -bottom-[3.5px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-bg-secondary/95 border-b border-r ${borderColor} rotate-45`}></span>
         </span>
     </button>
 );

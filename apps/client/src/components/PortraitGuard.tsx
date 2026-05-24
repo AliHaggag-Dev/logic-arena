@@ -15,8 +15,14 @@ export function PortraitGuard() {
     // Attempt to lock to portrait natively on Android for non-arena pages
     if (!isAllowedLandscape) {
       try {
-        if (typeof screen?.orientation?.lock === "function") {
-          screen.orientation.lock("portrait").catch(() => {
+        interface ExtendedScreenOrientation extends ScreenOrientation {
+          lock?: (orientation: string) => Promise<void>;
+        }
+        
+        const orientation = screen?.orientation as ExtendedScreenOrientation | undefined;
+        
+        if (typeof orientation?.lock === "function") {
+          orientation.lock("portrait").catch(() => {
             // Ignore errors (iOS, unsupported, or user hasn't interacted)
           });
         }

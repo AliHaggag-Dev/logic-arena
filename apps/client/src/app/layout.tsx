@@ -166,7 +166,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh w-full flex flex-col bg-bg-primary">
         {/* JSON-LD Structured Data for SEO */}
-        <script
+        <Script
+          id="json-ld"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify([

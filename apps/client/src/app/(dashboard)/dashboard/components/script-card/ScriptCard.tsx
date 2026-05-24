@@ -125,42 +125,42 @@ export const ScriptCard = React.memo(({
     return (
         <>
             {/* Mobile Card */}
-            <div className="md:hidden group relative flex items-center justify-between w-full bg-card/45 backdrop-blur-xl p-3 px-4 rounded-xl border border-accent/25 overflow-hidden transition-all duration-200 pl-6" style={{ boxShadow: "inset 3px 0 0 var(--accent), 0 1px 3px rgba(0,0,0,0.2)" }}>
+            <div className="md:hidden group relative flex flex-col gap-3 w-full bg-card/45 backdrop-blur-xl p-4 px-5 rounded-xl border border-accent/25 overflow-hidden transition-all duration-200 pl-6" style={{ boxShadow: "inset 3px 0 0 var(--accent), 0 1px 3px rgba(0,0,0,0.2)" }}>
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent/40 rounded-l-xl" />
-                <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-3">
-                    <h3 className="text-sm font-black text-accent tracking-wide group-active:text-accent/80 truncate">
+                <div className="flex flex-col gap-1 min-w-0 w-full">
+                    <h3 className="text-sm font-black text-accent tracking-wide group-active:text-accent/80 truncate break-words whitespace-normal leading-tight">
                         {script.title}
                     </h3>
-                    <div className="flex items-center gap-2 text-[9px] text-text-secondary font-bold tracking-widest">
-                        <span className="bg-accent/5 px-1 py-0.2 rounded border border-accent/10 text-accent">v{script.version}</span>
+                    <div className="flex items-center gap-2 text-[10px] text-text-secondary font-bold tracking-widest mt-0.5">
+                        <span className="bg-accent/5 px-1.5 py-0.5 rounded border border-accent/10 text-accent">v{script.version}</span>
                         <span className="opacity-30">·</span>
                         <span className="truncate">
                             {mounted ? new Date(script.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" }) : ""}
                         </span>
                     </div>
                 </div>
-                <div className="shrink-0 z-10">
+                <div className="shrink-0 w-full pt-2 border-t border-accent/10 flex justify-end">
                     {getActionRow()}
                 </div>
             </div>
 
-            {/* Desktop Card */}
-            <div className="hidden md:flex items-center justify-between bg-card/40 backdrop-blur-xl p-3.5 px-5 rounded-2xl border border-accent/15 hover:border-accent/40 hover:bg-accent/5 transition-all duration-300 group shadow-[var(--card-shadow)] hover:scale-[1.01] relative overflow-hidden pl-7">
+            {/* Desktop Legendary Card */}
+            <div className="hidden md:flex flex-col gap-3 bg-card/20 backdrop-blur-xl p-4 px-5 rounded-2xl border border-accent/15 hover:border-accent/40 hover:bg-card/40 transition-all duration-500 group shadow-[var(--card-shadow)] hover:shadow-[0_8px_32px_rgba(var(--accent-rgb),0.15)] hover:-translate-y-0.5 relative overflow-hidden pl-6 cursor-default">
                 {/* Left accent glowing line */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent/20 rounded-l-2xl group-hover:bg-accent group-hover:shadow-[0_0_10px_rgba(var(--accent-rgb),0.6)] transition-all duration-300" />
-                
-                <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-4">
-                    <h3 className="text-sm font-black text-text-primary tracking-wider group-hover:text-accent transition-all duration-300 truncate wrap-break-word group-hover:drop-shadow-[0_0_6px_rgba(var(--accent-rgb),0.4)]">
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-accent/20 rounded-l-2xl group-hover:bg-accent group-hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)] transition-all duration-500" />
+
+                <div className="flex flex-col gap-1 w-full relative z-10">
+                    <h3 className="text-sm lg:text-base font-black text-text-primary tracking-widest group-hover:text-accent transition-colors duration-300 break-words line-clamp-2 leading-tight uppercase drop-shadow-sm group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.4)]">
                         {script.title}
                     </h3>
-                    <div className="flex items-center gap-2.5 text-[9px] text-text-secondary tracking-widest font-black uppercase">
-                        <span className="bg-accent/10 text-accent px-1.5 py-0.5 rounded-md border border-accent/15 transition-all group-hover:bg-accent/20 group-hover:border-accent/30">V.{script.version}</span>
-                        <span className="opacity-30">•</span>
+                    <div className="flex items-center gap-3 text-[9px] lg:text-[10px] text-text-secondary tracking-[0.2em] font-black uppercase mt-1">
+                        <span className="bg-accent/10 text-accent px-2 py-0.5 rounded border border-accent/20 group-hover:bg-accent/20 group-hover:border-accent/40 transition-colors">V.{script.version}</span>
+                        <span className="w-1 h-1 rounded-full bg-white/20" />
                         <span className="truncate">INIT: {mounted ? new Date(script.createdAt).toLocaleDateString() : ""}</span>
                     </div>
                 </div>
 
-                <div className="shrink-0 z-10">
+                <div className="w-full shrink-0 z-10 mt-1 pt-3 border-t border-white/5 group-hover:border-accent/20 transition-colors duration-500 flex justify-end">
                     {getActionRow()}
                 </div>
             </div>

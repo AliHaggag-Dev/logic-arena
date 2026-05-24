@@ -32,7 +32,7 @@ export default function DashboardPage() {
             <div className="absolute inset-0 z-0 opacity-15 pointer-events-none bg-[linear-gradient(rgba(var(--accent-rgb),0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(var(--accent-rgb),0.15)_1px,transparent_1px)] bg-[size:40px_40px]" />
             
             {/* Layout container */}
-            <div className="w-full px-4 pt-4 lg:px-8 lg:pt-8 lg:pb-8 relative z-20 flex flex-col gap-4 lg:h-[calc(100vh-120px)] lg:overflow-hidden min-h-0">
+            <div className="w-full px-4 pt-4 lg:px-8 lg:pt-8 lg:pb-8 relative z-20 flex flex-col gap-4 min-h-[calc(100vh-120px)]">
                 
                 {/* Header Section */}
                 <header className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:items-end border-b border-accent/10 pb-4">
@@ -86,10 +86,10 @@ export default function DashboardPage() {
                 </Link>
 
                 {/* Desktop and Tablet Layout Grid */}
-                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 items-stretch flex-1 min-h-0">
+                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 items-start flex-1 min-h-0 w-full">
                     
                     {/* Left Column (7 cols): Campaign Nexus */}
-                    <div className="lg:col-span-7 flex flex-col gap-6 min-h-0">
+                    <div className="lg:col-span-7 flex flex-col gap-6 min-h-0 w-full">
                         {/* Arena Selector Component */}
                         <ArenaSelector
                             selectedMode={selectedMode}
@@ -100,7 +100,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Right Column (5 cols): Scripts List & Creation */}
-                    <div className="lg:col-span-5 flex flex-col bg-card/45 backdrop-blur-xl border border-accent/15 rounded-[24px] p-5 md:p-6 shadow-[var(--card-shadow)] min-h-0">
+                    <div className="lg:col-span-5 flex flex-col bg-card/45 backdrop-blur-xl border border-accent/15 rounded-[24px] p-5 md:p-6 shadow-[var(--card-shadow)] w-full lg:sticky lg:top-8 lg:h-[calc(100vh-140px)]">
                         
                         {/* List Header */}
                         <div className="flex items-center justify-between gap-3 w-full mb-4 shrink-0">
