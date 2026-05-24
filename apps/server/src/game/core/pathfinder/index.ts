@@ -57,7 +57,9 @@ export class Pathfinder {
       target.position.x - last.x,
       target.position.y - last.y,
     );
-    const targetMoved = moved > PATH_CONFIG.RECOMPUTE_DIST;
+    // Recompute if target moved OR if robot recently collided with a wall (and finished its bounce)
+    const hitWallRecently = Date.now() - (robot.hitWallTimestamp ?? 0) < 500;
+    const targetMoved = moved > PATH_CONFIG.RECOMPUTE_DIST || hitWallRecently;
 
     if (targetMoved) {
       // Target repositioned — recompute full A* path

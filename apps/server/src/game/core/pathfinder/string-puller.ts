@@ -25,14 +25,28 @@ export class StringPuller {
       if (this.impassable[r0]?.[c0]) return false;
       if (r0 === r1 && c0 === c1) return true;
 
+      let steppedR = false;
+      let steppedC = false;
+
       const e2 = 2 * err;
       if (e2 > -dc) {
         err -= dc;
         r0 += sr;
+        steppedR = true;
       }
       if (e2 < dr) {
         err += dr;
         c0 += sc;
+        steppedC = true;
+      }
+
+      if (steppedR && steppedC) {
+        if (
+          this.impassable[r0 - sr]?.[c0] ||
+          this.impassable[r0]?.[c0 - sc]
+        ) {
+          return false;
+        }
       }
     }
   }
