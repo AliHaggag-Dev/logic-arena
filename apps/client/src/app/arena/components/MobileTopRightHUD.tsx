@@ -16,11 +16,12 @@ interface MobileHUDProps {
   robots: RobotState[];
   projectiles: ProjectileState[];
   displayMode: string;
+  isPvP?: boolean;
 }
 
 export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
   modeData, fps, fogEnabled, setFogEnabled, socket, isConnected,
-  robots, projectiles, displayMode,
+  robots, projectiles, displayMode, isPvP = false,
 }) => {
   const fpsColor = fps >= 50 ? 'var(--arena-fps-good)' : fps >= 30 ? 'var(--arena-fps-warn)' : 'var(--arena-fps-bad)';
   const [lockVision, setLockVision] = useState(false);
@@ -125,26 +126,28 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
             </span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleToggleLockVision}
-            className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${lockVision
-              ? 'bg-amber-950/40 border-amber-500/40 hover:border-amber-400/70 hover:bg-amber-900/30 shadow-[0_0_8px_rgba(var(--arena-amber-rgb),0.15)] hover:shadow-[0_0_12px_rgba(var(--arena-amber-rgb),0.35)]'
-              : 'bg-black/50 border-white/10 hover:border-white/25 hover:bg-white/5'
-              }`}
-          >
-            <span className="relative flex items-center justify-center w-2 h-2">
-              {lockVision && <span className="absolute w-2 h-2 rounded-full bg-amber-500/30 animate-ping" />}
-              <span className={`w-1.5 h-1.5 rounded-full transition-all ${lockVision
-                ? 'bg-amber-400 shadow-[0_0_4px_rgba(var(--arena-amber-rgb),0.8)]'
-                : 'bg-white/25'
-                }`} />
-            </span>
-            <span className={`text-[7px] font-black tracking-widest uppercase transition-colors ${lockVision ? 'text-amber-400/70' : 'text-white/25'
-              }`}>
-              {lockVision ? 'Vision: Linked' : 'Vision: Free'}
-            </span>
-          </button>
+          {!isPvP && (
+            <button
+              type="button"
+              onClick={handleToggleLockVision}
+              className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${lockVision
+                ? 'bg-amber-950/40 border-amber-500/40 hover:border-amber-400/70 hover:bg-amber-900/30 shadow-[0_0_8px_rgba(var(--arena-amber-rgb),0.15)] hover:shadow-[0_0_12px_rgba(var(--arena-amber-rgb),0.35)]'
+                : 'bg-black/50 border-white/10 hover:border-white/25 hover:bg-white/5'
+                }`}
+            >
+              <span className="relative flex items-center justify-center w-2 h-2">
+                {lockVision && <span className="absolute w-2 h-2 rounded-full bg-amber-500/30 animate-ping" />}
+                <span className={`w-1.5 h-1.5 rounded-full transition-all ${lockVision
+                  ? 'bg-amber-400 shadow-[0_0_4px_rgba(var(--arena-amber-rgb),0.8)]'
+                  : 'bg-white/25'
+                  }`} />
+              </span>
+              <span className={`text-[7px] font-black tracking-widest uppercase transition-colors ${lockVision ? 'text-amber-400/70' : 'text-white/25'
+                }`}>
+                {lockVision ? 'Vision: Linked' : 'Vision: Free'}
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Compact Mode Indicator */}

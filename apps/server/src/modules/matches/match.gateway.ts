@@ -83,17 +83,19 @@ export class MatchGateway
   }
 
   async handleDisconnect(@ConnectedSocket() client: AuthenticatedSocket) {
-    const isActuallyOffline = client.userId 
-      ? (await this.server.in(client.userId).fetchSockets()).length === 0
-      : true;
-
-    if (client.userId && isActuallyOffline) {
-      const ci = this.campaignIntervals.get(client.userId);
-      if (ci) { clearInterval(ci); this.campaignIntervals.delete(client.userId); }
-      await this.redisService.del(`user:online:${client.userId}`);
-    }
-
     this.spectatorManager.removeSpectator(client);
+
+    if (client.userId) {
+      // Delay offline check to avoid race conditions during page transitions (where new socket connects before old one finishes disconnecting)
+      setTimeout(async () => {
+        const isActuallyOffline = (await this.server.in(client.userId!).fetchSockets()).length === 0;
+        if (isActuallyOffline) {
+          const ci = this.campaignIntervals.get(client.userId!);
+          if (ci) { clearInterval(ci); this.campaignIntervals.delete(client.userId!); }
+          await this.redisService.del(`user:online:${client.userId}`);
+        }
+      }, 2000);
+    }
 
     if (client.userId && !client.isSpectator) {
       const status = this.state.userStatus.get(client.userId);

@@ -202,6 +202,7 @@ const ArenaPageContent = () => {
                 projectiles={projectiles}
                 displayMode={displayMode}
                 modeData={modeData}
+                isPvP={isPvP}
               />
               <MobileControls
                 socket={socket}

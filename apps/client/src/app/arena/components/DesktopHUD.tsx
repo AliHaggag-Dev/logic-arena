@@ -148,21 +148,23 @@ export function DesktopHUD({
               )}
             </button>
 
-            <button
-              type="button"
-              onClick={handleToggleLockVision}
-              className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${lockVision
-                ? 'border-amber-500/50 bg-amber-900/40 text-amber-300 hover:bg-amber-500/30 hover:border-amber-400 hover:text-amber-200 shadow-[inset_0_0_10px_rgba(var(--arena-amber-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--arena-amber-rgb),0.4)]'
-                : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
-                }`}
-              title="Link scanner (FOV) to body rotation. When ON, the scanner follows the robot body."
-            >
-              {lockVision ? <Lock size={13} className="group-hover:scale-110 transition-transform" /> : <Unlock size={13} className="opacity-50 group-hover:scale-110 transition-transform" />}
-              <span className="relative z-10 mt-[1px]">LOCK: {lockVision ? 'ON' : 'OFF'}</span>
-              {lockVision && (
-                <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-amber-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
-              )}
-            </button>
+            {!isPvP && (
+              <button
+                type="button"
+                onClick={handleToggleLockVision}
+                className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden ${lockVision
+                  ? 'border-amber-500/50 bg-amber-900/40 text-amber-300 hover:bg-amber-500/30 hover:border-amber-400 hover:text-amber-200 shadow-[inset_0_0_10px_rgba(var(--arena-amber-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--arena-amber-rgb),0.4)]'
+                  : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
+                  }`}
+                title="Link scanner (FOV) to body rotation. When ON, the scanner follows the robot body."
+              >
+                {lockVision ? <Lock size={13} className="group-hover:scale-110 transition-transform" /> : <Unlock size={13} className="opacity-50 group-hover:scale-110 transition-transform" />}
+                <span className="relative z-10 mt-[1px]">LOCK: {lockVision ? 'ON' : 'OFF'}</span>
+                {lockVision && (
+                  <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-amber-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+                )}
+              </button>
+            )}
           </div>
 
           {modeData && (

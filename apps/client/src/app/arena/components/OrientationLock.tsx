@@ -7,20 +7,7 @@ type LockableScreenOrientation = ScreenOrientation & {
 };
 
 export function OrientationLock() {
-  React.useEffect(() => {
-    const autoLock = async () => {
-      try {
-        const orientation = screen?.orientation as LockableScreenOrientation | undefined;
-        if (typeof orientation?.lock === 'function') {
-          await orientation.lock('landscape');
-        }
-      } catch (e) {
-        console.warn("Auto-orientation lock failed (expected if not PWA or missing gesture):", e);
-      }
-    };
-    // Attempt auto-rotation immediately
-    autoLock();
-  }, []);
+  // Auto-lock removed to respect user's OS rotation lock.
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center overflow-hidden">
