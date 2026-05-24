@@ -1,6 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import { MapTheme } from "../../types";
+import { Environment } from "@react-three/drei";
 
 const FILL_LIGHT_COLORS: Record<MapTheme, string> = {
   CYBER: "#ffffff",
@@ -17,6 +19,9 @@ export const SceneLighting = ({ mapTheme }: { mapTheme: MapTheme }) => {
   return (
     <>
       <ambientLight intensity={0.85} />
+      <Suspense fallback={null}>
+        <Environment preset="night" background={false} />
+      </Suspense>
       <pointLight position={[10, 10, 10]} intensity={1.6} color={FILL_LIGHT_COLORS[mapTheme]} />
       <directionalLight
         position={[5, 20, 10]}

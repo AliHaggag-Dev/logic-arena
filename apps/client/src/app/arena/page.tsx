@@ -27,7 +27,6 @@ const ROBOT_FILES: Record<string, string> = {
   'unit-02': '/robots/robot2.glb',
   'chassis-unit-01': '/robots/robot.glb',
   'chassis-unit-02': '/robots/robot2.glb',
-  'chassis-wraith': '/robots/bunny.glb',
   'chassis-titan': '/robots/armored-robot.glb',
   'chassis-sandman': '/robots/sandman.glb',
 };

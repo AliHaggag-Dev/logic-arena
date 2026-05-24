@@ -41,16 +41,6 @@ export const MARKET_ITEMS: MarketItem[] = [
   },
 
   {
-    id: "chassis-wraith",
-    name: "BUNNY BUNDLE",
-    category: "chassis",
-    price: 800,
-    color: "#a855f7",
-    glowColor: "#a855f7",
-    rarity: "RARE",
-    description: "Free Fire crossover bundle. Jump pad efficiency +15%.",
-  },
-  {
     id: "chassis-titan",
     name: "ARMORED MECH",
     category: "chassis",

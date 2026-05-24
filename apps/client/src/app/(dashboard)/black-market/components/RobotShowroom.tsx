@@ -9,7 +9,6 @@ import { useRobotColorTint } from "../../garage/hooks/useRobotColorTint";
 const CHASSIS_MODEL_PATHS: Record<string, string> = {
   "chassis-unit-01": "/robots/robot.glb",
   "chassis-unit-02": "/robots/robot2.glb",
-  "chassis-wraith": "/robots/bunny.glb",
   "chassis-titan": "/robots/armored-robot.glb",
   "chassis-sandman": "/robots/sandman.glb",
 };

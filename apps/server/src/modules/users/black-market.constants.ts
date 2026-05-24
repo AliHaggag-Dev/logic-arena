@@ -23,7 +23,6 @@ export const BLACK_MARKET_ITEMS: BlackMarketItem[] = [
   // Robot chassis
   { id: 'chassis-unit-01', category: 'chassis', price: 0 },
   { id: 'chassis-unit-02', category: 'chassis', price: 0 },
-  { id: 'chassis-wraith', category: 'chassis', price: 800 },
   { id: 'chassis-titan', category: 'chassis', price: 1800 },
   // Neon paints
   { id: 'paint-default', category: 'paint', price: 0, color: 'DEFAULT' },

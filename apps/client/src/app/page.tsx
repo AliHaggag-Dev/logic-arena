@@ -414,16 +414,15 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {[
-            { name: "UNIT-01", img: "/thumbnails/chassis-unit-01.png", desc: "Standard issue. Balanced stats." },
-            { name: "UNIT-02", img: "/thumbnails/chassis-unit-02.png", desc: "Heavy armor. Slower. Hits harder." },
-            { name: "SANDMAN", img: "/thumbnails/chassis-sandman.png", desc: "Desert robot. Agile." },
-            { name: "WRAITH", img: "/thumbnails/chassis-wraith.png", desc: "Stealth robot. Reduced radar signature." },
-          ].map((chassis) => (
+            { name: "UNIT-01", img: "/thumbnails/chassis-unit-01.png", desc: "Balanced all-rounder. Excellent starting model." },
+            { name: "TITAN", img: "/thumbnails/chassis-titan.png", desc: "Heavy armor. Built for taking massive damage." },
+            { name: "SANDMAN", img: "/thumbnails/chassis-sandman.png", desc: "Advanced tactical mech with extreme firepower." }
+          ].map((bot) => (
             <ImageCard
-              key={chassis.name}
-              src={chassis.img}
-              name={chassis.name}
-              description={chassis.desc}
+              key={bot.name}
+              src={bot.img}
+              name={bot.name}
+              description={bot.desc}
               className="aspect-square"
             />
           ))}

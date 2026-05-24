@@ -9,7 +9,6 @@ import { createPrimitiveChassis } from './PrimitiveChassis';
 const ROBOT_SCALES: Record<string, number> = {
   '/robots/robot.glb': 2,
   '/robots/robot2.glb': 0.8,
-  '/robots/bunny.glb': 1.5,
   '/robots/armored-robot.glb': 1.7,
   '/robots/sandman.glb': 5,
 };
@@ -17,6 +16,7 @@ const ROBOT_SCALES: Record<string, number> = {
 const BotModel = memo((props: RobotModelProps & { file: string }) => {
   const { scene, animations } = useGLTF(props.file);
   const scale = ROBOT_SCALES[props.file] ?? 2;
+  
   return (
     <RobotModelInner
       {...props}
@@ -52,6 +52,5 @@ RobotModel.displayName = 'RobotModel';
 
 useGLTF.preload('/robots/robot.glb');
 useGLTF.preload('/robots/robot2.glb');
-useGLTF.preload('/robots/bunny.glb');
 useGLTF.preload('/robots/armored-robot.glb');
 useGLTF.preload('/robots/sandman.glb');
