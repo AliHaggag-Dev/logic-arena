@@ -10,27 +10,54 @@ export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [installing, setInstalling] = useState(false);
+  
+  // iOS specific state
+  const [isIosPrompt, setIsIosPrompt] = useState(false);
 
   useEffect(() => {
-    // Never show if already dismissed
     if (typeof window === "undefined") return;
     if (localStorage.getItem(STORAGE_KEY) === "true") return;
     if (window.matchMedia("(display-mode: standalone)").matches) return;
 
+    // Detect iOS
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    
+    if (isIos) {
+      // iOS doesn't support beforeinstallprompt, so we show our custom prompt after a delay
+      const delay = pathname.startsWith("/dashboard") ? 5000 : 30_000;
+      const timer = setTimeout(() => {
+        setIsIosPrompt(true);
+        setVisible(true);
+      }, delay);
+      return () => clearTimeout(timer);
+    }
+
+    // Standard Android/Desktop flow
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
 
-      // Show immediately on /dashboard, else wait 30s
-      const delay = pathname.startsWith("/dashboard") ? 0 : 30_000;
-      setTimeout(() => setVisible(true), delay);
+      const delay = pathname.startsWith("/dashboard") ? 5000 : 30_000;
+      const timer = setTimeout(() => setVisible(true), delay);
+      
+      // Store timer on window to clear it if needed, though usually one-off
+      (window as any).pwaTimer = timer;
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      if ((window as any).pwaTimer) clearTimeout((window as any).pwaTimer);
+    };
   }, [pathname]);
 
   const handleInstall = async () => {
+    if (isIosPrompt) {
+      // For iOS, the button acts as an "OK, I'll do it" button that dismisses the prompt
+      handleDismiss();
+      return;
+    }
+
     if (!deferredPrompt) return;
     setInstalling(true);
     deferredPrompt.prompt();
@@ -47,7 +74,7 @@ export function PWAInstallPrompt() {
     setVisible(false);
   };
 
-  if (!visible || !deferredPrompt) return null;
+  if (!visible || (!deferredPrompt && !isIosPrompt)) return null;
 
   return (
     <>
@@ -87,13 +114,20 @@ export function PWAInstallPrompt() {
               <p className="text-[13px] font-black tracking-[0.15em] uppercase text-accent leading-tight [text-shadow:0_0_8px_rgba(var(--accent-rgb),0.5)]">
                 Install Logic Arena
               </p>
-              <p className="mt-0.5 text-[10.5px] text-text-secondary/80 tracking-wide leading-relaxed">
-                Play offline&nbsp;•&nbsp;Faster load&nbsp;•&nbsp;No browser UI
-              </p>
+              {isIosPrompt ? (
+                <p className="mt-1 text-[10.5px] text-text-secondary/90 tracking-wide leading-relaxed">
+                  To install on iOS: tap the <strong className="text-white">Share</strong> button at the bottom of Safari, then select <strong className="text-white">Add to Home Screen</strong>.
+                </p>
+              ) : (
+                <p className="mt-0.5 text-[10.5px] text-text-secondary/80 tracking-wide leading-relaxed">
+                  Play offline&nbsp;•&nbsp;Faster load&nbsp;•&nbsp;No browser UI
+                </p>
+              )}
             </div>
 
             {/* Dismiss X */}
             <button
+              type="button"
               onClick={handleDismiss}
               aria-label="Dismiss install prompt"
               className="text-text-secondary/40 hover:text-text-secondary transition-colors text-[18px] leading-none w-6 h-6 flex items-center justify-center rounded"
@@ -105,20 +139,24 @@ export function PWAInstallPrompt() {
           {/* Buttons */}
           <div className="flex gap-2 mt-3">
             <button
+              type="button"
               id="pwa-install-btn"
               onClick={handleInstall}
               disabled={installing}
               className="flex-1 py-2 text-[11px] font-bold tracking-[0.18em] uppercase rounded-lg bg-accent text-bg-primary hover:brightness-110 active:scale-[0.98] transition-all duration-150 shadow-[0_0_16px_rgba(var(--accent-rgb),0.4)] disabled:opacity-60"
             >
-              {installing ? "INSTALLING…" : "INSTALL"}
+              {installing ? "INSTALLING…" : isIosPrompt ? "GOT IT" : "INSTALL"}
             </button>
-            <button
-              id="pwa-dismiss-btn"
-              onClick={handleDismiss}
-              className="px-4 py-2 text-[11px] font-bold tracking-[0.18em] uppercase rounded-lg border border-accent/20 text-text-secondary/70 hover:border-accent/40 hover:text-text-secondary transition-all duration-150"
-            >
-              DISMISS
-            </button>
+            {!isIosPrompt && (
+              <button
+                type="button"
+                id="pwa-dismiss-btn"
+                onClick={handleDismiss}
+                className="px-4 py-2 text-[11px] font-bold tracking-[0.18em] uppercase rounded-lg border border-accent/20 text-text-secondary/70 hover:border-accent/40 hover:text-text-secondary transition-all duration-150"
+              >
+                DISMISS
+              </button>
+            )}
           </div>
         </div>
       </div>
