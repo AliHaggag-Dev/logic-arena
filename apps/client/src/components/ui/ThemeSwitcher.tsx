@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 
 const SVGBase = ({ children, size = 14 }: { children: React.ReactNode, size?: number }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -53,12 +54,48 @@ export function ThemeSwitcher({ variant = "default", size = "compact" }: ThemeSw
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   useEffect(() => { setMounted(true); }, []);
 
+  const updatePos = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      if (variant === "minimal") {
+        setDropdownStyle({
+          top: rect.bottom + 8,
+          right: window.innerWidth - rect.right,
+          minWidth: 140
+        });
+      } else {
+        setDropdownStyle({
+          bottom: window.innerHeight - rect.top + 8,
+          left: rect.left,
+          width: rect.width
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePos();
+      window.addEventListener("scroll", updatePos, true);
+      window.addEventListener("resize", updatePos);
+      return () => {
+        window.removeEventListener("scroll", updatePos, true);
+        window.removeEventListener("resize", updatePos);
+      };
+    }
+  }, [isOpen, variant]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current && !buttonRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -85,7 +122,7 @@ export function ThemeSwitcher({ variant = "default", size = "compact" }: ThemeSw
   };
 
   return (
-    <div className={variant === "minimal" ? "relative z-50" : "px-[10px] pb-3 relative z-50"} ref={dropdownRef}>
+    <div className={variant === "minimal" ? "relative z-[110]" : "px-[10px] pb-3 relative z-[110]"}>
       {variant === "default" && (
         <div className="text-[8px] tracking-[0.22em] text-accent/25 font-bold px-1 pb-1.5 uppercase">
           theme
@@ -93,6 +130,7 @@ export function ThemeSwitcher({ variant = "default", size = "compact" }: ThemeSw
       )}
       <div className={variant === "minimal" ? "" : "w-full relative"}>
         <button
+          ref={buttonRef}
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={variant === "minimal"
@@ -108,25 +146,29 @@ export function ThemeSwitcher({ variant = "default", size = "compact" }: ThemeSw
           )}
         </button>
 
-        <div
-          className={`absolute ${variant === "minimal" ? "top-[calc(100%+8px)] right-0 min-w-[140px]" : "bottom-[calc(100%+8px)] left-0 right-0"} bg-card border border-accent/50 rounded-lg p-1 z-50 transition-all duration-150 ease-in-out ${isOpen ? "opacity-100 translate-y-0 visible" : `opacity-0 ${variant === "minimal" ? "-translate-y-2" : "translate-y-2"} invisible`}`}
-          style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
-        >
-          {THEMES.map(({ id, label, icon }) => {
-            const isActive = theme === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => handleSelect(id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[10px] font-mono font-bold tracking-[0.05em] transition-colors duration-150 ${isActive ? "bg-accent/10 text-accent" : "bg-transparent text-text-secondary hover:bg-accent/5 hover:text-accent/80"}`}
-              >
-                {icon}
-                <span>{label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {mounted && createPortal(
+          <div
+            ref={dropdownRef}
+            className={`fixed bg-card border border-accent/50 rounded-lg p-1 z-[99999] transition-all duration-150 ease-in-out ${isOpen ? "opacity-100 translate-y-0 visible" : `opacity-0 ${variant === "minimal" ? "-translate-y-2" : "translate-y-2"} invisible`}`}
+            style={{ ...dropdownStyle, boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
+          >
+            {THEMES.map(({ id, label, icon }) => {
+              const isActive = theme === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => handleSelect(id)}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[10px] font-mono font-bold tracking-[0.05em] transition-colors duration-150 ${isActive ? "bg-accent/10 text-accent" : "bg-transparent text-text-secondary hover:bg-accent/5 hover:text-accent/80"}`}
+                >
+                  {icon}
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>,
+          document.body
+        )}
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ interface ChatDto {
   message: string;
   history: { role: 'user' | 'model'; content: string }[];
   language?: 'ar' | 'en' | 'auto';
+  image?: string;
 }
 
 @SkipThrottle({ auth: true })
@@ -31,16 +32,15 @@ export class AiController {
     @Body() body: ChatDto,
     @Res() res: Response,
   ) {
-    const { message, history } = body;
+    const { message, history, image } = body;
 
-    if (!message || typeof message !== 'string') {
-      throw new BadRequestException('message is required and must be a string');
+    const hasMessage = message && typeof message === 'string' && message.trim().length > 0;
+    
+    if (!hasMessage && !image) {
+      throw new BadRequestException('message or image must be provided');
     }
 
-    const sanitized = message.replace(/<[^>]*>/g, '').slice(0, MAX_MESSAGE_LENGTH);
-    if (!sanitized.trim()) {
-      throw new BadRequestException('message must not be empty');
-    }
+    const sanitized = hasMessage ? message.replace(/<[^>]*>/g, '').slice(0, MAX_MESSAGE_LENGTH) : '';
 
     if (!Array.isArray(history)) {
       throw new BadRequestException('history must be an array');
@@ -64,7 +64,7 @@ export class AiController {
     res.setHeader('X-Accel-Buffering', 'no');
 
     try {
-      const stream = this.aiService.streamChat(sanitized, trimmedHistory);
+      const stream = this.aiService.streamChat(sanitized, trimmedHistory, image);
 
       for await (const chunk of stream) {
         const escaped = JSON.stringify(chunk);

@@ -43,10 +43,12 @@ export function ChatMessages({
   };
 
   React.useEffect(() => {
+    // Only scroll automatically when a new message is added to the array (like the user's question or bot's final answer)
+    // We intentionally don't include streamedText so we don't drag the user down while they are trying to read the beginning of a long response
     if (!userScrolled) {
-      messagesEndRef.current?.scrollIntoView({ behavior: status === 'streaming' ? 'auto' : 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, status, streamedText, userScrolled, messagesEndRef]);
+  }, [messages.length]); // Only depend on messages.length
 
   return (
     <div className="relative flex-1 min-h-0 flex flex-col">
@@ -97,6 +99,11 @@ export function ChatMessages({
                 }`}>
                 {msg.isError ? 'ARIA \u2022 Error' : 'ARIA'}
               </p>
+            )}
+            {msg.image && (
+              <div className="mb-3">
+                <img src={msg.image} alt="Attached" className="max-w-[200px] max-h-[200px] rounded-xl object-cover border border-accent/20 shadow-md" />
+              </div>
             )}
             <div dir="auto" className={`text-[13px] leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0 ${msg.isError ? 'text-sem-danger/80' : ''
               }`} style={{ fontFamily: 'var(--font-alexandria), sans-serif' }}>

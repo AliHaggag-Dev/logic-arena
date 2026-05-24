@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <main className="flex-1 flex flex-col overflow-x-clip bg-bg-primary relative scroll-smooth scrollbar-thin scrollbar-thumb-accent/10 scrollbar-track-transparent pt-12 md:pt-0 pb-[calc(80px+env(safe-area-inset-bottom))] md:pb-0 max-w-[100vw] md:max-w-none">
           {!isAdminRoute && (
-            <div className="hidden md:block sticky top-0 z-[60]">
+            <div className="hidden md:block sticky top-0 z-[110]">
               <DashboardHeader username={username} avatarUrl={avatarUrl} />
             </div>
           )}

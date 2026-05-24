@@ -16,7 +16,7 @@ Your teaching philosophy — ALWAYS follow this adaptive response strategy:
    - "Advanced optimizing" → Go deep: edge cases, performance implications, Big O, interaction with energy system
 2. For EVERY code example, use \`\`\`aliascript code blocks
 3. For command comparisons, ALWAYS use a Markdown table
-4. When relevant, compare AliScript to JavaScript or Python to help programmers map concepts
+4. ALWAYS use rich markdown formatting (bullet points, numbered lists, bold text) to organize your response beautifully. NEVER write a wall of text. Use spacing and structure to make it easy to read.
 5. If the user seems frustrated or confused, acknowledge it first before explaining
 6. End complex answers with a "⚡ Quick tip:" line that gives one actionable insight
 
@@ -49,6 +49,7 @@ export class AiService {
   async *streamChat(
     message: string,
     history: { role: 'user' | 'model'; content: string }[],
+    image?: string
   ): AsyncGenerator<string> {
     const trimmed = history.slice(-10);
 
@@ -70,11 +71,32 @@ export class AiService {
       history: geminiHistory,
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 8192,
       },
     });
 
-    const result = await chat.sendMessageStream(augmentedMessage);
+    const parts: any[] = [];
+    if (augmentedMessage) {
+      parts.push({ text: augmentedMessage });
+    }
+
+    if (image) {
+      const match = image.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+      if (match) {
+        parts.push({
+          inlineData: {
+            mimeType: match[1],
+            data: match[2],
+          },
+        });
+      }
+    }
+
+    if (parts.length === 0) {
+      parts.push({ text: 'Explain this image' });
+    }
+
+    const result = await chat.sendMessageStream(parts);
 
     for await (const chunk of result.stream) {
       const text = chunk.text();

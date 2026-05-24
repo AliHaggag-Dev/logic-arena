@@ -18,11 +18,11 @@ export function useAiChat() {
 
   // Scrolling is now handled directly inside ChatMessages component
 
-  const sendMessage = useCallback(async (text: string) => {
+  const sendMessage = useCallback(async (text: string, image?: string | null) => {
     const sanitized = text.replace(/<[^>]*>/g, '').slice(0, MAX_MESSAGE_LENGTH).trim();
-    if (!sanitized || status !== 'idle') return;
+    if ((!sanitized && !image) || status !== 'idle') return;
 
-    const userMessage: ChatMessage = { role: 'user', content: sanitized };
+    const userMessage: ChatMessage = { role: 'user', content: sanitized || 'Uploaded an image', image: image || undefined };
     setMessages((prev) => [...prev, userMessage]);
     setStatus('thinking');
     setStreamedText('');
@@ -44,7 +44,7 @@ export function useAiChat() {
       const response = await fetch(`${API_BASE_URL}/ai/docs-chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: sanitized, history }),
+        body: JSON.stringify({ message: sanitized, history, image: image || undefined }),
         signal: abort.signal,
       });
 

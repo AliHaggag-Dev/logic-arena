@@ -38,17 +38,14 @@ export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
     return () => document.removeEventListener('keydown', handler);
   }, [open]);
 
-  const handleSend = () => {
-    sendMessage(input);
+  const handleSend = (image?: string | null) => {
+    sendMessage(input, image);
     setInput('');
     if (inputRef.current) inputRef.current.style.height = 'auto';
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    // Only used for other keys now, Enter is handled inside ChatInput
   };
 
   if (isSuppressed) return null;
