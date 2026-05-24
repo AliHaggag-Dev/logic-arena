@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { CommandConsole } from './CommandConsole';
 import { TacticalRadar } from './TacticalRadar';
-import { RefreshCw, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
+import { RefreshCw, Eye, EyeOff, Lock, Unlock, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 import { RobotState, ProjectileState, ModeData } from '../types';
 
 interface DesktopHUDProps {
@@ -86,9 +87,18 @@ export function DesktopHUD({
       <div className={`absolute inset-0 z-30 pointer-events-none transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isLeftPanelOpen ? 'translate-x-0' : '-translate-x-[120%]'}`}>
         <div className="absolute top-6 left-8 pointer-events-none flex flex-col gap-1">
           <div className="flex items-end gap-6">
-            <h1 className="text-4xl font-black tracking-tighter text-cyan-400 italic leading-none drop-shadow-[0_0_20px_rgba(var(--arena-cyan-rgb),0.6)]">
-              LOGIC ARENA
-            </h1>
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/dashboard"
+                className="pointer-events-auto group flex items-center justify-center w-8 h-8 rounded-full bg-cyan-950/40 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all"
+                title="Abort Session & Return to Dashboard"
+              >
+                <ChevronLeft size={16} className="text-cyan-400 group-hover:-translate-x-0.5 transition-transform" />
+              </Link>
+              <h1 className="text-4xl font-black tracking-tighter text-cyan-400 italic leading-none drop-shadow-[0_0_20px_rgba(var(--arena-cyan-rgb),0.6)]">
+                LOGIC ARENA
+              </h1>
+            </div>
             <h2 className="text-sm font-bold text-white/40 tracking-[0.4em] uppercase italic mb-0.5">
               // ARENA: {scriptTitle}
             </h2>

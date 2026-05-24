@@ -2,7 +2,8 @@
 
 import React, { useState, useRef } from 'react';
 import { Socket } from 'socket.io-client';
-import { Zap, Terminal } from 'lucide-react';
+import { Zap, Terminal, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 import { BottomSheet } from './BottomSheet';
 import { CommandConsole } from './CommandConsole';
 
@@ -42,6 +43,17 @@ export function MobileControls({
 
   return (
     <>
+      {/* ── Top Left Back Button ──────────────────────────────── */}
+      <div className="fixed top-3 left-3 z-50 pointer-events-auto">
+        <Link 
+          href="/dashboard"
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-black/60 backdrop-blur-md border border-cyan-500/20 active:scale-95 transition-all shadow-[0_4px_15px_rgba(0,0,0,0.5)]"
+          title="Abort Session & Return to Dashboard"
+        >
+          <ChevronLeft className="w-5 h-5 text-cyan-400" />
+        </Link>
+      </div>
+
       {/* ── Floating Dock ─────────────────────────────────────────── */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-row items-end gap-4 pointer-events-auto">
         {/* ⚡ ZEN EDITOR — pure code */}

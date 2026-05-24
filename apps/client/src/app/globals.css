@@ -278,11 +278,17 @@ html, body {
 }
 
 body {
-  user-select: none;
-  -webkit-user-select: none;
   touch-action: pan-y;
   overscroll-behavior-y: none;
   overflow-x: clip;
+}
+
+/* Only disable text selection on touch devices to prevent annoying popups */
+@media (pointer: coarse) {
+  body {
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }
 
 input,

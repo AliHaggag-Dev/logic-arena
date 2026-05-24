@@ -26,9 +26,14 @@ export interface Snapshot {
   projectiles: ProjectileSnapshot[];
 }
 
+export interface ReplayPayload {
+  snapshots: Snapshot[];
+  finalScripts?: Record<string, string>;
+}
+
 export interface ReplayData {
   id: string;
-  replayData: Snapshot[] | null;
+  replayData: Snapshot[] | ReplayPayload | null;
   winnerId: string | null;
   duration: number;
   createdAt: string;

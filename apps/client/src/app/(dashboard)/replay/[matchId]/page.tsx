@@ -39,7 +39,7 @@ export default function ReplayPage() {
         setReplayData(data);
         const snaps = Array.isArray(data.replayData) 
           ? data.replayData 
-          : (data.replayData?.snapshots ? data.replayData.snapshots : []);
+          : ((data.replayData as any)?.snapshots ? (data.replayData as any).snapshots : []);
         setSnapshots(snaps);
       } catch (e: unknown) {
         // Safe typed error handling
