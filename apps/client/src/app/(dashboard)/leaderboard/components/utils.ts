@@ -8,11 +8,13 @@ export const getRankColor = (index: number): string => {
 };
 
 /**
- * Derive a display efficiency score from rank points and wins.
- * Formula: (wins / max(rank, 1)) × 1000 — a rough proxy until
- * the server aggregates real per-match efficiency data.
+ * Returns the true efficiency score from the user's combat stats.
+ * Falls back to a derived score if not yet played/calculated.
  */
 export const deriveEfficiency = (user: LeaderboardUser): number => {
+  if (user.combatStats?.efficiency !== undefined) {
+    return user.combatStats.efficiency;
+  }
   const wins = user._count.wonMatches;
   const pts = Math.max(user.rank, 1);
   return Math.round((wins / pts) * 1000 * 10) / 10;

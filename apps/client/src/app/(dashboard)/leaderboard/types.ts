@@ -6,6 +6,13 @@ export interface LeaderboardUser {
   isOnline: boolean;
   inMatchId?: string;
   _count: { wonMatches: number };
+  combatStats?: {
+    efficiency: number;
+    aggression: number;
+    defense: number;
+    precision: number;
+    speed: number;
+  } | null;
 }
 
 /** Maximum rank bar display cap (users above this show a full bar) */

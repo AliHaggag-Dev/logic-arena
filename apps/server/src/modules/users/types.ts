@@ -108,6 +108,7 @@ export interface LeaderboardEntry {
   username: string;
   rank: number;
   isOnline: boolean;
+  combatStats?: any;
   _count: { wonMatches: number };
 }
 
