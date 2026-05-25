@@ -111,7 +111,7 @@ export function DesktopHUD({
             <p className={`text-[10px] tracking-[0.25em] font-bold ${displayMode === 'RACING' ? 'text-yellow-400/80' :
               displayMode === 'TRAINING_SOLO' ? 'text-green-400/80' : 'text-red-400/80'
               }`}>
-              v2.0.0 {displayMode === 'RACING' ? '[RACING OVAL]' : displayMode === 'TRAINING_SOLO' ? '[TRAINING SOLO]' : '[COMBAT ARENA]'}
+              v2.0.0 {displayMode === 'RACING' ? '[RACING OVAL]' : displayMode === 'TRAINING_SOLO' ? '[TRAINING SOLO]' : displayMode === 'SURVIVAL' ? '[SURVIVAL]' : '[COMBAT ARENA]'}
             </p>
           </div>
         </div>
@@ -199,10 +199,20 @@ export function DesktopHUD({
               )}
               {modeData.type === 'SURVIVAL' && (
                 <>
-                  <div className="text-xs font-mono text-red-400/70 tracking-widest uppercase mb-1">SURVIVAL</div>
-                  <div className="flex justify-between font-mono text-sm">
-                    <span className="text-white">WAVE: {modeData.wave}</span>
-                    <span className="text-red-400">ENEMIES: {modeData.enemiesRemaining}</span>
+                  <div className="text-xs font-mono text-red-400/70 tracking-widest uppercase mb-1">SURVIVAL PROTOCOL</div>
+                  <div className="flex flex-col gap-1 font-mono text-sm">
+                    <div className="flex justify-between border-b border-red-500/20 pb-1">
+                      <span className="text-white/60">WAVE:</span>
+                      <span className="text-white font-bold">{modeData.wave} <span className="text-red-500/50">/ 10</span></span>
+                    </div>
+                    <div className="flex justify-between border-b border-red-500/20 pb-1">
+                      <span className="text-white/60">ENEMIES LEFT:</span>
+                      <span className="text-red-400 font-bold">{modeData.enemiesRemaining}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/60">TOTAL KILLS:</span>
+                      <span className="text-amber-400 font-bold">{modeData.totalKills}</span>
+                    </div>
                   </div>
                 </>
               )}

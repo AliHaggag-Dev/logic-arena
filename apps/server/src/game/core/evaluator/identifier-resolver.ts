@@ -138,6 +138,28 @@ export function resolveIdentifier(
       return 400;
     case 'spotted':
       return nearestVisible !== null;
+      
+    case 'ENEMY_FLAG_X':
+    case 'ENEMY_FLAG_Y': {
+      const enemyFlag = robot.visibleEntities?.flags?.find(f => f.team !== robot.team);
+      if (!enemyFlag) return name === 'ENEMY_FLAG_X' ? robot.position.x : robot.position.y;
+      return name === 'ENEMY_FLAG_X' ? enemyFlag.position.x : enemyFlag.position.y;
+    }
+    
+    case 'MY_FLAG_X':
+    case 'MY_FLAG_Y': {
+      const myFlag = robot.visibleEntities?.flags?.find(f => f.team === robot.team);
+      if (!myFlag) return name === 'MY_FLAG_X' ? robot.position.x : robot.position.y;
+      return name === 'MY_FLAG_X' ? myFlag.position.x : myFlag.position.y;
+    }
+    
+    case 'ENEMY_FLAG_DISTANCE': {
+      const enemyFlag = robot.visibleEntities?.flags?.find(f => f.team !== robot.team);
+      if (!enemyFlag) return Infinity;
+      const dx = robot.position.x - enemyFlag.position.x;
+      const dy = robot.position.y - enemyFlag.position.y;
+      return Math.hypot(dx, dy);
+    }
 
     default:
       return undefined;
@@ -145,7 +167,14 @@ export function resolveIdentifier(
 }
 
 function getNearestVisible(robot: Robot): Robot | null {
-  const visible = robot.visibleEntities?.robots ?? [];
+  let visible = robot.visibleEntities?.robots ?? [];
+  
+  visible = visible.filter(r => {
+    if (robot.team && r.team && robot.team === r.team) return false;
+    if (robot.id.startsWith('dummy-') && r.id.startsWith('dummy-')) return false;
+    return true;
+  });
+
   if (visible.length === 0) return null;
 
   let nearest = visible[0];
@@ -166,7 +195,15 @@ function getVisibleRobotsForIdentifier(
   robot: Robot,
   memory: Record<string, unknown>,
 ): Robot[] {
-  const visible = robot.visibleEntities?.robots ?? [];
+  let visible = robot.visibleEntities?.robots ?? [];
+  
+  // Filter out teammates and other dummies
+  visible = visible.filter(r => {
+    if (robot.team && r.team && robot.team === r.team) return false;
+    if (robot.id.startsWith('dummy-') && r.id.startsWith('dummy-')) return false;
+    return true;
+  });
+
   if (Number(memory['_SYS_SCAN_SWEEP_DEG'] ?? 0) < 360) return visible;
 
   const range = robot.fov?.range ?? 300;

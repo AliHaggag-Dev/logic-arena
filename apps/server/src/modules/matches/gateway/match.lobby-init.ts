@@ -92,9 +92,6 @@ export async function createAndStartMatch(
   } else if (mode === 'SURVIVAL') {
     initialPlayers = [
       playerToken,
-      { id: 'dummy-1', script: '', color: '#ef4444', model: 'dummy' },
-      { id: 'dummy-2', script: '', color: '#eab308', model: 'dummy' },
-      { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
     ];
   } else if (mode === 'CAPTURE_THE_FLAG') {
     initialPlayers = [

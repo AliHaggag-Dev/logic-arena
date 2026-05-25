@@ -183,9 +183,10 @@ export class GameLoop {
     }
 
     // 4. FOV Computation — runs AFTER spatial grid is populated for this tick
+    const allFlags = this.modeData?.type === 'CTF' ? this.modeData.flags : [];
     for (const robot of this.robots) {
       if (!robot.isAlive) {
-        robot.visibleEntities = { robots: [], projectiles: [], obstacles: [] };
+        robot.visibleEntities = { robots: [], projectiles: [], obstacles: [], flags: [] };
         continue;
       }
       robot.visibleEntities = this.fovCalculator.compute(
@@ -193,6 +194,7 @@ export class GameLoop {
         this.robots,
         this.projectiles,
         this.obstacles,
+        allFlags
       );
     }
   }

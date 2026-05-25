@@ -38,6 +38,7 @@ export class FovCalculator {
     allRobots: Robot[],
     allProjectiles: Projectile[],
     allObstacles: Obstacle[],
+    allFlags: import('./types').CtfFlag[] = [],
   ): VisibleEntities {
     const fov = robot.fov ?? { angle: 120, range: 300 };
     const halfAngleRad = (fov.angle / 2) * DEG_TO_RAD;
@@ -86,10 +87,20 @@ export class FovCalculator {
       visibleObstacles.push(obs);
     }
 
+    // ----- Flags --------------------------------------------------------
+    const visibleFlags: import('./types').CtfFlag[] = [];
+    for (const flag of allFlags) {
+      if (!isInCone(robot.position, flag.position, fx, fy, cosHalf, rangeSquared)) {
+        continue;
+      }
+      visibleFlags.push(flag);
+    }
+
     return {
       robots:      visibleRobots,
       projectiles: visibleProjectiles,
       obstacles:   visibleObstacles,
+      flags:       visibleFlags,
     };
   }
 }

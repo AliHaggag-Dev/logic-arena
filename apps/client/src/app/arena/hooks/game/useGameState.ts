@@ -101,6 +101,11 @@ export const useGameState = (
           obstacles?: ObstacleState[];
         };
         parsed = { ...gameStateRef.current };
+        if (payload.modeData) {
+          parsed.modeData = payload.modeData as any;
+        } else {
+          console.log('[DEBUG] payload.modeData is undefined!', payload);
+        }
 
         if (diff.robots) {
           parsed.robots = parsed.robots.map(r => {

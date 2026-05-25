@@ -66,6 +66,18 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
               displayMode={displayMode}
             />
           </div>
+          {modeData && modeData.type === 'SURVIVAL' && (
+            <div className="p-1 border-t border-cyan-500/10 bg-black/40">
+              <div className="flex justify-between items-center px-1">
+                <span className="text-[8px] font-mono text-white/60">WAVE</span>
+                <span className="text-[10px] font-mono font-bold text-white">{modeData.wave}</span>
+              </div>
+              <div className="flex justify-between items-center px-1">
+                <span className="text-[8px] font-mono text-white/60">ENEMIES</span>
+                <span className="text-[10px] font-mono font-bold text-red-400">{modeData.enemiesRemaining}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-2 pt-1">

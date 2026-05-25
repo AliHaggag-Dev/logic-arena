@@ -21,6 +21,7 @@ export interface VisibleEntities {
   robots: Robot[];
   projectiles: Projectile[];
   obstacles: Obstacle[];
+  flags?: CtfFlag[];
 }
 
 // ---------------------------------------------------------------------------
@@ -233,7 +234,14 @@ export interface SurvivalModeData {
   totalKills: number;
 }
 
-export type ModeData = KothModeData | CtfModeData | SurvivalModeData;
+export interface RacingModeData {
+  type: 'RACING';
+  laps: number;
+  finishLine: Vector2;
+  winnerId?: string;
+}
+
+export type ModeData = KothModeData | CtfModeData | SurvivalModeData | RacingModeData;
 
 // ---------------------------------------------------------------------------
 // Game State

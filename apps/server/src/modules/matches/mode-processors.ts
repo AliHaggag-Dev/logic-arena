@@ -99,3 +99,19 @@ export function processSurvivalTick(robots: Robot[], modeData: SurvivalModeData)
 
   return { modeData, waveComplete: false };
 }
+
+export function processRacingTick(robots: Robot[], modeData: import('@logic-arena/engine').RacingModeData): import('@logic-arena/engine').RacingModeData {
+  if (modeData.winnerId) return modeData;
+  
+  for (const robot of robots) {
+    if (!robot.isAlive) continue;
+    // Simple finish line collision check (x > finishLine.x)
+    if (robot.position.x >= modeData.finishLine.x) {
+      modeData.winnerId = robot.id;
+      // In a real implementation we could handle laps, but for now reaching the line wins
+      break;
+    }
+  }
+  
+  return modeData;
+}

@@ -105,9 +105,9 @@ const ArenaPageContent = () => {
   const isConnected = !!socket?.connected;
   const activeUserId = getAuthUserId() || socketUserId;
   const matchId = searchParams.get('matchId') || 'default-match';
-  const modeData = gameStateRef.current?.modeData;
+  const modeData = uiState?.modeData || gameStateRef.current?.modeData;
 
-  const isPvP = availableRobots.length >= 2 && !availableRobots.some(id => id.toLowerCase().includes('bot'));
+  const isPvP = availableRobots.length >= 2 && !availableRobots.some(id => id.toLowerCase().includes('bot') || id.toLowerCase().includes('dummy'));
 
   const filteredAvailableRobots = isPvP && activeUserId && availableRobots.includes(activeUserId)
     ? [activeUserId]
