@@ -172,21 +172,7 @@ export const LevelArenaPreview = memo(function LevelArenaPreview({
         </div>
       </div>
 
-      {mode === "loading" && isMobile && (
-        <div className="px-2 pt-2">
-          <BattleHUD
-            playerHealth={hudSnapshot.playerHealth}
-            enemyHealth={hudSnapshot.enemyHealth}
-            playerEnergy={hudSnapshot.playerEnergy}
-            tick={hudSnapshot.tick}
-            maxTicks={maxTicks}
-            isMobile
-            isBossLevel={isBossLevel}
-          />
-        </div>
-      )}
-
-      {mode === "loading" && !isMobile && (
+      {mode === "loading" && (
         <div className="border-b border-accent/10">
           <BattleHUD
             playerHealth={hudSnapshot.playerHealth}
@@ -194,7 +180,7 @@ export const LevelArenaPreview = memo(function LevelArenaPreview({
             playerEnergy={hudSnapshot.playerEnergy}
             tick={hudSnapshot.tick}
             maxTicks={maxTicks}
-            isMobile={false}
+            isMobile={true}
             isBossLevel={isBossLevel}
           />
         </div>

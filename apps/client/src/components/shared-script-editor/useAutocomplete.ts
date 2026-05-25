@@ -128,11 +128,18 @@ export const useAutocomplete = (
 
             document.body.removeChild(div);
 
-            const spaceBelow = ta.offsetHeight - top;
             const dropdownHeight = 250;
+            const taRect = ta.getBoundingClientRect();
+            const caretScreenY = taRect.top + top;
+            const spaceBelowScreen = window.innerHeight - caretScreenY;
 
-            if (spaceBelow < dropdownHeight && top > dropdownHeight) {
-                const bottomDist = ta.offsetHeight - top + 4;
+            // Require extra 120px buffer below for mobile nav bar and safety
+            const MIN_SPACE_NEEDED = dropdownHeight + 120;
+
+            if (spaceBelowScreen < MIN_SPACE_NEEDED && caretScreenY > dropdownHeight) {
+                const container = ta.closest('.group') || ta;
+                const containerRect = container.getBoundingClientRect();
+                const bottomDist = containerRect.bottom - caretScreenY + 4;
                 setCaretXY({ bottom: bottomDist, top: 'auto', left });
             } else {
                 setCaretXY({ top: top + LINE_HEIGHT_CAMPAIGN + 4, bottom: 'auto', left });

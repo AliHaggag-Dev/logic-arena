@@ -77,16 +77,4 @@ export function drawRobot(
   ctx.fillStyle = robot.color;
   ctx.beginPath(); ctx.arc(0, 0, r * 0.28, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
-
-  const bw = r * 3, bh = 3, bx = px - bw / 2, by = py - r * 2 - bh;
-  const hp = robot.health / robot.maxHealth;
-  ctx.save(); ctx.globalAlpha = a;
-  ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(bx, by, bw, bh);
-  ctx.fillStyle = hp > 0.5 ? '#22d3ee' : hp > 0.25 ? '#f59e0b' : '#ef4444';
-  ctx.fillRect(bx, by, bw * hp, bh);
-  const ep = robot.energy / robot.maxEnergy;
-  ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(bx, by - 5, bw, 2);
-  ctx.fillStyle = ep > 0.5 ? '#a78bfa' : ep > 0.25 ? '#f59e0b' : '#ef4444';
-  ctx.fillRect(bx, by - 5, bw * ep, 2);
-  ctx.restore();
 }

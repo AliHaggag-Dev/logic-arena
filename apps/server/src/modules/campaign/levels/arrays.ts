@@ -14,8 +14,8 @@ export const ARRAYS_LEVELS: CampaignLevel[] = [
     description:
       'It processes a hardcoded movement array: [1, 0, -1, 0]. Positive means move forward, negative means backup, zero means stop and fire. A fixed sequence of physical actions you must decode.',
     hints: [
-      'The pattern is move, shoot, backup, shoot. It repeats every 4 ticks. Exploit the backup phase.',
-      'On tick 2 (index 1) and tick 4 (index 3) it fires (cmd == 0). On tick 3 (index 2) it backs up — this is your safest advance window. The backup tick puts distance between you and its aim.',
+      'The pattern is move, shoot, backup, shoot. It repeats every 4 seconds. Exploit the backup phase.',
+      'On second 2 (index 1) and second 4 (index 3) it fires (cmd == 0). On second 3 (index 2) it backs up — this is your safest advance window. The backup second puts distance between you and its aim.',
       'Approach during the backup tick (cmd == -1, index 2). Your script: SET t = t + 1, track t%4. When t%4 == 2, advance and FIRE. When t%4 == 3 (its fire tick), strafe to dodge.',
     ],
     enemyScript: `IF NOT init THEN
@@ -57,7 +57,7 @@ END`,
       'It reads from a strafe direction array: [1, 1, -1, -1]. It strafes right twice, then left twice, firing if you are visible. A choreographed lateral dance.',
     hints: [
       'The array dictates its strafe. Follow its lateral movement and anticipate the reversal.',
-      'It fires every tick you are visible — the strafe array only changes its movement direction, not its fire rate. Strafe in the SAME direction as the enemy: you both move right, creating a parallel path that is hard for its rotation to track.',
+      'It fires every second you are visible — the strafe array only changes its movement direction, not its fire rate. Strafe in the SAME direction as the enemy: you both move right, creating a parallel path that is hard for its rotation to track.',
       'Counter-strafe strategy: when it strafes right (index 0-1), strafe left. When it goes left (index 2-3), strafe right. You cross its aim vector and its rotation lags behind. Use: SET _SYS_STRAFE = -1 when it strafes right.',
     ],
     enemyScript: `IF NOT init THEN
@@ -135,8 +135,8 @@ END`,
       'Its fire pattern is encoded in an array: [2, 1, 3, 1]. Each value is the number of shots it fires per cycle. Four cycles, variable intensity. It locks FOV and strafes while bursting.',
     hints: [
       'Cycle 3 fires 3 shots — the heaviest burst. Dodge during cycle 3, attack during cycles 2 and 4.',
-      'Cycle 2 fires only 1 shot — the lightest. Cycle 4 also fires 1 shot. These are your best attack windows. After cycle 3\'s 3 shots, there\'s a movement tick before cycle 4 begins — use that transition.',
-      'Track the cycle index in your own counter. Cycle durations: 2,1,3,1 shots + 1 transition tick each = 4+4+4+4 = 16 total ticks per full cycle. Attack during cycles with bursts[i]==1 (lightest fire cycles).',
+      'Cycle 2 fires only 1 shot — the lightest. Cycle 4 also fires 1 shot. These are your best attack windows. After cycle 3\'s 3 shots, there\'s a movement second before cycle 4 begins — use that transition.',
+      'Track the cycle index in your own counter. Cycle durations: 2,1,3,1 shots + 1 transition second each = 4+4+4+4 = 16 total seconds per full cycle. Attack during cycles with bursts[i]==1 (lightest fire cycles).',
     ],
     enemyScript: `IF NOT init THEN
   SET bursts = [2, 1, 3, 1]
@@ -268,8 +268,8 @@ END`,
       'A multi-dimensional speed multiplier matrix: [0.5, 1.0, 2.0, 1.0]. It iterates this array to modulate its target speed. At 2.0 speed, it also activates burst fire. You must survive the overdrive cycle.',
     hints: [
       'Cycle 3 is speed 2.0 + burst fire. Predict the tempo changes and prepare for the sudden rush.',
-      'Each speed phase lasts exactly 5 ticks (tick counter > 5 advances index). Phase sequence: 30 ticks total. Overdrive (index 2, mults[2]=2.0) is ticks 11-15. Retreat away from the enemy 5 ticks BEFORE overdrive begins.',
-      'Phase timing: index 0 (slow, 0.5x) = ticks 1-5, index 1 (normal) = 6-10, index 2 (overdrive 2x + burst) = 11-15, index 3 (normal) = 16-20, then reset. Start your attack at tick 16 when overdrive ends.',
+      'Each speed phase lasts exactly 5 seconds (second counter > 5 advances index). Phase sequence: 30 seconds total. Overdrive (index 2, mults[2]=2.0) is seconds 11-15. Retreat away from the enemy 5 seconds BEFORE overdrive begins.',
+      'Phase timing: index 0 (slow, 0.5x) = seconds 1-5, index 1 (normal) = 6-10, index 2 (overdrive 2x + burst) = 11-15, index 3 (normal) = 16-20, then reset. Start your attack at second 16 when overdrive ends.',
     ],
     enemyScript: `IF NOT init THEN
   SET mults = [0.5, 1, 2, 1]
@@ -319,7 +319,7 @@ END`,
     hints: [
       'Index 3 has radius -80 (tight counter-clockwise orbit) and fires 3 shots. Break line of sight when it tightens the circle.',
       'Index 1 has radius -100 (wide CCW orbit) and fires 2 shots. Index 2 has radius 150 (wide CW orbit) and fires 1 shot — this is the lightest burst. Time your heavy attack during index 2.',
-      'Each index phase lasts counts[idx] shots before advancing. Total shots before cycling: 1+2+1+3 = 7. After the 7th shot (index 3 done), a movement tick resets to index 0. Attack during that reset tick and during index 2 (1 shot only).',
+      'Each index phase lasts counts[idx] shots before advancing. Total shots before cycling: 1+2+1+3 = 7. After the 7th shot (index 3 done), a movement second resets to index 0. Attack during that reset second and during index 2 (1 shot only).',
     ],
     enemyScript: `IF NOT init THEN
   SET radii = [80, -100, 150, -80]
@@ -366,7 +366,7 @@ END`,
       'It stores your last 5 detected distances in a circular buffer array. It computes the average. If the average is decreasing (you are approaching), it reverses defense mode and orbits outwards. If you are fleeing, it speeds up to chase. A sliding-window temporal analysis algorithm.',
     hints: [
       'It calculates average distance over time. Approach erratically to corrupt its ring buffer and prevent it from adopting an optimal combat stance.',
-      'The buffer fills over the first 5 ticks. During fill (filled < 5), it uses standard fire. Only after tick 5 does it start orbit-switching. Exploit this early window: rush it in the first 5 ticks for maximum damage while it is in simple mode.',
+      'The buffer fills over the first 5 seconds. During fill (filled < 5), it uses standard fire. Only after second 5 does it start orbit-switching. Exploit this early window: rush it in the first 5 seconds for maximum damage while it is in simple mode.',
       'After the buffer fills: maintain a constant distance (prev_avg == avg). It will neither BURST orbit outward nor speed-chase. Hold a steady 200-bot range. Use: IF distance > 220 THEN MOVE ELSE IF distance < 180 THEN BACKUP END and FIRE each tick.',
     ],
     enemyScript: `IF NOT init THEN

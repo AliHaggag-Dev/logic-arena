@@ -47,11 +47,26 @@ export function executeStatement(
             const dx = tx - robot.x;
             const dy = ty - robot.y;
             const dist = Math.hypot(dx, dy);
-            const RAIL_SNAP = 0.02;
+            
+            // LOGIC ARENA V10 - DEV CACHE BUSTER
+            // 0.03125 is 25 pixels, matches server-side Math.max(25, speed * 0.15)
+            const RAIL_SNAP = 0.03125;
 
             if (dist < RAIL_SNAP) {
-              robot.x = tx;
-              robot.y = ty;
+              // Only snap position if it wouldn't cause overlap with the player
+              const enemyDist = enemy.isAlive ? Math.hypot(enemy.x - tx, enemy.y - ty) : 1;
+              if (enemyDist > 0.05) {
+                robot.x = tx;
+                robot.y = ty;
+              }
+              
+              // Ensure we face the enemy if they are nearby, so FOV check passes for FIRE
+              if (enemy.isAlive && Math.hypot(enemy.x - robot.x, enemy.y - robot.y) < 0.25) {
+                robot.angle = Math.atan2(enemy.y - robot.y, enemy.x - robot.x);
+              } else {
+                robot.angle = Math.atan2(dy, dx);
+              }
+              
               state.vars['_SYS_AT_TARGET'] = 1;
               return { type: 'stop', value: 0 };
             } else {

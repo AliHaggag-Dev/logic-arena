@@ -55,24 +55,9 @@ export function applyAction(
       break;
     }
     case 'move': {
-      const spd = action.fast ? 0.025 : 0.012;
-      switch (action.value) {
-        case -2:
-          robot.x -= Math.cos(robot.angle) * spd;
-          robot.y -= Math.sin(robot.angle) * spd;
-          break;
-        case -1:
-          robot.x -= Math.cos(robot.angle + Math.PI / 2) * spd;
-          robot.y -= Math.sin(robot.angle + Math.PI / 2) * spd;
-          break;
-        case 1:
-          robot.x += Math.cos(robot.angle + Math.PI / 2) * spd;
-          robot.y += Math.sin(robot.angle + Math.PI / 2) * spd;
-          break;
-        default:
-          robot.x += Math.cos(robot.angle) * spd;
-          robot.y += Math.sin(robot.angle) * spd;
-      }
+      // NOTE: We no longer instantly teleport the robot by `spd`.
+      // The `ArenaCanvas` takes care of moving the robot smoothly based on `_lastMoveValue` and `_lastMoveAngle`.
+      // We only enforce bounding box constraints here to prevent the robot from going out of bounds.
       robot.x = Math.max(ROBOT_SIZE, Math.min(1 - ROBOT_SIZE, robot.x));
       robot.y = Math.max(ROBOT_SIZE, Math.min(1 - ROBOT_SIZE, robot.y));
       break;

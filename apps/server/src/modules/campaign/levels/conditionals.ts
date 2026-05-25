@@ -49,12 +49,12 @@ END`,
     title: 'MIRROR SCRIPT',
     difficulty: 'EASY',
     pointsReward: D.EASY,
-    conceptTaught: 'State-flipping with tick counter',
+    conceptTaught: 'State-flipping with second counter',
     description:
-      'This bot alternates between two states every 5 ticks: LEFT-PATROL and RIGHT-PATROL. During LEFT-PATROL it moves left and fires if it sees you. During RIGHT-PATROL it moves right and scans. You can easily beat it by attacking when it is moving away.',
+      'This bot alternates between two states every 5 seconds: LEFT-PATROL and RIGHT-PATROL. During LEFT-PATROL it moves left and fires if it sees you. During RIGHT-PATROL it moves right and scans. You can easily beat it by attacking when it is moving away.',
     hints: [
-      'The state flips every 5 ticks. After it fires while moving left, it will move right for 5 ticks without firing. Strike during RIGHT-PATROL.',
-      'Count ticks mentally: once it starts RIGHT-PATROL (moving right), you have exactly 5 ticks of no fire. Approach aggressively during those 5 ticks and retreat before it flips back.',
+      'The state flips every 5 seconds. After it fires while moving left, it will move right for 5 seconds without firing. Strike during RIGHT-PATROL.',
+      'Count seconds mentally: once it starts RIGHT-PATROL (moving right), you have exactly 5 seconds of no fire. Approach aggressively during those 5 seconds and retreat before it flips back.',
       'Use a counter in your script: SET t = t + 1. On every other 5-tick window, commit to a burst attack. Pattern: wait 5 ticks → attack 5 ticks → repeat.',
     ],
     enemyScript: `IF NOT init THEN
@@ -315,11 +315,11 @@ END`,
     pointsReward: D.HARD,
     conceptTaught: 'Threat level accumulator with decay',
     description:
-      'It tracks a threat_level counter. Each tick it sees you: threat_level += 1 (max 5). Each tick it does not: threat_level -= 1 (min 0). Behavior scales with threat_level: 0 = patrol, 1-2 = cautious scan, 3-4 = aggressive pursuit + fire, 5 = berserker orbit + burst. It remembers you even when you hide.',
+      'It tracks a threat_level counter. Each second it sees you: threat_level += 1 (max 5). Each second it does not: threat_level -= 1 (min 0). Behavior scales with threat_level: 0 = patrol, 1-2 = cautious scan, 3-4 = aggressive pursuit + fire, 5 = berserker orbit + burst. It remembers you even when you hide.',
     hints: [
-      'threat_level decays by 1 per tick out of sight. Stay hidden for 5 ticks to fully reset it. Attack precisely when threat_level is at 0.',
-      'After every 1-2 shots, break line of sight for 5+ ticks. The decay brings it back to patrol (level 0). Then you can step out and engage at maximum disadvantage to it.',
-      'Use obstacles or arena corners to break LOS. Pattern: expose for 2 ticks (fire 2x) → hide for 6 ticks (full decay) → repeat. This keeps threat_level from ever reaching 3.',
+      'threat_level decays by 1 per second out of sight. Stay hidden for 5 seconds to fully reset it. Attack precisely when threat_level is at 0.',
+      'After every 1-2 shots, break line of sight for 5+ seconds. The decay brings it back to patrol (level 0). Then you can step out and engage at maximum disadvantage to it.',
+      'Use obstacles or arena corners to break LOS. Pattern: expose for 2 seconds (fire 2x) → hide for 6 seconds (full decay) → repeat. This keeps threat_level from ever reaching 3.',
     ],
     enemyScript: `IF NOT init THEN
   SET threat = 0
@@ -369,7 +369,7 @@ END`,
     pointsReward: D.EXTREME,
     conceptTaught: '4-deep nested conditional with energy gating',
     description:
-      'It evaluates a 4-deep decision tree every tick using: visibility, distance, health, AND energy. Each variable gates a deeper branch. The deepest branch (all conditions met) triggers speed-boosted orbit with burst fire and FOV lock. Missing ANY condition downgrades to a weaker branch. It has many different ways to react.',
+      'It evaluates a 4-deep decision tree every second using: visibility, distance, health, AND energy. Each variable gates a deeper branch. The deepest branch (all conditions met) triggers speed-boosted orbit with burst fire and FOV lock. Missing ANY condition downgrades to a weaker branch. It has many different ways to react.',
     hints: [
       'The kill branch requires: visible + close + high HP + high energy. Drain its energy by forcing repeated scans, then attack when it falls to a weaker branch.',
       'Stay visible but at distance > 200. At this range it cannot enter the inner high-health branch — it can only fire or scan. Use this outer zone to chip its HP below 40 safely.',
@@ -430,8 +430,8 @@ END`,
     description:
       'The Arbiter runs a priority encoder across 4 dimensions: visibility count, distance, health ratio, and a tick-based phase counter. It evaluates nested IF chains where each outer condition gates the next inner check. The highest priority branch (4-deep) triggers orbiting burst fire with speed boost and independent FOV tracking. Each missing condition drops it one tier. It has 5 different behaviors that change constantly.',
     hints: [
-      'Its phase counter cycles 0-9 every 10 ticks. On phases 0-2 it prioritizes defense regardless of other conditions — that is your attack window.',
-      'Phases 0-2: it backs up at 1.3x speed and fires defensively. These 3 ticks repeat every 10 ticks. At phase 3+ it tries to orbit. Land your heaviest burst during phases 0-2.',
+      'Its phase counter cycles 0-9 every 10 seconds. On phases 0-2 it prioritizes defense regardless of other conditions — that is your attack window.',
+      'Phases 0-2: it backs up at 1.3x speed and fires defensively. These 3 seconds repeat every 10 seconds. At phase 3+ it tries to orbit. Land your heaviest burst during phases 0-2.',
       'Count ticks: SET t = t + 1. On t%10 < 3 (phases 0-2), attack relentlessly — BURST_FIRE or rapid FIRE. On t%10 >= 3, retreat to 160+ range to break its orbit conditions.',
     ],
     enemyScript: `IF NOT init THEN

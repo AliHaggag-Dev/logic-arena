@@ -169,7 +169,11 @@ export class MovementExecutor {
       const dx = tx - robot.position.x;
       const dy = ty - robot.position.y;
       const dist = Math.hypot(dx, dy);
-      const RAIL_SNAP = 5; // 5 pixels — matches pixel-space coordinates
+      
+      // The logic evaluates every 6 physics ticks (0.1s).
+      // At speed=150, it moves 15px per logic tick. 
+      // If RAIL_SNAP is too small (e.g. 5), it steps over it, oscillating forever.
+      const RAIL_SNAP = Math.max(25, speed * 0.15); 
 
       if (dist < RAIL_SNAP) {
         // Snap exactly to target to prevent jitter

@@ -63,7 +63,7 @@ END`,
       'It patrols a cyclic graph representing a square: A → B → C → D → A. It fires continuously along the edges, but must pause at the nodes to re-orient. A Hamiltonian cycle execution.',
     hints: [
       'It is dangerous along the edges. It stops at the corners (nodes) to turn. Attack the corners.',
-      'At each corner it pauses (SCAN, no FIRE). The corner coordinates are (400,300), (520,180), (640,330), (560,450). Stay near any corner — it will scan-pause there and you have a free attack tick.',
+      'At each corner it pauses (SCAN, no FIRE). The corner coordinates are (400,300), (520,180), (640,330), (560,450). Stay near any corner — it will scan-pause there and you have a free attack second.',
       'Best corner to camp: (560,450) — the bottom-right node. Wait there. As it arrives, it scans without firing. Fire once during the scan, then strafe away before it resumes edge-travel fire on the next leg.',
     ],
     enemyScript: `IF NOT init THEN
@@ -358,7 +358,7 @@ MOVE`,
       'It visits dependency nodes. Node 1 unlocks Node 2. Node 2 unlocks Node 3. It must visit them in order. As it unlocks higher nodes, its weapon power increases from single to burst to sustained barrage. A directed progression of power.',
     hints: [
       'Node 3 is its maximum power state. Ambush it at Node 1 (400, 300) before it scales up.',
-      'Tier < 2 means it uses single FIRE. Tier >= 2 triggers BURST_FIRE. Destroy it before it visits node index 2 (at position [640,330]). That is 2 node visits from the start. Rush aggressive DPS from tick 1.',
+      'Tier < 2 means it uses single FIRE. Tier >= 2 triggers BURST_FIRE. Destroy it before it visits node index 2 (at position [640,330]). That is 2 node visits from the start. Rush aggressive DPS from second 1.',
       'It starts at node 0 (400,300). It fires ONLY when VISIBLE — go visible immediately and engage. High DPS script: IF VISIBLE_ENEMY_COUNT > 0 THEN SET rotation = ATAN2(...), FIRE, MOVE END, BACKUP for distance control. Kill before tier hits 2.',
     ],
     enemyScript: `IF NOT init THEN
@@ -456,8 +456,8 @@ MOVE`,
       'The Oracle is an adversarial graph processor. It maps the arena into a 3x3 grid. It assigns a "threat probability" to each grid cell based on your previous movements. It then jumps to the highest probability cell, locks it down with a tight orbit, and unleashes its maximum payload. If it guesses wrong, it immediately repositions. You cannot hide; you can only out-think its probability map.',
     hints: [
       'It predicts where you will be based on where you have been. Reverse your momentum. If you move left for 2 seconds, it will target the left grid. Snap back right.',
-      'The 3x3 grid cells: X-axis split at 266/533, Y-axis at 200/400. The cell indices go 0-8 (row by row). The oracle orbits the CENTER of the highest-probability cell. Move between cells rapidly — after 2-3 ticks in a new cell you can be sure it will redirect.',
-      'Deception strategy: spend 3 ticks in cell 0 (top-left: 0-266, 0-200), then immediately snap to cell 8 (bottom-right: 533-800, 400-600). The oracle commits to orbiting cell 0 — by the time it arrives you are in cell 8. Attack from cell 8 while it orbits the wrong area.',
+      'The 3x3 grid cells: X-axis split at 266/533, Y-axis at 200/400. The cell indices go 0-8 (row by row). The oracle orbits the CENTER of the highest-probability cell. Move between cells rapidly — after 2-3 seconds in a new cell you can be sure it will redirect.',
+      'Deception strategy: spend 3 seconds in cell 0 (top-left: 0-266, 0-200), then immediately snap to cell 8 (bottom-right: 533-800, 400-600). The oracle commits to orbiting cell 0 — by the time it arrives you are in cell 8. Attack from cell 8 while it orbits the wrong area.',
     ],
     enemyScript: `IF NOT init THEN
   SET grid = [0,0,0,0,0,0,0,0,0]

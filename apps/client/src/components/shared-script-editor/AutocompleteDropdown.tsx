@@ -47,7 +47,7 @@ export const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
             <div className="px-3 py-1.5 border-b border-accent/20 flex items-center gap-2 shrink-0">
                 <span className={headerClass}>ALISCRIPT INTELLISENSE</span>
             </div>
-            <div ref={listRef} className="overflow-y-auto flex-1 custom-scrollbar">
+            <div ref={listRef} className="overflow-y-auto flex-1 min-h-0 custom-scrollbar">
             {suggestions.map((s, i) => (
                 <button
                     key={s.label}

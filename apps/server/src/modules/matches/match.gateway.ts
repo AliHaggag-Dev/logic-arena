@@ -93,6 +93,11 @@ export class MatchGateway
           const ci = this.campaignIntervals.get(client.userId!);
           if (ci) { clearInterval(ci); this.campaignIntervals.delete(client.userId!); }
           await this.redisService.del(`user:online:${client.userId}`);
+          
+          if (!client.isSpectator) {
+            this.server.to(LEADERBOARD_ROOM).emit('userStatusUpdate', { userId: client.userId, status: 'idle', isOnline: false });
+          }
+          this.cleanupManager.schedule(client.userId!);
         }
       }, 2000);
     }
@@ -103,13 +108,6 @@ export class MatchGateway
         this.state.userStatus.set(client.userId, { status: 'idle' });
         this.server.to(LEADERBOARD_ROOM).emit('userStatusUpdate', { userId: client.userId, status: 'idle' });
       }
-      if (isActuallyOffline) {
-        this.server.to(LEADERBOARD_ROOM).emit('userStatusUpdate', { userId: client.userId, status: 'idle', isOnline: false });
-      }
-    }
-
-    if (client.userId && isActuallyOffline) {
-      this.cleanupManager.schedule(client.userId);
     }
 
     if (client.matchId && this.state.matches.has(client.matchId)) {

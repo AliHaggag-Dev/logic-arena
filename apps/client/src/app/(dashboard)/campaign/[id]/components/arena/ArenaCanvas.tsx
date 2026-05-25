@@ -321,7 +321,9 @@ export const ArenaCanvas = memo(function ArenaCanvas({
           runtimeRobot._fireCooldown = (runtimeRobot._fireCooldown ?? 0) - 1;
         }
         if (robot.isAlive && runtimeRobot._lastMoveAngle !== undefined) {
-          const PER_FRAME_SPD = runtimeRobot._lastMoveFast ? 0.004 : 0.002;
+          // Normal speed: 150/800/60 = 0.003125
+          // Fast speed: 220/800/60 = 0.004583
+          const PER_FRAME_SPD = runtimeRobot._lastMoveFast ? 0.004583 : 0.003125;
           const v = runtimeRobot._lastMoveValue ?? 0;
           if (v === -2) {
             robot.x -= Math.cos(robot.angle) * PER_FRAME_SPD;
