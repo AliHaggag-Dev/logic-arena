@@ -12,7 +12,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Eye, EyeOff, Rocket } from "lucide-react";
+import { Eye, EyeOff, Plus, Rocket } from "lucide-react";
 import { BlockCanvas } from "./BlockCanvas";
 import { BlockPalette } from "./BlockPalette";
 import { generateScript } from "./blockToScript";
@@ -192,9 +192,6 @@ export function BlockEditor({
   const [activePaletteType, setActivePaletteType] = useState<BlockType | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: DRAG_DISTANCE_PX } }));
   const generatedScript = useMemo(() => generateScript(blocks), [blocks]);
-  const statusLine = scriptInput.trim()
-    ? "Text script stays until you deploy blocks."
-    : "Build your logic below, then deploy to the robot.";
 
   const addBlock = (type: BlockType): void => setBlocks((current) => insertBlock(current, "root", createBlock(type)));
 
@@ -253,7 +250,7 @@ export function BlockEditor({
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="relative flex min-h-0 w-full flex-1 flex-col gap-2 overflow-hidden">
         <header
-          className="flex shrink-0 items-center justify-between gap-3 rounded-2xl px-3 py-2.5"
+          className="flex shrink-0 items-center gap-2 rounded-2xl p-1.5"
           style={{
             background: "color-mix(in srgb, var(--card) 10%, rgba(var(--arena-black-rgb),0.45))",
             border: "1px solid rgba(var(--arena-white-rgb),0.1)",
@@ -261,33 +258,43 @@ export function BlockEditor({
             backdropFilter: "blur(16px)",
           }}
         >
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold" style={{ color: "var(--arena-white)" }}>
-              Block Editor
-            </p>
-            <p className="truncate text-[10px]" style={{ color: "rgba(var(--arena-white-rgb),0.48)" }}>
-              {statusLine}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex min-w-0 gap-1.5">
             <button
               type="button"
+              aria-label="Add command"
+              title="Add command"
+              onClick={() => setIsPaletteOpen(true)}
+              className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-200 active:scale-[0.98]"
+              style={{
+                color: "var(--arena-bg-dark)",
+                background: "var(--arena-cyan)",
+                border: "1px solid rgba(var(--arena-white-rgb),0.18)",
+                boxShadow: "0 6px 18px rgba(var(--arena-cyan-rgb),0.22)",
+              }}
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              aria-label={previewOpen ? "Hide preview" : "Show preview"}
+              title={previewOpen ? "Hide preview" : "Show preview"}
               onClick={() => setPreviewOpen((open) => !open)}
               aria-pressed={previewOpen}
-              className="flex min-h-10 items-center gap-1.5 rounded-xl px-3 text-[10px] font-semibold transition-colors duration-200"
+              className="flex h-11 w-11 items-center justify-center rounded-xl transition-colors duration-200"
               style={{
                 color: previewOpen ? "var(--arena-bg-dark)" : "rgba(var(--arena-white-rgb),0.78)",
                 background: previewOpen ? "var(--arena-cyan)" : "rgba(var(--arena-white-rgb),0.06)",
                 border: "1px solid rgba(var(--arena-white-rgb),0.12)",
               }}
             >
-              {previewOpen ? <EyeOff className="h-3.5 w-3.5" aria-hidden="true" /> : <Eye className="h-3.5 w-3.5" aria-hidden="true" />}
-              Preview
+              {previewOpen ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
             </button>
+          </div>
+          <div className="min-w-0 flex-1">
             <button
               type="button"
               onClick={deploy}
-              className="flex min-h-10 items-center gap-1.5 rounded-xl px-3.5 text-[10px] font-semibold transition-transform duration-200 active:scale-[0.98]"
+              className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl px-3.5 text-[10px] font-semibold transition-transform duration-200 active:scale-[0.98]"
               style={{
                 color: "var(--arena-bg-dark)",
                 background: "linear-gradient(135deg, var(--arena-green), color-mix(in srgb, var(--arena-green) 78%, var(--arena-cyan)))",
@@ -316,7 +323,6 @@ export function BlockEditor({
         )}
 
         <div className="flex w-full min-h-0 flex-1 flex-col overflow-hidden">
-          {/* Main Canvas Area */}
           <div
             className="flex-1 min-h-0 overflow-hidden rounded-2xl"
             style={{ border: "1px solid rgba(var(--arena-white-rgb),0.08)" }}
@@ -324,26 +330,10 @@ export function BlockEditor({
             <BlockCanvas blocks={blocks} onInputChange={changeInput} onAddChild={addChild} onDelete={deleteBlock} />
           </div>
 
-          {/* Floating Action Button */}
-          <button
-            type="button"
-            onClick={() => setIsPaletteOpen(true)}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-black tracking-wide transition-transform duration-300 active:scale-95 shadow-xl"
-            style={{
-              color: "rgba(10,10,15,1)",
-              background: "var(--arena-cyan)",
-              boxShadow: "0 8px 32px rgba(var(--arena-cyan-rgb), 0.4), inset 0 2px 0 rgba(255,255,255,0.4)",
-              border: "none",
-              zIndex: 40,
-            }}
-          >
-            <span className="text-xl leading-none -mt-0.5">+</span> Add Command
-          </button>
         </div>
 
-        {/* Slide-Up Palette Drawer */}
         <div
-          className={`absolute inset-0 z-50 flex w-full flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${!isPaletteOpen ? 'pointer-events-none' : ''}`}
+          className={`absolute inset-0 z-50 flex w-full flex-col transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${!isPaletteOpen ? "pointer-events-none" : ""}`}
           style={{
             transform: isPaletteOpen ? "translateY(0)" : "translateY(100%)",
           }}

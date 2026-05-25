@@ -71,7 +71,7 @@ function NumberInput({
       value={value}
       min={0}
       onChange={(event) => onChange(Number(event.target.value))}
-      className="min-h-10 rounded-xl px-2.5 text-[10px] font-medium outline-none"
+      className="min-h-11 w-full rounded-xl px-3 text-[11px] font-medium outline-none"
       style={{
         minWidth: NUMBER_INPUT_MIN_WIDTH_PX,
         background: "rgba(var(--arena-white-rgb),0.1)",
@@ -211,14 +211,14 @@ export function Block({
   return (
     <div ref={setNodeRef} style={style} className="min-w-0 touch-manipulation">
       <div
-        className="rounded-2xl p-2"
+        className="rounded-2xl p-2.5"
         style={{
           background: "color-mix(in srgb, var(--card) 8%, rgba(var(--arena-black-rgb),0.42))",
           border: "1px solid rgba(var(--arena-white-rgb),0.1)",
           boxShadow: "inset 0 1px 0 rgba(var(--arena-white-rgb),0.05)",
         }}
       >
-        <div className="grid min-h-11 grid-cols-[auto_minmax(4rem,auto)_1fr_auto] items-center gap-2">
+        <div className="grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
           <button
             type="button"
             aria-label={`Drag ${definition.label} block`}
@@ -236,10 +236,15 @@ export function Block({
           >
             ⋮⋮
           </button>
-          <span className="truncate font-mono text-[11px] font-semibold" style={{ color: definition.colorVar }}>
-            {definition.label}
-          </span>
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <div className="min-w-0">
+            <span className="block truncate font-mono text-[12px] font-semibold" style={{ color: definition.colorVar }}>
+              {definition.label}
+            </span>
+            <span className="block truncate text-[10px]" style={{ color: "rgba(var(--arena-white-rgb),0.48)" }}>
+              {definition.description}
+            </span>
+          </div>
+          <div className="order-last col-span-full grid min-w-0 grid-cols-1 gap-2">
             <InputControls block={block} onInputChange={onInputChange} />
           </div>
           <button
@@ -265,22 +270,26 @@ export function Block({
             className="mt-2 flex flex-col gap-2 rounded-xl p-2"
             style={{ borderLeft: `2px solid ${definition.colorVar}`, background: "rgba(var(--arena-white-rgb),0.04)" }}
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-medium" style={{ color: "rgba(var(--arena-white-rgb),0.62)" }}>
-                Then
-              </span>
+            <div className="flex flex-col gap-2">
+              <div>
+                <span className="block text-[11px] font-semibold" style={{ color: "rgba(var(--arena-white-rgb),0.78)" }}>
+                  Then
+                </span>
+                <span className="block text-[10px]" style={{ color: "rgba(var(--arena-white-rgb),0.45)" }}>
+                  Runs when the condition is true
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => onAddChild(block.id, "children", "MOVE")}
-                className="rounded-lg px-3 text-[10px] font-semibold"
+                className="min-h-11 rounded-lg px-3 text-[10px] font-semibold"
                 style={{
-                  minHeight: ACTION_BUTTON_SIZE_PX,
                   color: "var(--arena-white)",
                   background: "rgba(var(--arena-white-rgb),0.08)",
                   border: "1px solid rgba(var(--arena-white-rgb),0.12)",
                 }}
               >
-                + Add block
+                + Add to Then
               </button>
             </div>
             {childContent}
@@ -289,22 +298,26 @@ export function Block({
 
         {definition.childSlots === "thenElse" && (
           <div className="mt-2 flex flex-col gap-2 rounded-xl p-2" style={{ borderLeft: "2px solid var(--arena-amber)", background: "rgba(var(--arena-white-rgb),0.04)" }}>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-medium" style={{ color: "rgba(var(--arena-amber-rgb),0.85)" }}>
-                Else
-              </span>
+            <div className="flex flex-col gap-2">
+              <div>
+                <span className="block text-[11px] font-semibold" style={{ color: "rgba(var(--arena-amber-rgb),0.9)" }}>
+                  Else
+                </span>
+                <span className="block text-[10px]" style={{ color: "rgba(var(--arena-white-rgb),0.45)" }}>
+                  Runs when the condition is false
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => onAddChild(block.id, "elseChildren", "SCAN")}
-                className="rounded-lg px-3 text-[10px] font-semibold"
+                className="min-h-11 rounded-lg px-3 text-[10px] font-semibold"
                 style={{
-                  minHeight: ACTION_BUTTON_SIZE_PX,
                   color: "var(--arena-white)",
                   background: "rgba(var(--arena-white-rgb),0.08)",
                   border: "1px solid rgba(var(--arena-white-rgb),0.12)",
                 }}
               >
-                + Add block
+                + Add to Else
               </button>
             </div>
             {elseContent}

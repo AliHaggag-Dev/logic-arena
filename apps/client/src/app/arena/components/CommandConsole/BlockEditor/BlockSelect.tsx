@@ -35,7 +35,7 @@ export function BlockSelect({ label, value, options, onChange }: BlockSelectProp
   return (
     <div
       ref={containerRef}
-      className="relative min-w-[120px] max-w-full"
+      className="relative w-full min-w-0 max-w-full"
     >
       <button
         type="button"
@@ -43,7 +43,7 @@ export function BlockSelect({ label, value, options, onChange }: BlockSelectProp
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         onClick={() => setIsOpen((open) => !open)}
-        className="flex min-h-10 w-full items-center justify-between gap-2 rounded-xl px-2.5 text-left transition-[border-color,box-shadow,background] duration-200"
+        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl px-3 text-left transition-[border-color,box-shadow,background] duration-200"
         style={{
           color: "var(--arena-white)",
           background: isOpen ? "rgba(var(--arena-cyan-rgb),0.1)" : "rgba(var(--arena-white-rgb),0.06)",
@@ -51,7 +51,7 @@ export function BlockSelect({ label, value, options, onChange }: BlockSelectProp
           boxShadow: isOpen ? "0 0 0 3px rgba(var(--arena-cyan-rgb),0.08)" : "inset 0 1px 0 rgba(var(--arena-white-rgb),0.06)",
         }}
       >
-        <span className="truncate font-mono text-[10px] font-medium">{value}</span>
+        <span className="truncate font-mono text-[11px] font-medium">{value}</span>
         <ChevronDown
           className="h-3.5 w-3.5 shrink-0 transition-transform duration-200"
           style={{
@@ -94,7 +94,7 @@ export function BlockSelect({ label, value, options, onChange }: BlockSelectProp
                     background: isSelected ? "rgba(var(--arena-cyan-rgb),0.12)" : "transparent",
                   }}
                 >
-                  <span className="truncate font-mono text-[10px] font-medium">{option}</span>
+                  <span className="truncate font-mono text-[11px] font-medium">{option}</span>
                 </button>
               );
             })}

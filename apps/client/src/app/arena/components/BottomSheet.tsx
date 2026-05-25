@@ -98,7 +98,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       >
         {/* Drag Handle */}
         <div
-          className="w-full flex flex-col items-center pt-2 pb-1 cursor-grab active:cursor-grabbing shrink-0"
+          className="flex w-full shrink-0 cursor-grab flex-col items-center pb-0.5 pt-1.5 active:cursor-grabbing"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -111,22 +111,19 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
         {/* Header */}
         <div
-          className="flex shrink-0 items-center justify-between border-b px-3 pb-2.5 pt-0.5"
+          className="flex shrink-0 items-center justify-between border-b px-3 py-1"
           style={{ borderColor: "rgba(var(--arena-white-rgb),0.08)" }}
         >
-          <div>
-            <p className="text-xs font-semibold" style={{ color: "var(--arena-white)" }}>
+          <div className="min-w-0">
+            <p className="truncate text-xs font-semibold" style={{ color: "var(--arena-white)" }}>
               {title}
-            </p>
-            <p className="text-[10px]" style={{ color: "rgba(var(--arena-white-rgb),0.45)" }}>
-              Visual block editor
             </p>
           </div>
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-sm transition-colors duration-200"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-sm transition-colors duration-200"
             style={{
               color: "rgba(var(--arena-white-rgb),0.55)",
               background: "rgba(var(--arena-white-rgb),0.06)",
@@ -139,7 +136,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
         {/* Content — fills remaining space with flex-1 + overflow scroll */}
         <div
-          className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 py-3"
+          className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 py-2"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {children}
