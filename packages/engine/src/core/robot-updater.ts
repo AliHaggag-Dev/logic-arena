@@ -50,6 +50,7 @@ export function updateRobotPhysics(
 
   // --- Reset per-tick transient flags ---
   robot.insideLava = false;
+  robot.insideIcePatch = false;
   robot.speedMultiplier = 1.0;
 
   // Boundary + Obstacle Collisions

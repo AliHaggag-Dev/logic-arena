@@ -89,14 +89,19 @@ export function checkObstacleCollision(robot: Robot, obstacle: Obstacle): void {
     return;
   }
 
-  // --- TRAP / LAVA: Walkable zones — AABB center-point overlap only ---
+  // --- TRAP / LAVA: Walkable zones — OBB (oriented bounding box) center-point overlap ---
   // Robots walk through these zones; no push-out is applied.
+  // Properly accounts for obstacle rotation so collision matches visual rendering.
+  const dx = robot.position.x - obstacle.position.x;
+  const dy = robot.position.y - obstacle.position.y;
+  const cos = Math.cos(-obstacle.rotation);
+  const sin = Math.sin(-obstacle.rotation);
+  const localX = dx * cos - dy * sin;
+  const localY = dx * sin + dy * cos;
   const halfW = obstacle.width / 2;
   const halfH = obstacle.height / 2;
-  const insideX = robot.position.x >= obstacle.position.x - halfW &&
-                  robot.position.x <= obstacle.position.x + halfW;
-  const insideY = robot.position.y >= obstacle.position.y - halfH &&
-                  robot.position.y <= obstacle.position.y + halfH;
+  const insideX = localX >= -halfW && localX <= halfW;
+  const insideY = localY >= -halfH && localY <= halfH;
 
   if (!insideX || !insideY) return;
 

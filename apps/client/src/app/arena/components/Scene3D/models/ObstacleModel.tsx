@@ -69,8 +69,8 @@ export const ObstaclesInstanced = memo(function ObstaclesInstanced({ obstacles, 
 
     const groups = useMemo(() => {
         const solid = obstacles.filter(o => o.type === "SOLID");
-        const trap = mapTheme === 'CYBER' ? obstacles.filter(o => o.type === "TRAP") : [];
-        const lava = mapTheme === 'CYBER' ? obstacles.filter(o => o.type === "LAVA") : [];
+        const trap = obstacles.filter(o => o.type === "TRAP");
+        const lava = obstacles.filter(o => o.type === "LAVA");
         const finish = obstacles.filter(o => o.type === "FINISH_LINE");
         const mine = obstacles.filter(o => o.type === "MINE");
         const lavaPool = obstacles.filter(o => o.type === "LAVA_POOL");

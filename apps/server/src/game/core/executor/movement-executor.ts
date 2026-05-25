@@ -40,6 +40,19 @@ export class MovementExecutor {
       return;
     }
 
+    // --- _SYS_FACE_X / _SYS_FACE_Y: independent FOV aiming ---
+    // Runs before the ice check so FOV can track targets while sliding.
+    if (
+      typeof memory._SYS_FACE_X === 'number' &&
+      typeof memory._SYS_FACE_Y === 'number'
+    ) {
+      const fx = memory._SYS_FACE_X as number;
+      const fy = memory._SYS_FACE_Y as number;
+      const dx = fx - robot.position.x;
+      const dy = fy - robot.position.y;
+      robot.fovDirection = Math.atan2(dy, dx);
+    }
+
     if (robot.insideIcePatch) {
       return;
     }
@@ -81,20 +94,6 @@ export class MovementExecutor {
     const speedMultiplier =
       actionCommand === 'MOVE_FAST' ? this.MOVE_FAST_MULTIPLIER : 1;
     const speed = targetSpeed * speedMultiplier;
-
-    // --- _SYS_FACE_X / _SYS_FACE_Y: independent FOV aiming ---
-    // Apply before any movement branch so FOV tracks the target point
-    // regardless of which movement mode is active. Does NOT return early.
-    if (
-      typeof memory._SYS_FACE_X === 'number' &&
-      typeof memory._SYS_FACE_Y === 'number'
-    ) {
-      const fx = memory._SYS_FACE_X as number;
-      const fy = memory._SYS_FACE_Y as number;
-      const dx = fx - robot.position.x;
-      const dy = fy - robot.position.y;
-      robot.fovDirection = Math.atan2(dy, dx);
-    }
 
     // --- _SYS_ORBIT_X / _SYS_ORBIT_Y / _SYS_ORBIT_R: circular orbit ---
     if (

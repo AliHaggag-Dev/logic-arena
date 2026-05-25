@@ -258,8 +258,18 @@ export class MatchEngine {
 
   private initEnvironmentHazards(): void {
     if (this.mapTheme === 'LAVA') {
+      // Remove static LAVA obstacles — replaced by dynamic LAVA_POOL hazards
+      const obstacles = this.gameLoop.getObstacles();
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        if (obstacles[i].type === 'LAVA') obstacles.splice(i, 1);
+      }
       this.spawnThemeHazards('LAVA_POOL', MatchEngine.LAVA_POOL_RADIUS, this.randomInt(3, 4));
     } else if (this.mapTheme === 'ICE') {
+      // Remove static LAVA obstacles — inconsistent with glacial theme
+      const obstacles = this.gameLoop.getObstacles();
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        if (obstacles[i].type === 'LAVA') obstacles.splice(i, 1);
+      }
       this.spawnThemeHazards('ICE_PATCH', MatchEngine.ICE_PATCH_RADIUS, this.randomInt(2, 3));
     }
   }
