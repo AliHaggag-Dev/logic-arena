@@ -77,6 +77,25 @@ const ArenaPageContent = () => {
     }
   }, [profile, authLoading, isSpectator]);
 
+  useEffect(() => {
+    if (!isMobile) return;
+    const handleInteraction = async () => {
+      try {
+        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (e) {
+        // Ignore silent failures
+      }
+    };
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+  }, [isMobile]);
+
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">Loading Arena...</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">ERROR 404: {error}</div>;
 
@@ -94,23 +113,8 @@ const ArenaPageContent = () => {
     ? [activeUserId]
     : availableRobots;
 
-  const handleInteraction = async () => {
-    if (!isMobile) return;
-    try {
-      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-        await document.documentElement.requestFullscreen();
-      }
-    } catch (e) {
-      // Ignore silent failures if already in fullscreen or gesture not trusted
-    }
-  };
-
   return (
-    <div 
-      className="relative w-full h-screen bg-black overflow-hidden font-mono select-none"
-      onClick={handleInteraction}
-      onTouchStart={handleInteraction}
-    >
+    <div className="relative w-full h-screen bg-black overflow-hidden font-mono select-none">
       <ArenaStyles />
 
       {isMobile && isPortrait && <OrientationLock />}

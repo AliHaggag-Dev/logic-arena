@@ -1,8 +1,6 @@
-"use client";
-
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ImageCard } from "../components/ImageCard";
 import {
   Trophy,
   Film,
@@ -54,79 +52,12 @@ PATHFIND
 END
 END`;
 
-// ── Image card with error fallback ──
-
-function ImageCard({
-  src,
-  name,
-  description,
-  className = "h-48",
-}: {
-  src: string;
-  name: string;
-  description: string;
-  className?: string;
-}) {
-  const [errored, setErrored] = useState(false);
-
-  if (errored) {
-    return (
-      <div
-        className={`relative overflow-hidden rounded border border-accent/40 bg-accent/10 flex flex-col items-center justify-center ${className} p-4`}
-      >
-        <span className="text-accent font-black text-xs sm:text-sm tracking-widest text-center uppercase">
-          {name}
-        </span>
-        <span className="text-text-secondary text-[10px] sm:text-xs mt-2 text-center leading-relaxed">
-          {description}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative overflow-hidden rounded border border-accent/40 group hover:border-accent/80 hover:scale-[1.02] transition-all duration-300 cursor-default">
-      <Image
-        src={src}
-        alt={name}
-        width={400}
-        height={300}
-        className={`object-cover w-full ${className}`}
-        unoptimized
-        loading="lazy"
-        onError={() => setErrored(true)}
-      />
-      <div
-        className="absolute inset-x-0 bottom-0 h-2/3 pointer-events-none"
-        style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, transparent 100%)" }}
-      />
-      <div className="absolute bottom-0 left-0 right-0 p-4">
-        <h3 className="text-accent font-black text-sm tracking-widest uppercase">
-          {name}
-        </h3>
-        <p className="text-xs mt-1" style={{ color: "rgba(255, 255, 255, 0.85)" }}>
-          {description}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 // ── PAGE ──
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-bg-primary font-mono text-text-primary selection:bg-accent/30">
-      <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .hero-word {
-          animation: fadeInUp 0.7s ease-out forwards;
-          opacity: 0;
-        }
-      `}</style>
 
       {/* ══════════════════════════════════
           NAVBAR
@@ -139,7 +70,6 @@ export default function LandingPage() {
               alt="Logic Arena"
               width={40}
               height={40}
-              unoptimized
               priority
               className="shrink-0"
             />
@@ -169,22 +99,8 @@ export default function LandingPage() {
           HERO
          ══════════════════════════════════ */}
       <section className="relative min-h-[calc(100vh-64px)] flex items-center justify-center py-20 px-4 overflow-hidden">
-        <div
-          className="absolute inset-0 z-0 pointer-events-none opacity-20"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(var(--accent-rgb),0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.2) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-        <div
-          className="absolute inset-0 z-[1] pointer-events-none"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(var(--accent-rgb),0.015) 2px, rgba(var(--accent-rgb),0.015) 4px)",
-            backgroundSize: "100% 4px",
-          }}
-        />
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-20 landing-hero-bg-primary" />
+        <div className="absolute inset-0 z-[1] pointer-events-none landing-hero-bg-secondary" />
 
         <div className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto">
           <div className="mb-6">
@@ -204,8 +120,7 @@ export default function LandingPage() {
             <span className="relative inline-block">
               algorithms
               <span
-                className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-accent rounded-full animate-pulse"
-                style={{ boxShadow: "0 0 8px rgba(var(--accent-rgb),0.6)" }}
+                className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-accent rounded-full animate-pulse landing-hero-shadow"
               />
             </span>{" "}
             fight for you.
@@ -415,6 +330,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {[
             { name: "UNIT-01", img: "/thumbnails/chassis-unit-01.png", desc: "Balanced all-rounder. Excellent starting model." },
+            { name: "UNIT-02", img: "/thumbnails/chassis-unit-02.png", desc: "Agile scout. High mobility and rapid targeting." },
             { name: "TITAN", img: "/thumbnails/chassis-titan.png", desc: "Heavy armor. Built for taking massive damage." },
             { name: "SANDMAN", img: "/thumbnails/chassis-sandman.png", desc: "Advanced tactical mech with extreme firepower." }
           ].map((bot) => (

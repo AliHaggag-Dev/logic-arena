@@ -719,3 +719,32 @@ textarea::selection,
   scrollbar-width: none !important;  /* Firefox */
 }
 
+
+/* Landing Page Styles extracted from inline CSS */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-word {
+  animation: fadeInUp 0.7s ease-out forwards;
+  opacity: 0;
+}
+
+.landing-image-card-gradient {
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
+}
+
+.landing-hero-bg-primary {
+  background-image: linear-gradient(rgba(var(--accent-rgb),0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.2) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.landing-hero-bg-secondary {
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(var(--accent-rgb),0.015) 2px, rgba(var(--accent-rgb),0.015) 4px);
+  background-size: 100% 4px;
+}
+
+.landing-hero-shadow {
+  box-shadow: 0 0 8px rgba(var(--accent-rgb),0.6);
+}

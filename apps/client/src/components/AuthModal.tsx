@@ -35,6 +35,7 @@ export const AuthModal = ({ isOpen, onClose, title = "AUTHENTICATION REQUIRED", 
 
                     <div className="flex flex-col sm:flex-row gap-3 w-full mt-4">
                         <button
+                            type="button"
                             onClick={() => router.push("/login")}
                             className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-accent/20 border border-accent/50 rounded-xl text-accent font-bold tracking-[0.15em] uppercase hover:bg-accent/30 hover:border-accent hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] transition-all active:scale-[0.98]"
                         >
@@ -42,6 +43,7 @@ export const AuthModal = ({ isOpen, onClose, title = "AUTHENTICATION REQUIRED", 
                             Log In
                         </button>
                         <button
+                            type="button"
                             onClick={() => router.push("/register")}
                             className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-bg-secondary border border-accent/20 rounded-xl text-text-primary font-bold tracking-[0.15em] uppercase hover:bg-accent/10 hover:border-accent/50 transition-all active:scale-[0.98]"
                         >
@@ -51,6 +53,7 @@ export const AuthModal = ({ isOpen, onClose, title = "AUTHENTICATION REQUIRED", 
                     </div>
 
                     <button
+                        type="button"
                         onClick={onClose}
                         className="text-xs text-text-secondary/60 hover:text-accent tracking-widest uppercase mt-2 transition-colors"
                     >

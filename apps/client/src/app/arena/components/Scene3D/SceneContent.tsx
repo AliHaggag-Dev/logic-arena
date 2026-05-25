@@ -30,6 +30,51 @@ export const SceneContent = (props: Scene3DComponentProps) => {
   const gridColors = THEME_GRID_COLORS[mapTheme];
   const floorColors = THEME_FLOOR_COLORS[mapTheme];
 
+
+  const gridArgs = React.useMemo(() => {
+    return [
+      20, 
+      props.displayMode === 'TRAINING_SOLO' ? 40 : 20, 
+      mapTheme !== 'CYBER' ? gridColors.primary :
+      props.displayMode === 'TRAINING_SOLO' ? "#00ffcc" : 
+      props.displayMode === 'KING_OF_THE_HILL' ? "#92400e" :
+      props.displayMode === 'CAPTURE_THE_FLAG' ? "#6b21a8" :
+      props.displayMode === 'SURVIVAL' ? "#991b1b" : gridColors.primary, 
+      mapTheme !== 'CYBER' ? gridColors.secondary :
+      props.displayMode === 'TRAINING_SOLO' ? "#003333" : 
+      props.displayMode === 'KING_OF_THE_HILL' ? "#451a03" :
+      props.displayMode === 'CAPTURE_THE_FLAG' ? "#3b0764" :
+      props.displayMode === 'SURVIVAL' ? "#450a0a" : gridColors.secondary
+    ] as any;
+  }, [props.displayMode, mapTheme, gridColors]);
+
+  const floorGeometryArgs = React.useMemo(() => [arena.width, arena.height] as const, [arena.width, arena.height]);
+
+  const floorProps = React.useMemo(() => ({
+    color: mapTheme !== 'CYBER' ? floorColors.color : props.displayMode === 'TRAINING_SOLO' ? "#020813" : floorColors.color,
+    emissive: mapTheme !== 'CYBER' ? floorColors.emissive :
+      props.displayMode === 'TRAINING_SOLO' ? "#001122" : 
+      props.displayMode === 'KING_OF_THE_HILL' ? "#110800" :
+      props.displayMode === 'CAPTURE_THE_FLAG' ? "#0a0014" :
+      props.displayMode === 'SURVIVAL' ? "#140000" : floorColors.emissive,
+    roughness: mapTheme !== 'CYBER' ? floorColors.roughness : props.displayMode === 'TRAINING_SOLO' ? 0.7 : floorColors.roughness,
+    metalness: mapTheme !== 'CYBER' ? floorColors.metalness : props.displayMode === 'TRAINING_SOLO' ? 0.8 : floorColors.metalness
+  }), [mapTheme, props.displayMode, floorColors]);
+
+  const backgroundMesh = React.useMemo(() => (
+    <>
+      <gridHelper 
+        args={gridArgs} 
+        scale={[1, 1, 0.75]} 
+        position={[0, 0.01, 0]} 
+      />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <planeGeometry args={floorGeometryArgs} />
+        <meshStandardMaterial {...floorProps} />
+      </mesh>
+    </>
+  ), [gridArgs, floorGeometryArgs, floorProps]);
+
   return (
     <>
       <SceneLighting mapTheme={mapTheme} />
@@ -47,42 +92,7 @@ export const SceneContent = (props: Scene3DComponentProps) => {
       />
 
       {/* UNIFIED DYNAMIC ARENA LAYOUT */}
-      {/* Custom Grid: Appearance changes dynamically based on mode */}
-      <gridHelper 
-        args={[
-          20, 
-          props.displayMode === 'TRAINING_SOLO' ? 40 : 20, 
-          mapTheme !== 'CYBER' ? gridColors.primary :
-          props.displayMode === 'TRAINING_SOLO' ? "#00ffcc" : 
-          props.displayMode === 'KING_OF_THE_HILL' ? "#92400e" :
-          props.displayMode === 'CAPTURE_THE_FLAG' ? "#6b21a8" :
-          props.displayMode === 'SURVIVAL' ? "#991b1b" : gridColors.primary, 
-          mapTheme !== 'CYBER' ? gridColors.secondary :
-          props.displayMode === 'TRAINING_SOLO' ? "#003333" : 
-          props.displayMode === 'KING_OF_THE_HILL' ? "#451a03" :
-          props.displayMode === 'CAPTURE_THE_FLAG' ? "#3b0764" :
-          props.displayMode === 'SURVIVAL' ? "#450a0a" : gridColors.secondary
-        ]} 
-        scale={[1, 1, 0.75]} 
-        position={[0, 0.01, 0]} 
-      />
-
-      {/* Arena Floor - Matches Engine Bounds */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[arena.width, arena.height]} />
-        <meshStandardMaterial 
-          color={mapTheme !== 'CYBER' ? floorColors.color : props.displayMode === 'TRAINING_SOLO' ? "#020813" : floorColors.color} 
-          emissive={
-            mapTheme !== 'CYBER' ? floorColors.emissive :
-            props.displayMode === 'TRAINING_SOLO' ? "#001122" : 
-            props.displayMode === 'KING_OF_THE_HILL' ? "#110800" :
-            props.displayMode === 'CAPTURE_THE_FLAG' ? "#0a0014" :
-            props.displayMode === 'SURVIVAL' ? "#140000" : floorColors.emissive
-          }
-          roughness={mapTheme !== 'CYBER' ? floorColors.roughness : props.displayMode === 'TRAINING_SOLO' ? 0.7 : floorColors.roughness} 
-          metalness={mapTheme !== 'CYBER' ? floorColors.metalness : props.displayMode === 'TRAINING_SOLO' ? 0.8 : floorColors.metalness} 
-        />
-      </mesh>
+      {backgroundMesh}
 
       {/* MODE-SPECIFIC ADDONS — BoundaryLine is rendered inside ArenaModels */}
       {props.displayMode === 'TRAINING_SOLO' && (
