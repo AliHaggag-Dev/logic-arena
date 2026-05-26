@@ -20,6 +20,7 @@ export class Pathfinder {
 
   private readonly pathCache = new Map<string, Vec2[]>();
   private readonly lastTarget = new Map<string, Vec2>();
+  private readonly lastWallHitTime = new Map<string, number>();
 
   constructor(private readonly gameLoop: GameLoop) {
     this.gridBuilder = new GridBuilder(this.gameLoop);
@@ -57,9 +58,16 @@ export class Pathfinder {
       target.position.x - last.x,
       target.position.y - last.y,
     );
-    // Recompute if target moved OR if robot recently collided with a wall (and finished its bounce)
-    const hitWallRecently = Date.now() - (robot.hitWallTimestamp ?? 0) < 500;
-    const targetMoved = moved > PATH_CONFIG.RECOMPUTE_DIST || hitWallRecently;
+    // After a wall collision, recompute A* exactly ONCE (not every tick for 500ms).
+    // Multiple recomputes from a bouncing position cause the first waypoint to jump,
+    // which makes the robot oscillate back and forth by 5-10 units mid-path.
+    const hitWallTimestamp = robot.hitWallTimestamp ?? 0;
+    const hitWallRecently = Date.now() - hitWallTimestamp < 500;
+    const prevWallHit = this.lastWallHitTime.get(id) ?? 0;
+    const newWallHit = hitWallRecently && hitWallTimestamp > prevWallHit;
+    if (newWallHit) this.lastWallHitTime.set(id, hitWallTimestamp);
+    if (!hitWallRecently) this.lastWallHitTime.delete(id);
+    const targetMoved = moved > PATH_CONFIG.RECOMPUTE_DIST || newWallHit;
 
     if (targetMoved) {
       // Target repositioned — recompute full A* path
@@ -111,5 +119,6 @@ export class Pathfinder {
   clearRobotPath(robotId: string): void {
     this.pathCache.delete(robotId);
     this.lastTarget.delete(robotId);
+    this.lastWallHitTime.delete(robotId);
   }
 }

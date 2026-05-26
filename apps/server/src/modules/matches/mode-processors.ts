@@ -89,10 +89,14 @@ export function processCtfTick(robots: Robot[], modeData: CtfModeData): CtfModeD
 }
 
 export function processSurvivalTick(robots: Robot[], modeData: SurvivalModeData): { modeData: SurvivalModeData; waveComplete: boolean } {
-  const aliveEnemies = robots.filter(r => r.id.startsWith('dummy-') && r.isAlive && r.health > 0);
+  const allDummies = robots.filter(r => r.id.startsWith('dummy-'));
+  const aliveEnemies = allDummies.filter(r => r.isAlive && r.health > 0);
   modeData.enemiesRemaining = aliveEnemies.length;
 
-  if (modeData.enemiesRemaining === 0) {
+  // Real-time kill count: cumulative spawned - currently alive
+  modeData.totalKills = Math.max(0, modeData.spawned - aliveEnemies.length);
+
+  if (modeData.enemiesRemaining === 0 && allDummies.length > 0) {
     modeData.wave++;
     return { modeData, waveComplete: true };
   }

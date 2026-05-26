@@ -100,7 +100,7 @@ export const TrainingHUD = ({
       <div
         className={`absolute z-50 pointer-events-none ${isMobile
           ? "top-3 left-3" // mobile: top-left square widget
-          : "top-72 right-8" // desktop: right side, directly below tactical radar
+          : "top-[272px] right-8" // desktop: right side, directly below tactical radar
           }`}
       >
         {isMobile ? (

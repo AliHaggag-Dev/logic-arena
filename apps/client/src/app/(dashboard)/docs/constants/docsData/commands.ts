@@ -25,6 +25,12 @@ export const COMMAND_TABLE: CommandDoc[] = [
   // --- Attack ---
   { command: 'FIRE', category: 'Attack', parameters: '—', description: 'Single precision shot toward nearest visible enemy. Deals 25 HP on hit. Only fires if an enemy is in FOV. Blocked during STASIS.', example: 'FIRE', energyCost: '8/shot' },
   { command: 'BURST_FIRE', category: 'Attack', parameters: '—', description: 'Rapid 3-shot burst. Each shot deals 8 HP (up to 24 HP total). Requires enemy in FOV. Blocked during STASIS.', example: 'BURST_FIRE', energyCost: '18/burst' },
+  // --- Super Powers ---
+  { command: 'TELEPORT', category: 'Super Powers', parameters: 'x, y', description: 'Instantly warp to the specified map coordinates. Sets velocity to zero. Blocked during STASIS.', example: 'TELEPORT 400 300', energyCost: '80' },
+  { command: 'SHIELD', category: 'Super Powers', parameters: '—', description: 'Activates an energy shield that blocks all incoming damage (projectiles, mines) for 30 ticks (1.5s). Blocked during STASIS.', example: 'SHIELD', energyCost: '60' },
+  { command: 'CLOAK', category: 'Super Powers', parameters: '—', description: 'Turns the robot completely invisible to enemy sensors, FOV, and radar for 40 ticks (2s). Blocked during STASIS.', example: 'CLOAK', energyCost: '50' },
+  { command: 'MINE', category: 'Super Powers', parameters: '—', description: 'Drops a proximity mine at your current location. Arms after 250ms. Deals 35 damage. Blocked during STASIS.', example: 'MINE', energyCost: '40' },
+  { command: 'DASH', category: 'Super Powers', parameters: 'distance', description: 'Instant, high-speed lateral thrust in the direction the robot is facing. Ideal for dodging. Blocked during STASIS.', example: 'DASH 100', energyCost: '30' },
   // --- Intelligence ---
   { command: 'SET var = expr', category: 'Intelligence', parameters: 'expression', description: 'Assign values using math operators (+, -, *, /, %). Executes even during STASIS — use to update state machines while immobilised.', example: 'SET rotation = rotation + 0.1', energyCost: 'Free' },
   { command: 'NOT / TRUE / FALSE', category: 'Intelligence', parameters: 'booleans', description: 'Logical operators and boolean constants for advanced conditions.', example: 'IF NOT CAN_SEE_ENEMY THEN SCAN END', energyCost: 'Free' },

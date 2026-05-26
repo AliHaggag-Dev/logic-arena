@@ -90,6 +90,20 @@ RETURN    // return from function (optionally with a value)
 
 ---
 
+## Super Powers (Tactical Abilities) ⭐ NEW
+
+These high-energy abilities provide significant tactical advantages but must be used strategically due to their massive energy cost.
+
+| Command | Energy Cost | Blocked in STASIS | Description |
+| :--- | :---: | :---: | :--- |
+| `TELEPORT x, y` | 80 | ✅ | Instantly warp to specific coordinates `x, y`. Sets velocity to 0. |
+| `SHIELD` | 60 | ✅ | Activates an energy shield that blocks all incoming damage for 30 ticks (1.5s). |
+| `CLOAK` | 50 | ✅ | Turns the robot completely invisible to enemy FOV and sensors for 40 ticks (2s). |
+| `MINE` | 40 | ✅ | Drops a proximity mine. Arms after 250ms and deals 35 damage when triggered. |
+| `DASH distance` | 30 | ✅ | Instant, high-speed lateral thrust in the current facing direction. |
+
+---
+
 ## Read-Only Identifiers
 
 ### Self & Movement
@@ -571,6 +585,11 @@ Robots have a shared energy pool that powers all actions. STASIS (energy deplete
 | `SCAN` | 3/call | ✅ |
 | `FIRE` | 8/shot | ✅ |
 | `BURST_FIRE` | 18/burst | ✅ |
+| `TELEPORT` | 80 | ✅ |
+| `SHIELD` | 60 | ✅ |
+| `CLOAK` | 50 | ✅ |
+| `MINE` | 40 | ✅ |
+| `DASH` | 30 | ✅ |
 | `STOP` | Free | ❌ |
 | `WAIT` | Free | ❌ |
 | `SET` / Logic | Free | ❌ |

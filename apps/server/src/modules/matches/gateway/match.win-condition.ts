@@ -15,17 +15,9 @@ export function checkWinCondition(
   let winner: Robot | null = null;
 
   if (mode === 'RACING') {
-    const finishLine = state.obstacles?.find(
-      (o) => o.type === 'FINISH_LINE',
-    );
-    if (finishLine) {
-      winner = state.robots.find((r) => {
-        const dx = Math.abs(r.position.x - finishLine.position.x);
-        const dy = Math.abs(r.position.y - finishLine.position.y);
-        return (
-          dx < finishLine.width / 2 + 15 && dy < finishLine.height / 2 + 15
-        ); // 15 is robot radius
-      }) || null;
+    // Use modeData.winnerId set by processRacingTick (single source of truth)
+    if (modeData?.type === 'RACING' && modeData.winnerId) {
+      winner = state.robots.find((r) => r.id === modeData.winnerId) || null;
       if (winner) matchIsOver = true;
     }
   } else if (mode === 'TRAINING_SOLO' || mode === 'SURVIVAL') {

@@ -37,9 +37,17 @@ export interface SurvivalModeData {
   wave: number;
   enemiesRemaining: number;
   totalKills: number;
+  spawned: number;
 }
 
-export type ModeData = KothModeData | CtfModeData | SurvivalModeData;
+export interface RacingModeData {
+  type: 'RACING';
+  laps: number;
+  finishLine: Vec2;
+  winnerId?: string;
+}
+
+export type ModeData = KothModeData | CtfModeData | SurvivalModeData | RacingModeData;
 
 export interface GameState {
   robots: RobotState[];

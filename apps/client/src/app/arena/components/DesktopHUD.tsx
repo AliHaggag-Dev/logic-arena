@@ -257,6 +257,77 @@ export function DesktopHUD({
         </div>
       </div>
 
+      {modeData?.type === 'SURVIVAL' && (
+        <div className="absolute top-[272px] right-8 z-20 w-72">
+          <div className="bg-black/60 backdrop-blur-xl border border-red-500/20 rounded-sm overflow-hidden shadow-2xl">
+            <div className="bg-red-900/20 px-3 py-2 border-b border-red-500/20">
+              <span className="text-red-400 text-[10px] font-black tracking-[0.3em]">SURVIVAL PROTOCOL</span>
+            </div>
+            <div className="px-3 py-2 flex flex-col gap-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] text-white/50 font-mono">WAVE</span>
+                <span className="text-[13px] font-mono font-bold text-white">{modeData.wave} <span className="text-red-500/50">/ 10</span></span>
+              </div>
+              <div className="flex justify-between items-center border-t border-red-500/10 pt-1.5">
+                <span className="text-[10px] text-white/50 font-mono">ENEMIES LEFT</span>
+                <span className="text-[13px] font-mono font-bold text-red-400">{modeData.enemiesRemaining}</span>
+              </div>
+              <div className="flex justify-between items-center border-t border-red-500/10 pt-1.5">
+                <span className="text-[10px] text-white/50 font-mono">TOTAL KILLS</span>
+                <span className="text-[13px] font-mono font-bold text-amber-400">{modeData.totalKills}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modeData?.type === 'CTF' && (
+        <div className="absolute top-[272px] right-8 z-20 w-72">
+          <div className="bg-black/60 backdrop-blur-xl border border-purple-500/20 rounded-sm overflow-hidden shadow-2xl">
+            <div className="bg-purple-900/20 px-3 py-2 border-b border-purple-500/20">
+              <span className="text-purple-400 text-[10px] font-black tracking-[0.3em]">CAPTURE THE FLAG</span>
+            </div>
+            <div className="px-3 py-2 flex flex-col gap-2">
+              {modeData.flags.map((flag) => {
+                const carrier = robots.find(r => r.id === flag.carrierId);
+                const statusText = flag.atBase ? 'AT BASE'
+                  : carrier ? `CARRIED BY ${carrier.id === selectedRobotId ? 'YOU' : 'ENEMY'}`
+                  : 'DROPPED';
+                const isOwn = flag.team === 'A';
+                return (
+                  <div key={flag.team} className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${isOwn ? 'bg-[#22d3ee]' : 'bg-[#e879f9]'}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-mono font-bold text-white/80">
+                          FLAG {flag.team}
+                        </span>
+                        <span className={`text-[9px] font-mono font-bold ${
+                          flag.atBase ? 'text-green-400'
+                          : carrier ? 'text-amber-400 animate-pulse'
+                          : 'text-white/40'
+                        }`}>
+                          {statusText}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="flex justify-between items-center border-t border-purple-500/10 pt-2 mt-1">
+                <span className="text-[10px] text-white/50 font-mono">SCORE</span>
+                <span className="text-[12px] font-mono font-bold">
+                  <span className="text-[#22d3ee]">{modeData.teamScores?.A || 0}</span>
+                  <span className="text-white/30 mx-1">-</span>
+                  <span className="text-[#e879f9]">{modeData.teamScores?.B || 0}</span>
+                  <span className="text-white/40 ml-1">/ {modeData.scoreTarget}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="absolute bottom-8 right-8 z-20 flex items-center gap-6">
         <div className="flex flex-col items-end">
           <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">Connection_Status</span>

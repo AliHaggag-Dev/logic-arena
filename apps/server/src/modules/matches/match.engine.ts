@@ -159,6 +159,7 @@ export class MatchEngine {
         wave: 1,
         enemiesRemaining: SURVIVAL_BASE_ENEMIES,
         totalKills: 0,
+        spawned: 0,
       };
       this.gameLoop.setModeData(modeData);
       this.spawnSurvivalWave(1);
@@ -323,6 +324,12 @@ export class MatchEngine {
       
       this.gameLoop.addRobot(dummy);
       parseAndSetLogic(dummy.id, SURVIVAL_DUMMY_SCRIPT, this.deps.logicEvaluator);
+    }
+
+    // Track cumulative spawned for real-time totalKills computation
+    const modeData = this.gameLoop.getModeData();
+    if (modeData?.type === 'SURVIVAL') {
+      modeData.spawned = (modeData.spawned || 0) + enemyCount;
     }
 
     if (this.onEvent) {

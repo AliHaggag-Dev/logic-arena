@@ -62,8 +62,8 @@ export class MatchLoopManager {
           continue;
         }
 
-        // Training mode: Detect when a dummy is killed for the first time this death
-        if (mode === 'TRAINING_SOLO') {
+        // Training / Survival: Detect when a dummy is killed for the first time this death
+        if (mode === 'TRAINING_SOLO' || mode === 'SURVIVAL') {
           const killedSet =
             this.state.dummyKilledThisTick.get(matchId) ?? new Set<string>();
           for (const robot of state.robots) {

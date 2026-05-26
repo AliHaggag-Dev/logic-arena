@@ -232,6 +232,8 @@ export interface SurvivalModeData {
   wave: number;
   enemiesRemaining: number;
   totalKills: number;
+  /** Cumulative enemies spawned across all waves (for computing totalKills per-tick) */
+  spawned: number;
 }
 
 export interface RacingModeData {
