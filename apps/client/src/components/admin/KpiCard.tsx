@@ -73,7 +73,7 @@ export function KpiCard({ title, value, trend, trendLabel, icon, isLoading = fal
   }
 
   return (
-    <section className="group relative flex flex-col self-start overflow-hidden rounded-lg border border-accent/20 bg-card p-3 shadow-[var(--card-shadow)] transition-colors duration-200 hover:border-accent/50 md:p-5">
+    <section className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-accent/20 bg-card p-3 shadow-[var(--card-shadow)] transition-colors duration-200 hover:border-accent/50 md:p-5">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--accent),transparent)] opacity-60" />
       <div className="flex items-start justify-between gap-2 md:gap-4">
         <div className="min-w-0 flex-1">
@@ -90,7 +90,7 @@ export function KpiCard({ title, value, trend, trendLabel, icon, isLoading = fal
         {Number.isNaN(numericValue) ? displayValue : displayValue}
       </p>
 
-      <div className="font-mono text-xs">
+      <div className="mt-auto font-mono text-xs">
         {trend !== undefined ? (
           <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-4">
           <span

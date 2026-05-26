@@ -14,7 +14,7 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 
 import { AuthGuard } from '../../common/auth.guard';
 import { AdminGuard } from '../../common/admin.guard';
@@ -76,6 +76,7 @@ export class FeedbackController {
 
 // ── Admin controller ──────────────────────────────────────────────────────────
 
+@SkipThrottle({ global: true })
 @Throttle({ admin: { ttl: 60000, limit: 300 } })
 @UseGuards(AuthGuard, AdminGuard)
 @Controller('admin/feedback')
