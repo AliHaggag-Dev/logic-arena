@@ -29,7 +29,18 @@ export class AuthRegistrationService {
 
     try {
       const user = await this.prisma.user.create({
-        data: { email, username, passwordHash, isVerified: false },
+        data: {
+          email,
+          username,
+          passwordHash,
+          isVerified: false,
+          RobotScript: {
+            create: {
+              title: 'Default Logic',
+              content: `// Write your robot logic here\n`,
+            },
+          },
+        },
       });
 
       await this.redis.set(
@@ -42,6 +53,7 @@ export class AuthRegistrationService {
         await this.emailService.sendVerificationCode(email, verifyCode);
       } catch (emailErr: any) {
         throw new InternalServerErrorException(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           `Account created but verification email failed: ${emailErr.message}`,
         );
       }
@@ -84,6 +96,7 @@ export class AuthRegistrationService {
   }
 
   private stripPassword(user: User): Omit<User, 'passwordHash'> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash: _removed, ...safe } = user;
     return safe;
   }

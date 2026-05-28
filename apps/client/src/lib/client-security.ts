@@ -80,10 +80,22 @@ export function getAuthAvatarUrl(): string | null {
 
 export function setSelectedScriptId(scriptId: string | null): void {
     selectedScriptId = scriptId;
+    if (typeof window !== "undefined") {
+        if (scriptId) {
+            localStorage.setItem("selectedScriptId", scriptId);
+        } else {
+            localStorage.removeItem("selectedScriptId");
+        }
+    }
 }
 
 export function getSelectedScriptId(): string | null {
-    return selectedScriptId;
+    if (selectedScriptId) return selectedScriptId;
+    if (typeof window !== "undefined") {
+        selectedScriptId = localStorage.getItem("selectedScriptId");
+        return selectedScriptId;
+    }
+    return null;
 }
 
 export function clearSensitiveBrowserStorage(): void {

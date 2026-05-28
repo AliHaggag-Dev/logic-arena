@@ -64,6 +64,12 @@ export class AuthOAuthService {
             avatarUrl: data.avatarUrl,
             provider: data.provider,
             isVerified: true,
+            RobotScript: {
+              create: {
+                title: 'Default Logic',
+                content: `// Write your robot logic here\n`,
+              },
+            },
           },
         });
       }

@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "../../../../lib/api-client";
 import { RobotScript } from "../components/script-card/types";
 import { useAuthState } from "../../../../hooks/useAuthState";
-import { setSelectedScriptId } from "../../../../lib/client-security";
+import { setSelectedScriptId, getSelectedScriptId } from "../../../../lib/client-security";
 import { useSafeTimeout } from "../../../../hooks/useSafeTimeout";
 
 export type GameMode = "COMBAT" | "SURVIVAL" | "CAPTURE_THE_FLAG" | "KING_OF_THE_HILL" | "RACING" | "TRAINING_SOLO";
@@ -48,6 +48,12 @@ export function useScripts() {
                 const response = await apiClient.get("/scripts");
                 if (cancelled) return;
                 setScripts(response.data);
+                if (response.data && response.data.length > 0) {
+                    const currentSelected = getSelectedScriptId();
+                    if (!currentSelected || !response.data.some((s: RobotScript) => s.id === currentSelected)) {
+                        setSelectedScriptId(response.data[0].id);
+                    }
+                }
             } catch (error: unknown) {
                 if (cancelled) return;
                 const axiosError = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
