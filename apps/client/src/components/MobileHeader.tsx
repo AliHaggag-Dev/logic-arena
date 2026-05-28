@@ -23,7 +23,8 @@ export function MobileHeader() {
     "/bug-report", "/feature-requests"
   ];
 
-  if (pathname.startsWith("/arena") || pathname.startsWith("/replay")) {
+  const isArenaPage = pathname === "/arena" || pathname.startsWith("/arena/");
+  if (isArenaPage || pathname.startsWith("/replay")) {
     return null;
   }
 

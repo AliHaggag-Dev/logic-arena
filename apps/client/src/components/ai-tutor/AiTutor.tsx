@@ -19,9 +19,12 @@ export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const { messages, status, streamedText, isActive, sendMessage, clearChat, abort, messagesEndRef } = useAiChat();
 
-  const isSuppressed = ARIA_SUPPRESSED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
+  const isSuppressed = ARIA_SUPPRESSED_PREFIXES.some((prefix) => {
+    if (prefix === '/arena') {
+      return pathname === '/arena' || pathname.startsWith('/arena/');
+    }
+    return pathname.startsWith(prefix);
+  });
 
   useEffect(() => {
     if (open) {
@@ -37,6 +40,19 @@ export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open]);
+
+  useEffect(() => {
+    const handleAsk = (e: Event) => {
+      const customEvent = e as CustomEvent<{ prompt?: string }>;
+      const prompt = customEvent.detail?.prompt;
+      setOpen(true);
+      if (prompt) {
+        sendMessage(prompt);
+      }
+    };
+    window.addEventListener('aria:ask', handleAsk);
+    return () => window.removeEventListener('aria:ask', handleAsk);
+  }, [sendMessage]);
 
   const handleSend = (image?: string | null) => {
     sendMessage(input, image);

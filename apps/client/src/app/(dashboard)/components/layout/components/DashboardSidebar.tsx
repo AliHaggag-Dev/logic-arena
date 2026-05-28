@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart, Power, LogIn, Terminal } from "lucide-react";
+import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart, Power, LogIn, Terminal, Compass } from "lucide-react";
 import NavLink from "../../../../../components/ui/NavLink";
 import { useAuth } from "../../../../../context/AuthContext";
 
@@ -15,6 +15,7 @@ const navItems = [
   { href: "/profile", label: "MY PROFILE", iconNode: <User className="w-3.5 h-3.5" />, exact: true },
   { href: "/garage", label: "ROBOT GARAGE", iconNode: <Cpu className="w-3.5 h-3.5" /> },
   { href: "/docs", label: "ALISCRIPT DOCS", iconNode: <BookOpen className="w-3.5 h-3.5" /> },
+  { href: "/arena-guide", label: "ARENA GUIDE", iconNode: <Compass className="w-3.5 h-3.5" /> },
   { href: "/tournaments", label: "TOURNAMENT HUB", iconNode: <Award className="w-3.5 h-3.5" /> },
   { href: "/black-market", label: "BLACK MARKET", iconNode: <ShoppingCart className="w-3.5 h-3.5" /> },
 ];
