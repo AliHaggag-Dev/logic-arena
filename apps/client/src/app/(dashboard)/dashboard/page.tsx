@@ -126,7 +126,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Scrolling scripts list */}
-                        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pr-1 pb-1 flex flex-col gap-3 no-scrollbar">
+                        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-3 px-3 pb-6 flex flex-col gap-3 no-scrollbar">
                             {initialLoad ? (
                                 <ScriptSkeleton />
                             ) : scripts.length === 0 ? (

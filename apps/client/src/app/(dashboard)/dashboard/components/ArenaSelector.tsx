@@ -62,7 +62,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
     const handleScroll = () => {
         if (modesRef.current) {
             const { scrollLeft, scrollWidth, clientWidth } = modesRef.current;
-            setCanScrollLeft(scrollLeft > 5);
+            setCanScrollLeft(scrollLeft > 20);
             setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
         }
     };
@@ -135,20 +135,20 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                     
                     <div className="relative w-full">
                         {/* Left Arrow Overlay */}
-                        <div className={`hidden md:flex absolute top-0 bottom-0 left-0 w-24 bg-gradient-to-r from-[#030712] via-[#030712]/80 to-transparent items-center justify-start z-10 transition-all duration-300 pointer-events-none pb-4 ${canScrollLeft ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
-                            <button onClick={() => scroll('left')} className="pointer-events-auto ml-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
+                        <div className={`hidden md:flex absolute top-0 bottom-0 left-0 w-24 bg-gradient-to-r from-[#030712] via-[#030712]/80 to-transparent items-center justify-start z-10 transition-all duration-300 pointer-events-none pb-8 ${canScrollLeft ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                            <button type="button" aria-label="Scroll left" onClick={() => scroll('left')} className="pointer-events-auto ml-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
                                 <ChevronLeft size={24} strokeWidth={3} className="drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] group-hover/arrow:drop-shadow-[0_0_8px_currentColor]" />
                             </button>
                         </div>
                         
                         {/* Right Arrow Overlay */}
-                        <div className={`hidden md:flex absolute top-0 bottom-0 right-0 w-24 bg-gradient-to-l from-[#030712] via-[#030712]/80 to-transparent items-center justify-end z-10 transition-all duration-300 pointer-events-none pb-4 ${canScrollRight ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
-                            <button onClick={() => scroll('right')} className="pointer-events-auto mr-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
+                        <div className={`hidden md:flex absolute top-0 bottom-0 right-0 w-24 bg-gradient-to-l from-[#030712] via-[#030712]/80 to-transparent items-center justify-end z-10 transition-all duration-300 pointer-events-none pb-8 ${canScrollRight ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
+                            <button type="button" aria-label="Scroll right" onClick={() => scroll('right')} className="pointer-events-auto mr-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
                                 <ChevronRight size={24} strokeWidth={3} className="drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] group-hover/arrow:drop-shadow-[0_0_8px_currentColor]" />
                             </button>
                         </div>
 
-                        <div ref={modesRef} onScroll={handleScroll} className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory px-1 w-full scrollbar-hide" style={{ WebkitOverflowScrolling: "touch" }}>
+                        <div ref={modesRef} onScroll={handleScroll} className="flex gap-4 overflow-x-auto pt-3 pb-8 px-4 w-full snap-x snap-mandatory scrollbar-hide" style={{ WebkitOverflowScrolling: "touch" }}>
                         {MODES.map(mode => {
                             const isSelected = selectedMode === mode.value;
                             return (
@@ -184,7 +184,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                         SELECT ENVIRONMENT
                         <span className="h-px bg-accent/20 flex-1" />
                     </h4>
-                    <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory px-1 w-full scrollbar-hide" style={{ WebkitOverflowScrolling: "touch" }}>
+                    <div className="flex gap-4 overflow-x-auto pt-3 pb-8 px-4 w-full snap-x snap-mandatory scrollbar-hide" style={{ WebkitOverflowScrolling: "touch" }}>
                         {THEMES.map(theme => {
                             const isSelected = selectedTheme === theme.value;
                             return (
