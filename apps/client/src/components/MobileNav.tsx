@@ -87,13 +87,13 @@ export function MobileNav() {
 
   return (
     <div className="md:hidden block">
-      {/* Sci-Fi Backdrop */}
-      {isHubOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-bg-primary/60 backdrop-blur-md transition-opacity duration-300"
-          onClick={() => setIsHubOpen(false)}
-        />
-      )}
+      {/* Sci-Fi Backdrop (GPU optimized opacity transition, no heavy backdrop-blur) */}
+      <div
+        className={`fixed inset-0 z-30 bg-bg-primary/60 transition-opacity duration-300 ${
+          isHubOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setIsHubOpen(false)}
+      />
 
       {/* Floating Radial Hub Menu */}
       <div className={`fixed bottom-[76px] right-2 z-40 flex flex-col-reverse items-end gap-4 pointer-events-none pb-[env(safe-area-inset-bottom)]`}>
@@ -105,10 +105,10 @@ export function MobileNav() {
               <div
                 key={item.href}
                 className={`
-                  flex items-center gap-3 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+                  flex items-center gap-3 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
                   ${isHubOpen ? 'pointer-events-auto opacity-100 translate-y-0 scale-100 mr-4' : 'pointer-events-none opacity-0 translate-y-12 scale-50 mr-2'}
                 `}
-                style={{ transitionDelay: `${index * 60}ms` }}
+                style={{ transitionDelay: `${index * 40}ms` }}
               >
                 {/* ARENA GUIDE */}
                 <Link
@@ -152,10 +152,10 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={`
-                flex items-center gap-3 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+                flex items-center gap-3 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
                 ${isHubOpen ? `pointer-events-auto opacity-100 translate-y-0 scale-100 ${arcOffsets[index]}` : 'pointer-events-none opacity-0 translate-y-12 scale-50 mr-2'}
               `}
-              style={{ transitionDelay: `${index * 60}ms` }}
+              style={{ transitionDelay: `${index * 40}ms` }}
               onClick={() => setIsHubOpen(false)}
             >
               <span className={`text-[10px] font-black tracking-widest uppercase px-3 py-1.5 rounded-lg border backdrop-blur-xl transition-all duration-300 ${isActive ? 'bg-accent/10 border-accent text-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]' : 'bg-bg-secondary/80 border-accent/20 text-text-primary'}`}>

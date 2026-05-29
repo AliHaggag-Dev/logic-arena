@@ -215,9 +215,21 @@ interface RobotShowroomProps {
   quality?: "low" | "medium" | "high";
 }
 
-export function RobotShowroom({ chassisId, paintColor, tracerColor, quality = "medium" }: RobotShowroomProps) {
+export function RobotShowroom({ chassisId, paintColor, tracerColor, quality }: RobotShowroomProps) {
+  const [detectedQuality, setDetectedQuality] = useState<"low" | "medium" | "high">("medium");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+      if (isMobileDevice) {
+        setDetectedQuality("low");
+      }
+    }
+  }, []);
+
+  const activeQuality = quality ?? detectedQuality;
   const prefersReducedMotion = usePrefersReducedMotion();
-  const highQuality = quality === "high";
+  const highQuality = activeQuality === "high";
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -230,25 +242,25 @@ export function RobotShowroom({ chassisId, paintColor, tracerColor, quality = "m
     return () => observer.disconnect();
   }, []);
 
-  const shouldAnimate = !prefersReducedMotion && quality !== "low" && isVisible;
+  const shouldAnimate = !prefersReducedMotion && isVisible;
 
   const dpr = useMemo<[number, number]>(() => {
-    if (quality === "low") return [1, 1];
-    if (quality === "high") return [1, 2];
+    if (activeQuality === "low") return [1, 1];
+    if (activeQuality === "high") return [1, 2];
     return [1, 1.5];
-  }, [quality]);
+  }, [activeQuality]);
 
   return (
     <div ref={containerRef} className="w-full h-full" style={{ touchAction: "pan-y" }}>
       <Canvas
         frameloop={shouldAnimate ? "always" : "demand"}
         dpr={dpr}
-        gl={{ antialias: quality !== "low", alpha: true, powerPreference: quality === "low" ? "low-power" : "high-performance" }}
+        gl={{ antialias: activeQuality !== "low", alpha: true, powerPreference: activeQuality === "low" ? "low-power" : "high-performance" }}
         camera={{ position: [0, 0.8, 3.8], fov: 45 }}
         style={{ background: "transparent" }}
       >
         <SceneLights color={paintColor} highQuality={highQuality} />
-        {quality !== "low" && <Environment preset="city" />}
+        {activeQuality !== "low" && <Environment preset="city" />}
         <RobotMesh chassisId={chassisId} paintColor={paintColor} tracerColor={tracerColor} animate={shouldAnimate} />
         <OrbitControls
           enablePan={true}

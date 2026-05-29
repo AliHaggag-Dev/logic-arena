@@ -6,40 +6,42 @@ import { FALLBACK_COLOR } from "../constants/robots.constants";
 
 /**
  * Applies a hex color tint to all meshes in a GLTF scene.
- * - Clears and re-snapshots originals whenever `scene` changes (fixes multi-chassis switching).
- * - Restores originals when color is "DEFAULT" or "paint-default".
- * - Clones materials per color change and disposes the clone on cleanup,
- *   preventing the material-leak bug that occurred on every picker click.
+ * - Stores original colors of the materials in a Ref Map.
+ * - Modifies the .color property directly on existing materials instead of cloning them,
+ *   which completely avoids expensive WebGL shader recompilations and prevents material leaks.
+ * - Restores original colors when the color is set to DEFAULT or on unmount.
  */
 export function useRobotColorTint(
   scene: THREE.Group | null | undefined,
   color: string
 ): void {
-  const originalMaterials = useRef(
-    new Map<string, THREE.Material | THREE.Material[]>()
-  );
+  // Map of material UUID -> original color
+  const originalColors = useRef(new Map<string, THREE.Color>());
 
-  // ── Reset snapshot when the scene object itself changes ──────────────────
-  // Without this, switching from UNIT-01 → UNIT-02 leaves stale UUIDs in the
-  // map, so UNIT-02's meshes never match and the color is silently ignored.
+  // Reset original colors when the scene object itself changes
   useEffect(() => {
-    originalMaterials.current.clear();
+    originalColors.current.clear();
   }, [scene]);
 
   useEffect(() => {
     if (!scene) return;
 
-    // Snapshot originals for the current scene
-    if (originalMaterials.current.size === 0) {
+    // Snapshot original colors if not already done for this scene
+    if (originalColors.current.size === 0) {
       scene.traverse((obj) => {
         if ((obj as THREE.Mesh).isMesh) {
           const mesh = obj as THREE.Mesh;
-          originalMaterials.current.set(mesh.uuid, mesh.material);
+          const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          
+          materials.forEach((mat) => {
+            if (mat && 'color' in mat && (mat as THREE.MeshStandardMaterial).color instanceof THREE.Color) {
+              const standardMat = mat as THREE.MeshStandardMaterial;
+              originalColors.current.set(standardMat.uuid, standardMat.color.clone());
+            }
+          });
         }
       });
     }
-
-    const cloned: THREE.Material[] = [];
 
     const isDefault =
       !color ||
@@ -47,12 +49,20 @@ export function useRobotColorTint(
       color.trim().toLowerCase() === "paint-default";
 
     if (isDefault) {
-      // Restore original materials
+      // Restore original colors
       scene.traverse((obj) => {
         if ((obj as THREE.Mesh).isMesh) {
           const mesh = obj as THREE.Mesh;
-          const orig = originalMaterials.current.get(mesh.uuid);
-          if (orig !== undefined) mesh.material = orig;
+          const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          materials.forEach((mat) => {
+            if (mat && 'color' in mat) {
+              const standardMat = mat as THREE.MeshStandardMaterial;
+              const origColor = originalColors.current.get(standardMat.uuid);
+              if (origColor) {
+                standardMat.color.copy(origColor);
+              }
+            }
+          });
         }
       });
     } else {
@@ -63,23 +73,42 @@ export function useRobotColorTint(
         col = new THREE.Color(FALLBACK_COLOR);
       }
 
+      // Set colors directly without material cloning (WebGL shader re-use)
       scene.traverse((obj) => {
         if ((obj as THREE.Mesh).isMesh) {
           const mesh = obj as THREE.Mesh;
-          const orig = originalMaterials.current.get(mesh.uuid);
-          if (orig !== undefined) {
-            const mat = (orig as THREE.MeshStandardMaterial).clone();
-            mat.color = col;
-            cloned.push(mat);
-            mesh.material = mat;
-          }
+          const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          materials.forEach((mat) => {
+            if (mat && 'color' in mat) {
+              const standardMat = mat as THREE.MeshStandardMaterial;
+              standardMat.color.copy(col);
+            }
+          });
         }
       });
     }
-
-    // Dispose clones when color changes or component unmounts
-    return () => {
-      cloned.forEach((mat) => mat.dispose());
-    };
   }, [scene, color]);
+
+  // Clean up: restore original colors when component unmounts to keep cached GLTF clean
+  useEffect(() => {
+    return () => {
+      if (scene && originalColors.current.size > 0) {
+        scene.traverse((obj) => {
+          if ((obj as THREE.Mesh).isMesh) {
+            const mesh = obj as THREE.Mesh;
+            const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            materials.forEach((mat) => {
+              if (mat && 'color' in mat) {
+                const standardMat = mat as THREE.MeshStandardMaterial;
+                const origColor = originalColors.current.get(standardMat.uuid);
+                if (origColor) {
+                  standardMat.color.copy(origColor);
+                }
+              }
+            });
+          }
+        });
+      }
+    };
+  }, [scene]);
 }
