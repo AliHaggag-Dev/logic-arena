@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -111,7 +112,7 @@ export function DesktopHUD({
             <p className={`text-[10px] tracking-[0.25em] font-bold ${displayMode === 'RACING' ? 'text-yellow-400/80' :
               displayMode === 'TRAINING_SOLO' ? 'text-green-400/80' : 'text-red-400/80'
               }`}>
-              v2.0.0 {displayMode === 'RACING' ? '[RACING OVAL]' : displayMode === 'TRAINING_SOLO' ? '[TRAINING SOLO]' : displayMode === 'SURVIVAL' ? '[SURVIVAL]' : '[COMBAT ARENA]'}
+              v3.1.0 {displayMode === 'RACING' ? '[RACING OVAL]' : displayMode === 'TRAINING_SOLO' ? '[TRAINING SOLO]' : displayMode === 'SURVIVAL' ? '[SURVIVAL]' : '[COMBAT ARENA]'}
             </p>
           </div>
         </div>
