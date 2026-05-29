@@ -135,14 +135,24 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                     
                     <div className="relative w-full">
                         {/* Left Arrow Overlay */}
-                        <div className={`hidden md:flex absolute top-0 bottom-0 left-0 w-24 bg-gradient-to-r from-[#030712] via-[#030712]/80 to-transparent items-center justify-start z-10 transition-all duration-300 pointer-events-none pb-8 ${canScrollLeft ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                        <div 
+                            className={`hidden md:flex absolute top-0 bottom-0 left-0 w-24 items-center justify-start z-10 transition-all duration-300 pointer-events-none pb-8 ${canScrollLeft ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
+                            style={{
+                                backgroundImage: 'linear-gradient(to right, var(--bg-primary) 0%, color-mix(in srgb, var(--bg-primary) 80%, transparent) 60%, transparent 100%)'
+                            }}
+                        >
                             <button type="button" aria-label="Scroll left" onClick={() => scroll('left')} className="pointer-events-auto ml-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
                                 <ChevronLeft size={24} strokeWidth={3} className="drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] group-hover/arrow:drop-shadow-[0_0_8px_currentColor]" />
                             </button>
                         </div>
                         
                         {/* Right Arrow Overlay */}
-                        <div className={`hidden md:flex absolute top-0 bottom-0 right-0 w-24 bg-gradient-to-l from-[#030712] via-[#030712]/80 to-transparent items-center justify-end z-10 transition-all duration-300 pointer-events-none pb-8 ${canScrollRight ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
+                        <div 
+                            className={`hidden md:flex absolute top-0 bottom-0 right-0 w-24 items-center justify-end z-10 transition-all duration-300 pointer-events-none pb-8 ${canScrollRight ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}
+                            style={{
+                                backgroundImage: 'linear-gradient(to left, var(--bg-primary) 0%, color-mix(in srgb, var(--bg-primary) 80%, transparent) 60%, transparent 100%)'
+                            }}
+                        >
                             <button type="button" aria-label="Scroll right" onClick={() => scroll('right')} className="pointer-events-auto mr-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
                                 <ChevronRight size={24} strokeWidth={3} className="drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] group-hover/arrow:drop-shadow-[0_0_8px_currentColor]" />
                             </button>

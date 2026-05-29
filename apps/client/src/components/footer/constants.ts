@@ -3,6 +3,7 @@ export const NAV_LINKS = [
   { label: "Leaderboard", href: "/leaderboard" },
   { label: "Black Market", href: "/black-market" },
   { label: "AliScript Language", href: "/docs" },
+  { label: "Arena Guide", href: "/arena-guide" },
 ];
 
 export const ARENA_LINKS = [

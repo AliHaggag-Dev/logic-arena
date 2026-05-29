@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, Wrench, Hexagon, X, Trophy, FileCode, Shield, ShoppingCart } from "lucide-react";
+import { User, Settings, Wrench, Hexagon, X, Trophy, FileCode, Shield, ShoppingCart, Compass } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const mainNavItems = [
@@ -40,7 +40,7 @@ const subNavItems = [
   { href: "/profile", label: "PROFILE", icon: <User size={18} /> },
   { href: "/garage", label: "GARAGE", icon: <Wrench size={18} /> },
   { href: "/docs", label: "ALISCRIPT", icon: <FileCode size={18} /> },
-  { href: "/tournaments", label: "TOURNAMENTS", icon: <Trophy size={18} /> },
+  { href: "/black-market", label: "BLACK MARKET", icon: <ShoppingCart size={18} /> },
   { href: "/settings", label: "SETTINGS", icon: <Settings size={18} /> },
 ];
 
@@ -57,7 +57,12 @@ export function MobileNav() {
   }, [pathname]);
 
   const hiddenRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/arena", "/replay"];
-  const isHiddenPage = hiddenRoutes.some(route => pathname.startsWith(route));
+  const isHiddenPage = hiddenRoutes.some(route => {
+    if (route === "/arena") {
+      return pathname === "/arena" || pathname.startsWith("/arena/");
+    }
+    return pathname.startsWith(route);
+  });
 
   if (isHiddenPage) return null;
 
@@ -73,12 +78,12 @@ export function MobileNav() {
     : [
         ...mainNavItems,
         {
-          href: "/black-market",
-          label: "BLACK MARKET",
-          icon: <ShoppingCart size={22} strokeWidth={1.8} />,
+          href: "/tournaments",
+          label: "TOURNAMENTS",
+          icon: <Trophy size={22} strokeWidth={1.8} />,
         },
       ];
-  const isHubActive = subNavItems.some(item => pathname === item.href);
+  const isHubActive = subNavItems.some(item => pathname === item.href) || pathname === "/arena-guide";
 
   return (
     <div className="md:hidden block">
@@ -94,6 +99,54 @@ export function MobileNav() {
       <div className={`fixed bottom-[76px] right-2 z-40 flex flex-col-reverse items-end gap-4 pointer-events-none pb-[env(safe-area-inset-bottom)]`}>
         {subNavItems.map((item, index) => {
           const isActive = pathname === item.href;
+
+          if (item.href === "/docs") {
+            return (
+              <div
+                key={item.href}
+                className={`
+                  flex items-center gap-3 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+                  ${isHubOpen ? 'pointer-events-auto opacity-100 translate-y-0 scale-100 mr-4' : 'pointer-events-none opacity-0 translate-y-12 scale-50 mr-2'}
+                `}
+                style={{ transitionDelay: `${index * 60}ms` }}
+              >
+                {/* ARENA GUIDE */}
+                <Link
+                  href="/arena-guide"
+                  className="flex items-center gap-3"
+                  onClick={() => setIsHubOpen(false)}
+                >
+                  <span className={`text-[10px] font-black tracking-widest uppercase px-3 py-1.5 rounded-lg border backdrop-blur-xl transition-all duration-300 ${pathname === "/arena-guide" ? 'bg-accent/10 border-accent text-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]' : 'bg-bg-secondary/80 border-accent/20 text-text-primary'}`}>
+                    ARENA GUIDE
+                  </span>
+                  <div className={`
+                    flex items-center justify-center w-[46px] h-[46px] rounded-full border backdrop-blur-xl transition-all duration-300
+                    ${pathname === "/arena-guide" ? 'bg-accent/10 border-accent text-accent shadow-[0_0_20px_rgba(var(--accent-rgb),0.5)]' : 'bg-bg-secondary/80 border-accent/20 text-text-secondary/70'}
+                  `}>
+                    <Compass size={18} />
+                  </div>
+                </Link>
+
+                {/* ALISCRIPT */}
+                <Link
+                  href="/docs"
+                  className="flex items-center gap-3"
+                  onClick={() => setIsHubOpen(false)}
+                >
+                  <span className={`text-[10px] font-black tracking-widest uppercase px-3 py-1.5 rounded-lg border backdrop-blur-xl transition-all duration-300 ${isActive ? 'bg-accent/10 border-accent text-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]' : 'bg-bg-secondary/80 border-accent/20 text-text-primary'}`}>
+                    ALISCRIPT
+                  </span>
+                  <div className={`
+                    flex items-center justify-center w-[46px] h-[46px] rounded-full border backdrop-blur-xl transition-all duration-300
+                    ${isActive ? 'bg-accent/10 border-accent text-accent shadow-[0_0_20px_rgba(var(--accent-rgb),0.5)]' : 'bg-bg-secondary/80 border-accent/20 text-text-secondary/70'}
+                  `}>
+                    {item.icon}
+                  </div>
+                </Link>
+              </div>
+            );
+          }
+
           return (
             <Link
               key={item.href}
