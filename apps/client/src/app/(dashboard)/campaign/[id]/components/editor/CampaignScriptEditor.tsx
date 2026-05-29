@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useRef, useCallback, useState, useEffect } from "react";
+import React, { useRef, useCallback, useState } from "react";
 import { highlightCode } from "../../../../../../components/shared-script-editor";
 import { useParserWorker } from "../../../../../../components/shared-script-editor";
 import { useAutocomplete } from "../../../../../../components/shared-script-editor";
 import { AutocompleteDropdown } from "../../../../../../components/shared-script-editor";
 import { WarningPanel } from "../../../../../../components/shared-script-editor";
+import { DiagnosticTooltip } from "../../../../../../components/shared-script-editor";
+import { useDiagnosticTooltip } from "../../../../../../components/shared-script-editor";
 import { DETAIL_COLORS_HEX } from "../../../../../../components/shared-script-editor";
 import { sanitizeHtml } from "../../../../../../lib/client-security";
 import { Cpu } from "lucide-react";
@@ -33,15 +35,17 @@ export function CampaignScriptEditor({
 }: CampaignScriptEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
-  const { syntaxValid, validateSyntax, warnings } = useParserWorker();
+  const { syntaxValid, validateSyntax, warnings, diagnostics } = useParserWorker();
   const [showWarnings, setShowWarnings] = useState(false);
   
-  const { suggestions, activeIdx, caretXY, handleChange, handleKeyDown, acceptSuggestion, clearSuggestions } = useAutocomplete(
+  const { suggestions, activeIdx, caretXY, handleChange, handleKeyDown, acceptSuggestion, clearSuggestions, handleApplyDiagnosticFix } = useAutocomplete(
     onChange, 
     () => {}, 
     textareaRef, 
-    validateSyntax
+    validateSyntax,
+    diagnostics,
   );
+  const { tooltipState, onHighlightMouseMove, onHighlightMouseLeave, onTooltipMouseEnter, onTooltipMouseLeave, hideTooltip } = useDiagnosticTooltip(diagnostics);
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
     if (highlightRef.current) {
@@ -51,6 +55,7 @@ export function CampaignScriptEditor({
   }, []);
 
   const warningCount = warnings.length;
+  const diagCount = diagnostics.length;
   
   // Custom keydown wrapper to support onRun
   const onKeyDownWrapper = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -71,8 +76,8 @@ export function CampaignScriptEditor({
         <div className="flex-1 min-h-0 relative overflow-hidden rounded-xl">
           <div 
             ref={highlightRef} 
-            className={`absolute inset-0 p-3 pt-4 pointer-events-none font-mono leading-[24px] overflow-hidden ${displayPlaceholder ? 'text-accent/25' : 'text-accent'}`}
-            style={{ fontSize: isMobile ? '12px' : '14px', tabSize: 2 }}
+            className={`absolute inset-0 p-3 pt-4 font-mono leading-[24px] overflow-hidden ${displayPlaceholder ? 'text-accent/25' : 'text-accent'}`}
+            style={{ fontSize: isMobile ? '12px' : '14px', tabSize: 2, pointerEvents: 'auto' }}
             dangerouslySetInnerHTML={{ 
               __html: sanitizeHtml(displayPlaceholder 
                 ? highlightCode(overlayText, {
@@ -95,7 +100,8 @@ export function CampaignScriptEditor({
                     lineHeight: LINE_HEIGHT_CAMPAIGN, 
                     lineNumberPaddingRight: '12px', 
                     lineNumberMarginRight: '0px', 
-                    borderColor: 'rgba(var(--accent-rgb),0.1)' 
+                    borderColor: 'rgba(var(--accent-rgb),0.1)',
+                    diagnostics,
                   })
               ) 
             }} 
@@ -104,6 +110,8 @@ export function CampaignScriptEditor({
             title="script editor" 
             ref={textareaRef} 
             onScroll={handleScroll} 
+            onMouseMove={onHighlightMouseMove}
+            onMouseLeave={onHighlightMouseLeave}
             className="absolute inset-0 z-20 w-full h-full p-3 pt-4 font-mono leading-[24px] text-transparent caret-accent bg-transparent resize-none outline-none transition-colors custom-scrollbar selection:bg-accent/30 selection:text-transparent" 
             style={{ 
               paddingLeft: "56px", 
@@ -125,6 +133,11 @@ export function CampaignScriptEditor({
         <div className="absolute top-2 right-4 z-30 flex items-center gap-2 text-[10px] tracking-[0.3em] font-black pointer-events-none select-none">
           <span className="text-accent/30">[ALISCRIPT_V2]</span>
           {syntaxValid === false && <span className="text-red-500 drop-shadow-[0_0_5px_rgba(var(--sem-danger-rgb),0.8)] animate-pulse">SYNTAX_ERR</span>}
+          {diagCount > 0 && (
+            <span className="text-red-400/70 text-[9px] tracking-[0.15em]">
+              {diagCount} {diagCount === 1 ? 'issue' : 'issues'}
+            </span>
+          )}
           {warningCount > 0 && (
             <button
               type="button"
@@ -151,6 +164,19 @@ export function CampaignScriptEditor({
           <WarningPanel warnings={warnings} onClose={() => setShowWarnings(false)} />
         )}
 
+        <DiagnosticTooltip
+          visible={tooltipState.visible}
+          x={tooltipState.x}
+          y={tooltipState.y}
+          marker={tooltipState.marker}
+          onMouseEnter={onTooltipMouseEnter}
+          onMouseLeave={onTooltipMouseLeave}
+          onApplyFix={(diag) => {
+            handleApplyDiagnosticFix(diag);
+            hideTooltip();
+          }}
+        />
+
         <div className="flex items-center justify-between border-t border-accent/10 bg-accent/[0.025] px-3 py-2 text-[9px] font-black uppercase tracking-[0.18em] text-accent/40 rounded-b-xl">
           <span>{Math.max(value.split("\n").length, 1)} Lines</span>
           <span>{value.length} Chars</span>
@@ -159,3 +185,4 @@ export function CampaignScriptEditor({
     </div>
   );
 }
+

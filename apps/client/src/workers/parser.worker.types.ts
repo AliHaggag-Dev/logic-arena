@@ -11,3 +11,29 @@ export interface SemanticWarning {
   line?: number;
   severity: SemanticSeverity;
 }
+
+// ── Inline Diagnostics ───────────────────────────────────────────────────────
+
+export type DiagnosticSeverity = 'error' | 'warning';
+export type DiagnosticAction = 'replace' | 'delete';
+
+/**
+ * Mirrored from shared-script-editor/diagnostics.ts.
+ * Represents a single inline diagnostic marker (red/yellow underline).
+ */
+export interface DiagnosticMarker {
+  /** 0-indexed line number. */
+  line: number;
+  /** Start column within the line (0-indexed). */
+  startCol: number;
+  /** End column within the line (0-indexed, exclusive). */
+  endCol: number;
+  /** Red = error, yellow = warning. */
+  severity: DiagnosticSeverity;
+  /** Human-readable message shown in the hover tooltip. */
+  message: string;
+  /** Suggested fix text (the word to replace with, or empty for deletion). */
+  suggestion?: string;
+  /** What pressing Tab should do. */
+  action?: DiagnosticAction;
+}

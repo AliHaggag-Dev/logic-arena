@@ -5,17 +5,20 @@ import { useParserWorker } from "../../../../../components/shared-script-editor"
 import { useAutocompleteFast } from "../../../../../components/shared-script-editor";
 import { AutocompleteDropdown } from "../../../../../components/shared-script-editor";
 import { WarningPanel } from "../../../../../components/shared-script-editor";
+import { DiagnosticTooltip } from "../../../../../components/shared-script-editor";
+import { useDiagnosticTooltip } from "../../../../../components/shared-script-editor";
 import { DETAIL_COLORS_HEX, LINE_HEIGHT_ARENA } from "../../../../../components/shared-script-editor";
 import { sanitizeHtml } from "../../../../../lib/client-security";
 
 export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScriptInput, handleDeployBrain, toggleLibrary, clearPrebuilt }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const highlightRef = useRef<HTMLDivElement>(null);
-    const { syntaxValid, validateSyntax, warnings } = useParserWorker();
+    const { syntaxValid, validateSyntax, warnings, diagnostics } = useParserWorker();
     const [showWarnings, setShowWarnings] = useState(false);
-    const { suggestions, activeIdx, caretXY, handleChange, handleKeyDown, acceptSuggestion, clearSuggestions } = useAutocompleteFast(
-        setScriptInput, clearPrebuilt, textareaRef, validateSyntax
+    const { suggestions, activeIdx, caretXY, handleChange, handleKeyDown, acceptSuggestion, clearSuggestions, handleApplyDiagnosticFix } = useAutocompleteFast(
+        setScriptInput, clearPrebuilt, textareaRef, validateSyntax, diagnostics
     );
+    const { tooltipState, onHighlightMouseMove, onHighlightMouseLeave, onTooltipMouseEnter, onTooltipMouseLeave, hideTooltip } = useDiagnosticTooltip(diagnostics);
 
     const handleScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
         if (highlightRef.current) {
@@ -25,17 +28,23 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
     }, []);
 
     const warningCount = warnings.length;
+    const diagCount = diagnostics.length;
 
     return (
         <div className="relative flex flex-col gap-3 grow overflow-visible">
             <div className="relative grow flex flex-col border border-cyan-900/40 bg-black/50 rounded-lg overflow-visible group min-h-0">
                 <div className="flex-1 min-h-0 relative overflow-hidden rounded-lg">
-                    <div ref={highlightRef} className="absolute inset-0 p-3 pt-4 pointer-events-none font-mono text-[13px] leading-5 text-cyan-300 overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlightCode(scriptInput, { keywordClass: 'text-purple-400 drop-shadow-[0_0_5px_rgba(var(--arena-purple-rgb),0.8)]', lineNumberColor: 'rgba(var(--arena-cyan-rgb),0.5)', lineNumberWidth: '32px', lineHeight: LINE_HEIGHT_ARENA, lineNumberPaddingRight: '8px', lineNumberMarginRight: '12px', borderColor: 'rgba(var(--arena-cyan-rgb),0.4)' })) }} />
-                    <textarea title="script editor" ref={textareaRef} onScroll={handleScroll} className="relative w-full h-full p-3 pt-4 font-mono text-[13px] leading-5 text-transparent caret-purple-500 bg-transparent resize-none outline-none group-focus-within:border-cyan-500/50 transition-colors custom-scrollbar" style={{ paddingLeft: "56px" }} spellCheck={false} value={scriptInput} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={() => setTimeout(clearSuggestions, 150)} />
+                    <div ref={highlightRef} className="absolute inset-0 p-3 pt-4 font-mono text-[13px] leading-5 text-cyan-300 overflow-hidden" style={{ pointerEvents: 'auto' }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlightCode(scriptInput, { keywordClass: 'text-purple-400 drop-shadow-[0_0_5px_rgba(var(--arena-purple-rgb),0.8)]', lineNumberColor: 'rgba(var(--arena-cyan-rgb),0.5)', lineNumberWidth: '32px', lineHeight: LINE_HEIGHT_ARENA, lineNumberPaddingRight: '8px', lineNumberMarginRight: '12px', borderColor: 'rgba(var(--arena-cyan-rgb),0.4)', diagnostics })) }} />
+                    <textarea title="script editor" ref={textareaRef} onScroll={handleScroll} onMouseMove={onHighlightMouseMove} onMouseLeave={onHighlightMouseLeave} className="relative w-full h-full p-3 pt-4 font-mono text-[13px] leading-5 text-transparent caret-purple-500 bg-transparent resize-none outline-none group-focus-within:border-cyan-500/50 transition-colors custom-scrollbar" style={{ paddingLeft: "56px" }} spellCheck={false} value={scriptInput} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={() => setTimeout(clearSuggestions, 150)} />
                 </div>
                 <div className="absolute top-2 right-4 flex items-center gap-2 text-[10px] tracking-[0.3em] font-black pointer-events-none select-none">
                     <span className="text-cyan-600/50">[ALISCRIPT_V2]</span>
                     {syntaxValid === false && <span className="text-red-500 drop-shadow-[0_0_5px_rgba(var(--sem-danger-rgb),0.8)] animate-pulse">SYNTAX_ERR</span>}
+                    {diagCount > 0 && (
+                        <span className="text-red-400/70 text-[9px] tracking-[0.15em]">
+                            {diagCount} {diagCount === 1 ? 'issue' : 'issues'}
+                        </span>
+                    )}
                     {warningCount > 0 && (
                         <button
                             type="button"
@@ -54,6 +63,18 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                 {showWarnings && warningCount > 0 && (
                     <WarningPanel warnings={warnings} onClose={() => setShowWarnings(false)} />
                 )}
+                <DiagnosticTooltip
+                    visible={tooltipState.visible}
+                    x={tooltipState.x}
+                    y={tooltipState.y}
+                    marker={tooltipState.marker}
+                    onMouseEnter={onTooltipMouseEnter}
+                    onMouseLeave={onTooltipMouseLeave}
+                    onApplyFix={(diag) => {
+                        handleApplyDiagnosticFix(diag);
+                        hideTooltip();
+                    }}
+                />
             </div>
             <div className="flex gap-3 shrink-0">
                 <button type="button" onClick={handleDeployBrain} className="flex-1 py-3 bg-purple-900/20 border border-purple-500/50 text-purple-300 font-black text-[10px] hover:bg-purple-600/40 hover:border-purple-400 hover:text-white transition-all rounded uppercase tracking-widest shadow-[0_0_15px_rgba(var(--arena-purple-rgb),0.15)] group relative overflow-hidden">
@@ -66,3 +87,4 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
         </div>
     );
 };
+

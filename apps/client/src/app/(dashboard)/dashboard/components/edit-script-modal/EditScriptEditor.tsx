@@ -6,6 +6,8 @@ import { useParserWorker } from "../../../../../components/shared-script-editor"
 import { useAutocompleteFast } from "../../../../../components/shared-script-editor";
 import { AutocompleteDropdown } from "../../../../../components/shared-script-editor";
 import { WarningPanel } from "../../../../../components/shared-script-editor";
+import { DiagnosticTooltip } from "../../../../../components/shared-script-editor";
+import { useDiagnosticTooltip } from "../../../../../components/shared-script-editor";
 import { DETAIL_COLORS_HEX, LINE_HEIGHT_CAMPAIGN } from "../../../../../components/shared-script-editor";
 import { sanitizeHtml } from "../../../../../lib/client-security";
 
@@ -17,11 +19,12 @@ interface EditScriptEditorProps {
 export function EditScriptEditor({ content, setContent }: EditScriptEditorProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const highlightRef = useRef<HTMLDivElement>(null);
-    const { syntaxValid, validateSyntax, warnings } = useParserWorker();
+    const { syntaxValid, validateSyntax, warnings, diagnostics } = useParserWorker();
     const [showWarnings, setShowWarnings] = useState(false);
-    const { suggestions, activeIdx, caretXY, handleChange, handleKeyDown: autoKeyDown, acceptSuggestion, clearSuggestions } = useAutocompleteFast(
-        setContent, () => {}, textareaRef, validateSyntax
+    const { suggestions, activeIdx, caretXY, handleChange, handleKeyDown: autoKeyDown, acceptSuggestion, clearSuggestions, handleApplyDiagnosticFix } = useAutocompleteFast(
+        setContent, () => {}, textareaRef, validateSyntax, diagnostics
     );
+    const { tooltipState, onHighlightMouseMove, onHighlightMouseLeave, onTooltipMouseEnter, onTooltipMouseLeave, hideTooltip } = useDiagnosticTooltip(diagnostics);
 
     const handleScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
         if (highlightRef.current) {
@@ -31,20 +34,11 @@ export function EditScriptEditor({ content, setContent }: EditScriptEditorProps)
     }, []);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Tab" && suggestions.length === 0) {
-            e.preventDefault();
-            const ta = e.currentTarget;
-            const start = ta.selectionStart;
-            const end = ta.selectionEnd;
-            const next = content.substring(0, start) + "  " + content.substring(end);
-            setContent(next);
-            requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = start + 2; });
-            return;
-        }
         autoKeyDown(e);
-    }, [content, setContent, suggestions.length, autoKeyDown]);
+    }, [autoKeyDown]);
 
     const warningCount = warnings.length;
+    const diagCount = diagnostics.length;
 
     return (
         <div className="relative flex flex-col flex-1 min-h-0 overflow-visible m-3">
@@ -52,7 +46,8 @@ export function EditScriptEditor({ content, setContent }: EditScriptEditorProps)
                 <div className="flex-1 min-h-0 relative overflow-hidden rounded-lg">
                     <div
                         ref={highlightRef}
-                        className="absolute inset-0 p-4 pointer-events-none font-mono text-[0.8125rem] leading-6 text-text-primary overflow-hidden"
+                        className="absolute inset-0 p-4 font-mono text-[0.8125rem] leading-6 text-text-primary overflow-hidden"
+                        style={{ pointerEvents: 'auto' }}
                         dangerouslySetInnerHTML={{
                             __html: sanitizeHtml(highlightCode(content, {
                                 commandClass: 'text-[var(--sem-info)] drop-shadow-[0_0_4px_rgba(var(--sem-info-rgb),0.5)]',
@@ -65,6 +60,7 @@ export function EditScriptEditor({ content, setContent }: EditScriptEditorProps)
                                 lineNumberPaddingRight: '8px',
                                 lineNumberMarginRight: '12px',
                                 borderColor: 'rgba(var(--accent-rgb), 0.2)',
+                                diagnostics,
                             }))
                         }}
                     />
@@ -72,6 +68,8 @@ export function EditScriptEditor({ content, setContent }: EditScriptEditorProps)
                         ref={textareaRef}
                         title="script editor"
                         onScroll={handleScroll}
+                        onMouseMove={onHighlightMouseMove}
+                        onMouseLeave={onHighlightMouseLeave}
                         className="relative w-full h-full p-4 font-mono text-[0.8125rem] leading-6 text-transparent caret-accent bg-transparent resize-none outline-none group-focus-within:border-accent/50 transition-colors custom-scrollbar selection:bg-accent/20"
                         style={{ paddingLeft: "60px" }}
                         spellCheck={false}
@@ -88,6 +86,11 @@ export function EditScriptEditor({ content, setContent }: EditScriptEditorProps)
                 <div className="absolute top-2 right-4 flex items-center gap-2 text-[10px] tracking-[0.3em] font-black pointer-events-none select-none">
                     <span className="text-accent/30">[ALISCRIPT_V2]</span>
                     {syntaxValid === false && <span className="text-red-500 drop-shadow-[0_0_5px_rgba(var(--sem-danger-rgb),0.8)] animate-pulse">SYNTAX_ERR</span>}
+                    {diagCount > 0 && (
+                        <span className="text-red-400/70 text-[9px] tracking-[0.15em]">
+                            {diagCount} {diagCount === 1 ? 'issue' : 'issues'}
+                        </span>
+                    )}
                     {warningCount > 0 && (
                         <button
                             type="button"
@@ -106,7 +109,20 @@ export function EditScriptEditor({ content, setContent }: EditScriptEditorProps)
                 {showWarnings && warningCount > 0 && (
                     <WarningPanel warnings={warnings} onClose={() => setShowWarnings(false)} />
                 )}
+                <DiagnosticTooltip
+                    visible={tooltipState.visible}
+                    x={tooltipState.x}
+                    y={tooltipState.y}
+                    marker={tooltipState.marker}
+                    onMouseEnter={onTooltipMouseEnter}
+                    onMouseLeave={onTooltipMouseLeave}
+                    onApplyFix={(diag) => {
+                        handleApplyDiagnosticFix(diag);
+                        hideTooltip();
+                    }}
+                />
             </div>
         </div>
     );
 }
+

@@ -1,5 +1,6 @@
-import { useState, RefObject } from 'react';
+import { useState, RefObject, useCallback } from 'react';
 import type { Suggestion, CaretPosition } from './types';
+import type { DiagnosticMarker } from '../../workers/parser.worker.types';
 import { AUTOCOMPLETE_SUGGESTIONS, LINE_HEIGHT_CAMPAIGN, LINE_HEIGHT_ARENA } from './constants';
 
 const getCurrentWord = (textarea: HTMLTextAreaElement): string => {
@@ -9,57 +10,77 @@ const getCurrentWord = (textarea: HTMLTextAreaElement): string => {
     return match ? match[0] : '';
 };
 
-const buildAcceptSuggestion = (
-    setScriptInput: (val: string) => void,
-    textareaRef: RefObject<HTMLTextAreaElement | null>,
-    setSuggestions: (s: Suggestion[]) => void,
-) => (suggestion: Suggestion) => {
-    const ta = textareaRef.current;
-    if (!ta) return;
+/**
+ * Find a diagnostic marker at the cursor position.
+ */
+function findDiagnosticAtCursor(
+    textarea: HTMLTextAreaElement,
+    diagnostics: DiagnosticMarker[],
+): DiagnosticMarker | null {
+    if (diagnostics.length === 0) return null;
 
-    const pos = ta.selectionStart;
-    const textBefore = ta.value.slice(0, pos);
-    const wordMatch = textBefore.match(/[a-zA-Z_][a-zA-Z_0-9]*$/);
-    const wordLen = wordMatch ? wordMatch[0].length : 0;
+    const value = textarea.value;
+    const pos = textarea.selectionStart;
 
-    const newVal =
-        ta.value.slice(0, pos - wordLen) +
-        suggestion.label +
-        ta.value.slice(pos);
+    // Determine current line and column
+    const textBefore = value.slice(0, pos);
+    const lineIdx = textBefore.split('\n').length - 1;
+    const lastNewline = textBefore.lastIndexOf('\n');
+    const col = pos - lastNewline - 1;
 
-    setScriptInput(newVal);
-    setSuggestions([]);
-
-    setTimeout(() => {
-        ta.focus();
-        const newPos = pos - wordLen + suggestion.label.length;
-        ta.setSelectionRange(newPos, newPos);
-    }, 0);
-};
-
-const buildHandleKeyDown = (
-    suggestions: Suggestion[],
-    activeIdx: number,
-    setActiveIdx: (fn: (i: number) => number) => void,
-    onAccept: (s: Suggestion) => void,
-    setSuggestions: (s: Suggestion[]) => void,
-) => (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (suggestions.length === 0) return;
-    if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setActiveIdx(i => Math.min(i + 1, suggestions.length - 1));
-    } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setActiveIdx(i => Math.max(i - 1, 0));
-    } else if (e.key === 'Tab' || e.key === 'Enter') {
-        if (suggestions[activeIdx]) {
-            e.preventDefault();
-            onAccept(suggestions[activeIdx]);
+    // Find a diagnostic that spans this position
+    for (const diag of diagnostics) {
+        if (diag.line === lineIdx && col >= diag.startCol && col <= diag.endCol) {
+            return diag;
         }
-    } else if (e.key === 'Escape') {
-        setSuggestions([]);
     }
-};
+    return null;
+}
+
+/**
+ * Apply a diagnostic fix (replace word or delete line).
+ */
+export function applyDiagnosticFix(
+    textarea: HTMLTextAreaElement,
+    diag: DiagnosticMarker,
+    setScriptInput: (val: string) => void,
+    validateSyntax: (code: string) => void,
+): void {
+    const value = textarea.value;
+    const lines = value.split('\n');
+
+    if (diag.action === 'replace' && diag.suggestion) {
+        // Replace the word at the diagnostic position
+        const line = lines[diag.line] ?? '';
+        const newLine = line.slice(0, diag.startCol) + diag.suggestion + line.slice(diag.endCol);
+        lines[diag.line] = newLine;
+        const newVal = lines.join('\n');
+        setScriptInput(newVal);
+        validateSyntax(newVal);
+
+        // Position cursor after the replaced word
+        const lineStart = lines.slice(0, diag.line).join('\n').length + (diag.line > 0 ? 1 : 0);
+        const newPos = lineStart + diag.startCol + diag.suggestion.length;
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+    } else if (diag.action === 'delete') {
+        // Delete the entire line containing the diagnostic
+        lines.splice(diag.line, 1);
+        const newVal = lines.join('\n');
+        setScriptInput(newVal);
+        validateSyntax(newVal);
+
+        // Position cursor at the start of the next line (or end of previous)
+        const targetLine = Math.min(diag.line, lines.length - 1);
+        const lineStart = lines.slice(0, Math.max(0, targetLine)).join('\n').length + (targetLine > 0 ? 1 : 0);
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(lineStart, lineStart);
+        }, 0);
+    }
+}
 
 /**
  * Precise shadow-DOM caret positioning. Used by campaign editor.
@@ -69,12 +90,35 @@ export const useAutocomplete = (
     clearPrebuilt: () => void,
     textareaRef: RefObject<HTMLTextAreaElement | null>,
     validateSyntax: (code: string) => void,
+    diagnostics: DiagnosticMarker[] = [],
 ) => {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [activeIdx, setActiveIdx] = useState(0);
     const [caretXY, setCaretXY] = useState<CaretPosition>({ top: 0, left: 56 });
 
-    const acceptSuggestion = buildAcceptSuggestion(setScriptInput, textareaRef, setSuggestions);
+    const acceptSuggestion = useCallback((suggestion: Suggestion) => {
+        const ta = textareaRef.current;
+        if (!ta) return;
+
+        const pos = ta.selectionStart;
+        const textBefore = ta.value.slice(0, pos);
+        const wordMatch = textBefore.match(/[a-zA-Z_][a-zA-Z_0-9]*$/);
+        const wordLen = wordMatch ? wordMatch[0].length : 0;
+
+        const newVal =
+            ta.value.slice(0, pos - wordLen) +
+            suggestion.label +
+            ta.value.slice(pos);
+
+        setScriptInput(newVal);
+        setSuggestions([]);
+
+        setTimeout(() => {
+            ta.focus();
+            const newPos = pos - wordLen + suggestion.label.length;
+            ta.setSelectionRange(newPos, newPos);
+        }, 0);
+    }, [setScriptInput, textareaRef]);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const val = e.target.value;
@@ -98,7 +142,7 @@ export const useAutocomplete = (
 
             const propsToCopy = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'borderWidth', 'boxSizing', 'wordBreak', 'whiteSpace', 'letterSpacing', 'tabSize'];
             for (const prop of propsToCopy) {
-                (div.style as any)[prop] = (style as any)[prop];
+                (div.style as unknown as Record<string, string>)[prop] = (style as unknown as Record<string, string>)[prop] ?? '';
             }
             div.style.width = `${ta.offsetWidth}px`;
             div.style.position = 'absolute';
@@ -149,7 +193,62 @@ export const useAutocomplete = (
         }
     };
 
-    const handleKeyDown = buildHandleKeyDown(suggestions, activeIdx, setActiveIdx, acceptSuggestion, setSuggestions);
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        // If autocomplete suggestions are visible, they take priority
+        if (suggestions.length > 0) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setActiveIdx(i => Math.min(i + 1, suggestions.length - 1));
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setActiveIdx(i => Math.max(i - 1, 0));
+            } else if (e.key === 'Tab' || e.key === 'Enter') {
+                if (suggestions[activeIdx]) {
+                    e.preventDefault();
+                    acceptSuggestion(suggestions[activeIdx]!);
+                }
+            } else if (e.key === 'Escape') {
+                setSuggestions([]);
+            }
+            return;
+        }
+
+        // No autocomplete — check for Tab-to-fix diagnostics
+        if (e.key === 'Tab') {
+            const ta = textareaRef.current;
+            if (!ta) return;
+
+            if (diagnostics.length > 0) {
+                const diag = findDiagnosticAtCursor(ta, diagnostics);
+                if (diag && (diag.suggestion || diag.action === 'delete')) {
+                    e.preventDefault();
+                    applyDiagnosticFix(ta, diag, setScriptInput, validateSyntax);
+                    return;
+                }
+            }
+
+            // Fallback to inserting a standard 2-space tab indent
+            e.preventDefault();
+            const start = ta.selectionStart;
+            const end = ta.selectionEnd;
+            const val = ta.value;
+            const next = val.substring(0, start) + "  " + val.substring(end);
+            setScriptInput(next);
+            validateSyntax(next);
+
+            // Position cursor after the tab
+            setTimeout(() => {
+                ta.focus();
+                ta.setSelectionRange(start + 2, start + 2);
+            }, 0);
+        }
+    }, [suggestions, activeIdx, acceptSuggestion, diagnostics, textareaRef, setScriptInput, validateSyntax]);
+
+    const handleApplyDiagnosticFix = useCallback((diag: DiagnosticMarker) => {
+        const ta = textareaRef.current;
+        if (!ta) return;
+        applyDiagnosticFix(ta, diag, setScriptInput, validateSyntax);
+    }, [textareaRef, setScriptInput, validateSyntax]);
 
     const clearSuggestions = () => setSuggestions([]);
 
@@ -160,7 +259,8 @@ export const useAutocomplete = (
         handleChange,
         handleKeyDown,
         acceptSuggestion,
-        clearSuggestions
+        clearSuggestions,
+        handleApplyDiagnosticFix
     };
 };
 
@@ -172,12 +272,35 @@ export const useAutocompleteFast = (
     clearPrebuilt: () => void,
     textareaRef: RefObject<HTMLTextAreaElement | null>,
     validateSyntax: (code: string) => void,
+    diagnostics: DiagnosticMarker[] = [],
 ) => {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [activeIdx, setActiveIdx] = useState(0);
     const [caretXY, setCaretXY] = useState<CaretPosition>({ bottom: 0, left: 56 });
 
-    const acceptSuggestion = buildAcceptSuggestion(setScriptInput, textareaRef, setSuggestions);
+    const acceptSuggestion = useCallback((suggestion: Suggestion) => {
+        const ta = textareaRef.current;
+        if (!ta) return;
+
+        const pos = ta.selectionStart;
+        const textBefore = ta.value.slice(0, pos);
+        const wordMatch = textBefore.match(/[a-zA-Z_][a-zA-Z_0-9]*$/);
+        const wordLen = wordMatch ? wordMatch[0].length : 0;
+
+        const newVal =
+            ta.value.slice(0, pos - wordLen) +
+            suggestion.label +
+            ta.value.slice(pos);
+
+        setScriptInput(newVal);
+        setSuggestions([]);
+
+        setTimeout(() => {
+            ta.focus();
+            const newPos = pos - wordLen + suggestion.label.length;
+            ta.setSelectionRange(newPos, newPos);
+        }, 0);
+    }, [setScriptInput, textareaRef]);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const val = e.target.value;
@@ -204,7 +327,62 @@ export const useAutocompleteFast = (
         }
     };
 
-    const handleKeyDown = buildHandleKeyDown(suggestions, activeIdx, setActiveIdx, acceptSuggestion, setSuggestions);
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        // If autocomplete suggestions are visible, they take priority
+        if (suggestions.length > 0) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setActiveIdx(i => Math.min(i + 1, suggestions.length - 1));
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setActiveIdx(i => Math.max(i - 1, 0));
+            } else if (e.key === 'Tab' || e.key === 'Enter') {
+                if (suggestions[activeIdx]) {
+                    e.preventDefault();
+                    acceptSuggestion(suggestions[activeIdx]!);
+                }
+            } else if (e.key === 'Escape') {
+                setSuggestions([]);
+            }
+            return;
+        }
+
+        // No autocomplete — check for Tab-to-fix diagnostics
+        if (e.key === 'Tab') {
+            const ta = textareaRef.current;
+            if (!ta) return;
+
+            if (diagnostics.length > 0) {
+                const diag = findDiagnosticAtCursor(ta, diagnostics);
+                if (diag && (diag.suggestion || diag.action === 'delete')) {
+                    e.preventDefault();
+                    applyDiagnosticFix(ta, diag, setScriptInput, validateSyntax);
+                    return;
+                }
+            }
+
+            // Fallback to inserting a standard 2-space tab indent
+            e.preventDefault();
+            const start = ta.selectionStart;
+            const end = ta.selectionEnd;
+            const val = ta.value;
+            const next = val.substring(0, start) + "  " + val.substring(end);
+            setScriptInput(next);
+            validateSyntax(next);
+
+            // Position cursor after the tab
+            setTimeout(() => {
+                ta.focus();
+                ta.setSelectionRange(start + 2, start + 2);
+            }, 0);
+        }
+    }, [suggestions, activeIdx, acceptSuggestion, diagnostics, textareaRef, setScriptInput, validateSyntax]);
+
+    const handleApplyDiagnosticFix = useCallback((diag: DiagnosticMarker) => {
+        const ta = textareaRef.current;
+        if (!ta) return;
+        applyDiagnosticFix(ta, diag, setScriptInput, validateSyntax);
+    }, [textareaRef, setScriptInput, validateSyntax]);
 
     const clearSuggestions = () => setSuggestions([]);
 
@@ -215,6 +393,7 @@ export const useAutocompleteFast = (
         handleChange,
         handleKeyDown,
         acceptSuggestion,
-        clearSuggestions
+        clearSuggestions,
+        handleApplyDiagnosticFix
     };
 };
