@@ -59,7 +59,19 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                         </button>
                     )}
                 </div>
-                <AutocompleteDropdown suggestions={suggestions} activeIdx={activeIdx} caretXY={caretXY} onAccept={acceptSuggestion} detailColors={DETAIL_COLORS_HEX} useTop={false} />
+                <AutocompleteDropdown
+                    suggestions={suggestions}
+                    activeIdx={activeIdx}
+                    caretXY={caretXY}
+                    onAccept={acceptSuggestion}
+                    detailColors={DETAIL_COLORS_HEX}
+                    useTop={caretXY.useTop !== false}
+                    containerClass="absolute z-50 font-mono text-[11px] bg-[#0a0f1c] border border-[#22d3ee]/40 rounded-lg shadow-[0_8px_40px_rgba(0,0,0,0.5),0_0_20px_rgba(34,211,238,0.1)] overflow-hidden backdrop-blur-md w-[380px] max-w-[calc(100vw-32px)] flex flex-col"
+                    headerClass="text-[#22d3ee]/60 text-[10px] tracking-widest uppercase"
+                    activeItemClass="bg-[#22d3ee]/20 text-[#f8fafc]"
+                    itemClass="text-[#9ca3af] hover:bg-[#22d3ee]/10"
+                    footerClass="text-[#22d3ee]/50 bg-[#0a0f1c]"
+                />
                 {showWarnings && warningCount > 0 && (
                     <WarningPanel warnings={warnings} onClose={() => setShowWarnings(false)} />
                 )}

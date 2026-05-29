@@ -623,6 +623,11 @@ textarea::selection,
  *  CUSTOM SCROLLBAR (Command Console)
  * ───────────────────────────────────────────────────────── */
 
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--accent-rgb), 0.35) rgba(var(--accent-rgb), 0.08);
+  color-scheme: dark;
+}
 .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: rgba(var(--accent-rgb), 0.08); border-radius: 6px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(var(--accent-rgb), 0.35); border-radius: 6px; }

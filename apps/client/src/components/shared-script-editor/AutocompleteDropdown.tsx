@@ -22,7 +22,7 @@ export const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
     activeItemClass = 'bg-accent/20 text-text-primary',
     itemClass = 'text-text-secondary hover:bg-accent/10',
     footerClass = 'text-accent/50 bg-bg-secondary',
-    useTop = true,
+    useTop,
 }) => {
     const listRef = useRef<HTMLDivElement>(null);
     const activeItemRef = useRef<HTMLButtonElement>(null);
@@ -36,7 +36,8 @@ export const AutocompleteDropdown: React.FC<AutocompleteDropdownProps> = ({
     if (suggestions.length === 0) return null;
 
     const styleObj: React.CSSProperties = { left: caretXY.left, maxHeight: '250px' };
-    if (useTop && caretXY.top !== undefined) styleObj.top = caretXY.top;
+    const effectiveUseTop = useTop !== undefined ? useTop : (caretXY.useTop !== false);
+    if (effectiveUseTop && caretXY.top !== undefined) styleObj.top = caretXY.top;
     if (caretXY.bottom !== undefined) styleObj.bottom = caretXY.bottom;
     if (caretXY.top === undefined && caretXY.bottom === undefined) {
         styleObj.top = 0;

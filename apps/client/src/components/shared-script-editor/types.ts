@@ -8,6 +8,7 @@ export interface CaretPosition {
     bottom?: number | 'auto';
     top?: number | 'auto';
     left: number;
+    useTop?: boolean;
 }
 
 export interface ScriptEditorProps {

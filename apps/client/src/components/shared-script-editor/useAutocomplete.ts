@@ -172,21 +172,30 @@ export const useAutocomplete = (
 
             document.body.removeChild(div);
 
-            const dropdownHeight = 250;
             const taRect = ta.getBoundingClientRect();
             const caretScreenY = taRect.top + top;
-            const spaceBelowScreen = window.innerHeight - caretScreenY;
+            const cursorYInTextarea = caretTopInside - ta.scrollTop;
+            const spaceBelowWindow = window.innerHeight - caretScreenY;
 
-            // Require extra 120px buffer below for mobile nav bar and safety
-            const MIN_SPACE_NEEDED = dropdownHeight + 120;
+            let showAbove = false;
+            if (cursorYInTextarea < 100) {
+                // Near the top of the textarea viewport: always show below
+                showAbove = false;
+            } else if (ta.clientHeight - cursorYInTextarea < 100) {
+                // Near the bottom of the textarea viewport: show above
+                showAbove = true;
+            } else if (spaceBelowWindow < 250) {
+                // Not enough screen space below: show above
+                showAbove = true;
+            }
 
-            if (spaceBelowScreen < MIN_SPACE_NEEDED && caretScreenY > dropdownHeight) {
+            if (showAbove) {
                 const container = ta.closest('.group') || ta;
                 const containerRect = container.getBoundingClientRect();
                 const bottomDist = containerRect.bottom - caretScreenY + 4;
-                setCaretXY({ bottom: bottomDist, top: 'auto', left });
+                setCaretXY({ bottom: bottomDist, top: 'auto', left, useTop: false });
             } else {
-                setCaretXY({ top: top + LINE_HEIGHT_CAMPAIGN + 4, bottom: 'auto', left });
+                setCaretXY({ top: top + LINE_HEIGHT_CAMPAIGN + 4, bottom: 'auto', left, useTop: true });
             }
         } else {
             setSuggestions([]);
@@ -276,7 +285,7 @@ export const useAutocompleteFast = (
 ) => {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [activeIdx, setActiveIdx] = useState(0);
-    const [caretXY, setCaretXY] = useState<CaretPosition>({ bottom: 0, left: 56 });
+    const [caretXY, setCaretXY] = useState<CaretPosition>({ top: 36, left: 56 });
 
     const acceptSuggestion = useCallback((suggestion: Suggestion) => {
         const ta = textareaRef.current;
@@ -318,10 +327,41 @@ export const useAutocompleteFast = (
 
             const ta = e.target;
             const linesBefore = ta.value.slice(0, ta.selectionStart).split('\n');
-            const totalLines = ta.value.split('\n').length;
             const lineIdx = linesBefore.length - 1;
-            const linesBelow = totalLines - lineIdx - 1;
-            setCaretXY({ bottom: linesBelow * LINE_HEIGHT_ARENA + 28 + 4, left: 56 });
+
+            const container = ta.closest('.group') || ta;
+            const containerRect = container.getBoundingClientRect();
+            const taRect = ta.getBoundingClientRect();
+
+            // Calculate exact screen Y of top and bottom of the current line
+            const caretScreenY = taRect.top + (lineIdx * LINE_HEIGHT_ARENA) + 16 - ta.scrollTop;
+            const caretScreenBottomY = caretScreenY + LINE_HEIGHT_ARENA;
+
+            // Space below the line to the bottom of the window and the parent container
+            const spaceBelowWindow = window.innerHeight - caretScreenBottomY;
+
+            // Relative Y position of the current line inside the textarea viewport
+            const cursorYInTextarea = (lineIdx * LINE_HEIGHT_ARENA) + 16 - ta.scrollTop;
+
+            let showAbove = false;
+            if (cursorYInTextarea < 100) {
+                // Near the top of the textarea viewport: always show below
+                showAbove = false;
+            } else if (ta.clientHeight - cursorYInTextarea < 100) {
+                // Near the bottom of the textarea viewport: show above
+                showAbove = true;
+            } else if (spaceBelowWindow < 250) {
+                // Not enough screen space below: show above
+                showAbove = true;
+            }
+
+            if (showAbove) {
+                const bottomVal = containerRect.bottom - caretScreenY;
+                setCaretXY({ top: 'auto', bottom: bottomVal, left: 56, useTop: false });
+            } else {
+                const topVal = (lineIdx + 1) * LINE_HEIGHT_ARENA + 16 - ta.scrollTop + (ta.offsetTop || 0);
+                setCaretXY({ top: topVal, bottom: 'auto', left: 56, useTop: true });
+            }
         } else {
             setSuggestions([]);
         }
