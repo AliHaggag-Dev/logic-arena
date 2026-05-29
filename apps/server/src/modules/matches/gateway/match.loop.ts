@@ -6,6 +6,7 @@ import { captureReplaySnapshot } from './match.snapshot';
 import { checkWinCondition } from './match.win-condition';
 import { persistMatchResults } from './match.persistence';
 import { computeDeltaDiff, generateSafeSnapshot } from './match.delta-diff';
+import { AchievementsService } from '../../achievements/achievements.service';
 
 export class MatchLoopManager {
   private timer: NodeJS.Timeout | null = null;
@@ -15,6 +16,7 @@ export class MatchLoopManager {
     private server: Server,
     private prisma: PrismaService,
     private redis?: RedisService,
+    private achievementsService?: AchievementsService,
   ) {}
 
   startLoop() {
@@ -48,6 +50,7 @@ export class MatchLoopManager {
             this.prisma,
             match,
             this.redis,
+            this.achievementsService,
           );
 
           this.server.to(matchId).emit('matchOver', {

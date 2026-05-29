@@ -6,11 +6,12 @@ interface UserLinkProps {
   className?: string;
   children?: React.ReactNode;
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  title?: string;
 }
 
-export function UserLink({ username, className, children, onClick }: UserLinkProps) {
+export function UserLink({ username, className, children, onClick, title }: UserLinkProps) {
   if (!username || username === "N/A") {
-    return <span className={className}>{children ?? username}</span>;
+    return <span className={className} title={title}>{children ?? username}</span>;
   }
 
   return (
@@ -18,6 +19,7 @@ export function UserLink({ username, className, children, onClick }: UserLinkPro
       href={`/profile/${encodeURIComponent(username)}`}
       className={className}
       onClick={onClick}
+      title={title}
     >
       {children ?? username}
     </Link>

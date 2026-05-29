@@ -21,6 +21,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { ProfileQueryService } from '../queries/profile-query.service';
 import { ProfileCommandService } from '../commands/profile-command.service';
 import { PreferencesCommandService } from '../commands/preferences-command.service';
+import { AchievementsService } from '../../achievements/achievements.service';
 import {
   UpdateProfileDto,
   UpdateIdentityDto,
@@ -47,6 +48,7 @@ export class ProfileController {
     private readonly profileQuery: ProfileQueryService,
     private readonly profileCommand: ProfileCommandService,
     private readonly preferencesCommand: PreferencesCommandService,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   @UseGuards(AuthGuard)
@@ -68,6 +70,18 @@ export class ProfileController {
     }
 
     return profile;
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('achievements')
+  async getAchievements(@Req() req: AuthenticatedRequest) {
+    return this.achievementsService.getUserAchievements(req.user.sub);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(':userId/achievements')
+  async getAchievementsByUserId(@Param('userId') userId: string) {
+    return this.achievementsService.getUserAchievements(userId);
   }
 
   @UseGuards(AuthGuard)

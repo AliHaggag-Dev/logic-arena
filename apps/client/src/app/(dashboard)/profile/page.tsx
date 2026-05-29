@@ -8,6 +8,7 @@ import { useMediaQuery }        from "../../../hooks/useMediaQuery";
 
 import { HeroSection }          from "./components/sections/HeroSection";
 import { StatCardsSection }     from "./components/sections/StatCardsSection";
+import { AchievementsList }     from "./components/sections/AchievementsList";
 import { AnalyticsSection }     from "./components/sections/AnalyticsSection";
 import { MatchHistorySection }  from "./components/sections/MatchHistorySection";
 import { ProfileErrorState }    from "./components/sections/ProfileErrorState";
@@ -140,6 +141,9 @@ export default function ProfilePage() {
                 username={username}
               />
               <StatCardsSection loading={loading} profile={profile} isMobile={isMobile} />
+              {profile && (
+                <AchievementsList userId={profile.id} isGuest={isGuest} isMobile={isMobile} />
+              )}
               <AnalyticsSection
                 loading={loading}
                 profile={profile}

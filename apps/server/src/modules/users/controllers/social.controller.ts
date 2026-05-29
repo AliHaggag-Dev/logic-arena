@@ -41,6 +41,12 @@ export class SocialController {
             rank: true,
             combatStats: true,
             _count: { select: { wonMatches: true } },
+            achievements: {
+              select: {
+                achievementId: true,
+                unlockedLevel: true,
+              },
+            },
           },
         });
         const byId = new Map(users.map((u) => [u.id, u]));
@@ -78,6 +84,12 @@ export class SocialController {
         rank: true,
         combatStats: true,
         _count: { select: { wonMatches: true } },
+        achievements: {
+          select: {
+            achievementId: true,
+            unlockedLevel: true,
+          },
+        },
       },
     });
 

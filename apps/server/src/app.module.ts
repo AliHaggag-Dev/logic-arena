@@ -16,6 +16,7 @@ import { CampaignModule } from './modules/campaign/campaign.module';
 import { AiModule } from './modules/ai/ai.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { AchievementsModule } from './modules/achievements/achievements.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AdminModule } from './modules/admin/admin.module';
     AiModule,
     FeedbackModule,
     AdminModule,
+    AchievementsModule,
   ],
   controllers: [AppController],
   providers: [

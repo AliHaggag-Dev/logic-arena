@@ -6,6 +6,7 @@ import { YouBadge } from "./ui/YouBadge";
 import { getRankColor } from "./utils";
 import type { LeaderboardViewProps } from "./types";
 import { UserLink } from "../../../../components/ui/UserLink";
+import { AchievementBadge } from "../../profile/components/ui/AchievementBadge";
 
 export function MobileList({
   users,
@@ -51,15 +52,34 @@ export function MobileList({
                       aria-hidden="true"
                     />
                   )}
-                  <div className="flex flex-col gap-1">
-                    <span className="text-text-primary text-[15px] font-bold tracking-wider flex items-center gap-2 flex-wrap">
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap min-w-0">
                       <OnlineDot isOnline={user.isOnline} />
                       <UserLink
                         username={user.username}
-                        className="hover:text-accent transition-colors"
+                        className="text-text-primary text-[15px] font-bold tracking-wider hover:text-accent transition-colors truncate max-w-[130px]"
                       />
                       {isSelf && <YouBadge />}
-                    </span>
+                    </div>
+                    {user.achievements && user.achievements.some((ach) => ach.unlockedLevel > 0) && (
+                      <div className="flex items-center -space-x-1 pl-3.5 mt-0.5">
+                        {user.achievements
+                          .filter((ach) => ach.unlockedLevel > 0)
+                          .map((ach, idx) => (
+                            <div
+                              key={ach.achievementId}
+                              style={{ zIndex: 10 - idx }}
+                            >
+                              <AchievementBadge
+                                id={ach.achievementId}
+                                level={ach.unlockedLevel}
+                                size={14}
+                                showTooltip={false}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <span className="text-accent font-black text-base">

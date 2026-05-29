@@ -8,6 +8,7 @@ import { getRankColor, deriveEfficiency } from "./utils";
 import type { LeaderboardViewProps } from "./types";
 import { RANK_BAR_MAX } from "../types";
 import { UserLink } from "../../../../components/ui/UserLink";
+import { AchievementBadge } from "../../profile/components/ui/AchievementBadge";
 
 export function DesktopTable({
   users,
@@ -22,26 +23,26 @@ export function DesktopTable({
       className="bg-card/60 backdrop-blur-xl border border-accent/10 rounded-xl overflow-hidden"
       style={{ boxShadow: "var(--card-shadow)" }}
     >
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <div className="overflow-x-auto no-scrollbar">
+        <table className="w-full text-left border-collapse table-fixed">
           <thead>
             <tr className="border-b border-accent/10 bg-accent/5">
-              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%]">
+              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[8%]">
                 Rank
               </th>
-              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[35%]">
+              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[22%]">
                 Player
               </th>
-              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%]">
+              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[20%]">
                 Points
               </th>
-              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold">
+              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%]">
                 Victories
               </th>
-              <th className="px-6 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold text-right">
+              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%] text-right">
                 Efficiency
               </th>
-              <th className="px-6 py-4 w-[130px] pr-8">
+              <th className="px-4 py-4 w-[20%] pr-8">
                 <span className="sr-only">Action</span>
               </th>
             </tr>
@@ -71,7 +72,7 @@ export function DesktopTable({
                     }`}
                   >
                     {/* Rank */}
-                    <td className="px-6 py-4 align-middle">
+                    <td className="px-4 py-4 align-middle">
                       <div className="flex items-center gap-2">
                         <span
                           className="font-black text-lg drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.3)]"
@@ -91,19 +92,73 @@ export function DesktopTable({
                     </td>
 
                     {/* Player */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2 min-w-0">
                         <OnlineDot isOnline={user.isOnline} />
                         <UserLink
                           username={user.username}
-                          className="text-text-primary text-base font-bold tracking-wider group-hover:text-text-primary transition-colors truncate max-w-[200px]"
+                          title={user.username}
+                          className="text-text-primary text-base font-bold tracking-wider group-hover:text-accent transition-colors truncate max-w-[80px] lg:max-w-[120px]"
                         />
                         {isSelf && <YouBadge />}
+
+                        {/* Badges Stack */}
+                        {user.achievements && user.achievements.some((ach) => ach.unlockedLevel > 0) && (() => {
+                          const unlocked = user.achievements.filter((ach) => ach.unlockedLevel > 0);
+                          const firstAch = unlocked[0];
+                          const remainingCount = unlocked.length - 1;
+
+                          return (
+                            <div className="relative group/badges-stack shrink-0">
+                              {/* Single Badge & +N Pill Trigger */}
+                              <div className="flex items-center gap-1.5 select-none">
+                                <AchievementBadge
+                                  id={firstAch.achievementId}
+                                  level={firstAch.unlockedLevel}
+                                  size={16}
+                                  showTooltip={false}
+                                />
+                                {remainingCount > 0 && (
+                                  <span className="text-[9px] font-black font-mono px-1 py-0.5 rounded bg-accent/10 border border-accent/20 text-accent/80 transition-colors duration-200 group-hover/badges-stack:bg-accent/20 group-hover/badges-stack:text-accent">
+                                    +{remainingCount}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Unified Premium Tooltip Card */}
+                              <div className={`absolute ${index < 3 ? "top-full mt-2" : "bottom-full mb-2"} left-1/2 -translate-x-1/2 scale-0 group-hover/badges-stack:scale-100 transition-all duration-200 bg-card/95 border border-accent/20 rounded-lg pt-3.5 pb-2.5 px-3 z-50 pointer-events-none shadow-lg min-w-[170px] backdrop-blur-md`}>
+                                <div className="text-[10px] font-black text-accent tracking-widest border-b border-accent/15 pb-1.5 mb-1.5 uppercase font-mono">
+                                  Player Badges
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                  {unlocked.map((ach) => {
+                                    const label = ['LOCKED', 'ALPHA', 'BETA', 'GAMMA', 'DELTA'][ach.unlockedLevel];
+                                    const color = [
+                                      'var(--text-primary)/20',
+                                      'var(--docs-cyan)',
+                                      'var(--docs-purple)',
+                                      'var(--docs-orange)',
+                                      'var(--docs-yellow)',
+                                    ][ach.unlockedLevel];
+                                    const name = ach.achievementId.replace('_', ' ').toUpperCase();
+                                    return (
+                                      <div key={ach.achievementId} className="flex items-center gap-2 text-[9px] font-bold font-mono">
+                                        <span style={{ color }} className="text-[11px] leading-none">●</span>
+                                        <span className="text-text-primary">{name}:</span>
+                                        <span style={{ color }} className="ml-auto">{label}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </td>
 
                     {/* Points */}
-                    <td className="px-6 py-4 align-middle">
+                    <td className="px-4 py-4 align-middle">
                       <div className="flex items-center justify-start gap-2">
                         <span className="text-accent font-black text-base drop-shadow-[0_0_5px_rgba(var(--accent-rgb),0.3)]">
                           {user.rank}
@@ -123,21 +178,21 @@ export function DesktopTable({
                     </td>
 
                     {/* Victories */}
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <span className="text-emerald-500 font-bold drop-shadow-[0_0_5px_rgba(var(--sem-success-rgb),0.3)]">
                         {user._count.wonMatches}
                       </span>
                     </td>
 
                     {/* Efficiency */}
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <div className="flex justify-end">
                         <EfficiencyBadge score={deriveEfficiency(user)} />
                       </div>
                     </td>
 
                     {/* Action */}
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <div className="w-[130px] flex justify-end shrink-0 pr-2">
                         {isSelf ? null : isGuest ? (
                           <button

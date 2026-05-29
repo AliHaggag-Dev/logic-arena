@@ -45,6 +45,7 @@ model User {
   createdTournaments   Tournament[]       @relation("CreatedTournaments")
   tournaments          Tournament[]       @relation("TournamentParticipants")
   matchParticipations  MatchParticipant[]
+  achievements         UserAchievement[]
 }
 
 model RobotScript {
@@ -167,3 +168,18 @@ model ContactMessage {
 
   @@index([status])
 }
+
+model UserAchievement {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId   String    // e.g. "matches_played" | "matches_won" | "rank_score" | "campaign_completed"
+  unlockedLevel   Int       @default(0) // 0 = Locked, 1 = Alpha, 2 = Beta, 3 = Gamma, 4 = Delta
+  currentProgress Int       @default(0)
+  lastUpdated     DateTime  @default(now())
+  unlockedAt      DateTime?
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+

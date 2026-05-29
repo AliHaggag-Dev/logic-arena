@@ -10,8 +10,10 @@ import { PreferencesCommandService } from './commands/preferences-command.servic
 import { MarketCommandService } from './commands/market-command.service';
 import { PrismaService } from '../../common/prisma.service';
 import { CloudinaryService } from '../../common/cloudinary.service';
+import { AchievementsModule } from '../achievements/achievements.module';
 
 @Module({
+  imports: [AchievementsModule],
   controllers: [
     ProfileController,
     SocialController,

@@ -70,6 +70,7 @@ export interface UserProfile {
   hasGithub: boolean;
   provider: string | null;
   combatStats: CombatStats;
+  achievements?: { achievementId: string; unlockedLevel: number }[];
 }
 
 export interface MatchSummary {
@@ -100,6 +101,7 @@ export interface PublicProfile {
   winRate: number;
   matchHistory: MatchSummary[];
   combatStats: CombatStats;
+  achievements?: { achievementId: string; unlockedLevel: number }[];
 }
 
 /** Shape returned by GET /users/leaderboard */
@@ -110,6 +112,7 @@ export interface LeaderboardEntry {
   isOnline: boolean;
   combatStats?: any;
   _count: { wonMatches: number };
+  achievements?: { achievementId: string; unlockedLevel: number }[];
 }
 
 /** Maximum number of players returned by the leaderboard endpoint */

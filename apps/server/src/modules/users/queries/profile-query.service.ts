@@ -13,17 +13,22 @@ import {
   DEFAULT_ARENA_PREFERENCES,
   DEFAULT_NOTIFICATION_SETTINGS,
 } from '../types';
+import { AchievementsService } from '../../achievements/achievements.service';
 
 @Injectable()
 export class ProfileQueryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   async getProfile(userId: string): Promise<UserProfile | null> {
     const cached = await this.redis.get<UserProfile>(profileKey(userId));
     if (cached) return cached;
+
+    // Self-healing check: sync achievements for historical data
+    await this.achievementsService.checkAll(userId);
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -43,6 +48,12 @@ export class ProfileQueryService {
         githubId: true,
         provider: true,
         combatStats: true,
+        achievements: {
+          select: {
+            achievementId: true,
+            unlockedLevel: true,
+          },
+        },
         Match: {
           orderBy: { createdAt: 'desc' },
           take: 100,
@@ -112,6 +123,7 @@ export class ProfileQueryService {
       hasGithub: !!user.githubId,
       provider: user.provider,
       combatStats: (user.combatStats as CombatStats | null) ?? zeroCombatStats,
+      achievements: user.achievements,
     };
 
     await this.redis.set(profileKey(userId), profile, PROFILE_TTL);

@@ -22,6 +22,7 @@ import { CampaignFightRunner, CampaignFightData } from './gateway/match.campaign
 import { CleanupManager } from './gateway/match.cleanup';
 import { SpectatorManager } from './gateway/match.spectator';
 import { handleJoinLeaderboard } from './gateway/match.leaderboard';
+import { AchievementsService } from '../achievements/achievements.service';
 
 @WebSocketGateway({
   cors: {
@@ -51,6 +52,7 @@ export class MatchGateway
     private readonly prisma: PrismaService,
     private readonly redisService: RedisService,
     private readonly campaignService: CampaignService,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   onModuleInit() {
@@ -58,7 +60,7 @@ export class MatchGateway
     this.spectatorManager = new SpectatorManager(this.state, this.server);
     this.lobbyManager = new MatchLobbyManager(this.state, this.server, this.prisma, this.redisService);
     this.socialManager = new MatchSocialManager(this.server, this.prisma, this.redisService);
-    this.loopManager = new MatchLoopManager(this.state, this.server, this.prisma, this.redisService);
+    this.loopManager = new MatchLoopManager(this.state, this.server, this.prisma, this.redisService, this.achievementsService);
     this.campaignRunner = new CampaignFightRunner(this.campaignService, this.redisService, this.campaignIntervals);
     this.loopManager.startLoop();
   }

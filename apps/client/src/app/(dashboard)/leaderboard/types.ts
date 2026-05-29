@@ -6,6 +6,7 @@ export interface LeaderboardUser {
   isOnline: boolean;
   inMatchId?: string;
   _count: { wonMatches: number };
+  achievements?: { achievementId: string; unlockedLevel: number }[];
   combatStats?: {
     efficiency: number;
     aggression: number;

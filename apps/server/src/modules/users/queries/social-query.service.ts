@@ -8,12 +8,14 @@ import {
   publicProfileKey,
   PUBLIC_PROFILE_TTL,
 } from '../types';
+import { AchievementsService } from '../../achievements/achievements.service';
 
 @Injectable()
 export class SocialQueryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   async getPublicProfile(username: string): Promise<PublicProfile | null> {
@@ -21,8 +23,17 @@ export class SocialQueryService {
     const cached = await this.redis.get<PublicProfile>(cacheKey);
     if (cached) return cached;
 
-    const user = await this.prisma.user.findUnique({
+    const basicUser = await this.prisma.user.findUnique({
       where: { username },
+      select: { id: true },
+    });
+    if (!basicUser) return null;
+
+    // Self-healing check: sync achievements for historical data
+    await this.achievementsService.checkAll(basicUser.id);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: basicUser.id },
       select: {
         id: true,
         username: true,
@@ -30,6 +41,12 @@ export class SocialQueryService {
         rank: true,
         createdAt: true,
         combatStats: true,
+        achievements: {
+          select: {
+            achievementId: true,
+            unlockedLevel: true,
+          },
+        },
         Match: {
           orderBy: { createdAt: 'desc' },
           take: 100,
@@ -86,6 +103,7 @@ export class SocialQueryService {
       winRate,
       matchHistory,
       combatStats: (user.combatStats as CombatStats | null) ?? zeroCombatStats,
+      achievements: user.achievements,
     };
 
     await this.redis.set(cacheKey, profile, PUBLIC_PROFILE_TTL);

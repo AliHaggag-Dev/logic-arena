@@ -10,7 +10,7 @@ import {
   getLevelsByTab,
   getPreviousLevelId,
 } from './campaign.constants';
-
+import { AchievementsService } from '../achievements/achievements.service';
 // ── Hint cost constants ───────────────────────────────────────────────────────
 
 const HINT_COSTS: Record<1 | 2, number> = { 1: 10, 2: 25 };
@@ -76,6 +76,7 @@ export class CampaignService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   // ── Internal helpers ──────────────────────────────────────────────────────
@@ -368,6 +369,7 @@ export class CampaignService {
 
     await this.setBestStars(userId, levelId, stars);
     await this.invalidateUserCampaignCache(userId);
+    await this.achievementsService.checkAll(userId);
     await this.redis.del(
       `user:profile:${userId}`,
       `user:black-market:${userId}`,

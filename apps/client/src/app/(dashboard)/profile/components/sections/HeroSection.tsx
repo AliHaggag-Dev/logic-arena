@@ -6,6 +6,7 @@ import { STAT_LABELS } from "../../constants";
 import { fmtDate } from "../../utils";
 import { HexAvatar } from "../ui/HexAvatar";
 import { OperatorBadge } from "../ui/OperatorBadge";
+import { AchievementBadge } from "../ui/AchievementBadge";
 
 interface Props {
   loading:      boolean;
@@ -60,6 +61,21 @@ export function HeroSection({ loading, profile, isMobile, profileColor, dominant
         {profile && (
           <div className={`flex ${isMobile ? "flex-col items-center" : "flex-row items-center"} gap-3 flex-wrap`}>
             <OperatorBadge rank={profile.rank} />
+
+            {profile.achievements && profile.achievements.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                {profile.achievements
+                  .filter((ach) => ach.unlockedLevel > 0)
+                  .map((ach) => (
+                    <AchievementBadge
+                      key={ach.achievementId}
+                      id={ach.achievementId}
+                      level={ach.unlockedLevel}
+                      size={22}
+                    />
+                  ))}
+              </div>
+            )}
 
             {/* Only shown when the player has real non-zero stats */}
             {dominantKey && (

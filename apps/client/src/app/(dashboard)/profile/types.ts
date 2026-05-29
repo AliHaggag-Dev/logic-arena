@@ -28,4 +28,5 @@ export interface ProfileData {
   winRate: number;
   matchHistory: MatchEntry[];
   combatStats: CombatStats;
+  achievements?: { achievementId: string; unlockedLevel: number }[];
 }

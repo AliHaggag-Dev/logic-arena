@@ -5,6 +5,7 @@ import { CombatStats, profileKey } from '../../users/types';
 import { Prisma } from '@prisma/client';
 import { RedisService } from '../../../common/redis.service';
 import { computeCombatStats, mergeStats } from './match.stats';
+import { AchievementsService } from '../../achievements/achievements.service';
 
 const LEADERBOARD_CACHE_KEY = 'leaderboard:snapshot';
 const LEADERBOARD_ZSET_KEY = 'leaderboard:rank';
@@ -27,6 +28,7 @@ export async function persistMatchResults(
   prisma: PrismaService,
   matchRef: MatchEngine,
   redis?: RedisService,
+  achievementsService?: AchievementsService,
 ): Promise<any> {
   const candidatePlayerIds = state.robots
     .map((r) => r.id)
@@ -169,6 +171,12 @@ export async function persistMatchResults(
           select: { id: true, rank: true },
         })
       : null;
+
+    if (achievementsService) {
+      await Promise.all(
+        playerIds.map((id) => achievementsService.checkAll(id, tx))
+      );
+    }
 
     return { createdMatch, playerIds, updatedWinner, replayDataPayload, playerStats };
   });
