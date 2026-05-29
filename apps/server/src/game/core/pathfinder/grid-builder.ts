@@ -1,5 +1,11 @@
 import { GameLoop } from '@logic-arena/engine';
-import { PATH_CONFIG, GridCell } from './types';
+import { PATH_CONFIG, GridCell, Vec2 } from './types';
+
+interface WalkableCandidate extends GridCell {
+  score: number;
+}
+
+const CLIP_EPSILON = 0.000001;
 
 /**
  * Builds and caches the A* navigational grid.
@@ -79,11 +85,41 @@ export class GridBuilder {
     }
   }
 
+  /** Returns true when a robot center segment keeps physical clearance from all solid obstacles. */
+  hasWorldClearance(a: Vec2, b: Vec2): boolean {
+    const clearance = PATH_CONFIG.ROBOT_RADIUS + PATH_CONFIG.CLEARANCE_MARGIN;
+
+    for (const obs of this.gameLoop.getObstacles()) {
+      if (obs.type !== 'SOLID') continue;
+
+      const cos = Math.cos(-obs.rotation);
+      const sin = Math.sin(-obs.rotation);
+      const localA = this.toLocalPoint(a, obs.position, cos, sin);
+      const localB = this.toLocalPoint(b, obs.position, cos, sin);
+
+      if (
+        this.segmentIntersectsAabb(
+          localA,
+          localB,
+          obs.width / 2 + clearance,
+          obs.height / 2 + clearance,
+        )
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   /**
-   * Snaps a potentially blocked target coordinate to the nearest safe grid cell using a BFS shell check.
+   * Snaps a potentially blocked coordinate to the nearest safe grid cell.
+   * When an origin is provided, prefer cells physically reachable from that exact world position.
    */
-  nearestWalkable(r: number, c: number): GridCell | null {
-    for (let radius = 0; radius <= 3; radius++) {
+  nearestWalkable(r: number, c: number, origin?: Vec2): GridCell | null {
+    let best: WalkableCandidate | null = null;
+
+    for (let radius = 0; radius <= PATH_CONFIG.SNAP_SEARCH_RADIUS; radius++) {
       for (let dr = -radius; dr <= radius; dr++) {
         for (let dc = -radius; dc <= radius; dc++) {
           // Process only the outer shell for this radius level
@@ -92,18 +128,117 @@ export class GridBuilder {
           const nr = r + dr;
           const nc = c + dc;
 
-          if (
-            nr >= 0 &&
-            nr < PATH_CONFIG.ROWS &&
-            nc >= 0 &&
-            nc < PATH_CONFIG.COLS &&
-            !this.impassable[nr][nc]
-          ) {
-            return { r: nr, c: nc };
+          if (!this.isWalkable(nr, nc)) continue;
+
+          const center = this.cellCenter(nr, nc);
+          if (origin && !this.hasWorldClearance(origin, center)) continue;
+
+          const score = origin
+            ? Math.hypot(origin.x - center.x, origin.y - center.y)
+            : Math.hypot(r - nr, c - nc);
+
+          if (!best || score < best.score) {
+            best = { r: nr, c: nc, score };
           }
         }
       }
+
+      const selected = best as WalkableCandidate | null;
+      if (selected) return { r: selected.r, c: selected.c };
     }
+
     return null;
+  }
+
+  private isWalkable(r: number, c: number): boolean {
+    return (
+      r >= 0 &&
+      r < PATH_CONFIG.ROWS &&
+      c >= 0 &&
+      c < PATH_CONFIG.COLS &&
+      !this.impassable[r][c]
+    );
+  }
+
+  private cellCenter(r: number, c: number): Vec2 {
+    return {
+      x: c * PATH_CONFIG.CELL + PATH_CONFIG.CELL / 2,
+      y: r * PATH_CONFIG.CELL + PATH_CONFIG.CELL / 2,
+    };
+  }
+
+  private toLocalPoint(
+    point: Vec2,
+    origin: Vec2,
+    cos: number,
+    sin: number,
+  ): Vec2 {
+    const dx = point.x - origin.x;
+    const dy = point.y - origin.y;
+
+    return {
+      x: dx * cos - dy * sin,
+      y: dx * sin + dy * cos,
+    };
+  }
+
+  private segmentIntersectsAabb(
+    a: Vec2,
+    b: Vec2,
+    halfWidth: number,
+    halfHeight: number,
+  ): boolean {
+    let tMin = 0;
+    let tMax = 1;
+    const delta = { x: b.x - a.x, y: b.y - a.y };
+
+    const xRange = this.clipSegmentAxis(
+      a.x,
+      delta.x,
+      -halfWidth,
+      halfWidth,
+      tMin,
+      tMax,
+    );
+    if (!xRange) return false;
+    tMin = xRange.min;
+    tMax = xRange.max;
+
+    const yRange = this.clipSegmentAxis(
+      a.y,
+      delta.y,
+      -halfHeight,
+      halfHeight,
+      tMin,
+      tMax,
+    );
+    return yRange !== null;
+  }
+
+  private clipSegmentAxis(
+    start: number,
+    delta: number,
+    min: number,
+    max: number,
+    tMin: number,
+    tMax: number,
+  ): { min: number; max: number } | null {
+    if (Math.abs(delta) < CLIP_EPSILON) {
+      return start >= min && start <= max ? { min: tMin, max: tMax } : null;
+    }
+
+    const invDelta = 1 / delta;
+    let near = (min - start) * invDelta;
+    let far = (max - start) * invDelta;
+
+    if (near > far) {
+      const previousNear = near;
+      near = far;
+      far = previousNear;
+    }
+
+    const clippedMin = Math.max(tMin, near);
+    const clippedMax = Math.min(tMax, far);
+    return clippedMin <= clippedMax ? { min: clippedMin, max: clippedMax } : null;
   }
 }

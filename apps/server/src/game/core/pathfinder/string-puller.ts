@@ -5,7 +5,10 @@ import { PATH_CONFIG, GridCell, Vec2 } from './types';
  * Used to "pull the string" on A* grid paths to smooth them into straight-line segments.
  */
 export class StringPuller {
-  constructor(private readonly impassable: boolean[][]) {}
+  constructor(
+    private readonly impassable: boolean[][],
+    private readonly hasWorldClearance: (a: Vec2, b: Vec2) => boolean,
+  ) {}
 
   /**
    * Performs a Bresenham line-of-sight check on the impassable grid.
@@ -23,7 +26,9 @@ export class StringPuller {
 
     while (true) {
       if (this.impassable[r0]?.[c0]) return false;
-      if (r0 === r1 && c0 === c1) return true;
+      if (r0 === r1 && c0 === c1) {
+        return this.hasWorldClearance(this.cellCenter(a), this.cellCenter(b));
+      }
 
       let steppedR = false;
       let steppedC = false;
@@ -74,9 +79,13 @@ export class StringPuller {
     }
 
     // Convert grid cells to absolute world-space coordinate centres
-    return smooth.map((n) => ({
-      x: n.c * PATH_CONFIG.CELL + PATH_CONFIG.CELL / 2,
-      y: n.r * PATH_CONFIG.CELL + PATH_CONFIG.CELL / 2,
-    }));
+    return smooth.map((n) => this.cellCenter(n));
+  }
+
+  private cellCenter(cell: GridCell): Vec2 {
+    return {
+      x: cell.c * PATH_CONFIG.CELL + PATH_CONFIG.CELL / 2,
+      y: cell.r * PATH_CONFIG.CELL + PATH_CONFIG.CELL / 2,
+    };
   }
 }

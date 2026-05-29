@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export * from './types';
 export * from './grid-builder';
 export * from './min-heap';
@@ -10,6 +11,11 @@ import { PATH_CONFIG, Vec2 } from './types';
 import { GridBuilder } from './grid-builder';
 import { AStarProtocol } from './astar';
 
+interface PathProgress {
+  distance: number;
+  stalledTicks: number;
+}
+
 /**
  * Public facade aggregating A* search subsystems.
  * Replaces the monolithic pathfinder.ts with composed modular utilities.
@@ -21,6 +27,7 @@ export class Pathfinder {
   private readonly pathCache = new Map<string, Vec2[]>();
   private readonly lastTarget = new Map<string, Vec2>();
   private readonly lastWallHitTime = new Map<string, number>();
+  private readonly progressCache = new Map<string, PathProgress>();
 
   constructor(private readonly gameLoop: GameLoop) {
     this.gridBuilder = new GridBuilder(this.gameLoop);
@@ -67,18 +74,19 @@ export class Pathfinder {
     const newWallHit = hitWallRecently && hitWallTimestamp > prevWallHit;
     if (newWallHit) this.lastWallHitTime.set(id, hitWallTimestamp);
     if (!hitWallRecently) this.lastWallHitTime.delete(id);
-    const targetMoved = moved > PATH_CONFIG.RECOMPUTE_DIST || newWallHit;
+    const directPathBlocked =
+      path.length === 0 &&
+      !this.gridBuilder.hasWorldClearance(robot.position, target.position);
+    const targetMoved =
+      moved > PATH_CONFIG.RECOMPUTE_DIST || newWallHit || directPathBlocked;
 
     if (targetMoved) {
-      // Target repositioned — recompute full A* path
-      path = this.astar.performAStar(
-        robot.position.x,
-        robot.position.y,
-        target.position.x,
-        target.position.y,
-      );
+      // Target moved, collision happened, or direct route is blocked.
+      path = this.computePath(robot.position, target.position);
+
       this.pathCache.set(id, path);
       this.lastTarget.set(id, { x: target.position.x, y: target.position.y });
+      this.progressCache.delete(id);
     } else if (path.length === 0) {
       // Path exhausted but target hasn't moved — steer directly to target.
       // Do NOT recompute A*: that would generate a path whose first waypoint
@@ -104,8 +112,37 @@ export class Pathfinder {
     }
     this.pathCache.set(id, path);
 
+    if (
+      path.length === 0 &&
+      !this.gridBuilder.hasWorldClearance(robot.position, target.position)
+    ) {
+      robot.velocity.x = 0;
+      robot.velocity.y = 0;
+      return;
+    }
+
     // Apply linear trajectory angular steering
-    const steer = path.length > 0 ? path[0] : target.position;
+    let steer = path.length > 0 ? path[0] : target.position;
+    const steerDistance = Math.hypot(
+      steer.x - robot.position.x,
+      steer.y - robot.position.y,
+    );
+
+    if (path.length > 0 && this.isStalled(id, steerDistance)) {
+      path = this.computePath(robot.position, target.position);
+      this.pathCache.set(id, path);
+      this.progressCache.delete(id);
+      if (
+        path.length === 0 &&
+        !this.gridBuilder.hasWorldClearance(robot.position, target.position)
+      ) {
+        robot.velocity.x = 0;
+        robot.velocity.y = 0;
+        return;
+      }
+      steer = path.length > 0 ? path[0] : target.position;
+    }
+
     const angle = Math.atan2(
       steer.y - robot.position.y,
       steer.x - robot.position.x,
@@ -120,5 +157,44 @@ export class Pathfinder {
     this.pathCache.delete(robotId);
     this.lastTarget.delete(robotId);
     this.lastWallHitTime.delete(robotId);
+    this.progressCache.delete(robotId);
+  }
+
+  private computePath(start: Vec2, target: Vec2): Vec2[] {
+    const path = this.astar.performAStar(start.x, start.y, target.x, target.y);
+
+    if (path.length > 0 && this.isSameCell(start, path[0])) {
+      path.shift();
+    }
+
+    return path;
+  }
+
+  private isSameCell(a: Vec2, b: Vec2): boolean {
+    return (
+      Math.floor(a.x / PATH_CONFIG.CELL) ===
+        Math.floor(b.x / PATH_CONFIG.CELL) &&
+      Math.floor(a.y / PATH_CONFIG.CELL) === Math.floor(b.y / PATH_CONFIG.CELL)
+    );
+  }
+
+  private isStalled(robotId: string, distance: number): boolean {
+    const previous = this.progressCache.get(robotId);
+
+    if (
+      !previous ||
+      distance < previous.distance - PATH_CONFIG.STUCK_PROGRESS_EPSILON
+    ) {
+      this.progressCache.set(robotId, { distance, stalledTicks: 0 });
+      return false;
+    }
+
+    const stalledTicks = previous.stalledTicks + 1;
+    this.progressCache.set(robotId, {
+      distance: Math.min(previous.distance, distance),
+      stalledTicks,
+    });
+
+    return stalledTicks >= PATH_CONFIG.STUCK_RECOMPUTE_TICKS;
   }
 }

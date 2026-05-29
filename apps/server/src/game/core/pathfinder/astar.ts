@@ -50,8 +50,19 @@ export class AStarProtocol {
       Math.max(0, Math.floor(targetY / PATH_CONFIG.CELL)),
     );
 
-    // Abort if origin is inside a SOLID block
-    if (this.gridBuilder.impassable[sR]?.[sC]) return [];
+    let adjustedSR = sR;
+    let adjustedSC = sC;
+
+    // Snap a blocked origin to the safest adjacent walkable cell
+    if (this.gridBuilder.impassable[sR]?.[sC]) {
+      const snapped = this.gridBuilder.nearestWalkable(sR, sC, {
+        x: startX,
+        y: startY,
+      });
+      if (!snapped) return [];
+      adjustedSR = snapped.r;
+      adjustedSC = snapped.c;
+    }
 
     // Snap a blocked target to the safest adjacent walkable cell
     if (this.gridBuilder.impassable[tR]?.[tC]) {
@@ -62,7 +73,7 @@ export class AStarProtocol {
     }
 
     // Already occupying the same cell constraint — abort pathing
-    if (sR === tR && sC === tC) return [];
+    if (adjustedSR === tR && adjustedSC === tC) return [];
 
     const gScore = new Map<number, number>();
     const parent = new Map<number, number>();
@@ -70,10 +81,20 @@ export class AStarProtocol {
 
     const heap = new MinHeap<HeapNode>();
 
-    const startKey = this.key(sR, sC);
-    const h0 = this.octile(Math.abs(tR - sR), Math.abs(tC - sC));
+    const startKey = this.key(adjustedSR, adjustedSC);
+    const h0 = this.octile(
+      Math.abs(tR - adjustedSR),
+      Math.abs(tC - adjustedSC),
+    );
     gScore.set(startKey, 0);
-    heap.push({ f: h0, g: 0, h: h0, r: sR, c: sC, parentKey: -1 });
+    heap.push({
+      f: h0,
+      g: 0,
+      h: h0,
+      r: adjustedSR,
+      c: adjustedSC,
+      parentKey: -1,
+    });
 
     const DIRS = [
       [0, 1],
@@ -168,7 +189,10 @@ export class AStarProtocol {
     }
     raw.reverse();
 
-    const stringPuller = new StringPuller(this.gridBuilder.impassable);
+    const stringPuller = new StringPuller(
+      this.gridBuilder.impassable,
+      (a: Vec2, b: Vec2): boolean => this.gridBuilder.hasWorldClearance(a, b),
+    );
     return stringPuller.smoothPath(raw);
   }
 }

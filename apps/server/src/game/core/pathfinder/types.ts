@@ -18,6 +18,11 @@ export interface PathfinderConfig {
   COST_LAVA: number;
   WP_RADIUS: number;
   RECOMPUTE_DIST: number;
+  ROBOT_RADIUS: number;
+  CLEARANCE_MARGIN: number;
+  SNAP_SEARCH_RADIUS: number;
+  STUCK_RECOMPUTE_TICKS: number;
+  STUCK_PROGRESS_EPSILON: number;
 }
 
 export const PATH_CONFIG: PathfinderConfig = {
@@ -28,6 +33,11 @@ export const PATH_CONFIG: PathfinderConfig = {
   MAX_ITER: 1200,
   COST_TRAP: 3.0,
   COST_LAVA: 6.0,
-  WP_RADIUS: 25,
-  RECOMPUTE_DIST: 90,
+  WP_RADIUS: 16,
+  RECOMPUTE_DIST: 24,
+  ROBOT_RADIUS: 15,
+  CLEARANCE_MARGIN: 3,
+  SNAP_SEARCH_RADIUS: 6,
+  STUCK_RECOMPUTE_TICKS: 8,
+  STUCK_PROGRESS_EPSILON: 3,
 };
