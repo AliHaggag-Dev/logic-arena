@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ChevronDown, Zap } from 'lucide-react';
 import { ALGORITHM_CHALLENGES, AlgorithmChallenge } from '../constants/docsData';
 import { SectionLabel } from './SectionLabel';
+import { CopyButton } from './CopyButton';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   BEGINNER: 'var(--docs-cyan)',
@@ -106,6 +107,7 @@ const ChallengeCard = ({
                 );
               })}
             </pre>
+            <CopyButton code={challenge.code} themeColor={challenge.color} />
           </div>
 
           {/* Load button — unified label */}

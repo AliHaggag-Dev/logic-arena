@@ -12,6 +12,7 @@ import {
   type SwarmFunctionDoc,
 } from '../constants/docsData';
 import { SectionLabel } from './SectionLabel';
+import { CopyButton } from './CopyButton';
 
 type SimpleLanguageFeatureDoc = MathFunctionDoc | ArrayOpDoc | DictionaryOpDoc;
 type AdvancedLanguageFeatureDoc = SensorFunctionDoc | SwarmFunctionDoc;
@@ -85,7 +86,7 @@ export const AdvancedLanguageFeaturesSection = ({ isMobile }: { isMobile: boolea
                 <div className="text-[10px] text-accent/50 italic">{item.returnDetail}</div>
               </div>
 
-              <div className="bg-bg-primary/40 rounded-lg p-3 border border-accent/5">
+              <div className="bg-bg-primary/40 rounded-lg p-3 border border-accent/5 relative">
                 <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-2">Implementation Example</div>
                 <pre className="text-[10px] font-mono whitespace-pre-wrap leading-relaxed" style={{ color: colorCode }}>
                   {item.example.split('\n').map((line: string, i: number) => {
@@ -97,6 +98,7 @@ export const AdvancedLanguageFeaturesSection = ({ isMobile }: { isMobile: boolea
                     );
                   })}
                 </pre>
+                <CopyButton code={item.example} themeColor={colorCode} />
               </div>
 
               {item.note && (

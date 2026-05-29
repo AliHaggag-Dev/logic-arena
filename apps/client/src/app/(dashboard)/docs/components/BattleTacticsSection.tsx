@@ -1,6 +1,7 @@
 import React from "react";
 import { SectionLabel } from "./SectionLabel";
 import { TACTICS_DATA } from "../constants/docsData";
+import { CopyButton } from "./CopyButton";
 
 export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript: (code: string) => void, isMobile: boolean }) {
   return (
@@ -21,8 +22,9 @@ export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript:
             <div className="text-[10px] text-text-primary/70 mb-4 leading-relaxed tracking-wide font-medium">
               {tactic.desc}
             </div>
-            <div className="bg-bg-primary/50 p-4 rounded-xl font-mono text-[10px] text-accent leading-relaxed whitespace-pre-wrap border border-accent/10 shadow-inner overflow-x-auto docs-scrollbar">
+            <div className="relative bg-bg-primary/50 p-4 rounded-xl font-mono text-[10px] text-accent leading-relaxed whitespace-pre-wrap border border-accent/10 shadow-inner overflow-x-auto docs-scrollbar">
               {tactic.code}
+              <CopyButton code={tactic.code} themeColor={tactic.color} />
             </div>
             <button
               type="button"

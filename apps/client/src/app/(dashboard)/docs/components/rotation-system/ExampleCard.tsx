@@ -3,6 +3,7 @@
 import React from 'react';
 import { ChevronDown, Lightbulb } from 'lucide-react';
 import type { RotationExample } from '../../constants/docsData';
+import { CopyButton } from '../CopyButton';
 
 const splitTitle = (title: string) => {
     const parts = title.split(/--|---| - |â€”/);
@@ -112,6 +113,7 @@ export const ExampleCard = ({
                         >
                             {example.code}
                         </pre>
+                        <CopyButton code={example.code} themeColor={color} />
                     </div>
 
                     <button
