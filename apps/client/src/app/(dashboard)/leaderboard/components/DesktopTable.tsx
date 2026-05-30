@@ -193,7 +193,7 @@ export function DesktopTable({
 
                     {/* Action */}
                     <td className="px-4 py-4">
-                      <div className="w-[130px] flex justify-end shrink-0 pr-2">
+                      <div className="w-full flex justify-end pr-4">
                         {isSelf ? null : isGuest ? (
                           <button
                             type="button"
