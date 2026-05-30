@@ -47,8 +47,8 @@ export const AchievementBadge = ({
             : 'border border-dashed opacity-40'
         }`}
         style={{
-          borderColor: `color-mix(in srgb, ${color} ${level > 0 ? '40%' : '15%'}, transparent)`,
-          background: `color-mix(in srgb, ${color} ${level > 0 ? '6%' : '2%'}, transparent)`,
+          borderColor: `color-mix(in srgb, ${color} ${level > 0 ? '60%' : '25%'}, var(--bg-secondary))`,
+          background: `color-mix(in srgb, ${color} ${level > 0 ? '20%' : '8%'}, var(--bg-secondary))`,
         }}
       />
       <IconComponent

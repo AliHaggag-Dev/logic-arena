@@ -62,7 +62,7 @@ export function MobileList({
                       {isSelf && <YouBadge />}
                     </div>
                     {user.achievements && user.achievements.some((ach) => ach.unlockedLevel > 0) && (
-                      <div className="flex items-center -space-x-1 pl-3.5 mt-0.5">
+                      <div className="flex items-center -space-x-1.5 pl-3.5 mt-1">
                         {user.achievements
                           .filter((ach) => ach.unlockedLevel > 0)
                           .map((ach, idx) => (
@@ -73,7 +73,7 @@ export function MobileList({
                               <AchievementBadge
                                 id={ach.achievementId}
                                 level={ach.unlockedLevel}
-                                size={14}
+                                size={22}
                                 showTooltip={false}
                               />
                             </div>

@@ -21,7 +21,14 @@ export default function PublicProfilePage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const params = useParams<{ username: string }>();
   const router = useRouter();
-  const usernameParam = params?.username ?? "";
+  const usernameParam = useMemo(() => {
+    const raw = params?.username ?? "";
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  }, [params?.username]);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
