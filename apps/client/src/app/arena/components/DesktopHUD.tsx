@@ -44,6 +44,7 @@ export function DesktopHUD({
 }: DesktopHUDProps) {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [lockVision, setLockVision] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
 
   // Listen for lockVision state changes from the server
   useEffect(() => {
@@ -228,6 +229,8 @@ export function DesktopHUD({
             availableRobots={availableRobots}
             onRobotChange={setSelectedRobotId}
             isMobile={isMobile}
+            isZenMode={isZenMode}
+            setIsZenMode={setIsZenMode}
           />
         </div>
       </div>

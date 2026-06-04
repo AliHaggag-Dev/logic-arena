@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 
 export interface CommandConsoleProps {
@@ -6,6 +7,8 @@ export interface CommandConsoleProps {
     availableRobots: string[];
     onRobotChange: (id: string) => void;
     isMobile: boolean;
+    isZenMode?: boolean;
+    setIsZenMode?: Dispatch<SetStateAction<boolean>>;
     mobileSheet?: 'controls' | 'script';
     onDeployDone?: () => void;
     onInsertAndSwitch?: (snippet: string) => void;

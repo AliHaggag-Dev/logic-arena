@@ -115,21 +115,45 @@ export const highlightCode = (code: string, options?: HighlightOptions): string 
     let diagIdx = 0;
 
     return lines.map((line, i) => {
-        // First apply diagnostics on raw text (before keyword highlighting)
-        let processed = line;
+        const COMMENT_COLOR = '#4ade80';
+
+        // Detect comment position in the raw line (before any HTML escaping)
+        const slashIdx = line.indexOf('//');
+        const dashIdx = line.indexOf('--');
+        const commentStart = slashIdx >= 0 && dashIdx >= 0
+            ? Math.min(slashIdx, dashIdx)
+            : slashIdx >= 0 ? slashIdx : dashIdx;
+
+        // Full-line comment: entire line is a comment
+        if (commentStart >= 0 && line.slice(0, commentStart).trim() === '') {
+            const escaped = escapeHtml(line);
+            return `<div style="display: flex; min-height: ${lineHeight}px; align-items: center;"><span style="box-sizing: border-box; user-select: none; color: ${lineNumberColor}; text-align: right; min-width: ${lineNumberWidth}; border-right: 1px solid ${borderColor}; padding-right: ${lineNumberPaddingRight}; margin-right: ${lineNumberMarginRight}; flex-shrink: 0; font-size: ${fontSize}; letter-spacing: 0.05em;">${i + 1}</span><span style="white-space: pre-wrap; word-break: ${wordBreak}; tab-size: 2; color: ${COMMENT_COLOR}; font-style: italic; opacity: 0.7;">${escaped || ' '}</span></div>`;
+        }
+
+        // Inline comment: split into code part + comment part
+        const codePart = commentStart >= 0 ? line.slice(0, commentStart) : line;
+        const commentPart = commentStart >= 0 ? line.slice(commentStart) : '';
+
+        // Apply diagnostics only on the code part
+        let processed = codePart;
         if (diagnostics.length > 0) {
-            const result = applyDiagnosticsToLine(line, i, diagnostics, diagIdx);
+            const result = applyDiagnosticsToLine(codePart, i, diagnostics, diagIdx);
             processed = result.html;
             diagIdx = result.nextIdx;
         }
 
-        // Then apply keyword highlighting (skip content inside diagnostic spans)
+        // Apply keyword highlighting on the code part
         let highlighted = processed;
-        highlighted = highlighted.replace(new RegExp(`(?<!</span>)\\b(${CONTROL_KEYWORDS.join("|")})\\b(?![^<]*<\\/span>)`, "gi"), (match) => `<span class="${controlClass}">${match}</span>`);
-        highlighted = highlighted.replace(new RegExp(`(?<!</span>)\\b(${COMMAND_KEYWORDS.join("|")})\\b(?![^<]*<\\/span>)`, "gi"), (match) => `<span class="${commandClass}">${match}</span>`);
-        highlighted = highlighted.replace(new RegExp(`(?<!</span>)\\b(${FUNCTION_KEYWORDS.join("|")})\\b(?![^<]*<\\/span>)`, "gi"), (match) => `<span class="${functionClass}">${match}</span>`);
-        highlighted = highlighted.replace(new RegExp(`(?<!</span>)\\b(${IDENTIFIER_KEYWORDS.join("|")})\\b(?![^<]*<\\/span>)`, "gi"), (match) => `<span class="${identifierClass}">${match}</span>`);
+        highlighted = highlighted.replace(new RegExp(`(?<!<\/span>)\\b(${CONTROL_KEYWORDS.join("|")})\\b(?![^<]*<\\/span>)`, "gi"), (match) => `<span class="${controlClass}">${match}</span>`);
+        highlighted = highlighted.replace(new RegExp(`(?<!<\/span>)\\b(${COMMAND_KEYWORDS.join("|")})\\b(?![^<]*<\\/span>)`, "gi"), (match) => `<span class="${commandClass}">${match}</span>`);
+        highlighted = highlighted.replace(new RegExp(`(?<!<\/span>)\\b(${FUNCTION_KEYWORDS.join("|")})\\b(?![^<]*<\\/span>)`, "gi"), (match) => `<span class="${functionClass}">${match}</span>`);
+        highlighted = highlighted.replace(new RegExp(`(?<!<\/span>)\\b(${IDENTIFIER_KEYWORDS.join("|")})\\b(?![^<]*<\\/span>)`, "gi"), (match) => `<span class="${identifierClass}">${match}</span>`);
+
+        // Append the comment part in green (if any)
+        if (commentPart) {
+            highlighted += `<span style="color: ${COMMENT_COLOR}; font-style: italic; opacity: 0.7;">${escapeHtml(commentPart)}</span>`;
+        }
+
         return `<div style="display: flex; min-height: ${lineHeight}px; align-items: center;"><span style="box-sizing: border-box; user-select: none; color: ${lineNumberColor}; text-align: right; min-width: ${lineNumberWidth}; border-right: 1px solid ${borderColor}; padding-right: ${lineNumberPaddingRight}; margin-right: ${lineNumberMarginRight}; flex-shrink: 0; font-size: ${fontSize}; letter-spacing: 0.05em;">${i + 1}</span><span style="white-space: pre-wrap; word-break: ${wordBreak}; tab-size: 2;">${highlighted || ' '}</span></div>`;
     }).join("");
 };
-

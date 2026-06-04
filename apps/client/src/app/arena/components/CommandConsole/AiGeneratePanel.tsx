@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback } from "react";
 import { API_BASE_URL } from "@/lib/api-client";
-import { Sparkles, Copy, Check } from "lucide-react";
+import { Sparkles, Copy, Check, RotateCcw } from "lucide-react";
 
 const MAX_DESC_LENGTH = 500;
 const PLACEHOLDER_HINTS = [
@@ -110,102 +110,112 @@ export function AiGeneratePanel({ onInsert, onInsertAndSwitch, isMobile = false 
         setStatus("idle");
     }, []);
 
+    const handleBackToPrompt = useCallback(() => {
+        setGeneratedCode("");
+        setStatus("idle");
+    }, []);
+
     const isGenerating = status === "generating";
     const hasCode = generatedCode.length > 0;
+    const showCodeOverlay = hasCode && (status === "done" || status === "generating");
 
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", height: "100%", minHeight: 0 }}>
-            {/* Description Input */}
-            <div style={{ display: "flex", flexDirection: "column", flex: hasCode ? "none" : 1, minHeight: 0 }}>
-                <label
-                    htmlFor="aria-strategy-description"
-                    style={{ display: "block", fontSize: "8px", color: "rgba(var(--arena-white-rgb),0.4)", marginBottom: "3px", letterSpacing: "0.06em" }}
-                >
-                    Describe your robot&apos;s strategy:
-                </label>
-                <textarea
-                    id="aria-strategy-description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESC_LENGTH))}
-                    placeholder={placeholder}
-                    inputMode="text"
-                    enterKeyHint="done"
-                    spellCheck={false}
-                    style={{
-                        width: "100%",
-                        flex: hasCode ? "none" : 1,
-                        height: hasCode ? "48px" : "auto",
-                        resize: "none",
-                        background: "rgba(var(--arena-black-rgb),0.6)",
-                        border: "1px solid rgba(var(--arena-white-rgb),0.1)",
-                        borderRadius: "8px",
-                        padding: "7px 9px",
-                        fontSize: "11px",
-                        lineHeight: "1.4",
-                        color: "rgba(var(--arena-white-rgb),0.85)",
-                        outline: "none",
-                        fontFamily: "inherit",
-                        boxSizing: "border-box",
-                        transition: "border-color 0.2s",
-                    }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(var(--arena-purple-rgb),0.5)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(var(--arena-white-rgb),0.1)"; }}
-                />
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "2px" }}>
-                    <span style={{ fontSize: "8px", color: "rgba(var(--arena-white-rgb),0.25)" }}>
-                        {description.length}/{MAX_DESC_LENGTH}
-                    </span>
+            {/* Description Input — hidden when code is generated */}
+            {!showCodeOverlay && (
+                <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+                    <label
+                        htmlFor="aria-strategy-description"
+                        style={{ display: "block", fontSize: "8px", color: "rgba(var(--arena-white-rgb),0.4)", marginBottom: "3px", letterSpacing: "0.06em" }}
+                    >
+                        Describe your robot&apos;s strategy:
+                    </label>
+                    <textarea
+                        id="aria-strategy-description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESC_LENGTH))}
+                        placeholder={placeholder}
+                        inputMode="text"
+                        enterKeyHint="done"
+                        dir="auto"
+                        spellCheck={false}
+                        style={{
+                            width: "100%",
+                            flex: 1,
+                            resize: "none",
+                            background: "rgba(var(--arena-black-rgb),0.6)",
+                            border: "1px solid rgba(var(--arena-white-rgb),0.1)",
+                            borderRadius: "8px",
+                            padding: "7px 9px",
+                            fontSize: "11px",
+                            lineHeight: "1.4",
+                            color: "rgba(var(--arena-white-rgb),0.85)",
+                            outline: "none",
+                            fontFamily: "'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif",
+                            boxSizing: "border-box",
+                            transition: "border-color 0.2s",
+                        }}
+                        onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(var(--arena-purple-rgb),0.5)"; }}
+                        onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(var(--arena-white-rgb),0.1)"; }}
+                    />
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "2px" }}>
+                        <span style={{ fontSize: "8px", color: "rgba(var(--arena-white-rgb),0.25)" }}>
+                            {description.length}/{MAX_DESC_LENGTH}
+                        </span>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Generate Button */}
-            <button
-                type="button"
-                onClick={isGenerating ? handleAbort : handleGenerate}
-                disabled={!description.trim() && !isGenerating}
-                style={{
-                    flexShrink: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    padding: "9px 16px",
-                    borderRadius: "8px",
-                    fontSize: "9.5px",
-                    fontWeight: 700,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    cursor: (!description.trim() && !isGenerating) ? "not-allowed" : "pointer",
-                    opacity: (!description.trim() && !isGenerating) ? 0.4 : 1,
-                    transition: "all 0.2s",
-                    border: isGenerating
-                        ? "1px solid rgba(var(--sem-danger-rgb),0.5)"
-                        : "1px solid rgba(var(--arena-purple-rgb),0.6)",
-                    color: isGenerating ? "var(--sem-danger)" : "rgb(var(--arena-purple-rgb))",
-                    background: isGenerating
-                        ? "rgba(var(--sem-danger-rgb),0.1)"
-                        : "rgba(var(--arena-purple-rgb),0.12)",
-                    marginTop: "0px",
-                }}
-            >
-                {isGenerating ? (
-                    <>
-                        <span style={{
-                            width: "8px", height: "8px", borderRadius: "50%",
-                            border: "1.5px solid var(--sem-danger)",
-                            borderTopColor: "transparent",
-                            animation: "spin 0.7s linear infinite",
-                            display: "inline-block",
-                        }} />
-                        Stop Generating
-                    </>
-                ) : (
-                    <>
-                        <Sparkles style={{ width: "11px", height: "11px" }} aria-hidden="true" />
-                        {status === "done" ? "Regenerate" : "Generate AliScript"}
-                    </>
-                )}
-            </button>
+            {status !== "done" && (
+                <button
+                    type="button"
+                    onClick={isGenerating ? handleAbort : handleGenerate}
+                    disabled={!description.trim() && !isGenerating}
+                    style={{
+                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        padding: "9px 16px",
+                        borderRadius: "8px",
+                        fontSize: "9.5px",
+                        fontWeight: 700,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        cursor: (!description.trim() && !isGenerating) ? "not-allowed" : "pointer",
+                        opacity: (!description.trim() && !isGenerating) ? 0.4 : 1,
+                        transition: "all 0.2s",
+                        border: isGenerating
+                            ? "1px solid rgba(var(--sem-danger-rgb),0.5)"
+                            : "1px solid rgba(var(--arena-purple-rgb),0.6)",
+                        color: isGenerating ? "var(--sem-danger)" : "rgb(var(--arena-purple-rgb))",
+                        background: isGenerating
+                            ? "rgba(var(--sem-danger-rgb),0.1)"
+                            : "rgba(var(--arena-purple-rgb),0.12)",
+                        marginTop: "0px",
+                    }}
+                >
+                    {isGenerating ? (
+                        <>
+                            <span style={{
+                                width: "8px", height: "8px", borderRadius: "50%",
+                                border: "1.5px solid var(--sem-danger)",
+                                borderTopColor: "transparent",
+                                animation: "spin 0.7s linear infinite",
+                                display: "inline-block",
+                            }} />
+                            Stop Generating
+                        </>
+                    ) : (
+                        <>
+                            <Sparkles style={{ width: "11px", height: "11px" }} aria-hidden="true" />
+                            Generate AliScript
+                        </>
+                    )}
+                </button>
+            )}
 
             {/* Error State */}
             {status === "error" && (
@@ -226,30 +236,74 @@ export function AiGeneratePanel({ onInsert, onInsertAndSwitch, isMobile = false 
                         <span style={{ fontSize: "8.5px", color: "rgba(var(--arena-white-rgb),0.35)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                             Generated Code
                         </span>
-                        <button
-                            type="button"
-                            onClick={handleCopy}
-                            aria-label="Copy generated code"
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "4px",
-                                padding: "3px 8px",
-                                borderRadius: "5px",
-                                fontSize: "8px",
-                                fontWeight: 600,
-                                cursor: "pointer",
-                                transition: "all 0.15s",
-                                border: "1px solid rgba(var(--arena-white-rgb),0.1)",
-                                color: copied ? "var(--arena-green)" : "rgba(var(--arena-white-rgb),0.4)",
-                                background: "rgba(var(--arena-white-rgb),0.04)",
-                            }}
-                        >
-                            {copied
-                                ? <><Check style={{ width: "9px", height: "9px" }} aria-hidden="true" />Copied</>
-                                : <><Copy style={{ width: "9px", height: "9px" }} aria-hidden="true" />Copy</>
-                            }
-                        </button>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <button
+                                type="button"
+                                onClick={handleBackToPrompt}
+                                aria-label="Back to prompt editor"
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    padding: "3px 8px",
+                                    borderRadius: "5px",
+                                    fontSize: "8px",
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                    transition: "all 0.15s",
+                                    border: "1px solid rgba(var(--arena-purple-rgb),0.3)",
+                                    color: "rgba(var(--arena-purple-rgb),0.7)",
+                                    background: "rgba(var(--arena-purple-rgb),0.08)",
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = "rgba(var(--arena-purple-rgb),0.18)";
+                                    e.currentTarget.style.border = "1px solid rgba(var(--arena-purple-rgb),0.5)";
+                                    e.currentTarget.style.color = "var(--arena-purple)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = "rgba(var(--arena-purple-rgb),0.08)";
+                                    e.currentTarget.style.border = "1px solid rgba(var(--arena-purple-rgb),0.3)";
+                                    e.currentTarget.style.color = "rgba(var(--arena-purple-rgb),0.7)";
+                                }}
+                            >
+                                <RotateCcw style={{ width: "9px", height: "9px" }} aria-hidden="true" />
+                                New Prompt
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCopy}
+                                aria-label="Copy generated code"
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    padding: "3px 8px",
+                                    borderRadius: "5px",
+                                    fontSize: "8px",
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                    transition: "all 0.15s",
+                                    border: "1px solid rgba(var(--arena-white-rgb),0.1)",
+                                    color: copied ? "var(--arena-green)" : "rgba(var(--arena-white-rgb),0.4)",
+                                    background: "rgba(var(--arena-white-rgb),0.04)",
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = "rgba(var(--arena-white-rgb),0.12)";
+                                    e.currentTarget.style.border = "1px solid rgba(var(--arena-white-rgb),0.25)";
+                                    if (!copied) e.currentTarget.style.color = "rgba(var(--arena-white-rgb),0.8)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = "rgba(var(--arena-white-rgb),0.04)";
+                                    e.currentTarget.style.border = "1px solid rgba(var(--arena-white-rgb),0.1)";
+                                    if (!copied) e.currentTarget.style.color = "rgba(var(--arena-white-rgb),0.4)";
+                                }}
+                            >
+                                {copied
+                                    ? <><Check style={{ width: "9px", height: "9px" }} aria-hidden="true" />Copied</>
+                                    : <><Copy style={{ width: "9px", height: "9px" }} aria-hidden="true" />Copy</>
+                                }
+                            </button>
+                        </div>
                     </div>
 
                     <div

@@ -37,7 +37,7 @@ export const DesktopConsole: React.FC<DesktopConsoleProps> = ({
     return (
         <div
             className={`relative transition-all duration-500 ease-out flex flex-col bg-black/70 backdrop-blur-xl border border-cyan-900/60 rounded-xl p-5 z-50 ${isZenMode
-                ? "fixed top-24 bottom-8 left-8 w-200 border-cyan-500/50 shadow-[0_0_80px_rgba(34,211,238,0.2)]"
+                ? "h-full w-200 border-cyan-500/50 shadow-[0_0_80px_rgba(34,211,238,0.2)]"
                 : "h-full min-w-105 w-auto"
                 }`}
             style={{ boxShadow: 'var(--card-shadow)' }}

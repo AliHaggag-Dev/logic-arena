@@ -7,10 +7,13 @@ import { DesktopConsole } from "./DesktopConsole";
 
 const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
     socket, robotId, availableRobots, onRobotChange, isMobile, mobileSheet,
-    onDeployDone, onInsertAndSwitch, consumeSnippet, snippetVersion
+    onDeployDone, onInsertAndSwitch, consumeSnippet, snippetVersion,
+    isZenMode: isZenModeProp, setIsZenMode: setIsZenModeProp,
 }) => {
     const consoleState = useConsole(socket, robotId);
-    const [isZenMode, setIsZenMode] = useState(false);
+    const [isZenModeLocal, setIsZenModeLocal] = useState(false);
+    const isZenMode = isZenModeProp ?? isZenModeLocal;
+    const setIsZenMode = setIsZenModeProp ?? setIsZenModeLocal;
     const [isLogsOpen, setIsLogsOpen] = useState(false);
     const [hubTab, setHubTab] = useState<'controls' | 'bots' | 'handbook' | 'generate'>('controls');
 

@@ -75,7 +75,10 @@ export class Lexer {
     }
 
     private skipComments(): void {
-        while (this.char === '/' && this.peekChar() === '/') {
+        while (
+            (this.char === '/' && this.peekChar() === '/') ||
+            (this.char === '-' && this.peekChar() === '-')
+        ) {
             // Skip until end of line or end of input
             while (this.char !== null) {
                 const c: string = this.char;

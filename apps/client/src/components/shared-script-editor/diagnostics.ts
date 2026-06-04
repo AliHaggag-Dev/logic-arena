@@ -162,7 +162,11 @@ function collectUserFunctions(lines: string[]): Set<string> {
 }
 
 function isInsideComment(line: string, col: number): boolean {
-  const commentIdx = line.indexOf('//');
+  const slashIdx = line.indexOf('//');
+  const dashIdx = line.indexOf('--');
+  const commentIdx = slashIdx >= 0 && dashIdx >= 0
+      ? Math.min(slashIdx, dashIdx)
+      : slashIdx >= 0 ? slashIdx : dashIdx;
   return commentIdx >= 0 && col >= commentIdx;
 }
 
@@ -251,7 +255,7 @@ function extractStatementKeywords(lines: string[]): LineStatement[] {
   for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
     const line = lines[lineIdx]!;
     const trimmed = line.trimStart();
-    if (!trimmed || trimmed.startsWith('//')) continue;
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('--')) continue;
 
     const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)/);
     if (!match) continue;
