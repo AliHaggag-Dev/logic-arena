@@ -147,9 +147,10 @@ export function NotificationDropdown({
     [onDelete],
   );
 
-  const handleMarkAll = useCallback(() => {
+  const handleMarkAll = useCallback(async () => {
     if (unreadCount === 0) return;
-    void onMarkAllRead();
+    // Await completion — must NOT close the dropdown as a side effect
+    await onMarkAllRead();
   }, [onMarkAllRead, unreadCount]);
 
   const handleClearAll = useCallback(() => {
@@ -192,7 +193,7 @@ export function NotificationDropdown({
           <button
             ref={firstFocusableRef}
             type="button"
-            onClick={handleMarkAll}
+            onClick={() => void handleMarkAll()}
             disabled={unreadCount === 0}
             title="Mark all as read"
             className="text-[9px] tracking-[0.18em] text-text-secondary/70 hover:text-accent hover:bg-accent/10 disabled:opacity-30 disabled:hover:text-text-secondary/70 disabled:hover:bg-transparent transition-all duration-150 flex items-center gap-1 px-2 py-1 rounded cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"

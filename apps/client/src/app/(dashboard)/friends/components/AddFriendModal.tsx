@@ -2,19 +2,22 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, X, UserPlus, Send, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { friendsApi } from '@/lib/api/friends';
-import type { UserSearchResult } from '@/lib/api/friends.types';
+import type { FriendRequestEntry, UserSearchResult } from '@/lib/api/friends.types';
 import type { AxiosError } from 'axios';
 
 interface AddFriendModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRequestSent?: (username: string) => void;
+  outgoingRequests: FriendRequestEntry[];
 }
 
 const SEARCH_DEBOUNCE_MS = 250;
 
-export function AddFriendModal({ isOpen, onClose, onRequestSent }: AddFriendModalProps) {
+export function AddFriendModal({ isOpen, onClose, onRequestSent, outgoingRequests }: AddFriendModalProps) {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -172,9 +175,12 @@ export function AddFriendModal({ isOpen, onClose, onRequestSent }: AddFriendModa
           ) : (
             <ul className="space-y-1">
               {results.map((user) => {
+                const hasPendingOutgoing =
+                  user.hasPendingRequestFromYou ||
+                  outgoingRequests.some((r) => r.receiver.id === user.id);
                 const disabled =
                   user.isFriend ||
-                  user.hasPendingRequestFromYou ||
+                  hasPendingOutgoing ||
                   user.hasPendingRequestToYou ||
                   user.isBlocked ||
                   pendingId === user.id;
@@ -184,9 +190,14 @@ export function AddFriendModal({ isOpen, onClose, onRequestSent }: AddFriendModa
                     className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-accent/5 border border-transparent hover:border-accent/15 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="text-accent text-sm font-bold tracking-wider truncate">
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/profile/${user.username}`)}
+                        className="text-accent text-sm font-bold tracking-wider truncate hover:text-accent/70 transition-colors cursor-pointer block"
+                        aria-label={`View ${user.username}'s profile`}
+                      >
                         {user.username}
-                      </div>
+                      </button>
                       <div className="text-[9px] font-mono tracking-[0.15em] text-text-secondary/60">
                         RANK {user.rank}
                       </div>
@@ -199,9 +210,9 @@ export function AddFriendModal({ isOpen, onClose, onRequestSent }: AddFriendModa
                       <span className="text-[9px] font-mono tracking-[0.18em] text-accent/70 px-2.5 py-1 border border-accent/20 rounded">
                         INCOMING
                       </span>
-                    ) : user.hasPendingRequestFromYou ? (
+                    ) : hasPendingOutgoing ? (
                       <span className="text-[9px] font-mono tracking-[0.18em] text-accent/40 px-2.5 py-1 border border-accent/15 rounded">
-                        SENT
+                        PENDING
                       </span>
                     ) : user.isBlocked ? (
                       <span className="text-[9px] font-mono tracking-[0.18em] text-text-secondary/30 px-2.5 py-1 border border-text-secondary/10 rounded">

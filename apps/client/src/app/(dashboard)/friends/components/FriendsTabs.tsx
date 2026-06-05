@@ -19,6 +19,7 @@ interface FriendsTabsProps {
   isLoadingRequests: boolean;
   isLoadingSuggestions: boolean;
   isMobile: boolean;
+  sentSuggestionIds: React.RefObject<Set<string>>;
   onChallenge: (userId: string) => void;
   onSpectate: (matchId: string) => void;
   onUnfriend: (friendId: string) => void;
@@ -26,6 +27,8 @@ interface FriendsTabsProps {
   onDeclineRequest: (requestId: string) => void;
   onRequestSent: (username: string) => void;
   onSuggestionsError: (message: string) => void;
+  onMarkSuggestionSent: (id: string) => void;
+  onClearSuggestionSent: (id: string) => void;
 }
 
 const TAB_DEFS: Array<{
@@ -169,8 +172,11 @@ export function FriendsTabs(props: FriendsTabsProps) {
             suggestions={props.suggestions}
             isLoading={props.isLoadingSuggestions}
             isMobile={props.isMobile}
+            sentSuggestionIds={props.sentSuggestionIds}
             onRequestSent={props.onRequestSent}
             onError={props.onSuggestionsError}
+            onMarkSent={props.onMarkSuggestionSent}
+            onClearSent={props.onClearSuggestionSent}
           />
         )}
       </div>
@@ -179,6 +185,7 @@ export function FriendsTabs(props: FriendsTabsProps) {
         isOpen={addOpen}
         onClose={() => setAddOpen(false)}
         onRequestSent={props.onRequestSent}
+        outgoingRequests={props.outgoingRequests}
       />
     </div>
   );

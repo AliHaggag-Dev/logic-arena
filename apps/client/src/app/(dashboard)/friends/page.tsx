@@ -23,10 +23,13 @@ export default function FriendsPage() {
     isLoadingFriends,
     isLoadingRequests,
     isLoadingSuggestions,
+    sentSuggestionIds,
     fetchSuggestions,
     acceptRequest,
     declineRequest,
     unfriend,
+    markSuggestionSent,
+    clearSuggestionSent,
   } = useFriendsSystem();
 
   const [showRequestSentToast, setShowRequestSentToast] = useState<string | null>(null);
@@ -106,6 +109,7 @@ export default function FriendsPage() {
           isLoadingRequests={isLoadingRequests}
           isLoadingSuggestions={isLoadingSuggestions}
           isMobile={isMobile}
+          sentSuggestionIds={sentSuggestionIds}
           onChallenge={(targetUserId) => sendChallenge(targetUserId, 'friend')}
           onSpectate={handleSpectate}
           onUnfriend={unfriend}
@@ -113,6 +117,8 @@ export default function FriendsPage() {
           onDeclineRequest={declineRequest}
           onRequestSent={handleRequestSent}
           onSuggestionsError={handleSuggestionsError}
+          onMarkSuggestionSent={markSuggestionSent}
+          onClearSuggestionSent={clearSuggestionSent}
         />
       </div>
 

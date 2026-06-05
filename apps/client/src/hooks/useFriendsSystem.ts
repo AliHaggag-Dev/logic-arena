@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { friendsApi } from '../lib/api/friends';
 import type {
   FriendEntry,
@@ -39,6 +39,9 @@ export function useFriendsSystem() {
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [isLoadingRequests, setIsLoadingRequests] = useState(false);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+
+  // Persists across tab switches and re-renders (useRef — no re-renders needed for persistence)
+  const sentSuggestionIds = useRef<Set<string>>(new Set());
 
   const allowFriendRequests = profile?.notificationSettings?.friendRequests !== false;
 
@@ -154,6 +157,14 @@ export function useFriendsSystem() {
     [showToast],
   );
 
+  const markSuggestionSent = useCallback((suggestionId: string) => {
+    sentSuggestionIds.current.add(suggestionId);
+  }, []);
+
+  const clearSuggestionSent = useCallback((suggestionId: string) => {
+    sentSuggestionIds.current.delete(suggestionId);
+  }, []);
+
   const acceptRequest = useCallback(
     async (requestId: string) => {
       try {
@@ -224,6 +235,7 @@ export function useFriendsSystem() {
     isLoadingRequests,
     isLoadingSuggestions,
     allowFriendRequests,
+    sentSuggestionIds,
     fetchFriends,
     fetchRequests,
     fetchSuggestions,
@@ -236,5 +248,7 @@ export function useFriendsSystem() {
     acceptFriendRequest,
     declineFriendRequest,
     unfriendSocket,
+    markSuggestionSent,
+    clearSuggestionSent,
   };
 }

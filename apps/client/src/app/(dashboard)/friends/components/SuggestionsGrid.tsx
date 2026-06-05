@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { UserPlus, Check, X, Sparkles } from 'lucide-react';
 import type { FriendSuggestion } from '@/lib/api/friends.types';
 import type { AxiosError } from 'axios';
@@ -12,8 +13,14 @@ interface SuggestionsGridProps {
   suggestions: FriendSuggestion[];
   isLoading: boolean;
   isMobile: boolean;
+  /** Ref to the persistent sent-IDs set owned by useFriendsSystem */
+  sentSuggestionIds: React.RefObject<Set<string>>;
   onRequestSent: (username: string) => void;
   onError: (message: string) => void;
+  /** Called when a request succeeds — adds id to the shared set */
+  onMarkSent: (id: string) => void;
+  /** Called on rollback — removes id from the shared set */
+  onClearSent: (id: string) => void;
 }
 
 const REASON_LABEL: Record<FriendSuggestion['reason'], string> = {
@@ -26,30 +33,39 @@ const REASON_TONE: Record<FriendSuggestion['reason'], string> = {
   RECENT_OPPONENT: 'text-[color:var(--sem-warning)] border-[color:var(--sem-warning)]/30 bg-[color:var(--sem-warning)]/5',
 };
 
-export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSent, onError }: SuggestionsGridProps) {
-  // Optimistic state: tracks which suggestion IDs have a pending request sent
-  const [sentIds, setSentIds] = useState<Set<string>>(new Set());
-  // Tracks IDs currently in-flight (disabled during API call)
+export function SuggestionsGrid({
+  suggestions,
+  isLoading,
+  isMobile,
+  sentSuggestionIds,
+  onRequestSent,
+  onError,
+  onMarkSent,
+  onClearSent,
+}: SuggestionsGridProps) {
+  const router = useRouter();
+  // Tracks IDs currently in-flight (disabled during API call) — local only
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
+  // Counter to trigger re-renders when the ref's Set contents change
+  const [, forceUpdate] = useState(0);
 
   const handleSend = useCallback(async (s: FriendSuggestion) => {
+    const sent = sentSuggestionIds.current;
     // Prevent double-sending
-    if (sendingIds.has(s.id) || sentIds.has(s.id)) return;
+    if (sendingIds.has(s.id) || sent.has(s.id)) return;
 
     // Optimistic update: immediately show "Request Sent"
-    setSentIds((prev) => new Set([...prev, s.id]));
+    onMarkSent(s.id);
     setSendingIds((prev) => new Set([...prev, s.id]));
+    forceUpdate((n) => n + 1);
 
     try {
       await friendsApi.sendRequest(s.username);
       onRequestSent(s.username);
     } catch (err: unknown) {
       // Rollback optimistic update on failure
-      setSentIds((prev) => {
-        const next = new Set(prev);
-        next.delete(s.id);
-        return next;
-      });
+      onClearSent(s.id);
+      forceUpdate((n) => n + 1);
       const axiosErr = err as AxiosError<{ message?: string }>;
       const message = axiosErr.response?.data?.message ?? 'Failed to send request';
       onError(message);
@@ -60,15 +76,12 @@ export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSen
         return next;
       });
     }
-  }, [sendingIds, sentIds, onRequestSent, onError]);
+  }, [sendingIds, sentSuggestionIds, onRequestSent, onError, onMarkSent, onClearSent]);
 
   const handleCancel = useCallback((id: string) => {
-    setSentIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
-  }, []);
+    onClearSent(id);
+    forceUpdate((n) => n + 1);
+  }, [onClearSent]);
 
   if (isLoading) {
     return (
@@ -91,7 +104,7 @@ export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSen
   return (
     <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-3'}`}>
       {suggestions.map((s) => {
-        const isSent = sentIds.has(s.id);
+        const isSent = sentSuggestionIds.current.has(s.id);
         const isSending = sendingIds.has(s.id);
 
         return (
@@ -116,9 +129,14 @@ export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSen
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-accent font-bold tracking-wider text-sm truncate">
+                <button
+                  type="button"
+                  onClick={() => router.push(`/profile/${s.username}`)}
+                  className="text-accent font-bold tracking-wider text-sm truncate hover:text-accent/70 transition-colors cursor-pointer block"
+                  aria-label={`View ${s.username}'s profile`}
+                >
                   {s.username}
-                </div>
+                </button>
                 <div className="text-[9px] font-mono tracking-[0.15em] text-text-secondary/70 mt-0.5">
                   RANK {s.rank}
                 </div>

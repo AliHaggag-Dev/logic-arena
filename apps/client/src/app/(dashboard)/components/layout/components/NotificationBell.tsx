@@ -19,7 +19,7 @@ export function NotificationBell({ notifications, isMobile = false }: Notificati
     isLoadingMore,
     hasMore,
     isOpen,
-    toggle,
+    open,
     close,
     markRead,
     markAllRead,
@@ -28,12 +28,26 @@ export function NotificationBell({ notifications, isMobile = false }: Notificati
     loadMore,
   } = notifications;
 
+  // Use onMouseDown + stopPropagation instead of onClick.
+  // The document-level mousedown handler in NotificationDropdown fires BEFORE
+  // the button's onClick, creating a race: it sees a mousedown outside the dropdown
+  // (even though it's on the bell button) and calls onClose(), then onClick fires open().
+  // stopPropagation kills that document handler before it runs — guaranteed fix.
+  const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (isOpen) {
+      close();
+    } else {
+      open();
+    }
+  };
+
   return (
     <div className="relative">
       <button
         ref={buttonRef}
         type="button"
-        onClick={toggle}
+        onMouseDown={handleMouseDown}
         aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
         aria-expanded={isOpen}
         aria-haspopup="dialog"

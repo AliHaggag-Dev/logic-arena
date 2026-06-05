@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Check, X, MessageCircle } from 'lucide-react';
 import type { FriendRequestEntry } from '@/lib/api/friends.types';
 
@@ -29,6 +30,7 @@ function formatRelative(iso: string, nowMs: number): string {
 }
 
 export function FriendRequestCard({ request, variant, onAccept, onDecline }: FriendRequestCardProps) {
+  const router = useRouter();
   const isIncoming = variant === 'incoming';
   const user = isIncoming ? request.sender : request.receiver;
 
@@ -77,9 +79,14 @@ export function FriendRequestCard({ request, variant, onAccept, onDecline }: Fri
 
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2 flex-wrap">
-          <span className="text-accent font-bold tracking-wider text-sm truncate">
+          <button
+            type="button"
+            onClick={() => router.push(`/profile/${user.username}`)}
+            className="text-accent font-bold tracking-wider text-sm truncate hover:text-accent/70 transition-colors cursor-pointer"
+            aria-label={`View ${user.username}'s profile`}
+          >
             {user.username}
-          </span>
+          </button>
           <span className="text-[9px] font-mono tracking-[0.12em] text-text-secondary/60">
             {relativeTime || '—'}
           </span>
