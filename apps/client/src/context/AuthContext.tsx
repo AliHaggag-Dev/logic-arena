@@ -30,6 +30,7 @@ export interface ProfileResponse {
     challengeReqs: boolean;
     tournamentAlerts: boolean;
     matchResults: boolean;
+    friendRequests?: boolean;
   };
   selectedRobotId?: string;
   selectedColor?: string;

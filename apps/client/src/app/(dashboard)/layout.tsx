@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation";
 import { SocketContext } from "../../context/SocketContext";
 import { useDashboardAuth } from "./components/layout/hooks/useDashboardAuth";
 import { useChallengeSystem } from "./components/layout/hooks/useChallengeSystem";
+import { useFriendsSystem } from "../../hooks/useFriendsSystem";
 import { DashboardSidebar } from "./components/layout/components/DashboardSidebar";
 import { DashboardHeader } from "./components/layout/components/DashboardHeader";
 import { ChallengeModal } from "./components/layout/components/ChallengeModal";
 import { ToastNotification } from "./components/layout/components/ToastNotification";
+import { FriendRequestModal } from "./friends/components/FriendRequestModal";
 import { PWAInstallPrompt } from "../../components/PWAInstallPrompt";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -17,8 +19,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { username, avatarUrl, handleLogout } = useDashboardAuth();
   const { incomingChallenge, setIncoming, toast, sendChallenge, acceptChallenge } = useChallengeSystem();
 
+  const {
+    incomingRequest,
+    setIncomingRequest,
+    acceptRequest,
+    declineRequest,
+    toast: friendsToast,
+  } = useFriendsSystem();
+
+  const combinedToast = (friendsToast ?? toast) as
+    | { message: string; type: "info" | "error" }
+    | null;
+
+  const socketValue = {
+    sendChallenge,
+    sendFriendRequest: () => {},
+    acceptFriendRequest: () => {},
+    declineFriendRequest: () => {},
+    unfriendSocket: () => {},
+  };
+
   return (
-    <SocketContext.Provider value={{ sendChallenge }}>
+    <SocketContext.Provider value={socketValue}>
       <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateX(-50%) translateY(10px); }
@@ -33,7 +55,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex min-h-screen bg-bg-primary font-mono selection:bg-accent/30">
         {!isAdminRoute && (
           <div className="hidden md:block shrink-0">
-            <DashboardSidebar username={username} avatarUrl={avatarUrl} onLogout={handleLogout} />
+            <DashboardSidebar
+              username={username}
+              avatarUrl={avatarUrl}
+              onLogout={handleLogout}
+            />
           </div>
         )}
 
@@ -46,7 +72,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
 
-        <ToastNotification toast={toast} isMobile={false} />
+        <ToastNotification toast={combinedToast} isMobile={false} />
 
         {/* PWA install prompt — appears after 30s or immediately on /dashboard */}
         <PWAInstallPrompt />
@@ -59,6 +85,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               setIncoming(null);
             }}
             onDecline={() => setIncoming(null)}
+          />
+        )}
+
+        {incomingRequest && (
+          <FriendRequestModal
+            request={incomingRequest}
+            onAccept={(id) => {
+              void acceptRequest(id).then(() => setIncomingRequest(null));
+            }}
+            onDecline={(id) => {
+              void declineRequest(id).then(() => setIncomingRequest(null));
+            }}
           />
         )}
       </div>

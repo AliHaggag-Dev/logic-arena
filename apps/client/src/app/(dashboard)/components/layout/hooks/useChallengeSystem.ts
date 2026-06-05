@@ -36,6 +36,11 @@ export function useChallengeSystem() {
       }
     },
     onChallengeAccepted: () => showToast("CHALLENGE ACCEPTED — DEPLOYING TO ARENA"),
+    onFriendRequestReceived: () => {},
+    onFriendRequestAccepted: () => {},
+    onFriendRequestDeclined: () => {},
+    onFriendRemoved: () => {},
+    onFriendsListInvalidate: () => {},
   });
 
   return { incomingChallenge, setIncoming, toast, sendChallenge, acceptChallenge };

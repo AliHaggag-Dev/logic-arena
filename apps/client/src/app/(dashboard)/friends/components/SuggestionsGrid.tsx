@@ -1,0 +1,103 @@
+'use client';
+
+import React, { useState } from 'react';
+import { UserPlus, Loader2, Sparkles } from 'lucide-react';
+import type { FriendSuggestion } from '@/lib/api/friends.types';
+import type { AxiosError } from 'axios';
+import { friendsApi } from '@/lib/api/friends';
+
+interface SuggestionsGridProps {
+  suggestions: FriendSuggestion[];
+  isLoading: boolean;
+  isMobile: boolean;
+  onRequestSent: (username: string) => void;
+}
+
+const REASON_LABEL: Record<FriendSuggestion['reason'], string> = {
+  RANK_PROXIMITY: 'NEAR YOUR RANK',
+  RECENT_OPPONENT: 'RECENT OPPONENT',
+};
+
+export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSent }: SuggestionsGridProps) {
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
+  const handleSend = async (s: FriendSuggestion) => {
+    setPendingId(s.id);
+    try {
+      await friendsApi.sendRequest(s.username);
+      onRequestSent(s.username);
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      const message = axiosErr.response?.data?.message ?? 'Failed to send request';
+      throw new Error(message);
+    } finally {
+      setPendingId(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-3'}`}>
+        {Array.from({ length: isMobile ? 3 : 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="bg-card/40 border border-accent/10 rounded-xl p-4 h-[88px] animate-pulse"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-3'}`}>
+      {suggestions.map((s) => (
+        <article
+          key={s.id}
+          className="bg-card/60 backdrop-blur-md border border-accent/10 rounded-xl p-4 hover:border-accent/30 transition-colors"
+          style={{ boxShadow: 'var(--card-shadow)' }}
+        >
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <div className="min-w-0 flex-1">
+              <div className="text-accent font-bold tracking-wider text-sm truncate">
+                {s.username}
+              </div>
+              <div className="text-[9px] font-mono tracking-[0.15em] text-text-secondary/70 mt-0.5">
+                RANK {s.rank}
+              </div>
+            </div>
+            <span className="shrink-0 inline-flex items-center gap-1 text-[8px] font-mono tracking-[0.18em] text-accent/70 border border-accent/20 bg-accent/5 rounded px-1.5 py-0.5">
+              <Sparkles size={9} aria-hidden="true" />
+              {REASON_LABEL[s.reason]}
+            </span>
+          </div>
+          {s.mutualFriends > 0 && (
+            <div className="text-[10px] font-mono tracking-wider text-text-secondary/80 mb-3">
+              <span className="text-accent font-bold">{s.mutualFriends}</span>{' '}
+              {s.mutualFriends === 1 ? 'MUTUAL ALLY' : 'MUTUAL ALLIES'}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => void handleSend(s)}
+            disabled={pendingId === s.id}
+            aria-label={`Send friend request to ${s.username}`}
+            className="w-full min-h-[40px] flex items-center justify-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 disabled:opacity-50 text-accent rounded-lg transition-all"
+          >
+            {pendingId === s.id ? (
+              <>
+                <Loader2 size={12} className="animate-spin" aria-hidden="true" /> SENDING
+              </>
+            ) : (
+              <>
+                <UserPlus size={12} aria-hidden="true" /> ADD ALLY
+              </>
+            )}
+          </button>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+export const _internal = { REASON_LABEL };
+export { REASON_LABEL };

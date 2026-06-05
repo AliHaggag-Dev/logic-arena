@@ -1,15 +1,17 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart, Power, LogIn, Terminal, Compass } from "lucide-react";
+import { Settings, LayoutDashboard, Trophy, Swords, Zap, User, Cpu, BookOpen, Award, ShoppingCart, Power, LogIn, Terminal, Compass, Users } from "lucide-react";
 import NavLink from "../../../../../components/ui/NavLink";
 import { useAuth } from "../../../../../context/AuthContext";
+import { useFriendsSystem } from "../../../../../hooks/useFriendsSystem";
 
 const SIDEBAR_WIDTH = 220;
 
 const navItems = [
   { href: "/dashboard", label: "DASHBOARD", iconNode: <LayoutDashboard className="w-3.5 h-3.5" /> },
   { href: "/leaderboard", label: "LEADERBOARD", iconNode: <Trophy className="w-3.5 h-3.5" /> },
+  { href: "/friends", label: "ALLIES", iconNode: <Users className="w-3.5 h-3.5" /> },
   { href: "/lobby", label: "BATTLE LOBBY", iconNode: <Swords className="w-3.5 h-3.5" /> },
   { href: "/campaign", label: "CAMPAIGN MODE", iconNode: <Zap className="w-3.5 h-3.5" /> },
   { href: "/profile", label: "MY PROFILE", iconNode: <User className="w-3.5 h-3.5" />, exact: true },
@@ -29,6 +31,9 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSidebarProps) {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'ADMIN';
+  const { incomingRequests, onlineFriends } = useFriendsSystem();
+  const pendingCount = incomingRequests.length;
+  const onlineCount = onlineFriends.length;
 
   return (
     <aside
@@ -108,9 +113,21 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
         <div className="text-[9px] tracking-[0.22em] text-accent/25 font-bold px-1 pb-2 uppercase">
           navigation
         </div>
-        {navItems.map((item) => (
-          <NavLink key={item.href} {...item} />
-        ))}
+        {navItems.map((item) => {
+          if (item.href === "/friends") {
+            return (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                iconNode={item.iconNode}
+                badge={pendingCount > 0 ? pendingCount : onlineCount > 0 ? onlineCount : undefined}
+                badgeColor={pendingCount > 0 ? "accent" : "success"}
+              />
+            );
+          }
+          return <NavLink key={item.href} {...item} />;
+        })}
         <div className="mt-auto">
           {isAdmin && (
             <Link
