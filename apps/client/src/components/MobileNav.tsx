@@ -185,10 +185,10 @@ export function MobileNav() {
                 className="relative flex min-h-11 flex-col items-center justify-center w-full max-w-[72px] h-full transition-all duration-150 ease-out group overflow-hidden"
               >
                 <div
-                  className={`absolute top-0 w-10 h-[2px] rounded-b-full bg-accent transition-all duration-150 ease-out z-20 ${isActive ? "translate-y-0 opacity-100 shadow-[0_0_12px_rgba(var(--accent-rgb),1)]" : "-translate-y-full opacity-0"}`}
+                  className={`absolute bottom-2 w-1.5 h-1.5 rounded-full bg-accent transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-20 ${isActive ? "translate-y-0 opacity-100 shadow-[0_0_10px_rgba(var(--accent-rgb),1)] scale-100" : "translate-y-2 opacity-0 scale-50"}`}
                 />
 
-                <div className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-[5px] pt-1.5">
+                <div className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-1 pt-1 pb-2">
                   <div
                     className={`transition-colors duration-150 ease-out flex items-center justify-center ${isActive ? "text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]" : "text-text-secondary/40"}`}
                   >
@@ -212,10 +212,10 @@ export function MobileNav() {
             className="relative flex min-h-11 flex-col items-center justify-center w-full max-w-[72px] h-full transition-all duration-150 ease-out group overflow-hidden"
           >
             <div
-              className={`absolute top-0 w-10 h-[2px] rounded-b-full bg-accent transition-all duration-150 ease-out z-20 ${isHubActive || isHubOpen ? "translate-y-0 opacity-100 shadow-[0_0_12px_rgba(var(--accent-rgb),1)]" : "-translate-y-full opacity-0"}`}
+              className={`absolute bottom-2 w-1.5 h-1.5 rounded-full bg-accent transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-20 ${isHubActive || isHubOpen ? "translate-y-0 opacity-100 shadow-[0_0_10px_rgba(var(--accent-rgb),1)] scale-100" : "translate-y-2 opacity-0 scale-50"}`}
             />
 
-            <div className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-[5px] pt-1.5">
+            <div className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-1 pt-1 pb-2">
               <div
                 className={`transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex items-center justify-center ${isHubOpen ? "text-accent drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.8)] rotate-90 scale-110" : isHubActive ? "text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.6)]" : "text-text-secondary/40"}`}
               >

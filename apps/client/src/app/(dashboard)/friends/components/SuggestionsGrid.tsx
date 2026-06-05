@@ -11,6 +11,7 @@ import { FriendsEmptyState } from './FriendsEmptyState';
 
 interface SuggestionsGridProps {
   suggestions: FriendSuggestion[];
+  outgoingRequests: import('@/lib/api/friends.types').FriendRequestEntry[];
   isLoading: boolean;
   isMobile: boolean;
   /** Ref to the persistent sent-IDs set owned by useFriendsSystem */
@@ -35,6 +36,7 @@ const REASON_TONE: Record<FriendSuggestion['reason'], string> = {
 
 export function SuggestionsGrid({
   suggestions,
+  outgoingRequests,
   isLoading,
   isMobile,
   sentSuggestionIds,
@@ -104,7 +106,9 @@ export function SuggestionsGrid({
   return (
     <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-3'}`}>
       {suggestions.map((s) => {
-        const isSent = sentSuggestionIds.current.has(s.id);
+        const isSent =
+          sentSuggestionIds.current.has(s.id) ||
+          outgoingRequests.some((r) => r.receiver.id === s.id);
         const isSending = sendingIds.has(s.id);
 
         return (

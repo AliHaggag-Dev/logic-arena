@@ -4,14 +4,18 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 import { useFeedback, SectionHeader } from "../shared";
 import { apiClient } from "../../../../../lib/api-client";
-import { getAuthUsername, setAuthSession, getAuthUserId, getAuthAvatarUrl } from "../../../../../lib/client-security";
+import { getAuthUsername, setAuthSession, getAuthUserId, getAuthAvatarUrl, clearSensitiveBrowserStorage, clearAuthSession } from "../../../../../lib/client-security";
+import { useRouter } from "next/navigation";
 import { AvatarUpload } from "./AvatarUpload";
 import { IdentityFields } from "./IdentityFields";
 import { ConnectedAccounts } from "./ConnectedAccounts";
 
+import { LogOut } from "lucide-react";
+
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
 export function IdentitySection({ isGuest = false }: { isGuest?: boolean }) {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [initials, setInitials] = useState("?");
@@ -168,6 +172,26 @@ export function IdentitySection({ isGuest = false }: { isGuest?: boolean }) {
       />
 
       <ConnectedAccounts hasGoogle={hasGoogle} hasGithub={hasGithub} />
+
+      {!isGuest && (
+        <div className="pt-6 border-t border-accent/10 mt-2">
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await apiClient.post("/auth/logout");
+              } catch (e) { }
+              clearSensitiveBrowserStorage();
+              clearAuthSession();
+              window.location.href = "/login";
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[color:var(--sem-danger)]/30 bg-[color:var(--sem-danger)]/5 text-[color:var(--sem-danger)] hover:bg-[color:var(--sem-danger)]/10 hover:border-[color:var(--sem-danger)]/50 transition-all font-bold tracking-wider text-sm cursor-pointer"
+          >
+            <LogOut size={16} />
+            LOGOUT FROM DEVICE
+          </button>
+        </div>
+      )}
     </div>
   );
 }

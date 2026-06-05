@@ -27,7 +27,7 @@ export class SuggestionsService {
     const viewer = await this.repo.findUserById(viewerId);
     if (!viewer) return [];
 
-    const existingFriendIds = await this.getExistingFriendIds(viewerId);
+    const excludedUserIds = await this.repo.getExcludedUserIdsForSuggestions(viewerId);
 
     const rankCandidateIds = await this.repo.findUserIdsNearRank(
       viewerId,
@@ -47,11 +47,11 @@ export class SuggestionsService {
     > = new Map();
 
     for (const id of rankCandidateIds) {
-      if (existingFriendIds.has(id)) continue;
+      if (excludedUserIds.has(id)) continue;
       ranked.set(id, { reason: 'RANK_PROXIMITY' });
     }
     for (const id of opponentIds) {
-      if (existingFriendIds.has(id)) continue;
+      if (excludedUserIds.has(id)) continue;
       if (!ranked.has(id)) {
         ranked.set(id, { reason: 'RECENT_OPPONENT' });
       }
@@ -94,14 +94,7 @@ export class SuggestionsService {
     return final;
   }
 
-  private async getExistingFriendIds(userId: string): Promise<Set<string>> {
-    const friendships = await this.repo.listFriendships(userId);
-    const ids = new Set<string>();
-    for (const f of friendships) {
-      ids.add(f.userAId === userId ? f.userBId : f.userAId);
-    }
-    return ids;
-  }
+
 
   async invalidate(userId: string): Promise<void> {
     await this.redis.del(friendSuggestionsCacheKey(userId));

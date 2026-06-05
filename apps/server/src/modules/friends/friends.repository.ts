@@ -207,6 +207,50 @@ export class FriendsRepository {
     });
   }
 
+  async getExcludedUserIdsForSuggestions(userId: string): Promise<Set<string>> {
+    const [friendships, outgoingRequests, incomingRequests, blocks] = await Promise.all([
+      this.prisma.friendship.findMany({
+        where: {
+          OR: [{ userAId: userId }, { userBId: userId }],
+        },
+        select: { userAId: true, userBId: true },
+      }),
+      this.prisma.friendRequest.findMany({
+        where: { senderId: userId },
+        select: { receiverId: true },
+      }),
+      this.prisma.friendRequest.findMany({
+        where: { receiverId: userId },
+        select: { senderId: true },
+      }),
+      this.prisma.block.findMany({
+        where: {
+          OR: [{ initiatorId: userId }, { targetId: userId }],
+        },
+        select: { initiatorId: true, targetId: true },
+      }),
+    ]);
+
+    const excluded = new Set<string>();
+    for (const f of friendships) {
+      excluded.add(f.userAId === userId ? f.userBId : f.userAId);
+    }
+    for (const r of outgoingRequests) {
+      excluded.add(r.receiverId);
+    }
+    for (const r of incomingRequests) {
+      excluded.add(r.senderId);
+    }
+    for (const b of blocks) {
+      excluded.add(b.initiatorId === userId ? b.targetId : b.initiatorId);
+    }
+    
+    // Also exclude themselves
+    excluded.add(userId);
+
+    return excluded;
+  }
+
   async findUserIdsNearRank(
     userId: string,
     userRank: number,

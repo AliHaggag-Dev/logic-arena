@@ -171,7 +171,7 @@ export function NotificationDropdown({
       ref={containerRef}
       role="dialog"
       aria-label="Notifications"
-      className="absolute right-0 top-full mt-2 w-[380px] sm:w-[420px] max-h-[560px] z-50 bg-bg-primary border border-accent/30 rounded-lg overflow-hidden font-mono"
+      className="max-sm:fixed max-sm:inset-x-4 max-sm:top-[64px] max-sm:w-auto max-sm:max-w-full max-sm:shadow-2xl sm:absolute sm:right-0 sm:top-full sm:mt-2 sm:w-[420px] max-sm:max-h-[80vh] sm:max-h-[560px] z-[70] bg-bg-primary border border-accent/30 rounded-lg overflow-hidden font-mono flex flex-col"
       style={{
         boxShadow: '0 12px 32px rgba(var(--accent-rgb),0.18), 0 0 0 1px rgba(var(--accent-rgb),0.05)',
         animation: 'dropdownIn 0.15s ease',
@@ -218,7 +218,7 @@ export function NotificationDropdown({
         </div>
       </div>
 
-      <div ref={listRef} className="overflow-y-auto max-h-[440px] divide-y divide-accent/10">
+      <div ref={listRef} className="overflow-y-auto flex-1 max-h-[440px] divide-y divide-accent/10">
         {isLoading && notifications.length === 0 && unreadCount > SHOW_SKELETON_THRESHOLD ? (
           <div className="py-2" aria-busy="true">
             {Array.from({ length: 5 }).map((_, i) => (

@@ -57,9 +57,9 @@ export function FriendsTabs(props: FriendsTabsProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex items-center gap-2 w-full">
         <div
-          className="inline-flex items-center gap-0.5 p-1 bg-card/40 border border-accent/10 rounded-lg"
+          className="flex-1 flex items-center p-1 bg-accent/5 border border-accent/10 rounded-xl"
           role="tablist"
           aria-label="Friends tabs"
         >
@@ -74,18 +74,18 @@ export function FriendsTabs(props: FriendsTabsProps) {
                 aria-selected={isActive}
                 aria-controls={`tab-panel-${t.id}`}
                 onClick={() => setActiveTab(t.id)}
-                className={`min-h-[36px] px-3 py-1.5 text-[10px] font-mono tracking-[0.18em] font-bold rounded transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${
+                className={`flex-1 h-[36px] flex items-center justify-center gap-1.5 px-1 text-[8px] sm:text-[10px] font-mono tracking-widest font-bold rounded-lg transition-all duration-200 cursor-pointer active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${
                   isActive
-                    ? 'bg-accent/15 text-accent border border-accent/40'
-                    : 'text-accent/45 hover:text-accent/80 hover:bg-accent/5 hover:border-accent/20 border border-transparent'
+                    ? 'bg-accent/20 text-accent shadow-[0_2px_8px_rgba(var(--accent-rgb),0.15)] border border-accent/20'
+                    : 'text-accent/40 hover:text-accent/80 hover:bg-accent/5 border border-transparent'
                 }`}
               >
                 {t.icon}
-                {t.label}
+                <span className="hidden min-[360px]:inline">{t.label}</span>
                 {count > 0 && (
                   <span
-                    className={`px-1.5 py-0.5 text-[8px] rounded ${
-                      isActive ? 'bg-accent/20 text-accent' : 'bg-card/60 text-accent/50'
+                    className={`flex items-center justify-center min-w-[14px] h-[14px] px-0.5 text-[8px] rounded-full ${
+                      isActive ? 'bg-accent/30 text-accent' : 'bg-accent/10 text-accent/50'
                     }`}
                   >
                     {count}
@@ -100,10 +100,10 @@ export function FriendsTabs(props: FriendsTabsProps) {
           type="button"
           onClick={() => setAddOpen(true)}
           aria-label="Add a new friend"
-          className="min-h-[36px] px-3 py-1.5 text-[10px] font-mono tracking-[0.18em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 hover:border-accent/60 text-accent rounded-lg transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+          title="Add Ally"
+          className="w-[44px] h-[44px] shrink-0 flex items-center justify-center border border-accent/40 bg-accent/10 hover:bg-accent/20 hover:border-accent/60 text-accent rounded-xl transition-all duration-200 cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
         >
-          <UserPlus size={13} aria-hidden="true" />
-          ADD ALLY
+          <UserPlus size={20} aria-hidden="true" />
         </button>
       </div>
 
@@ -170,6 +170,7 @@ export function FriendsTabs(props: FriendsTabsProps) {
         {activeTab === 'suggestions' && (
           <SuggestionsGrid
             suggestions={props.suggestions}
+            outgoingRequests={props.outgoingRequests}
             isLoading={props.isLoadingSuggestions}
             isMobile={props.isMobile}
             sentSuggestionIds={props.sentSuggestionIds}

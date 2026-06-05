@@ -35,22 +35,14 @@ export function MobileHeader() {
 
   const visibilityClass = (isAuthPage || isStaticPage) ? "flex" : "flex md:hidden";
 
-  const handleLogout = async () => {
-    try {
-      await import('../lib/api-client').then(m => m.apiClient.post("/auth/logout"));
-    } catch (e) { }
-    clearSensitiveBrowserStorage();
-    clearAuthSession();
-    refresh();
-    router.push("/login");
-  };
+
 
   const getIconButton = (icon: React.ReactNode, onClick: () => void, label: string) => (
     <button
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 group cursor-pointer"
+      className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 group cursor-pointer"
       style={{
         background: 'rgba(var(--accent-rgb),0.08)',
         border: '1px solid rgba(var(--accent-rgb),0.15)',
@@ -65,23 +57,15 @@ export function MobileHeader() {
   );
 
   let authButtonContent = null;
-
-  if (isLoggedIn) {
-    if (isAuthPage) {
-      authButtonContent = getIconButton(<LayoutDashboard size={16} />, () => router.push("/dashboard"), "Dashboard");
-    } else {
-      authButtonContent = getIconButton(<LogOut size={16} />, handleLogout, "Logout");
-    }
-  } else {
-    // If we're on login, show register. If on register, show login. Otherwise show login.
+  if (!isLoggedIn) {
     if (pathname === "/login") {
-      authButtonContent = getIconButton(<UserPlus size={16} />, () => router.push("/register"), "Register");
+      authButtonContent = getIconButton(<UserPlus size={20} />, () => router.push("/register"), "Register");
     } else {
-      authButtonContent = getIconButton(<LogIn size={16} />, () => router.push("/login"), "Login");
+      authButtonContent = getIconButton(<LogIn size={20} />, () => router.push("/login"), "Login");
     }
   }
 
-  const insightsButton = getIconButton(<Lightbulb size={16} />, () => router.push("/insights"), "Insights");
+  const insightsButton = getIconButton(<Lightbulb size={20} />, () => router.push("/insights"), "Insights");
 
   return (
     <header className={`mobile-header-safe w-full ${visibilityClass} items-center justify-between px-4 border-b border-accent/8 bg-bg-primary z-[60] fixed top-0 left-0 right-0 min-h-14`}>
@@ -102,11 +86,10 @@ export function MobileHeader() {
           priority
         />
       </button>
-      <div className="flex items-center gap-2">
-        {isLoggedIn && <NotificationBell notifications={notifications} isMobile />}
+      <div className="flex items-center gap-3">
         {insightsButton}
+        {isLoggedIn && <NotificationBell notifications={notifications} isMobile />}
         {authButtonContent}
-        <ThemeSwitcher variant="minimal" />
       </div>
     </header>
   );
