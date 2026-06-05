@@ -98,7 +98,10 @@ export class CampaignController {
       if (msg === ERR_USER_NOT_FOUND)
         throw new NotFoundException('User not found');
       if (msg === ERR_INSUFFICIENT_POINTS)
-        throw new HttpException('Insufficient points to reveal hint', HttpStatus.PAYMENT_REQUIRED);
+        throw new HttpException(
+          'Insufficient points to reveal hint',
+          HttpStatus.PAYMENT_REQUIRED,
+        );
       if (msg === ERR_INVALID_HINT_INDEX)
         throw new BadRequestException('hintIndex must be 1 or 2');
       throw e;
@@ -138,7 +141,11 @@ export class CampaignController {
     }
 
     try {
-      return await this.campaignService.completeLevel(userId, id, fightDurationTicks);
+      return await this.campaignService.completeLevel(
+        userId,
+        id,
+        fightDurationTicks,
+      );
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
       if (msg === ERR_LEVEL_LOCKED)

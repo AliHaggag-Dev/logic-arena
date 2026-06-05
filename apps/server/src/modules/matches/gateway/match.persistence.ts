@@ -62,10 +62,13 @@ export async function persistMatchResults(
       .map((p) => p.id)
       .filter((id) => playerIdSet.has(id));
 
-    const finalScripts = initialPlayers.reduce((acc, p) => {
-      acc[p.id] = p.script;
-      return acc;
-    }, {} as Record<string, string>);
+    const finalScripts = initialPlayers.reduce(
+      (acc, p) => {
+        acc[p.id] = p.script;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
     const replayDataPayload = {
       snapshots,
@@ -129,12 +132,13 @@ export async function persistMatchResults(
         );
         const mergedStats = mergeStats(existingStats, newStats);
 
-        const eloDelta = persistedWinnerId === robot.id ? 10 : (persistedWinnerId ? -10 : 0);
+        const eloDelta =
+          persistedWinnerId === robot.id ? 10 : persistedWinnerId ? -10 : 0;
         playerStats[robot.id] = {
           eloDelta,
           newStats,
           durationSecs,
-          rank: currentRank + eloDelta
+          rank: currentRank + eloDelta,
         };
 
         await tx.matchParticipant.upsert({
@@ -174,15 +178,20 @@ export async function persistMatchResults(
 
     if (achievementsService) {
       await Promise.all(
-        playerIds.map((id) => achievementsService.checkAll(id, tx))
+        playerIds.map((id) => achievementsService.checkAll(id, tx)),
       );
     }
 
-    return { createdMatch, playerIds, updatedWinner, replayDataPayload, playerStats };
+    return {
+      createdMatch,
+      playerIds,
+      updatedWinner,
+      replayDataPayload,
+      playerStats,
+    };
   });
 
   if (!persistenceResult) return;
-
 
   if (persistenceResult.updatedWinner && redis?.healthy) {
     await redis

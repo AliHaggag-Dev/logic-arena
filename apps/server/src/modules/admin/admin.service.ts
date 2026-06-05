@@ -162,29 +162,24 @@ export class AdminService {
   // ── Users ────────────────────────────────────────────────────────────────────
 
   async getUserStats(): Promise<UserStats> {
-    const [
-      totalUsers,
-      verifiedCount,
-      providerCounts,
-      topPlayers,
-      allUsers,
-    ] = await Promise.all([
-      this.prisma.user.count(),
-      this.prisma.user.count({ where: { isVerified: true } }),
-      this.prisma.user.groupBy({
-        by: ['provider'],
-        _count: { provider: true },
-      }),
-      this.prisma.user.findMany({
-        select: { id: true, username: true, rank: true, points: true },
-        orderBy: { rank: 'desc' },
-        take: TOP_PLAYERS_LIMIT,
-      }),
-      this.prisma.user.findMany({
-        select: { createdAt: true, rank: true },
-        where: { createdAt: { gte: daysAgo(DAYS_30) } },
-      }),
-    ]);
+    const [totalUsers, verifiedCount, providerCounts, topPlayers, allUsers] =
+      await Promise.all([
+        this.prisma.user.count(),
+        this.prisma.user.count({ where: { isVerified: true } }),
+        this.prisma.user.groupBy({
+          by: ['provider'],
+          _count: { provider: true },
+        }),
+        this.prisma.user.findMany({
+          select: { id: true, username: true, rank: true, points: true },
+          orderBy: { rank: 'desc' },
+          take: TOP_PLAYERS_LIMIT,
+        }),
+        this.prisma.user.findMany({
+          select: { createdAt: true, rank: true },
+          where: { createdAt: { gte: daysAgo(DAYS_30) } },
+        }),
+      ]);
 
     // provider breakdown
     const providerBreakdown = { local: 0, google: 0, github: 0 };
@@ -224,17 +219,13 @@ export class AdminService {
   // ── Matches ──────────────────────────────────────────────────────────────────
 
   async getMatchStats(): Promise<MatchStats> {
-    const [
-      totalMatches,
-      durationAgg,
-      typeGroups,
-      statusGroups,
-    ] = await Promise.all([
-      this.prisma.match.count(),
-      this.prisma.match.aggregate({ _avg: { duration: true } }),
-      this.prisma.match.groupBy({ by: ['type'], _count: { type: true } }),
-      this.prisma.match.groupBy({ by: ['status'], _count: { status: true } }),
-    ]);
+    const [totalMatches, durationAgg, typeGroups, statusGroups] =
+      await Promise.all([
+        this.prisma.match.count(),
+        this.prisma.match.aggregate({ _avg: { duration: true } }),
+        this.prisma.match.groupBy({ by: ['type'], _count: { type: true } }),
+        this.prisma.match.groupBy({ by: ['status'], _count: { status: true } }),
+      ]);
 
     // matches per day (30 days) via raw query
     const perDayRaw = await this.prisma.$queryRaw<
@@ -366,9 +357,7 @@ export class AdminService {
     );
 
     const avgScriptsPerUser =
-      userCount > 0
-        ? Math.round((totalScripts / userCount) * 10) / 10
-        : 0;
+      userCount > 0 ? Math.round((totalScripts / userCount) * 10) / 10 : 0;
 
     const lengths = allScripts.map((s) => s.content.length);
     const scriptLengthDistribution = buildHistogram(
@@ -521,9 +510,7 @@ export class AdminService {
         count: g._count.category,
       })),
       avgInsightsPerUser:
-        userCount > 0
-          ? Math.round((totalInsights / userCount) * 10) / 10
-          : 0,
+        userCount > 0 ? Math.round((totalInsights / userCount) * 10) / 10 : 0,
     };
   }
 

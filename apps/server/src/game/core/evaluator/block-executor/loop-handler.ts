@@ -1,8 +1,5 @@
 import { GameLoop, Robot } from '@logic-arena/engine';
-import {
-  WhileStatement,
-  ForStatement,
-} from '@logic-arena/logic-parser';
+import { WhileStatement, ForStatement } from '@logic-arena/logic-parser';
 import { ExpressionEvaluator } from '../expression-facade';
 import { BREAK_SIGNAL, RETURN_SIGNAL, BlockResult } from './control-flow';
 import { CONSTANTS, OpsCounter } from '../types';

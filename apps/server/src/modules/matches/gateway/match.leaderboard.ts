@@ -12,7 +12,11 @@ export async function handleJoinLeaderboard(
 
   const allSockets = await server.fetchSockets();
   const seenUserIds = new Set<string>();
-  const snapshot: Array<{ userId: string; isOnline: boolean; matchId?: string }> = [];
+  const snapshot: Array<{
+    userId: string;
+    isOnline: boolean;
+    matchId?: string;
+  }> = [];
 
   for (const s of allSockets) {
     const sock = s as unknown as AuthenticatedSocket;

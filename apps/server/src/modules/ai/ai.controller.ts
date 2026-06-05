@@ -33,19 +33,19 @@ export class AiController {
 
   @Post('docs-chat')
   @HttpCode(200)
-  async chat(
-    @Body() body: ChatDto,
-    @Res() res: Response,
-  ) {
+  async chat(@Body() body: ChatDto, @Res() res: Response) {
     const { message, history, image } = body;
 
-    const hasMessage = message && typeof message === 'string' && message.trim().length > 0;
-    
+    const hasMessage =
+      message && typeof message === 'string' && message.trim().length > 0;
+
     if (!hasMessage && !image) {
       throw new BadRequestException('message or image must be provided');
     }
 
-    const sanitized = hasMessage ? message.replace(/<[^>]*>/g, '').slice(0, MAX_MESSAGE_LENGTH) : '';
+    const sanitized = hasMessage
+      ? message.replace(/<[^>]*>/g, '').slice(0, MAX_MESSAGE_LENGTH)
+      : '';
 
     if (!Array.isArray(history)) {
       throw new BadRequestException('history must be an array');
@@ -53,8 +53,10 @@ export class AiController {
 
     const validRoles = ['user', 'model'] as const;
     for (const entry of history) {
-      if (!entry.role || !validRoles.includes(entry.role as typeof validRoles[number])) {
-        throw new BadRequestException('history entries must have role "user" or "model"');
+      if (!entry.role || !validRoles.includes(entry.role)) {
+        throw new BadRequestException(
+          'history entries must have role "user" or "model"',
+        );
       }
       if (typeof entry.content !== 'string') {
         throw new BadRequestException('history entry content must be a string');
@@ -69,7 +71,11 @@ export class AiController {
     res.setHeader('X-Accel-Buffering', 'no');
 
     try {
-      const stream = this.aiService.streamChat(sanitized, trimmedHistory, image);
+      const stream = this.aiService.streamChat(
+        sanitized,
+        trimmedHistory,
+        image,
+      );
 
       for await (const chunk of stream) {
         const escaped = JSON.stringify(chunk);
@@ -88,17 +94,20 @@ export class AiController {
 
   @Post('generate-script')
   @HttpCode(200)
-  async generateScript(
-    @Body() body: GenerateScriptDto,
-    @Res() res: Response,
-  ) {
+  async generateScript(@Body() body: GenerateScriptDto, @Res() res: Response) {
     const { description } = body;
 
-    if (!description || typeof description !== 'string' || description.trim().length === 0) {
+    if (
+      !description ||
+      typeof description !== 'string' ||
+      description.trim().length === 0
+    ) {
       throw new BadRequestException('description must be a non-empty string');
     }
 
-    const sanitized = description.replace(/<[^>]*>/g, '').slice(0, MAX_DESCRIPTION_LENGTH);
+    const sanitized = description
+      .replace(/<[^>]*>/g, '')
+      .slice(0, MAX_DESCRIPTION_LENGTH);
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');

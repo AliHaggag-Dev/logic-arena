@@ -8,10 +8,7 @@ export class SpectatorManager {
     private server: Server,
   ) {}
 
-  handleSpectate(
-    client: AuthenticatedSocket,
-    data: { matchId: string },
-  ) {
+  handleSpectate(client: AuthenticatedSocket, data: { matchId: string }) {
     if (!data?.matchId) {
       client.emit('error', { message: 'Invalid matchId.' });
       return;
@@ -23,7 +20,8 @@ export class SpectatorManager {
       return;
     }
 
-    (client as AuthenticatedSocket & { isSpectator?: boolean }).isSpectator = true;
+    (client as AuthenticatedSocket & { isSpectator?: boolean }).isSpectator =
+      true;
     client.matchId = data.matchId;
     client.join(data.matchId);
 
@@ -48,7 +46,8 @@ export class SpectatorManager {
     }
 
     client.leave(client.matchId);
-    (client as AuthenticatedSocket & { isSpectator?: boolean }).isSpectator = false;
+    (client as AuthenticatedSocket & { isSpectator?: boolean }).isSpectator =
+      false;
     client.matchId = undefined;
   }
 

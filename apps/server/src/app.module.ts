@@ -10,13 +10,14 @@ import { HttpCacheInterceptor } from './common/interceptors/http-cache.intercept
 import { AuthModule } from './modules/auth/auth.module';
 import { ScriptsModule } from './modules/scripts/scripts.module';
 import { UsersModule } from './modules/users/users.module';
-import { MatchGateway } from './modules/matches/match.gateway';
+import { MatchesModule } from './modules/matches/matches.module';
 import { TournamentsModule } from './modules/tournaments/tournaments.module';
 import { CampaignModule } from './modules/campaign/campaign.module';
 import { AiModule } from './modules/ai/ai.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
+import { FriendsModule } from './modules/friends/friends.module';
 
 @Module({
   imports: [
@@ -34,18 +35,19 @@ import { AchievementsModule } from './modules/achievements/achievements.module';
     AuthModule,
     ScriptsModule,
     UsersModule,
+    MatchesModule,
     TournamentsModule,
     CampaignModule,
     AiModule,
     FeedbackModule,
     AdminModule,
     AchievementsModule,
+    FriendsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     PrismaService,
-    MatchGateway,
     // ── Global throttle guard ────────────────────────────────────────────────
     {
       provide: APP_GUARD,

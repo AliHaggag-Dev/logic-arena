@@ -34,11 +34,19 @@ export class CampaignFightRunner {
     data: CampaignFightData,
   ): Promise<void> {
     if (client.isGuest || !client.userId) {
-      client.emit('campaignFightError', { message: 'Authentication required.' });
+      client.emit('campaignFightError', {
+        message: 'Authentication required.',
+      });
       return;
     }
 
-    const { levelId, userScript, obstacles = [], playerSpawn, enemySpawn } = data;
+    const {
+      levelId,
+      userScript,
+      obstacles = [],
+      playerSpawn,
+      enemySpawn,
+    } = data;
 
     if (!levelId || !userScript?.trim()) {
       client.emit('campaignFightError', { message: 'Invalid payload.' });
@@ -52,7 +60,9 @@ export class CampaignFightRunner {
         levelId,
       );
     } catch {
-      client.emit('campaignFightError', { message: 'Level locked or not found.' });
+      client.emit('campaignFightError', {
+        message: 'Level locked or not found.',
+      });
       return;
     }
 
@@ -60,31 +70,39 @@ export class CampaignFightRunner {
     if (existing) clearInterval(existing);
 
     const CAMPAIGN_PLAYER_SPAWN = playerSpawn ?? { x: 275, y: 300, angle: 0 };
-    const CAMPAIGN_ENEMY_SPAWN = enemySpawn ?? { x: 525, y: 300, angle: Math.PI };
+    const CAMPAIGN_ENEMY_SPAWN = enemySpawn ?? {
+      x: 525,
+      y: 300,
+      angle: Math.PI,
+    };
 
-    const playerFacing = typeof CAMPAIGN_PLAYER_SPAWN.angle === 'number'
-      ? CAMPAIGN_PLAYER_SPAWN.angle
-      : Math.atan2(
-          CAMPAIGN_ENEMY_SPAWN.y - CAMPAIGN_PLAYER_SPAWN.y,
-          CAMPAIGN_ENEMY_SPAWN.x - CAMPAIGN_PLAYER_SPAWN.x,
-        );
-    const enemyFacing = typeof CAMPAIGN_ENEMY_SPAWN.angle === 'number'
-      ? CAMPAIGN_ENEMY_SPAWN.angle
-      : Math.atan2(
-          CAMPAIGN_PLAYER_SPAWN.y - CAMPAIGN_ENEMY_SPAWN.y,
-          CAMPAIGN_PLAYER_SPAWN.x - CAMPAIGN_ENEMY_SPAWN.x,
-        );
+    const playerFacing =
+      typeof CAMPAIGN_PLAYER_SPAWN.angle === 'number'
+        ? CAMPAIGN_PLAYER_SPAWN.angle
+        : Math.atan2(
+            CAMPAIGN_ENEMY_SPAWN.y - CAMPAIGN_PLAYER_SPAWN.y,
+            CAMPAIGN_ENEMY_SPAWN.x - CAMPAIGN_PLAYER_SPAWN.x,
+          );
+    const enemyFacing =
+      typeof CAMPAIGN_ENEMY_SPAWN.angle === 'number'
+        ? CAMPAIGN_ENEMY_SPAWN.angle
+        : Math.atan2(
+            CAMPAIGN_PLAYER_SPAWN.y - CAMPAIGN_ENEMY_SPAWN.y,
+            CAMPAIGN_PLAYER_SPAWN.x - CAMPAIGN_ENEMY_SPAWN.x,
+          );
 
     const ARENA_W = 800;
     const ARENA_H = 600;
-    const mappedObstacles: Obstacle[] = obstacles.map((o: CampaignObstaclePayload) => ({
-      id: `scene-obs-${Math.random().toString(36).slice(2, 7)}`,
-      type: o.type ?? 'SOLID',
-      position: { x: o.x * ARENA_W, y: o.y * ARENA_H },
-      width: o.w * ARENA_W,
-      height: o.h * ARENA_H,
-      rotation: 0,
-    }));
+    const mappedObstacles: Obstacle[] = obstacles.map(
+      (o: CampaignObstaclePayload) => ({
+        id: `scene-obs-${Math.random().toString(36).slice(2, 7)}`,
+        type: o.type ?? 'SOLID',
+        position: { x: o.x * ARENA_W, y: o.y * ARENA_H },
+        width: o.w * ARENA_W,
+        height: o.h * ARENA_H,
+        rotation: 0,
+      }),
+    );
 
     const FIXED_DT = 1 / 60;
     const MS_PER_STEP = FIXED_DT * 1000;
@@ -126,7 +144,10 @@ export class CampaignFightRunner {
         }
       },
     );
-    const campaignEnemy = engine.getGameLoop().getRobots().find((r) => r.id === 'enemy');
+    const campaignEnemy = engine
+      .getGameLoop()
+      .getRobots()
+      .find((r) => r.id === 'enemy');
     if (campaignEnemy) {
       campaignEnemy.ignoreEnergyCost = true;
     }
@@ -143,7 +164,7 @@ export class CampaignFightRunner {
           isAlive: r.isAlive,
           color: r.color,
           tracerColor: r.tracerColor,
-          scanActive: (stepCount - (lastScanTicks.get(r.id) ?? -999)) < 3,
+          scanActive: stepCount - (lastScanTicks.get(r.id) ?? -999) < 3,
         })),
         projectiles: state.projectiles.map((p) => ({
           id: p.id,
@@ -181,7 +202,10 @@ export class CampaignFightRunner {
       client.emit('campaignFrame', emitFrame());
 
       const state = engine.getState();
-      const { matchIsOver, winner: matchWinner } = checkWinCondition(state, 'COMBAT');
+      const { matchIsOver, winner: matchWinner } = checkWinCondition(
+        state,
+        'COMBAT',
+      );
 
       if (matchIsOver) {
         matchOver = true;

@@ -25,7 +25,8 @@ export async function loadPlayerScriptAndLoadout(
   let selectedRobotId = 'unit-01';
 
   if (client.isGuest) {
-    scriptContent = '// Guest Mode active\n// You can write temporary logic here';
+    scriptContent =
+      '// Guest Mode active\n// You can write temporary logic here';
   } else {
     const script = await prisma.robotScript.findUnique({
       where: { id: scriptId, userId: client.userId },
@@ -55,7 +56,9 @@ export async function loadPlayerScriptAndLoadout(
       selectedRobotId = user.equippedChassis || 'chassis-unit-01';
       const paint = BLACK_MARKET_ITEMS.find((i) => i.id === user.equippedPaint);
       if (paint?.color) selectedColor = paint.color;
-      const tracer = BLACK_MARKET_ITEMS.find((i) => i.id === user.equippedTracer);
+      const tracer = BLACK_MARKET_ITEMS.find(
+        (i) => i.id === user.equippedTracer,
+      );
       if (tracer?.color) selectedTracerColor = tracer.color;
     }
   }
@@ -78,7 +81,15 @@ export async function createAndStartMatch(
   mode: GameMode,
   mapTheme: MapTheme = 'CYBER',
 ): Promise<MatchEngine> {
-  let initialPlayers: { id: string; script: string; color: string; model: string; tracerColor?: string; spawnPosition?: { x: number; y: number }; initialFovDirection?: number }[];
+  let initialPlayers: {
+    id: string;
+    script: string;
+    color: string;
+    model: string;
+    tracerColor?: string;
+    spawnPosition?: { x: number; y: number };
+    initialFovDirection?: number;
+  }[];
 
   if (mode === 'RACING') {
     initialPlayers = [playerToken];
@@ -90,13 +101,22 @@ export async function createAndStartMatch(
       { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
     ];
   } else if (mode === 'SURVIVAL') {
-    initialPlayers = [
-      playerToken,
-    ];
+    initialPlayers = [playerToken];
   } else if (mode === 'CAPTURE_THE_FLAG') {
     initialPlayers = [
-      { ...playerToken, spawnPosition: { x: 100, y: 300 }, initialFovDirection: 0 },
-      { id: 'bot-2', script: '', color: '#ff00ff', model: 'unit-02', spawnPosition: { x: 700, y: 300 }, initialFovDirection: Math.PI },
+      {
+        ...playerToken,
+        spawnPosition: { x: 100, y: 300 },
+        initialFovDirection: 0,
+      },
+      {
+        id: 'bot-2',
+        script: '',
+        color: '#ff00ff',
+        model: 'unit-02',
+        spawnPosition: { x: 700, y: 300 },
+        initialFovDirection: Math.PI,
+      },
     ];
   } else {
     // COMBAT and KING_OF_THE_HILL

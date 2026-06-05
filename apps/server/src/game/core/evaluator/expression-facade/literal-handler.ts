@@ -15,10 +15,10 @@ export function evaluateLiteral(
   evaluateExpr: (expr: Expression) => unknown,
 ): unknown {
   if (expression.type === NodeType.ArrayLiteral) {
-    return evaluateArrayLiteral(expression as ArrayLiteral, evaluateExpr);
+    return evaluateArrayLiteral(expression, evaluateExpr);
   }
   if (expression.type === NodeType.ObjectLiteral) {
-    return evaluateObjectLiteral(expression as ObjectLiteral, evaluateExpr);
+    return evaluateObjectLiteral(expression, evaluateExpr);
   }
   return undefined;
 }

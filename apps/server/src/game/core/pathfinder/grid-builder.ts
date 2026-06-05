@@ -143,7 +143,7 @@ export class GridBuilder {
         }
       }
 
-      const selected = best as WalkableCandidate | null;
+      const selected = best;
       if (selected) return { r: selected.r, c: selected.c };
     }
 
@@ -239,6 +239,8 @@ export class GridBuilder {
 
     const clippedMin = Math.max(tMin, near);
     const clippedMax = Math.min(tMax, far);
-    return clippedMin <= clippedMax ? { min: clippedMin, max: clippedMax } : null;
+    return clippedMin <= clippedMax
+      ? { min: clippedMin, max: clippedMax }
+      : null;
   }
 }

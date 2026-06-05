@@ -4,7 +4,12 @@ import { RedisService } from '../../common/redis.service';
 import { ACHIEVEMENTS, AchievementMeta } from './achievements.constants';
 import { CAMPAIGN_LEVELS } from '../campaign/campaign.constants';
 import { Prisma } from '@prisma/client';
-import { profileKey, publicProfileKey, blackMarketKey, leaderboardSnapshotKey } from '../users/types';
+import {
+  profileKey,
+  publicProfileKey,
+  blackMarketKey,
+  leaderboardSnapshotKey,
+} from '../users/types';
 
 @Injectable()
 export class AchievementsService {
@@ -32,7 +37,9 @@ export class AchievementsService {
       where: { userId },
     });
 
-    const achievementMap = new Map(userAchievements.map((ua) => [ua.achievementId, ua]));
+    const achievementMap = new Map(
+      userAchievements.map((ua) => [ua.achievementId, ua]),
+    );
     const totalLevelsCount = CAMPAIGN_LEVELS.length;
 
     return Object.values(ACHIEVEMENTS).map((meta) => {
@@ -96,13 +103,19 @@ export class AchievementsService {
     ];
 
     let totalPointsReward = 0;
-    const achievementsResults: { id: string; oldLevel: number; newLevel: number }[] = [];
+    const achievementsResults: {
+      id: string;
+      oldLevel: number;
+      newLevel: number;
+    }[] = [];
 
     // Get current DB achievements
     const existingAchievements = await prismaClient.userAchievement.findMany({
       where: { userId },
     });
-    const existingMap = new Map(existingAchievements.map((a) => [a.achievementId, a]));
+    const existingMap = new Map(
+      existingAchievements.map((a) => [a.achievementId, a]),
+    );
 
     for (const tracker of achievementsToUpdate) {
       const meta = ACHIEVEMENTS[tracker.id];
@@ -115,9 +128,10 @@ export class AchievementsService {
       // Determine highest satisfied stage level
       let highestSatisfiedLevel = 0;
       for (const stage of meta.stages) {
-        const threshold = (tracker.id === 'campaign_completed' && stage.level === 4)
-          ? totalCampaignLevels
-          : stage.value;
+        const threshold =
+          tracker.id === 'campaign_completed' && stage.level === 4
+            ? totalCampaignLevels
+            : stage.value;
 
         if (currentVal >= threshold) {
           highestSatisfiedLevel = stage.level;
@@ -133,7 +147,10 @@ export class AchievementsService {
       // Calculate reward if level increased
       if (highestSatisfiedLevel > oldUnlockedLevel) {
         for (const stage of meta.stages) {
-          if (stage.level > oldUnlockedLevel && stage.level <= highestSatisfiedLevel) {
+          if (
+            stage.level > oldUnlockedLevel &&
+            stage.level <= highestSatisfiedLevel
+          ) {
             totalPointsReward += stage.reward;
           }
         }
@@ -152,7 +169,8 @@ export class AchievementsService {
         update: {
           unlockedLevel: highestSatisfiedLevel,
           currentProgress: currentVal,
-          unlockedAt: highestSatisfiedLevel > oldUnlockedLevel ? new Date() : undefined,
+          unlockedAt:
+            highestSatisfiedLevel > oldUnlockedLevel ? new Date() : undefined,
           lastUpdated: new Date(),
         },
       });
@@ -160,7 +178,9 @@ export class AchievementsService {
 
     // 4. Payout point rewards if any new tiers unlocked
     if (totalPointsReward > 0) {
-      this.logger.log(`User ${user.username} (${userId}) unlocked achievements! Awarding ${totalPointsReward} points.`);
+      this.logger.log(
+        `User ${user.username} (${userId}) unlocked achievements! Awarding ${totalPointsReward} points.`,
+      );
       await prismaClient.user.update({
         where: { id: userId },
         data: { points: { increment: totalPointsReward } },

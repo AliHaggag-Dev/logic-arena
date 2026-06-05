@@ -87,7 +87,8 @@ export class FeedbackService {
     query: PaginationQueryDto,
   ): Promise<PaginatedResponse<BugReportResponse>> {
     const cacheKey = listCacheKey('bugReport', query);
-    const cached = await this.redis.get<PaginatedResponse<BugReportResponse>>(cacheKey);
+    const cached =
+      await this.redis.get<PaginatedResponse<BugReportResponse>>(cacheKey);
     if (cached) return cached;
 
     const { page, pageSize, status, sortBy, sortOrder } = query;
@@ -116,7 +117,8 @@ export class FeedbackService {
     query: PaginationQueryDto,
   ): Promise<PaginatedResponse<FeatureRequestResponse>> {
     const cacheKey = listCacheKey('featureRequest', query);
-    const cached = await this.redis.get<PaginatedResponse<FeatureRequestResponse>>(cacheKey);
+    const cached =
+      await this.redis.get<PaginatedResponse<FeatureRequestResponse>>(cacheKey);
     if (cached) return cached;
 
     const { page, pageSize, status, sortBy, sortOrder } = query;
@@ -145,7 +147,8 @@ export class FeedbackService {
     query: PaginationQueryDto,
   ): Promise<PaginatedResponse<ContactMessageResponse>> {
     const cacheKey = listCacheKey('contactMessage', query);
-    const cached = await this.redis.get<PaginatedResponse<ContactMessageResponse>>(cacheKey);
+    const cached =
+      await this.redis.get<PaginatedResponse<ContactMessageResponse>>(cacheKey);
     if (cached) return cached;
 
     const { page, pageSize, status, sortBy, sortOrder } = query;
@@ -177,7 +180,10 @@ export class FeedbackService {
     status: string,
   ): Promise<BugReportResponse> {
     await this.assertBugReportExists(id);
-    const result = await this.prisma.bugReport.update({ where: { id }, data: { status } });
+    const result = await this.prisma.bugReport.update({
+      where: { id },
+      data: { status },
+    });
     await this.redis.delPattern('feedback:bugReport:*');
     return result;
   }
@@ -187,7 +193,10 @@ export class FeedbackService {
     status: string,
   ): Promise<FeatureRequestResponse> {
     await this.assertFeatureRequestExists(id);
-    const result = await this.prisma.featureRequest.update({ where: { id }, data: { status } });
+    const result = await this.prisma.featureRequest.update({
+      where: { id },
+      data: { status },
+    });
     await this.redis.delPattern('feedback:featureRequest:*');
     return result;
   }
@@ -197,7 +206,10 @@ export class FeedbackService {
     status: string,
   ): Promise<ContactMessageResponse> {
     await this.assertContactMessageExists(id);
-    const result = await this.prisma.contactMessage.update({ where: { id }, data: { status } });
+    const result = await this.prisma.contactMessage.update({
+      where: { id },
+      data: { status },
+    });
     await this.redis.delPattern('feedback:contactMessage:*');
     return result;
   }

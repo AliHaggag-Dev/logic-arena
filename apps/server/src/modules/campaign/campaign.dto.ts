@@ -1,4 +1,11 @@
-import { IsString, IsNumber, MaxLength, Min, MinLength, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  MaxLength,
+  Min,
+  MinLength,
+  IsIn,
+} from 'class-validator';
 
 export class CompleteLevelDto {
   @IsString()

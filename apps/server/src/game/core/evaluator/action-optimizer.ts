@@ -19,7 +19,10 @@ export interface BufferedAction {
  */
 export class ActionOptimizer {
   private static readonly MOVEMENT_STATE = new Set([
-    'STOP', 'MOVE', 'MOVE_FAST', 'BACKUP',
+    'STOP',
+    'MOVE',
+    'MOVE_FAST',
+    'BACKUP',
   ]);
 
   private static readonly MOVEMENT_EVENT = new Set(['PATHFIND']);
@@ -55,7 +58,10 @@ export class ActionOptimizer {
       }
 
       // Remove MOVEMENT_STATE commands that are NOT the final one
-      if (ActionOptimizer.MOVEMENT_STATE.has(cmd) && i !== lastMovementStateIndex) {
+      if (
+        ActionOptimizer.MOVEMENT_STATE.has(cmd) &&
+        i !== lastMovementStateIndex
+      ) {
         continue;
       }
 

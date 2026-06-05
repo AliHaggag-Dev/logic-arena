@@ -88,7 +88,7 @@ export class AdminFeedbackController {
   @Get('bug-reports')
   @HttpCode(HttpStatus.OK)
   async listBugReports(@Query() rawQuery: Record<string, string>) {
-    const query = PaginationQuerySchema.parse(rawQuery) as PaginationQueryDto;
+    const query = PaginationQuerySchema.parse(rawQuery);
     return this.feedbackService.listBugReports(query);
   }
 
@@ -113,7 +113,7 @@ export class AdminFeedbackController {
   @Get('feature-requests')
   @HttpCode(HttpStatus.OK)
   async listFeatureRequests(@Query() rawQuery: Record<string, string>) {
-    const query = PaginationQuerySchema.parse(rawQuery) as PaginationQueryDto;
+    const query = PaginationQuerySchema.parse(rawQuery);
     return this.feedbackService.listFeatureRequests(query);
   }
 
@@ -138,7 +138,7 @@ export class AdminFeedbackController {
   @Get('contact')
   @HttpCode(HttpStatus.OK)
   async listContactMessages(@Query() rawQuery: Record<string, string>) {
-    const query = PaginationQuerySchema.parse(rawQuery) as PaginationQueryDto;
+    const query = PaginationQuerySchema.parse(rawQuery);
     return this.feedbackService.listContactMessages(query);
   }
 

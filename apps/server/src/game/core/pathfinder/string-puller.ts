@@ -46,10 +46,7 @@ export class StringPuller {
       }
 
       if (steppedR && steppedC) {
-        if (
-          this.impassable[r0 - sr]?.[c0] ||
-          this.impassable[r0]?.[c0 - sc]
-        ) {
+        if (this.impassable[r0 - sr]?.[c0] || this.impassable[r0]?.[c0 - sc]) {
           return false;
         }
       }

@@ -1,8 +1,12 @@
+import { Injectable } from '@nestjs/common';
 import { MatchEngine } from '../match.engine';
 import { ModeData } from '@logic-arena/engine';
 
-export type UserMatchStatus = { status: 'idle' } | { status: 'in-match'; matchId: string };
+export type UserMatchStatus =
+  | { status: 'idle' }
+  | { status: 'in-match'; matchId: string };
 
+@Injectable()
 export class MatchState {
   matches = new Map<string, MatchEngine>();
   lastStateMap = new Map<string, unknown>();

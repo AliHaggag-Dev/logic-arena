@@ -66,7 +66,9 @@ export class SocialController {
                 }
               : null;
           })
-          .filter((entry): entry is any => entry !== null) as LeaderboardEntry[];
+          .filter(
+            (entry): entry is any => entry !== null,
+          ) as LeaderboardEntry[];
 
         if (result.length > 0) {
           await this.redis.set(leaderboardSnapshotKey, result, LEADERBOARD_TTL);

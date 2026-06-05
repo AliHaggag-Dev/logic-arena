@@ -20,7 +20,7 @@ export function evaluateCall(
 ): unknown {
   if (expression.type !== NodeType.FunctionCallExpression) return undefined;
 
-  const fnCall = expression as FunctionCallExpression;
+  const fnCall = expression;
   const evaluatedArgs = fnCall.args.map((a) => evaluateExpr(a));
   return evaluateBuiltinFunction(
     fnCall.name,

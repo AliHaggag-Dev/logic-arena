@@ -7,7 +7,7 @@ const SCAN_ROTATE_RAD = (SCAN_ROTATE_DEG * Math.PI) / 180;
 const TWO_PI = Math.PI * 2;
 
 export class ScanExecutor {
-  constructor(private gameLoop: GameLoop) { }
+  constructor(private gameLoop: GameLoop) {}
 
   execute(robotId: string, memory: Record<string, unknown>): void {
     const robots = this.gameLoop.getRobots();
@@ -25,7 +25,10 @@ export class ScanExecutor {
         .filter((r) => r.id !== robotId && r.isAlive && !r.isCloaked)
         .map((r) => ({
           robot: r,
-          dist: Math.hypot(r.position.x - robot.position.x, r.position.y - robot.position.y),
+          dist: Math.hypot(
+            r.position.x - robot.position.x,
+            r.position.y - robot.position.y,
+          ),
         }))
         .filter(({ dist }) => dist <= range)
         .sort((a, b) => a.dist - b.dist)[0];
@@ -36,10 +39,13 @@ export class ScanExecutor {
           nearest.robot.position.x - robot.position.x,
         );
       } else {
-        robot.fovDirection = ((robot.fovDirection ?? robot.rotation) + TWO_PI) % TWO_PI;
+        robot.fovDirection =
+          ((robot.fovDirection ?? robot.rotation) + TWO_PI) % TWO_PI;
       }
     } else {
-      const rotateRad = ((Number.isFinite(sweepDeg) ? sweepDeg : SCAN_ROTATE_DEG) * Math.PI) / 180;
+      const rotateRad =
+        ((Number.isFinite(sweepDeg) ? sweepDeg : SCAN_ROTATE_DEG) * Math.PI) /
+        180;
       robot.fovDirection =
         ((robot.fovDirection ?? robot.rotation) + rotateRad) % TWO_PI;
     }

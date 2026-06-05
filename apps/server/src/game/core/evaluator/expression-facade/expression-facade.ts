@@ -1,4 +1,8 @@
-import { Obstacle, Robot, enforceAliScriptStringLimit } from '@logic-arena/engine';
+import {
+  Obstacle,
+  Robot,
+  enforceAliScriptStringLimit,
+} from '@logic-arena/engine';
 import {
   Expression,
   NodeType,
@@ -44,7 +48,14 @@ export class ExpressionEvaluator {
     if (depth > MAX_EVAL_DEPTH) return undefined;
 
     const evaluateExpr = (expr: Expression) =>
-      this.evaluateExpression(robot, expr, memory, getRobots, getObstacles, depth + 1);
+      this.evaluateExpression(
+        robot,
+        expr,
+        memory,
+        getRobots,
+        getObstacles,
+        depth + 1,
+      );
 
     switch (expression.type) {
       case NodeType.NumberLiteral:
@@ -52,7 +63,7 @@ export class ExpressionEvaluator {
         return expression.value;
 
       case NodeType.StringLiteral:
-        return enforceAliScriptStringLimit(String((expression as StringLiteral).value));
+        return enforceAliScriptStringLimit(String(expression.value));
 
       case NodeType.ArrayLiteral:
       case NodeType.ObjectLiteral:
@@ -61,7 +72,14 @@ export class ExpressionEvaluator {
       case NodeType.Identifier:
       case NodeType.IndexExpression:
       case NodeType.MemberExpression:
-        return evaluateAccess(robot, expression, evaluateExpr, memory, getRobots, getObstacles);
+        return evaluateAccess(
+          robot,
+          expression,
+          evaluateExpr,
+          memory,
+          getRobots,
+          getObstacles,
+        );
 
       case NodeType.BinaryExpression: {
         const left = evaluateExpr(expression.left);
@@ -81,7 +99,14 @@ export class ExpressionEvaluator {
       }
 
       case NodeType.FunctionCallExpression:
-        return evaluateCall(robot, expression, evaluateExpr, memory, getRobots, getObstacles);
+        return evaluateCall(
+          robot,
+          expression,
+          evaluateExpr,
+          memory,
+          getRobots,
+          getObstacles,
+        );
 
       default:
         return undefined;

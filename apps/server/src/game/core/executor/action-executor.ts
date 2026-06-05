@@ -161,9 +161,17 @@ export class ActionExecutor {
         const dirArg = movementAction.args?.[0];
         const direction =
           dirArg?.type === NodeType.Identifier
-            ? (dirArg as { value: string }).value.toUpperCase() as 'FORWARD' | 'LEFT' | 'RIGHT'
+            ? ((dirArg as { value: string }).value.toUpperCase() as
+                | 'FORWARD'
+                | 'LEFT'
+                | 'RIGHT')
             : 'FORWARD';
-        this.movementExecutor.execute(robotId, actionCommand, memory, direction);
+        this.movementExecutor.execute(
+          robotId,
+          actionCommand,
+          memory,
+          direction,
+        );
         break;
       }
       case 'TELEPORT':

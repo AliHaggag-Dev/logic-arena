@@ -39,7 +39,10 @@ import {
   STASIS_BLOCKED_ACTION_CMDS,
 } from './block-executor/sandbox-rules';
 import { executeIfStatement } from './block-executor/if-handler';
-import { executeWhileStatement, executeForStatement } from './block-executor/loop-handler';
+import {
+  executeWhileStatement,
+  executeForStatement,
+} from './block-executor/loop-handler';
 import { executeCallStatement } from './block-executor/call-handler';
 import { YieldInterrupt } from './yield-interrupt';
 
@@ -55,7 +58,7 @@ export class BlockExecutor {
     private actionExecutor: ActionExecutor,
     private expressionEvaluator: ExpressionEvaluator,
     private functions: Map<string, Map<string, FunctionDeclaration>>,
-  ) { }
+  ) {}
 
   /** Buffer a movement action for later optimization & execution.
    *  Non-movement actions (FIRE, BURST_FIRE) are dispatched immediately. */
@@ -92,7 +95,11 @@ export class BlockExecutor {
 
     for (const { cmd, action, memory } of optimized) {
       if (cmd === 'SCAN') {
-        this.actionExecutor.executeAction(robotId, action as ScanStatement, memory);
+        this.actionExecutor.executeAction(
+          robotId,
+          action as ScanStatement,
+          memory,
+        );
       } else {
         executeActionIfOffCooldown(
           this.actionExecutor,
@@ -253,8 +260,10 @@ export class BlockExecutor {
               // PATHFIND followed by STOP. All other commands (FIRE,
               // BURST_FIRE) dispatch immediately as before.
               if (
-                cmd === 'STOP' || cmd === 'MOVE' ||
-                cmd === 'MOVE_FAST' || cmd === 'BACKUP' ||
+                cmd === 'STOP' ||
+                cmd === 'MOVE' ||
+                cmd === 'MOVE_FAST' ||
+                cmd === 'BACKUP' ||
                 cmd === 'PATHFIND'
               ) {
                 this.bufferAction(robotId, cmd, action, memory);

@@ -32,7 +32,11 @@ export class InsightsController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.insights.findAll(req.user.sub, Number(page) || 1, Number(limit) || 20);
+    return this.insights.findAll(
+      req.user.sub,
+      Number(page) || 1,
+      Number(limit) || 20,
+    );
   }
 
   @Get('unread-count')
@@ -58,10 +62,7 @@ export class InsightsController {
 
   @Delete(':id')
   @HttpCode(204)
-  async delete(
-    @Param('id') id: string,
-    @Req() req: { user: { sub: string } },
-  ) {
+  async delete(@Param('id') id: string, @Req() req: { user: { sub: string } }) {
     await this.insights.delete(id, req.user.sub);
   }
 
@@ -77,7 +78,10 @@ export class InsightsController {
     @Param('matchId') matchId: string,
     @Req() req: { user: { sub: string } },
   ) {
-    const count = await this.matchInsights.generateForMatch(matchId, req.user.sub);
+    const count = await this.matchInsights.generateForMatch(
+      matchId,
+      req.user.sub,
+    );
     return { generated: count };
   }
 }

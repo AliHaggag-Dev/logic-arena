@@ -9,7 +9,13 @@ import { PrismaService } from '../../common/prisma.service';
 
 @Module({
   controllers: [AiController, InsightsController],
-  providers: [AiService, RagService, InsightsService, MatchInsightsService, PrismaService],
+  providers: [
+    AiService,
+    RagService,
+    InsightsService,
+    MatchInsightsService,
+    PrismaService,
+  ],
   exports: [RagService, InsightsService, MatchInsightsService],
 })
 export class AiModule {}

@@ -7,12 +7,15 @@ export class InsightsService {
 
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, data: {
-    title: string;
-    content: string;
-    category?: string;
-    matchId?: string;
-  }) {
+  async create(
+    userId: string,
+    data: {
+      title: string;
+      content: string;
+      category?: string;
+      matchId?: string;
+    },
+  ) {
     return this.prisma.ariaInsight.create({
       data: {
         userId,
@@ -35,7 +38,13 @@ export class InsightsService {
       }),
       this.prisma.ariaInsight.count({ where: { userId } }),
     ]);
-    return { items, total, page, limit, unreadCount: items.filter((i) => !i.isRead).length };
+    return {
+      items,
+      total,
+      page,
+      limit,
+      unreadCount: items.filter((i) => !i.isRead).length,
+    };
   }
 
   async markRead(id: string, userId: string) {

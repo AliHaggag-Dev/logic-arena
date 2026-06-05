@@ -45,7 +45,11 @@ export class CleanupManager {
           const match = this.state.matches.get(matchId);
           if (match) {
             const mode = this.state.matchModes.get(matchId);
-            if (mode === 'TRAINING_SOLO' || mode === 'SURVIVAL' || mode === 'RACING') {
+            if (
+              mode === 'TRAINING_SOLO' ||
+              mode === 'SURVIVAL' ||
+              mode === 'RACING'
+            ) {
               match.stop();
               this.state.cleanupMatch(matchId);
             } else {

@@ -1,5 +1,18 @@
 import { Logger } from '@nestjs/common';
-import { ARENA_HEIGHT, ARENA_WIDTH, GameLoop, Robot, GameConfig, GameMode, ModeData, KothModeData, CtfModeData, SurvivalModeData, Obstacle, MapTheme } from '@logic-arena/engine';
+import {
+  ARENA_HEIGHT,
+  ARENA_WIDTH,
+  GameLoop,
+  Robot,
+  GameConfig,
+  GameMode,
+  ModeData,
+  KothModeData,
+  CtfModeData,
+  SurvivalModeData,
+  Obstacle,
+  MapTheme,
+} from '@logic-arena/engine';
 import {
   processKothTick,
   processCtfTick,
@@ -12,7 +25,7 @@ import {
   SURVIVAL_BASE_ENEMIES,
   SURVIVAL_MAX_ENEMIES,
   SURVIVAL_HEALTH_BOOST_INTERVAL,
-  processRacingTick
+  processRacingTick,
 } from './mode-processors';
 import { SandboxRunner } from '../../common/sandbox.runner';
 import { createRobot, parseAndSetLogic } from './robot-factory';
@@ -102,7 +115,16 @@ export class MatchEngine {
 
     initialPlayers.forEach((p, i) => {
       this.gameLoop.addRobot(
-        createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor, p.spawnPosition, p.initialFovDirection),
+        createRobot(
+          p.id,
+          p.script,
+          i,
+          p.color,
+          p.model,
+          p.tracerColor,
+          p.spawnPosition,
+          p.initialFovDirection,
+        ),
       );
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
@@ -115,32 +137,51 @@ export class MatchEngine {
     if (this.config?.mode === 'KING_OF_THE_HILL') {
       const modeData: KothModeData = {
         type: 'KOTH',
-        zone: { x: KOTH_ZONE_CENTER_X, y: KOTH_ZONE_CENTER_Y, radius: KOTH_ZONE_RADIUS },
+        zone: {
+          x: KOTH_ZONE_CENTER_X,
+          y: KOTH_ZONE_CENTER_Y,
+          radius: KOTH_ZONE_RADIUS,
+        },
         zoneScores: { A: 0, B: 0 },
         scoreTarget: KOTH_SCORE_TARGET,
       };
       this.gameLoop.setModeData(modeData);
-      
+
       // Spawn 4 solid obstacles around the KOTH zone to create a fortress
       const d = 110;
       const obstacles = this.gameLoop.getObstacles();
       obstacles.push({
-        id: 'koth-wall-1', type: 'SOLID', width: 40, height: 100, rotation: 0,
-        position: { x: KOTH_ZONE_CENTER_X - d, y: KOTH_ZONE_CENTER_Y }
+        id: 'koth-wall-1',
+        type: 'SOLID',
+        width: 40,
+        height: 100,
+        rotation: 0,
+        position: { x: KOTH_ZONE_CENTER_X - d, y: KOTH_ZONE_CENTER_Y },
       });
       obstacles.push({
-        id: 'koth-wall-2', type: 'SOLID', width: 40, height: 100, rotation: 0,
-        position: { x: KOTH_ZONE_CENTER_X + d, y: KOTH_ZONE_CENTER_Y }
+        id: 'koth-wall-2',
+        type: 'SOLID',
+        width: 40,
+        height: 100,
+        rotation: 0,
+        position: { x: KOTH_ZONE_CENTER_X + d, y: KOTH_ZONE_CENTER_Y },
       });
       obstacles.push({
-        id: 'koth-wall-3', type: 'SOLID', width: 100, height: 40, rotation: 0,
-        position: { x: KOTH_ZONE_CENTER_X, y: KOTH_ZONE_CENTER_Y - d }
+        id: 'koth-wall-3',
+        type: 'SOLID',
+        width: 100,
+        height: 40,
+        rotation: 0,
+        position: { x: KOTH_ZONE_CENTER_X, y: KOTH_ZONE_CENTER_Y - d },
       });
       obstacles.push({
-        id: 'koth-wall-4', type: 'SOLID', width: 100, height: 40, rotation: 0,
-        position: { x: KOTH_ZONE_CENTER_X, y: KOTH_ZONE_CENTER_Y + d }
+        id: 'koth-wall-4',
+        type: 'SOLID',
+        width: 100,
+        height: 40,
+        rotation: 0,
+        position: { x: KOTH_ZONE_CENTER_X, y: KOTH_ZONE_CENTER_Y + d },
       });
-      
     } else if (this.config?.mode === 'CAPTURE_THE_FLAG') {
       const modeData: CtfModeData = {
         type: 'CTF',
@@ -171,7 +212,7 @@ export class MatchEngine {
         finishLine: finishLinePos,
       };
       this.gameLoop.setModeData(modeData);
-      
+
       const obstacles = this.gameLoop.getObstacles();
       obstacles.push({
         id: 'finish-line',
@@ -179,7 +220,7 @@ export class MatchEngine {
         position: finishLinePos,
         width: 100,
         height: 600,
-        rotation: 0
+        rotation: 0,
       });
     }
   }
@@ -195,7 +236,16 @@ export class MatchEngine {
     this.tickCount = 0;
     this.initialPlayers.forEach((p, i) => {
       this.gameLoop.addRobot(
-        createRobot(p.id, p.script, i, p.color, p.model, p.tracerColor, p.spawnPosition, p.initialFovDirection),
+        createRobot(
+          p.id,
+          p.script,
+          i,
+          p.color,
+          p.model,
+          p.tracerColor,
+          p.spawnPosition,
+          p.initialFovDirection,
+        ),
       );
       parseAndSetLogic(p.id, p.script, this.deps.logicEvaluator);
     });
@@ -264,20 +314,28 @@ export class MatchEngine {
       for (let i = obstacles.length - 1; i >= 0; i--) {
         if (obstacles[i].type === 'LAVA') obstacles.splice(i, 1);
       }
-      this.spawnThemeHazards('LAVA_POOL', MatchEngine.LAVA_POOL_RADIUS, this.randomInt(3, 4));
+      this.spawnThemeHazards(
+        'LAVA_POOL',
+        MatchEngine.LAVA_POOL_RADIUS,
+        this.randomInt(3, 4),
+      );
     } else if (this.mapTheme === 'ICE') {
       // Remove static LAVA obstacles — inconsistent with glacial theme
       const obstacles = this.gameLoop.getObstacles();
       for (let i = obstacles.length - 1; i >= 0; i--) {
         if (obstacles[i].type === 'LAVA') obstacles.splice(i, 1);
       }
-      this.spawnThemeHazards('ICE_PATCH', MatchEngine.ICE_PATCH_RADIUS, this.randomInt(2, 3));
+      this.spawnThemeHazards(
+        'ICE_PATCH',
+        MatchEngine.ICE_PATCH_RADIUS,
+        this.randomInt(2, 3),
+      );
     }
   }
 
   private spawnSurvivalWave(wave: number): void {
     const robots = this.gameLoop.getRobots();
-    const player = robots.find(r => !r.id.startsWith('dummy-'));
+    const player = robots.find((r) => !r.id.startsWith('dummy-'));
     if (player) {
       player.health = 100;
       if (player.energy !== undefined) {
@@ -287,28 +345,46 @@ export class MatchEngine {
     }
 
     // Remove all existing dummy robots
-    const dummies = robots.filter(r => r.id.startsWith('dummy-'));
+    const dummies = robots.filter((r) => r.id.startsWith('dummy-'));
     for (const dummy of dummies) {
       this.gameLoop.removeRobot(dummy.id);
       this.deps.logicEvaluator.clearLogicForRobot(dummy.id);
     }
 
     const enemyCount = Math.min(wave + 2, SURVIVAL_MAX_ENEMIES);
-    const enemyHealth = 100 + Math.floor((wave - 1) / SURVIVAL_HEALTH_BOOST_INTERVAL) * 20;
+    const enemyHealth =
+      100 + Math.floor((wave - 1) / SURVIVAL_HEALTH_BOOST_INTERVAL) * 20;
 
-    const colors = ['#ef4444', '#eab308', '#3b82f6', '#8b5cf6', '#ec4899', '#f97316'];
+    const colors = [
+      '#ef4444',
+      '#eab308',
+      '#3b82f6',
+      '#8b5cf6',
+      '#ec4899',
+      '#f97316',
+    ];
 
     for (let i = 1; i <= enemyCount; i++) {
       const id = `dummy-${i}`;
       const color = colors[(i - 1) % colors.length];
-      
+
       // Spawn along the edges randomly
       const edge = Math.floor(Math.random() * 4);
-      let spawnX = 0, spawnY = 0;
-      if (edge === 0) { spawnX = this.randomFloat(50, 750); spawnY = 50; }
-      else if (edge === 1) { spawnX = 750; spawnY = this.randomFloat(50, 550); }
-      else if (edge === 2) { spawnX = this.randomFloat(50, 750); spawnY = 550; }
-      else { spawnX = 50; spawnY = this.randomFloat(50, 550); }
+      let spawnX = 0,
+        spawnY = 0;
+      if (edge === 0) {
+        spawnX = this.randomFloat(50, 750);
+        spawnY = 50;
+      } else if (edge === 1) {
+        spawnX = 750;
+        spawnY = this.randomFloat(50, 550);
+      } else if (edge === 2) {
+        spawnX = this.randomFloat(50, 750);
+        spawnY = 550;
+      } else {
+        spawnX = 50;
+        spawnY = this.randomFloat(50, 550);
+      }
 
       const dummy = createRobot(
         id,
@@ -317,13 +393,17 @@ export class MatchEngine {
         color,
         'unit-02',
         color,
-        { x: spawnX, y: spawnY }
+        { x: spawnX, y: spawnY },
       );
       dummy.health = enemyHealth;
       dummy.ignoreEnergyCost = true;
-      
+
       this.gameLoop.addRobot(dummy);
-      parseAndSetLogic(dummy.id, SURVIVAL_DUMMY_SCRIPT, this.deps.logicEvaluator);
+      parseAndSetLogic(
+        dummy.id,
+        SURVIVAL_DUMMY_SCRIPT,
+        this.deps.logicEvaluator,
+      );
     }
 
     // Track cumulative spawned for real-time totalKills computation
@@ -337,14 +417,20 @@ export class MatchEngine {
     }
   }
 
-  private spawnThemeHazards(type: 'LAVA_POOL' | 'ICE_PATCH', radius: number, count: number): void {
+  private spawnThemeHazards(
+    type: 'LAVA_POOL' | 'ICE_PATCH',
+    radius: number,
+    count: number,
+  ): void {
     const obstacles = this.gameLoop.getObstacles();
     for (let index = 0; index < count; index += 1) {
-      obstacles.push(this.createCircularHazard(
-        `${type.toLowerCase()}-${this.matchId}-${index}`,
-        type,
-        radius,
-      ));
+      obstacles.push(
+        this.createCircularHazard(
+          `${type.toLowerCase()}-${this.matchId}-${index}`,
+          type,
+          radius,
+        ),
+      );
     }
   }
 
@@ -363,12 +449,18 @@ export class MatchEngine {
 
       const radius = obstacle.width / 2;
       for (const robot of robots) {
-        if (!robot.isAlive || !this.isRobotInsideHazard(robot, obstacle, radius)) {
+        if (
+          !robot.isAlive ||
+          !this.isRobotInsideHazard(robot, obstacle, radius)
+        ) {
           continue;
         }
 
         if (obstacle.type === 'LAVA_POOL') {
-          robot.health = Math.max(0, robot.health - MatchEngine.LAVA_DAMAGE_PER_TICK);
+          robot.health = Math.max(
+            0,
+            robot.health - MatchEngine.LAVA_DAMAGE_PER_TICK,
+          );
           if (robot.health === 0) robot.isAlive = false;
         } else {
           robot.insideIcePatch = true;
@@ -383,12 +475,14 @@ export class MatchEngine {
 
   private processCyberStorm(obstacles: Obstacle[], robots: Robot[]): void {
     if (this.tickCount % MatchEngine.EMP_SPAWN_INTERVAL_TICKS === 0) {
-      obstacles.push(this.createCircularHazard(
-        `emp-strike-${this.matchId}-${this.tickCount}`,
-        'EMP_STRIKE',
-        MatchEngine.EMP_STRIKE_RADIUS,
-        this.tickCount,
-      ));
+      obstacles.push(
+        this.createCircularHazard(
+          `emp-strike-${this.matchId}-${this.tickCount}`,
+          'EMP_STRIKE',
+          MatchEngine.EMP_STRIKE_RADIUS,
+          this.tickCount,
+        ),
+      );
     }
 
     for (let index = obstacles.length - 1; index >= 0; index -= 1) {
@@ -396,16 +490,29 @@ export class MatchEngine {
       if (obstacle.type !== 'EMP_STRIKE') continue;
 
       const createdAtTick = obstacle.createdAt ?? this.tickCount;
-      if (this.tickCount - createdAtTick < MatchEngine.EMP_EXPLODE_AFTER_TICKS) {
+      if (
+        this.tickCount - createdAtTick <
+        MatchEngine.EMP_EXPLODE_AFTER_TICKS
+      ) {
         continue;
       }
 
       for (const robot of robots) {
-        if (!robot.isAlive || !this.isRobotInsideHazard(robot, obstacle, MatchEngine.EMP_STRIKE_RADIUS)) {
+        if (
+          !robot.isAlive ||
+          !this.isRobotInsideHazard(
+            robot,
+            obstacle,
+            MatchEngine.EMP_STRIKE_RADIUS,
+          )
+        ) {
           continue;
         }
 
-        robot.energy = Math.max(0, (robot.energy ?? 0) - MatchEngine.EMP_ENERGY_DAMAGE);
+        robot.energy = Math.max(
+          0,
+          (robot.energy ?? 0) - MatchEngine.EMP_ENERGY_DAMAGE,
+        );
         if ((robot.energy ?? 0) <= 0) {
           robot.inStasis = true;
         }
@@ -434,7 +541,11 @@ export class MatchEngine {
     };
   }
 
-  private isRobotInsideHazard(robot: Robot, obstacle: Obstacle, radius: number): boolean {
+  private isRobotInsideHazard(
+    robot: Robot,
+    obstacle: Obstacle,
+    radius: number,
+  ): boolean {
     const dx = robot.position.x - obstacle.position.x;
     const dy = robot.position.y - obstacle.position.y;
     return dx * dx + dy * dy <= radius * radius;

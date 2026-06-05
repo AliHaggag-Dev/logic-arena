@@ -14,11 +14,7 @@ import { AchievementsModule } from '../achievements/achievements.module';
 
 @Module({
   imports: [AchievementsModule],
-  controllers: [
-    ProfileController,
-    SocialController,
-    MarketController,
-  ],
+  controllers: [ProfileController, SocialController, MarketController],
   providers: [
     ProfileQueryService,
     SocialQueryService,

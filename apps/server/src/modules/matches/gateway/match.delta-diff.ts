@@ -1,4 +1,10 @@
-import { GameState, Obstacle, Projectile, Robot, Vector2 } from '@logic-arena/engine';
+import {
+  GameState,
+  Obstacle,
+  Projectile,
+  Robot,
+  Vector2,
+} from '@logic-arena/engine';
 import {
   GameStateDelta,
   ProjectileDelta,

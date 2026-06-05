@@ -461,7 +461,8 @@ END`,
     title: 'OVERLORD SYSTEM',
     difficulty: 'EXTREME',
     pointsReward: D.EXTREME,
-    conceptTaught: 'Progressive subsystem failure via health-gated dictionary flags',
+    conceptTaught:
+      'Progressive subsystem failure via health-gated dictionary flags',
     description:
       'The Overlord maintains a central registry dictionary for its subsystems: { sensors: 1, weapon: 1, drive: 1 }. As its health drops, subsystems fail. < 70 HP: drive = 0 (no speed boost). < 40 HP: sensors = 0 (blind sweeps). < 15 HP: weapon overdrive (constant bursts). A boss fight with progressive destruction.',
     hints: [

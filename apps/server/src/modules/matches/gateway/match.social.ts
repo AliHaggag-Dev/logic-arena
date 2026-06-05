@@ -49,7 +49,9 @@ export class MatchSocialManager {
       return;
     }
 
-    const targetSockets = await this.server.in(data.targetUserId).fetchSockets();
+    const targetSockets = await this.server
+      .in(data.targetUserId)
+      .fetchSockets();
     if (targetSockets.length === 0) {
       client.emit('challenge-failed', { reason: 'TARGET_OFFLINE' });
       return;
@@ -70,7 +72,9 @@ export class MatchSocialManager {
       select: { notificationSettings: true },
     });
 
-    const notifs = targetUser?.notificationSettings as { challengeReqs?: boolean } | null;
+    const notifs = targetUser?.notificationSettings as {
+      challengeReqs?: boolean;
+    } | null;
     if (notifs && notifs.challengeReqs === false) {
       client.emit('challenge-failed', { reason: 'TARGET_NOT_ACCEPTING' });
       return;

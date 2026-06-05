@@ -6,7 +6,10 @@ import { AuthenticatedSocket } from './types';
 import { MatchEngine } from '../match.engine';
 import { GameMode, MapTheme } from '@logic-arena/engine';
 import * as crypto from 'crypto';
-import { loadPlayerScriptAndLoadout, createAndStartMatch } from './match.lobby-init';
+import {
+  loadPlayerScriptAndLoadout,
+  createAndStartMatch,
+} from './match.lobby-init';
 
 const LOBBY_CACHE_KEY = 'lobby:matches';
 const LOBBY_CACHE_TTL = 120;
@@ -37,7 +40,9 @@ export class MatchLobbyManager {
     },
   ) {
     if (!client.userId) {
-      client.emit('error', { message: 'Unauthorized: User not authenticated.' });
+      client.emit('error', {
+        message: 'Unauthorized: User not authenticated.',
+      });
       return;
     }
     if (!data.scriptId) {
@@ -45,7 +50,12 @@ export class MatchLobbyManager {
       return;
     }
 
-    const loadout = await loadPlayerScriptAndLoadout(this.prisma, this.redis, client, data.scriptId);
+    const loadout = await loadPlayerScriptAndLoadout(
+      this.prisma,
+      this.redis,
+      client,
+      data.scriptId,
+    );
     if (!loadout) return;
 
     let match = this.state.matches.get(data.matchId);
@@ -54,7 +64,10 @@ export class MatchLobbyManager {
     const currentTheme = match?.getState().mapTheme || 'CYBER';
     const requestedTheme = data.mapTheme || 'CYBER';
 
-    if (match && ((currentMode && currentMode !== mode) || currentTheme !== requestedTheme)) {
+    if (
+      match &&
+      ((currentMode && currentMode !== mode) || currentTheme !== requestedTheme)
+    ) {
       match.stop();
       this.state.cleanupMatch(data.matchId);
       match = undefined;
@@ -88,7 +101,9 @@ export class MatchLobbyManager {
         this.state.lobbyMatches.delete(data.matchId);
         await this.publishLobbySnapshot();
       } else {
-        const isReconnect = match.getState().robots.some((r) => r.id === client.userId);
+        const isReconnect = match
+          .getState()
+          .robots.some((r) => r.id === client.userId);
         if (!isReconnect) {
           match.removePlayer('bot-2');
         } else {
@@ -107,7 +122,9 @@ export class MatchLobbyManager {
     client.matchId = data.matchId;
     client.join(data.matchId);
     client.emit('matchJoinedInfo', { mode });
-    this.server.to(data.matchId).emit('gameState', { type: 'full', state: match.getState() });
+    this.server
+      .to(data.matchId)
+      .emit('gameState', { type: 'full', state: match.getState() });
 
     if (client.userId && !client.isGuest) {
       this.state.userStatus.set(client.userId, {
@@ -197,7 +214,9 @@ export class MatchLobbyManager {
     if (client.matchId && this.state.matches.has(client.matchId)) {
       const match = this.state.matches.get(client.matchId);
       match?.reset();
-      this.server.to(client.matchId).emit('gameState', { type: 'full', state: match?.getState() });
+      this.server
+        .to(client.matchId)
+        .emit('gameState', { type: 'full', state: match?.getState() });
     }
   }
 
@@ -271,6 +290,8 @@ export class MatchLobbyManager {
     }
     // Clear the killed-set so the same dummies can fire dummyKilled again
     this.state.dummyKilledThisTick.delete(client.matchId);
-    this.server.to(client.matchId).emit('gameState', { type: 'full', state: match.getState() });
+    this.server
+      .to(client.matchId)
+      .emit('gameState', { type: 'full', state: match.getState() });
   }
 }

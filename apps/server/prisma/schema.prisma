@@ -31,7 +31,7 @@ model User {
   selectedRobotId           String             @default("unit-01")
   selectedColor        String             @default("#22d3ee")
   arenaPreferences     Json? // { defaultRobot, soundFx, music, graphicsQuality }
-  notificationSettings Json? // { challengeReqs, tournamentAlerts, matchResults }
+  notificationSettings Json? // { challengeReqs, tournamentAlerts, matchResults, friendRequests }
   // ── Black Market ──────────────────────────────────────────────────────────
   points               Int                @default(0)
   unlockedItems        String[]           @default([])
@@ -46,6 +46,14 @@ model User {
   tournaments          Tournament[]       @relation("TournamentParticipants")
   matchParticipations  MatchParticipant[]
   achievements         UserAchievement[]
+  // ── Friends system ────────────────────────────────────────────────────────
+  friendshipsA         Friendship[]       @relation("FriendshipA")
+  friendshipsB         Friendship[]       @relation("FriendshipB")
+  friendRequestsSent   FriendRequest[]    @relation("FriendRequestSender")
+  friendRequestsReceived FriendRequest[]  @relation("FriendRequestReceiver")
+  blocksInitiated      Block[]            @relation("BlockInitiator")
+  blocksReceived       Block[]            @relation("BlockTarget")
+  notifications        Notification[]
 }
 
 model RobotScript {
@@ -181,5 +189,67 @@ model UserAchievement {
 
   @@unique([userId, achievementId])
   @@index([userId])
+}
+
+// ── Friends System ──────────────────────────────────────────────────────────
+
+model Friendship {
+  id        String   @id @default(uuid())
+  userAId   String   // lexicographically smaller userId
+  userBId   String   // lexicographically larger userId
+  createdAt DateTime @default(now())
+
+  userA User @relation("FriendshipA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("FriendshipB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+}
+
+model FriendRequest {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  message    String?  @db.VarChar(200)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime // 7 days
+
+  sender   User @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, createdAt])
+  @@index([senderId, createdAt])
+}
+
+model Block {
+  id         String   @id @default(uuid())
+  initiatorId String  // user who did the block
+  targetId   String   // user who got blocked
+  reason     String?  @db.VarChar(200)
+  createdAt  DateTime @default(now())
+
+  initiator User @relation("BlockInitiator", fields: [initiatorId], references: [id], onDelete: Cascade)
+  target    User @relation("BlockTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([initiatorId, targetId])
+  @@index([initiatorId])
+  @@index([targetId])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String    // recipient
+  type      String    // FRIEND_REQUEST | FRIEND_ACCEPTED | CHALLENGE_RECEIVED | MATCH_RESULT | SYSTEM
+  title     String    @db.VarChar(120)
+  body      String    @db.VarChar(500)
+  data      Json?     // { actorId, matchId, requestId, ... }
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
 }
 

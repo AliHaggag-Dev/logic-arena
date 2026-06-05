@@ -23,18 +23,40 @@ export function computeImmediateVisibility(
   const fy = Math.sin(fovDirection);
 
   return {
-    robots: allRobots.filter((candidate: Robot): boolean => (
-      candidate.id !== robot.id &&
-      candidate.isAlive &&
-      !candidate.isCloaked &&
-      isInCone(robot.position, candidate.position, fx, fy, cosHalf, rangeSquared)
-    )),
-    projectiles: allProjectiles.filter((projectile: Projectile): boolean => (
-      isInCone(robot.position, projectile.position, fx, fy, cosHalf, rangeSquared)
-    )),
-    obstacles: allObstacles.filter((obstacle: Obstacle): boolean => (
-      isInCone(robot.position, obstacle.position, fx, fy, cosHalf, rangeSquared)
-    )),
+    robots: allRobots.filter(
+      (candidate: Robot): boolean =>
+        candidate.id !== robot.id &&
+        candidate.isAlive &&
+        !candidate.isCloaked &&
+        isInCone(
+          robot.position,
+          candidate.position,
+          fx,
+          fy,
+          cosHalf,
+          rangeSquared,
+        ),
+    ),
+    projectiles: allProjectiles.filter((projectile: Projectile): boolean =>
+      isInCone(
+        robot.position,
+        projectile.position,
+        fx,
+        fy,
+        cosHalf,
+        rangeSquared,
+      ),
+    ),
+    obstacles: allObstacles.filter((obstacle: Obstacle): boolean =>
+      isInCone(
+        robot.position,
+        obstacle.position,
+        fx,
+        fy,
+        cosHalf,
+        rangeSquared,
+      ),
+    ),
   };
 }
 

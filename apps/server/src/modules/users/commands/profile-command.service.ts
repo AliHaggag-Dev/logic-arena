@@ -19,7 +19,10 @@ import {
   BCRYPT_ROUNDS,
   PRISMA_UNIQUE_VIOLATION,
 } from '../types';
-import { AUTH_COOKIE_MAX_AGE_SECONDS, sessionVersionKey } from '../../auth/types';
+import {
+  AUTH_COOKIE_MAX_AGE_SECONDS,
+  sessionVersionKey,
+} from '../../auth/types';
 import { campaignVersionKey } from '../../campaign/campaign.service';
 
 @Injectable()
@@ -141,10 +144,7 @@ export class ProfileCommandService {
     }
 
     await this.prisma.user.delete({ where: { id: userId } });
-    await this.redis.del(
-      profileKey(userId),
-      loadoutKey(userId),
-    );
+    await this.redis.del(profileKey(userId), loadoutKey(userId));
     await this.invalidateLeaderboardCaches();
     await this.redis.del(sessionVersionKey(userId));
     await this.redis.delPattern(`script:${userId}:*`);

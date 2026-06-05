@@ -1,4 +1,9 @@
-import { Obstacle, Robot, isForbiddenAliScriptPropertyKey, safeGetAliScriptProperty } from '@logic-arena/engine';
+import {
+  Obstacle,
+  Robot,
+  isForbiddenAliScriptPropertyKey,
+  safeGetAliScriptProperty,
+} from '@logic-arena/engine';
 import {
   Expression,
   NodeType,
@@ -18,13 +23,27 @@ export function evaluateAccess(
 ): unknown {
   switch (expression.type) {
     case NodeType.Identifier:
-      return resolveIdentifier(robot, expression as Identifier, memory);
+      return resolveIdentifier(robot, expression, memory);
 
     case NodeType.IndexExpression:
-      return evaluateIndexExpression(robot, expression as IndexExpression, evaluateExpr, memory, getRobots, getObstacles);
+      return evaluateIndexExpression(
+        robot,
+        expression,
+        evaluateExpr,
+        memory,
+        getRobots,
+        getObstacles,
+      );
 
     case NodeType.MemberExpression:
-      return evaluateMemberExpression(robot, expression as MemberExpression, evaluateExpr, memory, getRobots, getObstacles);
+      return evaluateMemberExpression(
+        robot,
+        expression,
+        evaluateExpr,
+        memory,
+        getRobots,
+        getObstacles,
+      );
 
     default:
       return undefined;

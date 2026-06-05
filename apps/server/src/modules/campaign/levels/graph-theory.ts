@@ -300,7 +300,7 @@ MOVE`,
     hints: [
       'Do not stay in the center. Break out of the spanning tree perimeter before it finishes drawing the bounds.',
       'The collapse trigger is distance < 250. Stay beyond 250 units from the enemy at all times. As long as you maintain 250+ distance, it stays in perimeter mode (FIRE, no burst). Attack from beyond 250.',
-      'Perimeter fire is single-shot FIRE. At 250+ range, single shots are manageable. Use MOVE to keep parallel to the enemy\'s perimeter traversal at range 280-350. Avoid the center of the arena entirely — the enemy monitors for you crossing the 250 threshold.',
+      "Perimeter fire is single-shot FIRE. At 250+ range, single shots are manageable. Use MOVE to keep parallel to the enemy's perimeter traversal at range 280-350. Avoid the center of the arena entirely — the enemy monitors for you crossing the 250 threshold.",
     ],
     enemyScript: `IF NOT init THEN
   SET nodes_x = [400, 520, 640, 560, 440, 600]

@@ -1,5 +1,12 @@
 import { Socket } from 'socket.io';
-import { GameState, Obstacle, Projectile, Robot, Vector2, ModeData } from '@logic-arena/engine';
+import {
+  GameState,
+  Obstacle,
+  Projectile,
+  Robot,
+  Vector2,
+  ModeData,
+} from '@logic-arena/engine';
 
 export type AuthenticatedSocket = Socket & {
   userId?: string;
@@ -59,6 +66,10 @@ export type GameStateDelta =
   | { type: 'full'; state: GameState; modeData?: ModeData }
   | {
       type: 'delta';
-      diff: { robots: RobotDelta[]; projectiles: ProjectileDelta; obstacles?: Obstacle[] };
+      diff: {
+        robots: RobotDelta[];
+        projectiles: ProjectileDelta;
+        obstacles?: Obstacle[];
+      };
       modeData?: ModeData;
     };

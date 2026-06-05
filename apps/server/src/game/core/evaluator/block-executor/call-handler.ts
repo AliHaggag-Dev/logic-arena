@@ -1,8 +1,5 @@
 import { GameLoop, Robot } from '@logic-arena/engine';
-import {
-  CallStatement,
-  FunctionDeclaration,
-} from '@logic-arena/logic-parser';
+import { CallStatement, FunctionDeclaration } from '@logic-arena/logic-parser';
 import { ExpressionEvaluator } from '../expression-facade';
 import { RETURN_SIGNAL } from './control-flow';
 import { OpsCounter } from '../types';

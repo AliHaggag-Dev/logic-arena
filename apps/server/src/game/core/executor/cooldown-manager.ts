@@ -10,7 +10,10 @@ export class CooldownManager {
   private lastNonContinuousEmit: Map<string, number> = new Map();
 
   static readonly CONTINUOUS_COMMANDS = new Set([
-    'MOVE', 'MOVE_FAST', 'BACKUP', 'STOP',
+    'MOVE',
+    'MOVE_FAST',
+    'BACKUP',
+    'STOP',
   ]);
 
   private readonly FIRE_COOLDOWN_MS = 500;

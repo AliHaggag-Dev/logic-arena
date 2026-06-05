@@ -135,7 +135,7 @@ END`,
       'Its fire pattern is encoded in an array: [2, 1, 3, 1]. Each value is the number of shots it fires per cycle. Four cycles, variable intensity. It locks FOV and strafes while bursting.',
     hints: [
       'Cycle 3 fires 3 shots — the heaviest burst. Dodge during cycle 3, attack during cycles 2 and 4.',
-      'Cycle 2 fires only 1 shot — the lightest. Cycle 4 also fires 1 shot. These are your best attack windows. After cycle 3\'s 3 shots, there\'s a movement second before cycle 4 begins — use that transition.',
+      "Cycle 2 fires only 1 shot — the lightest. Cycle 4 also fires 1 shot. These are your best attack windows. After cycle 3's 3 shots, there's a movement second before cycle 4 begins — use that transition.",
       'Track the cycle index in your own counter. Cycle durations: 2,1,3,1 shots + 1 transition second each = 4+4+4+4 = 16 total seconds per full cycle. Attack during cycles with bursts[i]==1 (lightest fire cycles).',
     ],
     enemyScript: `IF NOT init THEN

@@ -102,9 +102,15 @@ export class CampaignService {
     stars: number,
   ): Promise<void> {
     const current = await this.getBestStars(userId, levelId);
-    console.log(`[DEBUG setBestStars] user=${userId} level=${levelId} stars=${stars} current=${current}`);
+    console.log(
+      `[DEBUG setBestStars] user=${userId} level=${levelId} stars=${stars} current=${current}`,
+    );
     if (stars > current) {
-      await this.redis.set(campaignStarsKey(userId, levelId), stars, STARS_CACHE_TTL);
+      await this.redis.set(
+        campaignStarsKey(userId, levelId),
+        stars,
+        STARS_CACHE_TTL,
+      );
       console.log(`[DEBUG setBestStars] SET REDIS DONE`);
     }
   }
@@ -113,7 +119,9 @@ export class CampaignService {
     userId: string,
     levelId: string,
   ): Promise<number> {
-    const indices = await this.redis.get<number[]>(campaignHintsKey(userId, levelId));
+    const indices = await this.redis.get<number[]>(
+      campaignHintsKey(userId, levelId),
+    );
     return indices ? indices.length : 0;
   }
 
@@ -121,7 +129,9 @@ export class CampaignService {
     userId: string,
     levelId: string,
   ): Promise<number[]> {
-    return (await this.redis.get<number[]>(campaignHintsKey(userId, levelId))) ?? [];
+    return (
+      (await this.redis.get<number[]>(campaignHintsKey(userId, levelId))) ?? []
+    );
   }
 
   private calculateStars(
@@ -345,8 +355,7 @@ export class CampaignService {
       throw new Error(ERR_LEVEL_LOCKED);
     }
 
-    const bonusPoints =
-      stars === 3 ? Math.floor(level.pointsReward * 0.5) : 0;
+    const bonusPoints = stars === 3 ? Math.floor(level.pointsReward * 0.5) : 0;
     const totalPoints = level.pointsReward + bonusPoints;
 
     // Atomic guard: only award if the level is still not present at update time.

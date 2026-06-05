@@ -16,7 +16,7 @@ export const LOOPS_LEVELS: CampaignLevel[] = [
     hints: [
       'The 3-second movement pause after 5 shots is your attack window. Time your assault for seconds 6-8 of each cycle.',
       'Count with a local variable: SET t = t + 1. After each burst of 5 from the enemy, you have ticks 6, 7, 8 where it moves right without firing. Rush during those 3 ticks.',
-      'SET t = t + 1. IF t > 8 THEN SET t = 0 END. IF t > 5 THEN FIRE END ELSE MOVE END. Time your FIRE commands to ticks 6-8 to maximize aggression during the enemy\'s pause.',
+      "SET t = t + 1. IF t > 8 THEN SET t = 0 END. IF t > 5 THEN FIRE END ELSE MOVE END. Time your FIRE commands to ticks 6-8 to maximize aggression during the enemy's pause.",
     ],
     enemyScript: `IF NOT init THEN
   SET i = 0
@@ -105,7 +105,7 @@ END`,
     hints: [
       'Counter-clockwise phase (no firing) is your safe window. Count 8 seconds to know when it swaps.',
       'It starts clockwise (fires). After 8 seconds it goes counter-clockwise (no fire, only scans). These 8 second windows alternate. Commit to aggressive attacks in the scan-only (CCW) phase.',
-      'Track the enemy\'s orbit tick: SET myTick = myTick + 1. Every 8 ticks (myTick % 8 == 0) the enemy swaps. Attack during odd windows (ticks 9-16, 25-32...) when it is in CCW/scan mode.',
+      "Track the enemy's orbit tick: SET myTick = myTick + 1. Every 8 ticks (myTick % 8 == 0) the enemy swaps. Attack during odd windows (ticks 9-16, 25-32...) when it is in CCW/scan mode.",
     ],
     enemyScript: `IF NOT init THEN
   SET tick = 0
@@ -307,7 +307,7 @@ END`,
     hints: [
       'Break line-of-sight frequently to prevent the counter from reaching 4. Stay hidden for 2+ seconds between engagements to keep it in normal mode.',
       'The counter only increments when visible — not when shots connect. Hide for even 1 second to pause accumulation. A pattern of expose-1 hide-2 keeps sightCount at max 1, preventing overdrive entirely.',
-      'Rhythm: expose for 1 tick → FIRE → hide for 2 ticks → repeat. Your script: IF t%3 == 0 THEN expose and FIRE ELSE MOVE RIGHT END. This caps the enemy\'s sightCount at 1-2 indefinitely.',
+      "Rhythm: expose for 1 tick → FIRE → hide for 2 ticks → repeat. Your script: IF t%3 == 0 THEN expose and FIRE ELSE MOVE RIGHT END. This caps the enemy's sightCount at 1-2 indefinitely.",
     ],
     enemyScript: `IF NOT init THEN
   SET sightCount = 0

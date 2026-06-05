@@ -20,7 +20,9 @@ const FILE_SOURCES = [
 ];
 
 function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0, magA = 0, magB = 0;
+  let dot = 0,
+    magA = 0,
+    magB = 0;
   for (let i = 0; i < a.length; i++) {
     dot += a[i] * b[i];
     magA += a[i] * a[i];
@@ -33,7 +35,10 @@ function cosineSimilarity(a: number[], b: number[]): number {
 /**
  * Split markdown content into chunks by ## headers.
  */
-function chunkMarkdown(content: string, sourceLabel: string): { title: string; content: string }[] {
+function chunkMarkdown(
+  content: string,
+  sourceLabel: string,
+): { title: string; content: string }[] {
   const lines = content.split('\n');
   const chunks: { title: string; content: string }[] = [];
   let currentTitle = sourceLabel;
@@ -43,7 +48,10 @@ function chunkMarkdown(content: string, sourceLabel: string): { title: string; c
     const headerMatch = line.match(/^##\s+(.+)/);
     if (headerMatch) {
       if (currentLines.length > 0) {
-        chunks.push({ title: currentTitle, content: currentLines.join('\n').trim() });
+        chunks.push({
+          title: currentTitle,
+          content: currentLines.join('\n').trim(),
+        });
       }
       currentTitle = `${sourceLabel} > ${headerMatch[1].trim()}`;
       currentLines = [];
@@ -53,7 +61,10 @@ function chunkMarkdown(content: string, sourceLabel: string): { title: string; c
   }
 
   if (currentLines.length > 0) {
-    chunks.push({ title: currentTitle, content: currentLines.join('\n').trim() });
+    chunks.push({
+      title: currentTitle,
+      content: currentLines.join('\n').trim(),
+    });
   }
 
   return chunks.filter((c) => c.content.length > 20); // skip tiny fragments
@@ -62,7 +73,11 @@ function chunkMarkdown(content: string, sourceLabel: string): { title: string; c
 /**
  * Split a long chunk into smaller pieces if it exceeds target word count.
  */
-function splitChunk(title: string, content: string, targetWords = 200): { title: string; content: string }[] {
+function splitChunk(
+  title: string,
+  content: string,
+  targetWords = 200,
+): { title: string; content: string }[] {
   const words = content.split(/\s+/);
   if (words.length <= targetWords) return [{ title, content }];
 
@@ -120,7 +135,11 @@ export class RagService {
     this.warmup();
   }
 
-  private readFileIntoChunks(filePath: string, title: string, rootLabel: string): void {
+  private readFileIntoChunks(
+    filePath: string,
+    title: string,
+    rootLabel: string,
+  ): void {
     try {
       const raw = readFileSync(filePath, 'utf-8');
       const label = `${rootLabel}/${title}`;
@@ -157,7 +176,9 @@ export class RagService {
 
   private async embedQuery(text: string): Promise<number[]> {
     try {
-      const embedModel = this.genAI.getGenerativeModel({ model: EMBEDDING_MODEL });
+      const embedModel = this.genAI.getGenerativeModel({
+        model: EMBEDDING_MODEL,
+      });
       const result = await embedModel.embedContent(text);
       return result.embedding.values;
     } catch {

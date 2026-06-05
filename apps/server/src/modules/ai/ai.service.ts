@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { GoogleGenerativeAI, GenerativeModel, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import {
+  GoogleGenerativeAI,
+  GenerativeModel,
+  HarmCategory,
+  HarmBlockThreshold,
+} from '@google/generative-ai';
 import { RagService } from './rag.service';
 
 const SYSTEM_PROMPT = `You are ARIA (AliScript Reasoning & Intelligence Assistant) — the official AI tutor for Logic Arena, a cyberpunk robot battle programming platform.
@@ -49,12 +54,12 @@ export class AiService {
   async *streamChat(
     message: string,
     history: { role: 'user' | 'model'; content: string }[],
-    image?: string
+    image?: string,
   ): AsyncGenerator<string> {
     const trimmed = history.slice(-10);
 
     const geminiHistory = trimmed.map((msg) => ({
-      role: msg.role === 'model' ? 'model' : 'user' as const,
+      role: msg.role === 'model' ? 'model' : ('user' as const),
       parts: [{ text: msg.content }],
     }));
 
@@ -168,7 +173,7 @@ SWARM: BROADCAST(data) → recipient_count | RECEIVE() → [msg,...] clears inbo
 
   async generateMatchInsights(
     scriptCode: string,
-    matchData: { isWinner: boolean; duration: number; score: number }
+    matchData: { isWinner: boolean; duration: number; score: number },
   ): Promise<{ title: string; content: string; category: string }[]> {
     const prompt = `Analyze this AliScript code from a Logic Arena match.
 Match result: ${matchData.isWinner ? 'Victory' : 'Defeat'}

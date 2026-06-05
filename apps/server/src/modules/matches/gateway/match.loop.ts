@@ -33,7 +33,11 @@ export class MatchLoopManager {
 
         // 2. Win condition checks
         const mode = this.state.matchModes.get(matchId) || 'COMBAT';
-        const { matchIsOver, winner } = checkWinCondition(state, mode, state.modeData);
+        const { matchIsOver, winner } = checkWinCondition(
+          state,
+          mode,
+          state.modeData,
+        );
 
         if (matchIsOver) {
           if (this.state.savingMatches.has(matchId)) continue;
@@ -90,7 +94,9 @@ export class MatchLoopManager {
         }
 
         // 3. Emit Delta State
-        const prevState = this.state.lastStateMap.get(matchId) as Parameters<typeof computeDeltaDiff>[1];
+        const prevState = this.state.lastStateMap.get(matchId) as Parameters<
+          typeof computeDeltaDiff
+        >[1];
         const delta = computeDeltaDiff(state, prevState);
 
         const hasChanges =

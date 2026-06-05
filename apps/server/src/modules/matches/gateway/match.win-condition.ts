@@ -26,7 +26,7 @@ export function checkWinCondition(
     for (const [team, score] of Object.entries(modeData.zoneScores)) {
       if (score >= modeData.scoreTarget) {
         matchIsOver = true;
-        winner = state.robots.find(r => r.team === team && r.isAlive) || null;
+        winner = state.robots.find((r) => r.team === team && r.isAlive) || null;
         break;
       }
     }
@@ -34,7 +34,7 @@ export function checkWinCondition(
     for (const [team, score] of Object.entries(modeData.teamScores)) {
       if (score >= modeData.scoreTarget) {
         matchIsOver = true;
-        winner = state.robots.find(r => r.team === team && r.isAlive) || null;
+        winner = state.robots.find((r) => r.team === team && r.isAlive) || null;
         break;
       }
     }

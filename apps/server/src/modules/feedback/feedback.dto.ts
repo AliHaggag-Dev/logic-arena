@@ -1,14 +1,14 @@
 import { z } from 'zod';
-import {
-  BugReportSeverity,
-  FeatureRequestPriority,
-} from './feedback.types';
+import { BugReportSeverity, FeatureRequestPriority } from './feedback.types';
 
 // ── BugReport ────────────────────────────────────────────────────────────────
 
 export const CreateBugReportSchema = z
   .object({
-    title: z.string({ error: 'Title is required' }).min(1, 'Title is required').max(200),
+    title: z
+      .string({ error: 'Title is required' })
+      .min(1, 'Title is required')
+      .max(200),
     description: z
       .string({ error: 'Description is required' })
       .min(1, 'Description is required')
@@ -32,7 +32,10 @@ export type CreateBugReportDto = z.infer<typeof CreateBugReportSchema>;
 
 export const CreateFeatureRequestSchema = z
   .object({
-    title: z.string({ error: 'Title is required' }).min(1, 'Title is required').max(200),
+    title: z
+      .string({ error: 'Title is required' })
+      .min(1, 'Title is required')
+      .max(200),
     description: z
       .string({ error: 'Description is required' })
       .min(1, 'Description is required')
@@ -50,13 +53,18 @@ export const CreateFeatureRequestSchema = z
   })
   .strict();
 
-export type CreateFeatureRequestDto = z.infer<typeof CreateFeatureRequestSchema>;
+export type CreateFeatureRequestDto = z.infer<
+  typeof CreateFeatureRequestSchema
+>;
 
 // ── ContactMessage ───────────────────────────────────────────────────────────
 
 export const CreateContactMessageSchema = z
   .object({
-    name: z.string({ error: 'Name is required' }).min(1, 'Name is required').max(100),
+    name: z
+      .string({ error: 'Name is required' })
+      .min(1, 'Name is required')
+      .max(100),
     email: z
       .string({ error: 'Email is required' })
       .email('Must be a valid email address')
@@ -72,13 +80,17 @@ export const CreateContactMessageSchema = z
   })
   .strict();
 
-export type CreateContactMessageDto = z.infer<typeof CreateContactMessageSchema>;
+export type CreateContactMessageDto = z.infer<
+  typeof CreateContactMessageSchema
+>;
 
 // ── Status update ────────────────────────────────────────────────────────────
 
 export const UpdateStatusSchema = z
   .object({
-    status: z.string({ error: 'Status is required' }).min(1, 'Status is required'),
+    status: z
+      .string({ error: 'Status is required' })
+      .min(1, 'Status is required'),
   })
   .strict();
 

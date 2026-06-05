@@ -25,7 +25,8 @@ export function createRobot(
   spawnPositionOverride?: Vector2,
   initialFovDirection?: number,
 ): Robot {
-  const spawn = spawnPositionOverride ?? SPAWN_POSITIONS[index % SPAWN_POSITIONS.length];
+  const spawn =
+    spawnPositionOverride ?? SPAWN_POSITIONS[index % SPAWN_POSITIONS.length];
   const facing = initialFovDirection ?? 0;
   return {
     id,

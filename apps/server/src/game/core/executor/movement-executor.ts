@@ -46,8 +46,8 @@ export class MovementExecutor {
       typeof memory._SYS_FACE_X === 'number' &&
       typeof memory._SYS_FACE_Y === 'number'
     ) {
-      const fx = memory._SYS_FACE_X as number;
-      const fy = memory._SYS_FACE_Y as number;
+      const fx = memory._SYS_FACE_X;
+      const fy = memory._SYS_FACE_Y;
       const dx = fx - robot.position.x;
       const dy = fy - robot.position.y;
       robot.fovDirection = Math.atan2(dy, dx);
@@ -74,9 +74,7 @@ export class MovementExecutor {
 
     // --- _SYS_SPEED_MULT: script-controlled speed multiplier ---
     const sysSpeedMult =
-      typeof memory._SYS_SPEED_MULT === 'number'
-        ? (memory._SYS_SPEED_MULT as number)
-        : 1;
+      typeof memory._SYS_SPEED_MULT === 'number' ? memory._SYS_SPEED_MULT : 1;
     const targetSpeed = this.MOVE_SPEED * slowMult * sysSpeedMult;
 
     if (actionCommand === 'BACKUP') {
@@ -101,9 +99,9 @@ export class MovementExecutor {
       typeof memory._SYS_ORBIT_Y === 'number' &&
       typeof memory._SYS_ORBIT_R === 'number'
     ) {
-      const cx = memory._SYS_ORBIT_X as number;
-      const cy = memory._SYS_ORBIT_Y as number;
-      const orbitR = memory._SYS_ORBIT_R as number;
+      const cx = memory._SYS_ORBIT_X;
+      const cy = memory._SYS_ORBIT_Y;
+      const orbitR = memory._SYS_ORBIT_R;
       const radius = Math.abs(orbitR);
       const clockwise = orbitR >= 0;
 
@@ -143,11 +141,8 @@ export class MovementExecutor {
     }
 
     // --- _SYS_STRAFE: perpendicular lateral movement ---
-    if (
-      typeof memory._SYS_STRAFE === 'number' &&
-      memory._SYS_STRAFE !== 0
-    ) {
-      const strafeDir = (memory._SYS_STRAFE as number) > 0 ? 1 : -1;
+    if (typeof memory._SYS_STRAFE === 'number' && memory._SYS_STRAFE !== 0) {
+      const strafeDir = memory._SYS_STRAFE > 0 ? 1 : -1;
       // Perpendicular to current rotation: +π/2 = right, -π/2 = left
       const HALF_PI = Math.PI / 2;
       const strafeAngle = robot.rotation + strafeDir * HALF_PI;
@@ -162,17 +157,20 @@ export class MovementExecutor {
 
     // --- SECRET RAIL SYSTEM FOR CAMPAIGN ROBOT ---
     // _SYS_TARGET_X/Y are in pixel space (0-800, 0-600), same as robot.position
-    if (typeof memory._SYS_TARGET_X === 'number' && typeof memory._SYS_TARGET_Y === 'number') {
-      const tx = memory._SYS_TARGET_X as number;
-      const ty = memory._SYS_TARGET_Y as number;
+    if (
+      typeof memory._SYS_TARGET_X === 'number' &&
+      typeof memory._SYS_TARGET_Y === 'number'
+    ) {
+      const tx = memory._SYS_TARGET_X;
+      const ty = memory._SYS_TARGET_Y;
       const dx = tx - robot.position.x;
       const dy = ty - robot.position.y;
       const dist = Math.hypot(dx, dy);
-      
+
       // The logic evaluates every 6 physics ticks (0.1s).
-      // At speed=150, it moves 15px per logic tick. 
+      // At speed=150, it moves 15px per logic tick.
       // If RAIL_SNAP is too small (e.g. 5), it steps over it, oscillating forever.
-      const RAIL_SNAP = Math.max(25, speed * 0.15); 
+      const RAIL_SNAP = Math.max(25, speed * 0.15);
 
       if (dist < RAIL_SNAP) {
         // Snap exactly to target to prevent jitter

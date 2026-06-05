@@ -138,23 +138,33 @@ export function resolveIdentifier(
       return 400;
     case 'spotted':
       return nearestVisible !== null;
-      
+
     case 'ENEMY_FLAG_X':
     case 'ENEMY_FLAG_Y': {
-      const enemyFlag = robot.visibleEntities?.flags?.find(f => f.team !== robot.team);
-      if (!enemyFlag) return name === 'ENEMY_FLAG_X' ? robot.position.x : robot.position.y;
-      return name === 'ENEMY_FLAG_X' ? enemyFlag.position.x : enemyFlag.position.y;
+      const enemyFlag = robot.visibleEntities?.flags?.find(
+        (f) => f.team !== robot.team,
+      );
+      if (!enemyFlag)
+        return name === 'ENEMY_FLAG_X' ? robot.position.x : robot.position.y;
+      return name === 'ENEMY_FLAG_X'
+        ? enemyFlag.position.x
+        : enemyFlag.position.y;
     }
-    
+
     case 'MY_FLAG_X':
     case 'MY_FLAG_Y': {
-      const myFlag = robot.visibleEntities?.flags?.find(f => f.team === robot.team);
-      if (!myFlag) return name === 'MY_FLAG_X' ? robot.position.x : robot.position.y;
+      const myFlag = robot.visibleEntities?.flags?.find(
+        (f) => f.team === robot.team,
+      );
+      if (!myFlag)
+        return name === 'MY_FLAG_X' ? robot.position.x : robot.position.y;
       return name === 'MY_FLAG_X' ? myFlag.position.x : myFlag.position.y;
     }
-    
+
     case 'ENEMY_FLAG_DISTANCE': {
-      const enemyFlag = robot.visibleEntities?.flags?.find(f => f.team !== robot.team);
+      const enemyFlag = robot.visibleEntities?.flags?.find(
+        (f) => f.team !== robot.team,
+      );
       if (!enemyFlag) return Infinity;
       const dx = robot.position.x - enemyFlag.position.x;
       const dy = robot.position.y - enemyFlag.position.y;
@@ -168,10 +178,11 @@ export function resolveIdentifier(
 
 function getNearestVisible(robot: Robot): Robot | null {
   let visible = robot.visibleEntities?.robots ?? [];
-  
-  visible = visible.filter(r => {
+
+  visible = visible.filter((r) => {
     if (robot.team && r.team && robot.team === r.team) return false;
-    if (robot.id.startsWith('dummy-') && r.id.startsWith('dummy-')) return false;
+    if (robot.id.startsWith('dummy-') && r.id.startsWith('dummy-'))
+      return false;
     return true;
   });
 
@@ -196,11 +207,12 @@ function getVisibleRobotsForIdentifier(
   memory: Record<string, unknown>,
 ): Robot[] {
   let visible = robot.visibleEntities?.robots ?? [];
-  
+
   // Filter out teammates and other dummies
-  visible = visible.filter(r => {
+  visible = visible.filter((r) => {
     if (robot.team && r.team && robot.team === r.team) return false;
-    if (robot.id.startsWith('dummy-') && r.id.startsWith('dummy-')) return false;
+    if (robot.id.startsWith('dummy-') && r.id.startsWith('dummy-'))
+      return false;
     return true;
   });
 

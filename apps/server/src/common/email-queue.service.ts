@@ -77,11 +77,22 @@ export class EmailQueueService {
           const msg = err instanceof Error ? err.message : String(err);
           const retries = (job.retries ?? 0) + 1;
           if (retries < MAX_RETRIES) {
-            this.logger.warn(`Email failed (${retries}/${MAX_RETRIES}), requeueing: ${msg}`);
-            await this.redis.getClient().lpush(EMAIL_QUEUE_KEY, JSON.stringify({ ...job, retries }));
+            this.logger.warn(
+              `Email failed (${retries}/${MAX_RETRIES}), requeueing: ${msg}`,
+            );
+            await this.redis
+              .getClient()
+              .lpush(EMAIL_QUEUE_KEY, JSON.stringify({ ...job, retries }));
           } else {
-            this.logger.error(`Email failed after ${MAX_RETRIES} retries: ${msg}`);
-            await this.redis.getClient().lpush(EMAIL_QUEUE_BACKOFF_KEY, JSON.stringify({ ...job, failedAt: Date.now() }));
+            this.logger.error(
+              `Email failed after ${MAX_RETRIES} retries: ${msg}`,
+            );
+            await this.redis
+              .getClient()
+              .lpush(
+                EMAIL_QUEUE_BACKOFF_KEY,
+                JSON.stringify({ ...job, failedAt: Date.now() }),
+              );
           }
         }
       }
