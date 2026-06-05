@@ -110,7 +110,7 @@ export function AddFriendModal({ isOpen, onClose, onRequestSent }: AddFriendModa
             type="button"
             onClick={onClose}
             aria-label="Close add friend dialog"
-            className="min-w-[36px] min-h-[36px] flex items-center justify-center text-accent/50 hover:text-accent hover:bg-accent/10 rounded transition-colors"
+            className="min-w-[36px] min-h-[36px] flex items-center justify-center text-accent/50 hover:text-accent hover:bg-accent/10 rounded transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
           >
             <X size={16} aria-hidden="true" />
           </button>
@@ -148,13 +148,21 @@ export function AddFriendModal({ isOpen, onClose, onRequestSent }: AddFriendModa
               SCANNING...
             </div>
           ) : query.trim().length < 2 ? (
-            <p className="text-center py-10 text-text-secondary/50 text-[11px] tracking-wider">
-              Type at least 2 characters
-            </p>
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center gap-1">
+              <Search size={20} className="text-text-secondary/30" aria-hidden="true" />
+              <p className="text-text-secondary/50 text-[11px] tracking-wider">
+                Type at least 2 characters
+              </p>
+            </div>
           ) : results.length === 0 ? (
-            <p className="text-center py-10 text-text-secondary/50 text-[11px] tracking-wider">
-              No users found
-            </p>
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center gap-1">
+              <p className="text-text-secondary/50 text-[11px] tracking-wider">
+                No users found
+              </p>
+              <p className="text-text-secondary/30 text-[10px] tracking-wider">
+                Try a different username
+              </p>
+            </div>
           ) : (
             <ul className="space-y-1">
               {results.map((user) => {
@@ -199,7 +207,7 @@ export function AddFriendModal({ isOpen, onClose, onRequestSent }: AddFriendModa
                         disabled={disabled}
                         onClick={() => void handleSend(user)}
                         aria-label={`Send friend request to ${user.username}`}
-                        className="min-w-[44px] min-h-[36px] px-3 flex items-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 disabled:opacity-40 disabled:cursor-not-allowed text-accent rounded transition-all"
+                        className="min-w-[44px] min-h-[36px] px-3 flex items-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 disabled:opacity-40 disabled:cursor-not-allowed text-accent rounded transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
                       >
                         {pendingId === user.id ? (
                           <Loader2 size={12} className="animate-spin" aria-hidden="true" />

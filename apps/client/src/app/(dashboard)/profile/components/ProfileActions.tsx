@@ -38,21 +38,7 @@ export function ProfileActions({ targetUserId, targetUsername, isMobile = false 
 
   const { sendChallenge } = useGlobalSocket({});
 
-  useEffect(() => {
-    if (isAuthLoading) return;
-    if (!profile) {
-      setRelation('GUEST');
-      return;
-    }
-    if (profile.id === targetUserId) {
-      setRelation('IS_SELF');
-      return;
-    }
-    setRelation('LOADING');
-    void resolveRelation();
-  }, [profile, isAuthLoading, targetUserId, resolveRelation]);
-
-  const resolveRelation = useCallback(async () => {
+  const resolveRelation = useCallback(async (): Promise<void> => {
     try {
       const friends = await friendsApi.listFriends();
       if (friends.some((f) => f.id === targetUserId)) {
@@ -79,6 +65,20 @@ export function ProfileActions({ targetUserId, targetUsername, isMobile = false 
       setRelation('NONE');
     }
   }, [targetUserId]);
+
+  useEffect(() => {
+    if (isAuthLoading) return;
+    if (!profile) {
+      setRelation('GUEST');
+      return;
+    }
+    if (profile.id === targetUserId) {
+      setRelation('IS_SELF');
+      return;
+    }
+    setRelation('LOADING');
+    void resolveRelation();
+  }, [profile, isAuthLoading, targetUserId, resolveRelation]);
 
   const handleSendRequest = useCallback(async () => {
     setIsSubmitting(true);
@@ -151,7 +151,7 @@ export function ProfileActions({ targetUserId, targetUsername, isMobile = false 
             onClick={handleSendRequest}
             disabled={isSubmitting}
             aria-label={`Send friend request to ${targetUsername}`}
-            className={`${buttonBase} ${sizeClass} border border-accent/40 bg-accent/10 text-accent hover:bg-accent/20 hover:border-accent rounded-md`}
+            className={`${buttonBase} ${sizeClass} border border-accent/40 bg-accent/10 text-accent hover:bg-accent/20 hover:border-accent rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2`}
           >
             {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
             Add Friend
@@ -176,7 +176,7 @@ export function ProfileActions({ targetUserId, targetUsername, isMobile = false 
             onClick={handleAcceptRequest}
             disabled={isSubmitting}
             aria-label={`Accept friend request from ${targetUsername}`}
-            className={`${buttonBase} ${sizeClass} border border-[color:var(--sem-success)]/40 bg-[color:var(--sem-success)]/10 text-[color:var(--sem-success)] hover:bg-[color:var(--sem-success)]/20 rounded-md`}
+            className={`${buttonBase} ${sizeClass} border border-[color:var(--sem-success)]/40 bg-[color:var(--sem-success)]/10 text-[color:var(--sem-success)] hover:bg-[color:var(--sem-success)]/20 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--sem-success)] focus-visible:outline-offset-2`}
           >
             {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <UserCheck size={14} />}
             Accept Request
@@ -190,7 +190,7 @@ export function ProfileActions({ targetUserId, targetUsername, isMobile = false 
               onClick={handleChallenge}
               disabled={isSubmitting}
               aria-label={`Challenge ${targetUsername}`}
-              className={`${buttonBase} ${sizeClass} border border-[color:var(--sem-warning)]/40 bg-[color:var(--sem-warning)]/10 text-[color:var(--sem-warning)] hover:bg-[color:var(--sem-warning)]/20 rounded-md`}
+              className={`${buttonBase} ${sizeClass} border border-[color:var(--sem-warning)]/40 bg-[color:var(--sem-warning)]/10 text-[color:var(--sem-warning)] hover:bg-[color:var(--sem-warning)]/20 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--sem-warning)] focus-visible:outline-offset-2`}
             >
               <Swords size={14} />
               Challenge
@@ -200,7 +200,7 @@ export function ProfileActions({ targetUserId, targetUsername, isMobile = false 
               onClick={handleUnfriend}
               disabled={isSubmitting}
               aria-label={`Remove ${targetUsername} from friends`}
-              className={`${buttonBase} ${sizeClass} border border-[color:var(--sem-danger)]/30 bg-[color:var(--sem-danger)]/5 text-[color:var(--sem-danger)]/70 hover:bg-[color:var(--sem-danger)]/10 hover:border-[color:var(--sem-danger)]/50 rounded-md`}
+              className={`${buttonBase} ${sizeClass} border border-[color:var(--sem-danger)]/30 bg-[color:var(--sem-danger)]/5 text-[color:var(--sem-danger)]/70 hover:bg-[color:var(--sem-danger)]/10 hover:border-[color:var(--sem-danger)]/50 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--sem-danger)] focus-visible:outline-offset-2`}
             >
               <UserX size={14} />
               Unfriend
@@ -214,7 +214,7 @@ export function ProfileActions({ targetUserId, targetUsername, isMobile = false 
             onClick={handleChallenge}
             disabled={isSubmitting}
             aria-label={`Challenge ${targetUsername}`}
-            className={`${buttonBase} ${sizeClass} border border-[color:var(--sem-warning)]/40 bg-[color:var(--sem-warning)]/10 text-[color:var(--sem-warning)] hover:bg-[color:var(--sem-warning)]/20 rounded-md`}
+            className={`${buttonBase} ${sizeClass} border border-[color:var(--sem-warning)]/40 bg-[color:var(--sem-warning)]/10 text-[color:var(--sem-warning)] hover:bg-[color:var(--sem-warning)]/20 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--sem-warning)] focus-visible:outline-offset-2`}
           >
             <Swords size={14} />
             Challenge

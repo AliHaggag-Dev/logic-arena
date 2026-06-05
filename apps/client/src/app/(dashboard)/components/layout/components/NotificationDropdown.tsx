@@ -165,9 +165,21 @@ export function NotificationDropdown({
 
       <div ref={listRef} className="overflow-y-auto max-h-[420px]">
         {isLoading && notifications.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-text-secondary/60 text-xs">
-            <Loader2 size={14} className="animate-spin mr-2" />
-            Loading transmissions...
+          <div className="py-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="px-4 py-3 flex gap-3 items-start border-b border-border-primary/30 animate-pulse"
+                aria-hidden="true"
+              >
+                <div className="shrink-0 w-9 h-9 rounded border border-border-primary/30 bg-bg-secondary/40" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-2.5 w-1/3 rounded bg-bg-secondary/60" />
+                  <div className="h-3 w-3/4 rounded bg-bg-secondary/40" />
+                  <div className="h-2 w-1/2 rounded bg-bg-secondary/30" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center">

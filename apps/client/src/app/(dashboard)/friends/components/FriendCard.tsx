@@ -37,7 +37,7 @@ export function FriendCard({ friend, isMobile, onChallenge, onSpectate, onUnfrie
     >
       <Link
         href={`/profile/${friend.username}`}
-        className="shrink-0"
+        className="shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 rounded-full"
         aria-label={`Open ${friend.username}'s profile`}
       >
         <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-accent/30 bg-accent/5 shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] group-hover:border-accent/60 transition-colors">
@@ -81,7 +81,7 @@ export function FriendCard({ friend, isMobile, onChallenge, onSpectate, onUnfrie
               aria-label="Friend actions"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((v) => !v)}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded border border-accent/20 bg-accent/5 text-accent/70 hover:bg-accent/15 transition-colors"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded border border-accent/20 bg-accent/5 text-accent/70 hover:bg-accent/15 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
             >
               <MoreVertical size={16} />
             </button>
@@ -130,7 +130,7 @@ export function FriendCard({ friend, isMobile, onChallenge, onSpectate, onUnfrie
                 type="button"
                 onClick={() => onSpectate(friend.inMatchId!)}
                 aria-label={`Watch ${friend.username}'s match`}
-                className="text-[10px] tracking-[0.15em] font-bold px-3 py-1.5 rounded border border-violet-500/40 bg-violet-500/10 hover:bg-violet-500/25 text-violet-300 transition-all flex items-center gap-1.5"
+                className="text-[10px] tracking-[0.15em] font-bold px-3 py-1.5 rounded border border-violet-500/40 bg-violet-500/10 hover:bg-violet-500/25 text-violet-300 transition-all flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-400 focus-visible:outline-offset-2"
               >
                 <Eye size={12} aria-hidden="true" /> WATCH
               </button>
@@ -139,7 +139,7 @@ export function FriendCard({ friend, isMobile, onChallenge, onSpectate, onUnfrie
                 type="button"
                 onClick={() => onChallenge(friend.id)}
                 aria-label={`Challenge ${friend.username}`}
-                className="text-[10px] tracking-[0.15em] font-bold px-3 py-1.5 rounded border border-accent/40 bg-accent/10 hover:bg-accent/20 text-accent transition-all flex items-center gap-1.5"
+                className="text-[10px] tracking-[0.15em] font-bold px-3 py-1.5 rounded border border-accent/40 bg-accent/10 hover:bg-accent/20 text-accent transition-all flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
               >
                 <Swords size={12} aria-hidden="true" /> CHALLENGE
               </button>
@@ -153,7 +153,7 @@ export function FriendCard({ friend, isMobile, onChallenge, onSpectate, onUnfrie
               onClick={() => onUnfriend(friend.id)}
               aria-label={`Remove ${friend.username} from friends`}
               title="Remove friend"
-              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 text-red-400/70 hover:text-red-300 transition-all"
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 text-red-400/70 hover:text-red-300 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-400 focus-visible:outline-offset-2"
             >
               <UserMinus size={14} />
             </button>

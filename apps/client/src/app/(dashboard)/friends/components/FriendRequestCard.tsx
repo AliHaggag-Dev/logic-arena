@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Check, X, MessageCircle } from 'lucide-react';
 import type { FriendRequestEntry } from '@/lib/api/friends.types';
@@ -13,10 +13,12 @@ interface FriendRequestCardProps {
 }
 
 const TIME_FORMATTER = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+const ONE_MINUTE_MS = 60_000;
+const ONE_DAY_MS = 86_400_000;
 
 function formatRelative(iso: string, nowMs: number): string {
   const ms = nowMs - new Date(iso).getTime();
-  const minutes = Math.floor(ms / 60_000);
+  const minutes = Math.floor(ms / ONE_MINUTE_MS);
   if (minutes < 1) return 'just now';
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
@@ -30,17 +32,24 @@ export function FriendRequestCard({ request, variant, onAccept, onDecline }: Fri
   const isIncoming = variant === 'incoming';
   const user = isIncoming ? request.sender : request.receiver;
 
-  const { expiresIn, relativeTime } = useMemo(() => {
-    const nowMs = Date.now();
-    return {
-      nowMs,
-      expiresIn: Math.max(
+  const [nowMs, setNowMs] = useState<number>(() =>
+    typeof window === 'undefined' ? 0 : Date.now(),
+  );
+
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, ONE_MINUTE_MS);
+    return () => window.clearInterval(t);
+  }, []);
+
+  const expiresIn = nowMs === 0
+    ? null
+    : Math.max(
         0,
-        Math.ceil((new Date(request.expiresAt).getTime() - nowMs) / 86_400_000),
-      ),
-      relativeTime: formatRelative(request.createdAt, nowMs),
-    };
-  }, [request.expiresAt, request.createdAt]);
+        Math.ceil((new Date(request.expiresAt).getTime() - nowMs) / ONE_DAY_MS),
+      );
+  const relativeTime = nowMs === 0 ? '' : formatRelative(request.createdAt, nowMs);
 
   return (
     <article
@@ -72,7 +81,7 @@ export function FriendRequestCard({ request, variant, onAccept, onDecline }: Fri
             {user.username}
           </span>
           <span className="text-[9px] font-mono tracking-[0.12em] text-text-secondary/60">
-            {relativeTime}
+            {relativeTime || '—'}
           </span>
         </div>
         <div className="flex items-center gap-2 mt-1">
@@ -81,7 +90,7 @@ export function FriendRequestCard({ request, variant, onAccept, onDecline }: Fri
           </span>
           <span className="text-[9px] font-mono tracking-[0.12em] text-text-secondary/40">·</span>
           <span className="text-[9px] font-mono tracking-[0.12em] text-text-secondary/60">
-            {expiresIn}d LEFT
+            {expiresIn === null ? '—' : `${expiresIn}d LEFT`}
           </span>
         </div>
         {request.message && (
@@ -98,7 +107,7 @@ export function FriendRequestCard({ request, variant, onAccept, onDecline }: Fri
             type="button"
             onClick={() => onAccept(request.id)}
             aria-label={`Accept friend request from ${user.username}`}
-            className="min-w-[44px] min-h-[36px] px-3 flex items-center justify-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-sem-success/40 bg-sem-success/10 hover:bg-sem-success/20 text-sem-success rounded transition-all"
+            className="min-w-[44px] min-h-[36px] px-3 flex items-center justify-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-sem-success/40 bg-sem-success/10 hover:bg-sem-success/20 rounded transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--sem-success)] focus-visible:outline-offset-2"
             style={{ color: 'var(--sem-success)' }}
           >
             <Check size={14} aria-hidden="true" /> ACCEPT
@@ -107,7 +116,7 @@ export function FriendRequestCard({ request, variant, onAccept, onDecline }: Fri
             type="button"
             onClick={() => onDecline(request.id)}
             aria-label={`Decline friend request from ${user.username}`}
-            className="min-w-[44px] min-h-[36px] px-3 flex items-center justify-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-red-500/30 bg-red-500/5 hover:bg-red-500/15 text-red-400/80 rounded transition-all"
+            className="min-w-[44px] min-h-[36px] px-3 flex items-center justify-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-red-500/30 bg-red-500/5 hover:bg-red-500/15 text-red-400/80 rounded transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-400 focus-visible:outline-offset-2"
           >
             <X size={14} aria-hidden="true" /> DECLINE
           </button>

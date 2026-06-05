@@ -25,6 +25,7 @@ interface FriendsTabsProps {
   onAcceptRequest: (requestId: string) => void;
   onDeclineRequest: (requestId: string) => void;
   onRequestSent: (username: string) => void;
+  onSuggestionsError: (message: string) => void;
 }
 
 const TAB_DEFS: Array<{
@@ -70,7 +71,7 @@ export function FriendsTabs(props: FriendsTabsProps) {
                 aria-selected={isActive}
                 aria-controls={`tab-panel-${t.id}`}
                 onClick={() => setActiveTab(t.id)}
-                className={`min-h-[36px] px-3 py-1.5 text-[10px] font-mono tracking-[0.18em] font-bold rounded transition-all flex items-center gap-1.5 ${
+                className={`min-h-[36px] px-3 py-1.5 text-[10px] font-mono tracking-[0.18em] font-bold rounded transition-all flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${
                   isActive
                     ? 'bg-accent/15 text-accent border border-accent/40'
                     : 'text-accent/45 hover:text-accent/80 hover:bg-accent/5 border border-transparent'
@@ -96,7 +97,7 @@ export function FriendsTabs(props: FriendsTabsProps) {
           type="button"
           onClick={() => setAddOpen(true)}
           aria-label="Add a new friend"
-          className="min-h-[36px] px-3 py-1.5 text-[10px] font-mono tracking-[0.18em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 text-accent rounded-lg transition-all flex items-center gap-1.5"
+          className="min-h-[36px] px-3 py-1.5 text-[10px] font-mono tracking-[0.18em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 text-accent rounded-lg transition-all flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
         >
           <UserPlus size={13} aria-hidden="true" />
           ADD ALLY
@@ -169,16 +170,9 @@ export function FriendsTabs(props: FriendsTabsProps) {
             isLoading={props.isLoadingSuggestions}
             isMobile={props.isMobile}
             onRequestSent={props.onRequestSent}
+            onError={props.onSuggestionsError}
           />
         )}
-
-        {activeTab === 'suggestions' &&
-          !props.isLoadingSuggestions &&
-          props.suggestions.length === 0 && (
-            <div className="mt-4">
-              <FriendsEmptyState variant="suggestions" isMobile={props.isMobile} />
-            </div>
-          )}
       </div>
 
       <AddFriendModal

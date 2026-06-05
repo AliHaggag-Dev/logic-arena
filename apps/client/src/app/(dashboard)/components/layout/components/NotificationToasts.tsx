@@ -86,18 +86,21 @@ function ToastCard({
   return (
     <div
       role="status"
+      aria-live="polite"
+      aria-atomic="true"
       className={`pointer-events-auto w-[320px] max-w-[calc(100vw-32px)] border rounded-lg p-3 flex gap-3 items-start bg-bg-primary backdrop-blur-md ${
         toneClass[tone]
       }`}
       style={{
-        boxShadow: '0 8px 24px rgba(0,0,0,0.4), 0 0 24px rgba(var(--accent-rgb),0.12)',
+        boxShadow: '0 8px 24px rgba(var(--bg-primary-rgb),0.4), 0 0 24px rgba(var(--accent-rgb),0.12)',
         animation: 'toastIn 0.2s ease',
       }}
     >
       <button
         type="button"
         onClick={handleClick}
-        className="flex gap-3 items-start flex-1 min-w-0 text-left p-0 bg-transparent border-0 cursor-pointer"
+        aria-label={`Open ${toast.notification.title}`}
+        className="flex gap-3 items-start flex-1 min-w-0 text-left p-0 bg-transparent border-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 rounded"
       >
         <div className="shrink-0 w-8 h-8 rounded border border-current/40 bg-current/10 flex items-center justify-center">
           <Icon size={14} />

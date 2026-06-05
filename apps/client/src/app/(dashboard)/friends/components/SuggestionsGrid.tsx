@@ -1,16 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { UserPlus, Loader2, Sparkles } from 'lucide-react';
 import type { FriendSuggestion } from '@/lib/api/friends.types';
 import type { AxiosError } from 'axios';
 import { friendsApi } from '@/lib/api/friends';
+import { FriendsEmptyState } from './FriendsEmptyState';
 
 interface SuggestionsGridProps {
   suggestions: FriendSuggestion[];
   isLoading: boolean;
   isMobile: boolean;
   onRequestSent: (username: string) => void;
+  onError: (message: string) => void;
 }
 
 const REASON_LABEL: Record<FriendSuggestion['reason'], string> = {
@@ -18,7 +21,12 @@ const REASON_LABEL: Record<FriendSuggestion['reason'], string> = {
   RECENT_OPPONENT: 'RECENT OPPONENT',
 };
 
-export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSent }: SuggestionsGridProps) {
+const REASON_TONE: Record<FriendSuggestion['reason'], string> = {
+  RANK_PROXIMITY: 'text-accent border-accent/30 bg-accent/5',
+  RECENT_OPPONENT: 'text-[color:var(--sem-warning)] border-[color:var(--sem-warning)]/30 bg-[color:var(--sem-warning)]/5',
+};
+
+export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSent, onError }: SuggestionsGridProps) {
   const [pendingId, setPendingId] = useState<string | null>(null);
 
   const handleSend = async (s: FriendSuggestion) => {
@@ -29,7 +37,7 @@ export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSen
     } catch (err: unknown) {
       const axiosErr = err as AxiosError<{ message?: string }>;
       const message = axiosErr.response?.data?.message ?? 'Failed to send request';
-      throw new Error(message);
+      onError(message);
     } finally {
       setPendingId(null);
     }
@@ -41,11 +49,16 @@ export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSen
         {Array.from({ length: isMobile ? 3 : 6 }).map((_, i) => (
           <div
             key={i}
-            className="bg-card/40 border border-accent/10 rounded-xl p-4 h-[88px] animate-pulse"
+            className="bg-card/40 border border-accent/10 rounded-xl p-4 h-[100px] animate-pulse"
+            aria-hidden="true"
           />
         ))}
       </div>
     );
+  }
+
+  if (suggestions.length === 0) {
+    return <FriendsEmptyState variant="suggestions" isMobile={isMobile} />;
   }
 
   return (
@@ -56,7 +69,21 @@ export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSen
           className="bg-card/60 backdrop-blur-md border border-accent/10 rounded-xl p-4 hover:border-accent/30 transition-colors"
           style={{ boxShadow: 'var(--card-shadow)' }}
         >
-          <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden border border-accent/30 bg-accent/5 flex items-center justify-center text-accent/60 font-black text-sm">
+              {s.avatarUrl ? (
+                <Image
+                  src={s.avatarUrl}
+                  alt={`${s.username} avatar`}
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover"
+                  unoptimized
+                />
+              ) : (
+                s.username.charAt(0).toUpperCase()
+              )}
+            </div>
             <div className="min-w-0 flex-1">
               <div className="text-accent font-bold tracking-wider text-sm truncate">
                 {s.username}
@@ -65,7 +92,7 @@ export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSen
                 RANK {s.rank}
               </div>
             </div>
-            <span className="shrink-0 inline-flex items-center gap-1 text-[8px] font-mono tracking-[0.18em] text-accent/70 border border-accent/20 bg-accent/5 rounded px-1.5 py-0.5">
+            <span className={`shrink-0 inline-flex items-center gap-1 text-[8px] font-mono tracking-[0.18em] border rounded px-1.5 py-0.5 ${REASON_TONE[s.reason]}`}>
               <Sparkles size={9} aria-hidden="true" />
               {REASON_LABEL[s.reason]}
             </span>
@@ -81,7 +108,7 @@ export function SuggestionsGrid({ suggestions, isLoading, isMobile, onRequestSen
             onClick={() => void handleSend(s)}
             disabled={pendingId === s.id}
             aria-label={`Send friend request to ${s.username}`}
-            className="w-full min-h-[40px] flex items-center justify-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 disabled:opacity-50 text-accent rounded-lg transition-all"
+            className="w-full min-h-[40px] flex items-center justify-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 disabled:opacity-50 text-accent rounded-lg transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
           >
             {pendingId === s.id ? (
               <>

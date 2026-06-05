@@ -30,6 +30,17 @@ export default function FriendsPage() {
   } = useFriendsSystem();
 
   const [showRequestSentToast, setShowRequestSentToast] = useState<string | null>(null);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!errorToast) return;
+    const t = window.setTimeout(() => setErrorToast(null), 4000);
+    return () => window.clearTimeout(t);
+  }, [errorToast]);
+
+  const handleSuggestionsError = useCallback((message: string) => {
+    setErrorToast(message);
+  }, []);
 
   useEffect(() => {
     if (isGuest) {
@@ -101,6 +112,7 @@ export default function FriendsPage() {
           onAcceptRequest={acceptRequest}
           onDeclineRequest={declineRequest}
           onRequestSent={handleRequestSent}
+          onSuggestionsError={handleSuggestionsError}
         />
       </div>
 
@@ -118,6 +130,24 @@ export default function FriendsPage() {
           }}
         >
           ✓ REQUEST SENT TO {showRequestSentToast}
+        </div>
+      )}
+
+      {errorToast && (
+        <div
+          role="alert"
+          className="fixed left-1/2 z-[100] font-mono text-[11px] tracking-[0.15em] px-5 py-3 rounded-lg border pointer-events-none"
+          style={{
+            bottom: isMobile ? "96px" : "24px",
+            transform: "translateX(-50%)",
+            animation: "fadeInUp 0.25s ease",
+            background: "rgba(var(--sem-danger-rgb),0.10)",
+            borderColor: "rgba(var(--sem-danger-rgb),0.35)",
+            color: "var(--sem-danger)",
+            boxShadow: "0 0 20px rgba(var(--sem-danger-rgb),0.15)",
+          }}
+        >
+          ⚠ {errorToast}
         </div>
       )}
 

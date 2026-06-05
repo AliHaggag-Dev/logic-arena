@@ -37,7 +37,7 @@ export function NotificationBell({ notifications, isMobile = false }: Notificati
         aria-haspopup="dialog"
         className={`relative ${
           isMobile ? 'w-10 h-10' : 'w-9 h-9'
-        } rounded-md border border-accent/30 bg-card/60 hover:bg-card hover:border-accent/60 flex items-center justify-center text-text-secondary hover:text-accent transition-colors`}
+        } rounded-md border border-accent/30 bg-card/60 hover:bg-card hover:border-accent/60 flex items-center justify-center text-text-secondary hover:text-accent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2`}
       >
         <Bell size={isMobile ? 16 : 15} className={unreadCount > 0 ? 'animate-pulse' : ''} />
         {unreadCount > 0 && (
