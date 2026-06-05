@@ -69,14 +69,20 @@ export function AddFriendModal({ isOpen, onClose, onRequestSent }: AddFriendModa
   if (!isOpen) return null;
 
   const handleSend = async (user: UserSearchResult) => {
+    if (pendingId === user.id) return;
     setPendingId(user.id);
+    // Optimistic update: immediately show SENT state
+    setResults((prev) =>
+      prev.map((r) => (r.id === user.id ? { ...r, hasPendingRequestFromYou: true } : r)),
+    );
     try {
       await friendsApi.sendRequest(user.username);
       onRequestSent?.(user.username);
-      setResults((prev) =>
-        prev.map((r) => (r.id === user.id ? { ...r, hasPendingRequestFromYou: true } : r)),
-      );
     } catch (err: unknown) {
+      // Rollback on failure
+      setResults((prev) =>
+        prev.map((r) => (r.id === user.id ? { ...r, hasPendingRequestFromYou: false } : r)),
+      );
       const axiosErr = err as AxiosError<{ message?: string }>;
       setError(axiosErr.response?.data?.message ?? 'Failed to send request');
     } finally {
@@ -209,11 +215,7 @@ export function AddFriendModal({ isOpen, onClose, onRequestSent }: AddFriendModa
                         aria-label={`Send friend request to ${user.username}`}
                         className="min-w-[44px] min-h-[36px] px-3 flex items-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 hover:border-accent/60 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-accent rounded transition-all cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
                       >
-                        {pendingId === user.id ? (
-                          <Loader2 size={12} className="animate-spin" aria-hidden="true" />
-                        ) : (
-                          <Send size={12} aria-hidden="true" />
-                        )}
+                        <Send size={12} aria-hidden="true" />
                         SEND
                       </button>
                     )}

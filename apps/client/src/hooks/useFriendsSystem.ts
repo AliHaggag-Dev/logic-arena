@@ -35,8 +35,9 @@ export function useFriendsSystem() {
   const [incomingRequest, setIncomingRequest] = useState<IncomingFriendRequest | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isLoadingFriends, setIsLoadingFriends] = useState(true);
-  const [isLoadingRequests, setIsLoadingRequests] = useState(true);
+  // Start as false — skeletons should only appear once a fetch is actually in flight
+  const [isLoadingFriends, setIsLoadingFriends] = useState(false);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   const allowFriendRequests = profile?.notificationSettings?.friendRequests !== false;
@@ -92,8 +93,8 @@ export function useFriendsSystem() {
 
   useEffect(() => {
     if (!profile) return;
-    void fetchFriends();
-    void fetchRequests();
+    // Run both fetches in parallel — no sequential dependency between them
+    void Promise.all([fetchFriends(), fetchRequests()]);
   }, [profile, fetchFriends, fetchRequests]);
 
   const { sendFriendRequest, acceptFriendRequest, declineFriendRequest, unfriendSocket } =

@@ -25,6 +25,10 @@ interface NotificationDropdownProps {
   anchorRef: React.RefObject<HTMLElement | null>;
 }
 
+// Only show skeleton if we know there's data coming (unreadCount > 0).
+// If unreadCount is 0 at open time, we can safely skip straight to the empty state.
+const SHOW_SKELETON_THRESHOLD = 0;
+
 const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -214,7 +218,7 @@ export function NotificationDropdown({
       </div>
 
       <div ref={listRef} className="overflow-y-auto max-h-[440px] divide-y divide-accent/10">
-        {isLoading && notifications.length === 0 ? (
+        {isLoading && notifications.length === 0 && unreadCount > SHOW_SKELETON_THRESHOLD ? (
           <div className="py-2" aria-busy="true">
             {Array.from({ length: 5 }).map((_, i) => (
               <div
