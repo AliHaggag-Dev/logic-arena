@@ -624,9 +624,9 @@ textarea::selection,
  * ───────────────────────────────────────────────────────── */
 
 .custom-scrollbar {
-  --scrollbar-accent-rgb-local: var(--scrollbar-accent-rgb, var(--accent-rgb));
-  --scrollbar-bg-local: var(--scrollbar-bg, var(--bg-primary));
-  --scrollbar-accent-local: var(--scrollbar-accent, var(--accent));
+  --scrollbar-accent-rgb-local: var(--arena-cyan-rgb);
+  --scrollbar-bg-local: var(--arena-bg-dark);
+  --scrollbar-accent-local: var(--arena-cyan);
   scrollbar-width: thin;
   scrollbar-color: rgba(var(--scrollbar-accent-rgb-local), 0.3) var(--scrollbar-bg-local);
 }

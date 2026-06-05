@@ -313,6 +313,7 @@ export const NeuralHandbook: React.FC<NeuralHandbookProps> = ({ isOpen, onSelect
                                     type="button"
                                     onClick={() => setActiveCategory(cat.id)}
                                     title={cat.label}
+                                    className={`cursor-pointer ${!active ? 'hover:!bg-white/10 hover:!border-white/20 hover:!text-white/80' : ''}`}
                                     style={{
                                         flexShrink: 0,
                                         display: "flex",
@@ -328,7 +329,6 @@ export const NeuralHandbook: React.FC<NeuralHandbookProps> = ({ isOpen, onSelect
                                         border: active ? `1px solid ${cat.color}` : "1px solid rgba(var(--arena-white-rgb),0.07)",
                                         background: active ? `rgba(${cat.color === "var(--arena-cyan)" ? "var(--arena-cyan-rgb)" : cat.color === "var(--arena-green)" ? "var(--arena-green-rgb)" : cat.color === "var(--arena-amber)" ? "var(--arena-amber-rgb)" : "var(--arena-purple-rgb)"},0.15)` : "rgba(var(--arena-white-rgb),0.03)",
                                         color: active ? cat.color : "rgba(var(--arena-white-rgb),0.4)",
-                                        cursor: "pointer",
                                         whiteSpace: "nowrap",
                                     }}
                                 >

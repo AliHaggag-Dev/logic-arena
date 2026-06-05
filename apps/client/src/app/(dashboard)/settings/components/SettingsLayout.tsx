@@ -88,7 +88,7 @@ export function SettingsLayout({
                   <button
                     type="button"
                     onClick={() => onSectionChange(isOpen ? null : section.id)}
-                    className="w-full flex items-center justify-between px-5 py-4 bg-bg-secondary min-h-[56px]"
+                    className="w-full flex items-center justify-between px-5 py-4 bg-bg-secondary min-h-[56px] cursor-pointer"
                   >
                     <span className={`text-[11px] font-black tracking-[0.25em] ${isOpen ? "text-accent" : "text-text-secondary"}`}>
                       {section.shortLabel}
@@ -125,7 +125,7 @@ export function SettingsLayout({
                     key={section.id}
                     type="button"
                     onClick={() => onSectionChange(section.id)}
-                    className={`w-full flex items-center gap-3 text-left px-4 py-3 text-[10px] font-bold tracking-[0.18em] transition-all duration-150 border-l-[3px] ${
+                    className={`w-full flex items-center gap-3 text-left px-4 py-3 text-[10px] font-bold tracking-[0.18em] transition-all duration-150 border-l-[3px] cursor-pointer ${
                       isActive
                         ? "border-accent bg-accent/[0.05] text-accent [text-shadow:0_0_8px_rgba(var(--accent-rgb),0.5)]"
                         : "border-transparent text-text-secondary hover:text-text-primary hover:bg-accent/[0.02] hover:border-accent/20"

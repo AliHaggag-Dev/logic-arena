@@ -51,7 +51,7 @@ export const DesktopConsole: React.FC<DesktopConsoleProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsZenMode(!isZenMode)}
-                    className="group relative px-4 py-1.5 bg-black/50 border border-purple-500/50 text-purple-300 text-[10px] font-bold rounded uppercase tracking-widest hover:bg-purple-500/20 hover:border-purple-400 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.15)] overflow-hidden"
+                    className="group relative px-4 py-1.5 bg-black/50 border border-purple-500/50 text-purple-300 text-[10px] font-bold rounded uppercase tracking-widest hover:bg-purple-500/20 hover:border-purple-400 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.15)] overflow-hidden cursor-pointer"
                 >
                     <span className="relative z-10">{isZenMode ? "Exit Zen Core" : "Enter Zen Mode"}</span>
                     <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-purple-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
@@ -85,6 +85,7 @@ export const DesktopConsole: React.FC<DesktopConsoleProps> = ({
                         handleDeployBrain={() => handleDeployBrain(scriptInput)}
                         toggleLibrary={() => setIsLibraryOpen(!isLibraryOpen)}
                         clearPrebuilt={() => setActivePrebuilt(null)}
+                        isLibraryOpen={isLibraryOpen}
                     />
                 </div>
                 <NeuralHandbook
@@ -136,7 +137,7 @@ export const DesktopConsole: React.FC<DesktopConsoleProps> = ({
                         <button
                             type="button"
                             onClick={() => setActiveRecipe(null)}
-                            className="text-cyan-400 hover:text-white text-[9px] font-bold px-2.5 py-0.5 rounded border border-cyan-500/20 hover:border-cyan-400 transition-colors"
+                            className="text-cyan-400 hover:text-white text-[9px] font-bold px-2.5 py-0.5 rounded border border-cyan-500/20 hover:border-cyan-400 transition-colors cursor-pointer"
                         >
                             CLOSE
                         </button>
@@ -160,7 +161,7 @@ export const DesktopConsole: React.FC<DesktopConsoleProps> = ({
                                 setIsLibraryOpen(false);
                                 setActiveRecipe(null);
                             }}
-                            className="py-2 px-5 bg-cyan-900/20 border border-cyan-500/50 text-cyan-400 font-black text-[9px] hover:bg-cyan-600/25 hover:border-cyan-400 transition-all rounded uppercase tracking-widest"
+                            className="py-2 px-5 bg-cyan-900/20 border border-cyan-500/50 text-cyan-400 font-black text-[9px] hover:bg-cyan-600/25 hover:border-cyan-400 transition-all rounded uppercase tracking-widest cursor-pointer"
                         >
                             Insert into Editor
                         </button>

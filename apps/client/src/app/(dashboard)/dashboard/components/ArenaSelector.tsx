@@ -141,7 +141,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                                 backgroundImage: 'linear-gradient(to right, var(--bg-primary) 0%, color-mix(in srgb, var(--bg-primary) 80%, transparent) 60%, transparent 100%)'
                             }}
                         >
-                            <button type="button" aria-label="Scroll left" onClick={() => scroll('left')} className="pointer-events-auto ml-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
+                            <button type="button" aria-label="Scroll left" onClick={() => scroll('left')} className="pointer-events-auto ml-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow cursor-pointer">
                                 <ChevronLeft size={24} strokeWidth={3} className="drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] group-hover/arrow:drop-shadow-[0_0_8px_currentColor]" />
                             </button>
                         </div>
@@ -153,7 +153,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                                 backgroundImage: 'linear-gradient(to left, var(--bg-primary) 0%, color-mix(in srgb, var(--bg-primary) 80%, transparent) 60%, transparent 100%)'
                             }}
                         >
-                            <button type="button" aria-label="Scroll right" onClick={() => scroll('right')} className="pointer-events-auto mr-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow">
+                            <button type="button" aria-label="Scroll right" onClick={() => scroll('right')} className="pointer-events-auto mr-1 p-2.5 rounded-full bg-black/60 hover:bg-accent/20 text-white/70 hover:text-white border border-white/10 hover:border-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 group/arrow cursor-pointer">
                                 <ChevronRight size={24} strokeWidth={3} className="drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] group-hover/arrow:drop-shadow-[0_0_8px_currentColor]" />
                             </button>
                         </div>
@@ -166,7 +166,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                                     key={mode.value}
                                     type="button"
                                     onClick={() => setSelectedMode(mode.value)}
-                                    className={`relative flex-shrink-0 w-[160px] md:w-[200px] aspect-[16/10] rounded-[20px] overflow-hidden snap-start transition-all duration-300 group border text-left ${
+                                    className={`relative flex-shrink-0 w-[160px] md:w-[200px] aspect-[16/10] rounded-[20px] overflow-hidden snap-start transition-all duration-300 group border text-left cursor-pointer ${
                                         isSelected 
                                         ? 'border-accent shadow-[0_0_25px_rgba(var(--accent-rgb),0.25)] scale-[1.02] bg-accent/5' 
                                         : 'border-white/10 hover:border-accent/40 opacity-60 hover:opacity-100 hover:bg-white/5'
@@ -202,7 +202,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                                     key={theme.value}
                                     type="button"
                                     onClick={() => setSelectedTheme(theme.value)}
-                                    className={`relative flex-shrink-0 w-[140px] md:w-[180px] aspect-video rounded-[16px] overflow-hidden snap-start transition-all duration-300 group border text-left ${
+                                    className={`relative flex-shrink-0 w-[140px] md:w-[180px] aspect-video rounded-[16px] overflow-hidden snap-start transition-all duration-300 group border text-left cursor-pointer ${
                                         isSelected 
                                         ? `${theme.borderClass} ${theme.glowClass} scale-[1.02] ${theme.bgClass}` 
                                         : 'border-white/10 hover:border-white/40 opacity-60 hover:opacity-100 hover:bg-white/5'

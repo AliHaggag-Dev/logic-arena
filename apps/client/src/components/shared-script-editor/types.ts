@@ -17,4 +17,5 @@ export interface ScriptEditorProps {
     handleDeployBrain: () => void;
     toggleLibrary: () => void;
     clearPrebuilt: () => void;
+    isLibraryOpen?: boolean;
 }

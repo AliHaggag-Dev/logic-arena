@@ -38,7 +38,7 @@ export function VaultCategoryTabs({ activeCategory, onChange }: VaultCategoryTab
             className={`
               flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-xl
               font-bold text-[10px] tracking-[0.16em] transition-all duration-200
-              min-h-[44px] whitespace-nowrap
+              min-h-[44px] whitespace-nowrap cursor-pointer
               ${
                 isActive
                   ? "bg-accent text-bg-primary shadow-[0_0_16px_rgba(var(--accent-rgb),0.35)]"

@@ -32,7 +32,7 @@ export const ArenaControls: React.FC<ArenaControlsProps> = ({
         <button
           type="button"
           onClick={() => setIsLogsOpen((v) => !v)}
-          className="w-full flex items-center justify-between px-3 py-2 bg-black/40 hover:bg-cyan-950/40 transition-colors group"
+          className="w-full flex items-center justify-between px-3 py-2 bg-black/40 hover:bg-cyan-950/40 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_5px_var(--accent)]" />

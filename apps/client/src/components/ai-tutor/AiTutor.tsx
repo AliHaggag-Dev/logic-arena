@@ -86,7 +86,7 @@ export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
       )}
 
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-end" style={{ pointerEvents: 'none' }}>
+        <div className="fixed inset-0 z-[1000] flex items-end justify-end" style={{ pointerEvents: 'none' }}>
           {isMobile && (
             <div
               className="fixed inset-0 bg-card/60 backdrop-blur-sm"

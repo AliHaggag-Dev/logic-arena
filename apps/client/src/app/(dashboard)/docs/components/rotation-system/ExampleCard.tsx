@@ -99,27 +99,31 @@ export const ExampleCard = ({
                         </span>
                     </div>
 
-                    <div className="relative">
-                        <div
-                            className="absolute inset-0 opacity-5 rounded-lg pointer-events-none"
-                            style={{ background: `linear-gradient(135deg, ${color}, transparent)` }}
-                        />
-                        <pre
-                            className={`text-[10px] leading-relaxed p-4 rounded-lg overflow-x-auto font-mono bg-card/60 backdrop-blur-md docs-scrollbar border ${isMobile ? 'max-h-[200px]' : ''}`}
-                            style={{
-                                color: codeColor,
-                                borderColor: `color-mix(in srgb, ${color} 20%, transparent)`,
-                            }}
-                        >
-                            {example.code}
-                        </pre>
-                        <CopyButton code={example.code} themeColor={color} />
+                    <div className="relative border border-accent/10 rounded-lg overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-accent/10 bg-black/40 z-10">
+                            <span className="text-[9px] font-mono tracking-widest text-accent/50 uppercase ml-1">AliScript</span>
+                            <CopyButton code={example.code} themeColor={color} className="relative" />
+                        </div>
+                        <div className="relative">
+                            <div
+                                className="absolute inset-0 opacity-5 pointer-events-none"
+                                style={{ background: `linear-gradient(135deg, ${color}, transparent)` }}
+                            />
+                            <pre
+                                className={`text-[10px] leading-relaxed p-4 overflow-x-auto font-mono bg-card/60 backdrop-blur-md docs-scrollbar ${isMobile ? 'max-h-[200px]' : ''}`}
+                                style={{
+                                    color: codeColor,
+                                }}
+                            >
+                                {example.code}
+                            </pre>
+                        </div>
                     </div>
 
                     <button
                         type="button"
                         onClick={() => onLoadScript(example.code)}
-                        className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] hover:opacity-90 cursor-pointer"
+                        className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] hover:brightness-[1.3] hover:shadow-[0_0_15px_currentColor] cursor-pointer"
                         style={{
                             color,
                             borderColor: `color-mix(in srgb, ${color} 40%, transparent)`,

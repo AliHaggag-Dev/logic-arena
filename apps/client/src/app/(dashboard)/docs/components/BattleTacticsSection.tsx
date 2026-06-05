@@ -22,14 +22,19 @@ export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript:
             <div className="text-[10px] text-text-primary/70 mb-4 leading-relaxed tracking-wide font-medium">
               {tactic.desc}
             </div>
-            <div className="relative bg-bg-primary/50 p-4 rounded-xl font-mono text-[10px] text-accent leading-relaxed whitespace-pre-wrap border border-accent/10 shadow-inner overflow-x-auto docs-scrollbar">
-              {tactic.code}
-              <CopyButton code={tactic.code} themeColor={tactic.color} />
+            <div className="relative border border-accent/10 rounded-xl overflow-hidden flex flex-col bg-bg-primary/50 shadow-inner">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-accent/10 bg-black/40 z-10">
+                <span className="text-[9px] font-mono tracking-widest text-accent/50 uppercase ml-1">AliScript</span>
+                <CopyButton code={tactic.code} themeColor={tactic.color} className="relative" />
+              </div>
+              <div className="p-4 font-mono text-[10px] text-accent leading-relaxed whitespace-pre-wrap overflow-x-auto docs-scrollbar">
+                {tactic.code}
+              </div>
             </div>
             <button
               type="button"
               onClick={() => onLoadScript(tactic.code)}
-              className="mt-4 w-full py-3 bg-transparent text-[9px] font-bold tracking-[0.2em] uppercase cursor-pointer rounded-xl transition-all hover:bg-white/5 hover:opacity-90 border border-white/10 active:scale-[0.98]"
+              className="mt-4 w-full py-3 bg-transparent text-[9px] font-bold tracking-[0.2em] uppercase cursor-pointer rounded-xl transition-all hover:brightness-[1.3] hover:shadow-[0_0_15px_currentColor] border active:scale-[0.98]"
               style={{
                 borderColor: `color-mix(in srgb, ${tactic.color} 20%, transparent)`,
                 color: tactic.color,

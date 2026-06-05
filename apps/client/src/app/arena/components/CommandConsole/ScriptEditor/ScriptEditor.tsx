@@ -12,7 +12,7 @@ import { sanitizeHtml } from "../../../../../lib/client-security";
 import { AiGeneratePanel } from "../AiGeneratePanel";
 import { Sparkles } from "lucide-react";
 
-export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScriptInput, handleDeployBrain, toggleLibrary, clearPrebuilt }) => {
+export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScriptInput, handleDeployBrain, toggleLibrary, clearPrebuilt, isLibraryOpen }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const highlightRef = useRef<HTMLDivElement>(null);
     const { syntaxValid, validateSyntax, warnings, diagnostics } = useParserWorker();
@@ -58,7 +58,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                             <button
                                 type="button"
                                 onClick={() => setShowGenerate(false)}
-                                className="text-purple-400 hover:text-white text-[10px] font-bold px-2 py-0.5 rounded border border-purple-500/20 hover:border-purple-400 transition-colors"
+                                className="text-purple-400 hover:text-white text-[10px] font-bold px-2 py-0.5 rounded border border-purple-500/20 hover:border-purple-400 transition-colors cursor-pointer"
                             >
                                 CLOSE
                             </button>
@@ -128,10 +128,10 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                 />
             </div>
             <div className="flex gap-2 shrink-0">
-                <button type="button" onClick={handleDeployBrain} className="flex-1 py-3 bg-purple-900/20 border border-purple-500/50 text-purple-300 font-black text-[10px] hover:bg-purple-600/40 hover:border-purple-400 hover:text-white transition-all rounded uppercase tracking-widest shadow-[0_0_15px_rgba(var(--arena-purple-rgb),0.15)] group relative overflow-hidden">
+                <button type="button" onClick={handleDeployBrain} className="flex-1 py-3 bg-purple-900/20 border border-purple-500/50 text-purple-300 font-black text-[10px] hover:bg-purple-600/40 hover:border-purple-400 hover:text-white transition-all rounded uppercase tracking-widest shadow-[0_0_15px_rgba(var(--arena-purple-rgb),0.15)] group relative overflow-hidden cursor-pointer">
                     <span className="relative z-10">Upload Script</span><div className="absolute inset-0 bg-purple-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </button>
-                <button type="button" onClick={toggleLibrary} className="flex-1 py-3 bg-cyan-900/20 border border-cyan-700/50 text-cyan-400 font-black text-[10px] hover:bg-cyan-800/40 hover:border-cyan-400 transition-all rounded uppercase tracking-widest shadow-[0_0_10px_rgba(var(--arena-cyan-rgb),0.1)] group relative overflow-hidden">
+                <button type="button" onClick={toggleLibrary} className={`flex-1 py-3 font-black text-[10px] transition-all rounded uppercase tracking-widest group relative overflow-hidden cursor-pointer ${isLibraryOpen ? 'bg-cyan-800/40 border border-cyan-400 text-cyan-200 shadow-[0_0_15px_rgba(var(--arena-cyan-rgb),0.3)]' : 'bg-cyan-900/20 border border-cyan-700/50 text-cyan-400 hover:bg-cyan-800/40 hover:border-cyan-400 shadow-[0_0_10px_rgba(var(--arena-cyan-rgb),0.1)]'}`}>
                     <span className="relative z-10">Cookbook</span><div className="absolute inset-0 bg-cyan-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </button>
                 <button
@@ -139,7 +139,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
                     onClick={() => setShowGenerate(!showGenerate)}
                     aria-label="Generate AliScript with ARIA AI"
                     aria-pressed={showGenerate}
-                    className={`px-3 py-3 font-black text-[10px] transition-all rounded uppercase tracking-widest group relative overflow-hidden flex items-center gap-1.5 shadow-[0_0_15px_rgba(var(--arena-purple-rgb),0.15)] ${
+                    className={`px-3 py-3 font-black text-[10px] transition-all rounded uppercase tracking-widest group relative overflow-hidden flex items-center gap-1.5 shadow-[0_0_15px_rgba(var(--arena-purple-rgb),0.15)] cursor-pointer ${
                         showGenerate
                             ? "bg-purple-500/25 border border-purple-500 text-purple-200"
                             : "bg-purple-950/20 border border-purple-500/30 text-purple-400/80 hover:bg-purple-600/30 hover:border-purple-400 hover:text-white"

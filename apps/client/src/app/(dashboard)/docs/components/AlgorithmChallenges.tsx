@@ -87,34 +87,39 @@ const ChallengeCard = ({
           </p>
 
           {/* Code block */}
-          <div className="relative">
-            <div
-              className="absolute inset-0 opacity-5 rounded-lg pointer-events-none"
-              style={{ background: `linear-gradient(135deg, ${challenge.color}, transparent)` }}
-            />
-            <pre
-              className={`text-[10px] leading-relaxed p-4 rounded-lg overflow-x-auto font-mono bg-card/60 backdrop-blur-md docs-scrollbar border border-accent/10 ${isMobile ? 'max-h-[220px]' : ''}`}
-              style={{ color: 'var(--accent)' }}
-            >
-              {challenge.code.split('\n').map((line, i) => {
-                const isComment = line.trimStart().startsWith('//');
-                return (
-                  <div key={i}>
-                    <span style={{ color: isComment ? 'rgba(var(--accent-rgb), 0.3)' : undefined }}>
-                      {line}
-                    </span>
-                  </div>
-                );
-              })}
-            </pre>
-            <CopyButton code={challenge.code} themeColor={challenge.color} />
+          <div className="relative border border-accent/10 rounded-lg overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-accent/10 bg-black/40 z-10">
+              <span className="text-[9px] font-mono tracking-widest text-accent/50 uppercase ml-1">AliScript</span>
+              <CopyButton code={challenge.code} themeColor={challenge.color} className="relative" />
+            </div>
+            <div className="relative">
+              <div
+                className="absolute inset-0 opacity-5 pointer-events-none"
+                style={{ background: `linear-gradient(135deg, ${challenge.color}, transparent)` }}
+              />
+              <pre
+                className={`text-[10px] leading-relaxed p-4 overflow-x-auto font-mono bg-card/60 backdrop-blur-md docs-scrollbar ${isMobile ? 'max-h-[220px]' : ''}`}
+                style={{ color: 'var(--accent)' }}
+              >
+                {challenge.code.split('\n').map((line, i) => {
+                  const isComment = line.trimStart().startsWith('//');
+                  return (
+                    <div key={i}>
+                      <span style={{ color: isComment ? 'rgba(var(--accent-rgb), 0.3)' : undefined }}>
+                        {line}
+                      </span>
+                    </div>
+                  );
+                })}
+              </pre>
+            </div>
           </div>
 
           {/* Load button — unified label */}
           <button
             type="button"
             onClick={() => onLoadScript(challenge.code)}
-            className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] hover:opacity-90 cursor-pointer"
+            className="mt-4 w-full py-3 text-[10px] font-black tracking-[0.3em] uppercase transition-all border rounded-lg active:scale-[0.98] hover:brightness-[1.3] hover:shadow-[0_0_15px_currentColor] cursor-pointer"
             style={{
               color: challenge.color,
               borderColor: `color-mix(in srgb, ${challenge.color} 27%, transparent)`,
