@@ -3,6 +3,7 @@ import { ArenaControls } from '../ArenaControls';
 import { BotSelector } from './BotSelector';
 import { ScriptEditor } from './ScriptEditor';
 import { NeuralHandbook, Recipe, DIFFICULTY_STYLES, CodeLine } from './NeuralHandbook';
+import { WordLevelEditor } from '../WordLevelEditor';
 
 interface DesktopConsoleProps {
     isMobile: boolean;
@@ -24,13 +25,18 @@ interface DesktopConsoleProps {
     setIsLibraryOpen: Dispatch<SetStateAction<boolean>>;
     setActivePrebuilt: (val: string | null) => void;
     appendScriptLine: (line: string) => void;
+    isClassicMode?: boolean;
+    classicTokensLeft?: number;
+    classicMaxTokens?: number;
+    onClassicEdit?: (script: string, tokensLeft: number) => void;
 }
 
 export const DesktopConsole: React.FC<DesktopConsoleProps> = ({
     isMobile, isZenMode, setIsZenMode, commandInput, setCommandInput, handleCommandSubmit,
     output, isLogsOpen, setIsLogsOpen, availableRobots, robotId, onRobotChange,
     scriptInput, setScriptInput, handleDeployBrain, isLibraryOpen, setIsLibraryOpen,
-    setActivePrebuilt, appendScriptLine
+    setActivePrebuilt, appendScriptLine, isClassicMode = false, classicTokensLeft = 0,
+    classicMaxTokens, onClassicEdit
 }) => {
     const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null);
 
@@ -79,14 +85,26 @@ export const DesktopConsole: React.FC<DesktopConsoleProps> = ({
                             onRobotChange={onRobotChange}
                         />
                     )}
-                    <ScriptEditor
-                        scriptInput={scriptInput}
-                        setScriptInput={setScriptInput}
-                        handleDeployBrain={() => handleDeployBrain(scriptInput)}
-                        toggleLibrary={() => setIsLibraryOpen(!isLibraryOpen)}
-                        clearPrebuilt={() => setActivePrebuilt(null)}
-                        isLibraryOpen={isLibraryOpen}
-                    />
+                    {isClassicMode && onClassicEdit ? (
+                        <WordLevelEditor
+                            script={scriptInput}
+                            tokensLeft={classicTokensLeft}
+                            maxTokens={classicMaxTokens}
+                            onChange={(nextScript, nextTokensLeft) => {
+                                setScriptInput(nextScript);
+                                onClassicEdit(nextScript, nextTokensLeft);
+                            }}
+                        />
+                    ) : (
+                        <ScriptEditor
+                            scriptInput={scriptInput}
+                            setScriptInput={setScriptInput}
+                            handleDeployBrain={() => handleDeployBrain(scriptInput)}
+                            toggleLibrary={() => setIsLibraryOpen(!isLibraryOpen)}
+                            clearPrebuilt={() => setActivePrebuilt(null)}
+                            isLibraryOpen={isLibraryOpen}
+                        />
+                    )}
                 </div>
                 <NeuralHandbook
                     isOpen={isLibraryOpen}

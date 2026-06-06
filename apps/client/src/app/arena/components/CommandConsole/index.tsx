@@ -9,6 +9,8 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
     socket, robotId, availableRobots, onRobotChange, isMobile, mobileSheet,
     onDeployDone, onInsertAndSwitch, consumeSnippet, snippetVersion,
     isZenMode: isZenModeProp, setIsZenMode: setIsZenModeProp,
+    isClassicMode = false, classicTokensLeft = 0, classicMaxTokens,
+    onClassicEdit, initialScript,
 }) => {
     const consoleState = useConsole(socket, robotId);
     const [isZenModeLocal, setIsZenModeLocal] = useState(false);
@@ -18,6 +20,12 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
     const [hubTab, setHubTab] = useState<'controls' | 'bots' | 'handbook' | 'generate'>('controls');
 
     const lastSnippetVersion = useRef(snippetVersion ?? 0);
+    useEffect(() => {
+        if (initialScript && consoleState.scriptInput.length === 0) {
+            consoleState.setScriptInput(initialScript);
+        }
+    }, [initialScript, consoleState.scriptInput, consoleState.setScriptInput]);
+
     useEffect(() => {
         if (mobileSheet === 'script' && consumeSnippet && snippetVersion !== undefined && snippetVersion > lastSnippetVersion.current) {
             lastSnippetVersion.current = snippetVersion;
@@ -31,10 +39,10 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
     }
 
     if (isMobile && mobileSheet === 'script') {
-        return <MobileScriptSheet scriptInput={consoleState.scriptInput} setScriptInput={consoleState.setScriptInput} handleDeployBrain={consoleState.handleDeployBrain} onDeployDone={onDeployDone} />;
+        return <MobileScriptSheet scriptInput={consoleState.scriptInput} setScriptInput={consoleState.setScriptInput} handleDeployBrain={consoleState.handleDeployBrain} onDeployDone={onDeployDone} isClassicMode={isClassicMode} classicTokensLeft={classicTokensLeft} classicMaxTokens={classicMaxTokens} onClassicEdit={onClassicEdit} />;
     }
 
-    return <DesktopConsole isMobile={isMobile} isZenMode={isZenMode} setIsZenMode={setIsZenMode} commandInput={consoleState.commandInput} setCommandInput={consoleState.setCommandInput} handleCommandSubmit={consoleState.handleCommandSubmit} output={consoleState.output} isLogsOpen={isLogsOpen} setIsLogsOpen={setIsLogsOpen} availableRobots={availableRobots} robotId={robotId} onRobotChange={onRobotChange} scriptInput={consoleState.scriptInput} setScriptInput={consoleState.setScriptInput} handleDeployBrain={consoleState.handleDeployBrain} isLibraryOpen={consoleState.isLibraryOpen} setIsLibraryOpen={consoleState.setIsLibraryOpen} setActivePrebuilt={consoleState.setActivePrebuilt} appendScriptLine={consoleState.appendScriptLine} />;
+    return <DesktopConsole isMobile={isMobile} isZenMode={isZenMode} setIsZenMode={setIsZenMode} commandInput={consoleState.commandInput} setCommandInput={consoleState.setCommandInput} handleCommandSubmit={consoleState.handleCommandSubmit} output={consoleState.output} isLogsOpen={isLogsOpen} setIsLogsOpen={setIsLogsOpen} availableRobots={availableRobots} robotId={robotId} onRobotChange={onRobotChange} scriptInput={consoleState.scriptInput} setScriptInput={consoleState.setScriptInput} handleDeployBrain={consoleState.handleDeployBrain} isLibraryOpen={consoleState.isLibraryOpen} setIsLibraryOpen={consoleState.setIsLibraryOpen} setActivePrebuilt={consoleState.setActivePrebuilt} appendScriptLine={consoleState.appendScriptLine} isClassicMode={isClassicMode} classicTokensLeft={classicTokensLeft} classicMaxTokens={classicMaxTokens} onClassicEdit={onClassicEdit} />;
 };
 
 export const CommandConsole = memo(CommandConsoleComponent);

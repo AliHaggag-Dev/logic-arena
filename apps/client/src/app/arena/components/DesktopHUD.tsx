@@ -24,6 +24,11 @@ interface DesktopHUDProps {
   isMobile: boolean;
   isConnected: boolean;
   isPvP?: boolean;
+  isClassicMode?: boolean;
+  classicTokensLeft?: number;
+  classicMaxTokens?: number;
+  onClassicEdit?: (script: string, tokensLeft: number) => void;
+  initialScript?: string;
 }
 
 export function DesktopHUD({
@@ -41,6 +46,11 @@ export function DesktopHUD({
   isMobile,
   isConnected,
   isPvP = false,
+  isClassicMode = false,
+  classicTokensLeft = 0,
+  classicMaxTokens,
+  onClassicEdit,
+  initialScript,
 }: DesktopHUDProps) {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [lockVision, setLockVision] = useState(false);
@@ -231,6 +241,11 @@ export function DesktopHUD({
             isMobile={isMobile}
             isZenMode={isZenMode}
             setIsZenMode={setIsZenMode}
+            isClassicMode={isClassicMode}
+            classicTokensLeft={classicTokensLeft}
+            classicMaxTokens={classicMaxTokens}
+            onClassicEdit={onClassicEdit}
+            initialScript={initialScript}
           />
         </div>
       </div>

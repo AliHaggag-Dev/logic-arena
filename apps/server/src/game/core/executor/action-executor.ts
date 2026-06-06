@@ -29,6 +29,10 @@ export class ActionExecutor {
   private movementExecutor: MovementExecutor;
   private combatExecutor: CombatExecutor;
   private scanExecutor: ScanExecutor;
+  private predictedFirePayloads = new Map<
+    string,
+    { predictedPosition: { x: number; y: number } }
+  >();
 
   /** Per-tick ordered action buffer: robotId → commands in execution order. */
   private tickActionBuffer: Map<string, string[]> = new Map();
@@ -46,6 +50,11 @@ export class ActionExecutor {
       gameLoop,
       this.cooldowns,
       energyManager,
+      (predictedRobotId, predictedPosition) => {
+        this.predictedFirePayloads.set(predictedRobotId, {
+          predictedPosition,
+        });
+      },
     );
     this.scanExecutor = new ScanExecutor(gameLoop);
   }
@@ -122,7 +131,9 @@ export class ActionExecutor {
     }
 
     const isCombatCommand =
-      actionCommand === 'FIRE' || actionCommand === 'BURST_FIRE';
+      actionCommand === 'FIRE' ||
+      actionCommand === 'LEAD_FIRE' ||
+      actionCommand === 'BURST_FIRE';
 
     if (!isCombatCommand) {
       const allowed = this.energyManager.deduct(robot, actionCommand);
@@ -149,6 +160,7 @@ export class ActionExecutor {
     // --- Dispatch ---
     switch (actionCommand) {
       case 'FIRE':
+      case 'LEAD_FIRE':
       case 'BURST_FIRE':
         this.combatExecutor.execute(robotId, actionCommand);
         break;
@@ -379,9 +391,18 @@ export class ActionExecutor {
 
   private internalEmit(robotId: string, actionCommand: string): void {
     if (this.onEvent) {
+      const predictedPayload =
+        actionCommand === 'LEAD_FIRE'
+          ? this.predictedFirePayloads.get(robotId)
+          : undefined;
+      if (actionCommand === 'LEAD_FIRE') {
+        this.predictedFirePayloads.delete(robotId);
+      }
       this.onEvent('logicExecuted', {
         robotId,
         action: actionCommand,
+        isPredicted: actionCommand === 'LEAD_FIRE',
+        predictedPosition: predictedPayload?.predictedPosition,
         message: `Logic Triggered: ${actionCommand}`,
       });
     }

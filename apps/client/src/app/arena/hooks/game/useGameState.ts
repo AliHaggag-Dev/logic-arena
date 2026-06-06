@@ -10,6 +10,14 @@ import { getAuthUserId } from '../../../../lib/client-security';
 import { useSocket } from './useSocket';
 import { useSpeechBubbles } from './useSpeechBubbles';
 
+export interface MatchPhaseState {
+  phase: 'WAITING' | 'ROUND_ACTIVE' | 'BREAK' | 'FINISHED';
+  roundNumber: number;
+  timeLeft: number;
+  scripts: { userId: string; script: string }[];
+  readyUserIds: string[];
+}
+
 export const useGameState = (
   scriptId: string | null,
   mode: string | null,
@@ -42,6 +50,13 @@ export const useGameState = (
     playerStats?: Record<string, { eloDelta: number; newStats: any; durationSecs: number; rank: number }>;
   } | null>(null);
   const [serverConfirmedMode, setServerConfirmedMode] = useState<string>(mode || 'COMBAT');
+  const [matchPhase, setMatchPhase] = useState<MatchPhaseState>({
+    phase: 'ROUND_ACTIVE',
+    roundNumber: 1,
+    timeLeft: 0,
+    scripts: [],
+    readyUserIds: [],
+  });
 
   // Spectator viewer count — updated by server spectatorCount events
   const [spectatorCount, setSpectatorCount] = useState<number>(0);
@@ -73,8 +88,15 @@ export const useGameState = (
       }
     };
 
-    const handleMatchJoinedInfo = (data: { mode: string }) => {
+    const handleMatchJoinedInfo = (data: { mode: string; phase?: MatchPhaseState['phase']; roundNumber?: number }) => {
       setServerConfirmedMode(data.mode);
+      if (data.phase) {
+        setMatchPhase((prev) => ({
+          ...prev,
+          phase: data.phase ?? prev.phase,
+          roundNumber: data.roundNumber ?? prev.roundNumber,
+        }));
+      }
     };
 
     const handleAuthenticated = (data: { userId?: string; isGuest?: boolean }) => {
@@ -178,10 +200,10 @@ export const useGameState = (
       setTrainingStats(prev => ({ ...prev, dummiesDestroyed: prev.dummiesDestroyed + 1 }));
     };
 
-    const handleLogicExecuted = (data: { robotId: string; action: string; message?: string }) => {
+    const handleLogicExecuted = (data: { robotId: string; action: string; message?: string; isPredicted?: boolean; predictedPosition?: { x: number; y: number } }) => {
       const activeUserId = getAuthUserId() || socketUserId;
 
-      if (data.action === 'FIRE') {
+      if (data.action === 'FIRE' || data.action === 'LEAD_FIRE') {
         if (data.robotId === activeUserId) {
           setTrainingStats(prev => ({ ...prev, shotsFired: prev.shotsFired + 1 }));
         }
@@ -189,7 +211,12 @@ export const useGameState = (
         const currentState = gameStateRef.current;
         const targetRobot = currentState.robots.find(r => r.id !== data.robotId);
         if (targetRobot) {
-          setFiredTracer({ robotId: data.robotId, targetPosition: targetRobot.position });
+          setFiredTracer({
+            robotId: data.robotId,
+            targetPosition: targetRobot.position,
+            isPredicted: data.isPredicted ?? false,
+            predictedPosition: data.predictedPosition,
+          });
           if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
           tracerTimeoutRef.current = window.setTimeout(() => setFiredTracer(null), 100);
         }
@@ -216,6 +243,35 @@ export const useGameState = (
       });
     };
 
+    const handlePhaseChanged = (data: { phase: MatchPhaseState['phase']; roundNumber: number; timeLeft: number }) => {
+      setMatchPhase((prev) => ({
+        ...prev,
+        phase: data.phase,
+        roundNumber: data.roundNumber,
+        timeLeft: data.timeLeft,
+        readyUserIds: data.phase === 'BREAK' ? prev.readyUserIds : [],
+      }));
+    };
+
+    const handleBreakStarted = (data: { scripts: MatchPhaseState['scripts']; timeLeft: number }) => {
+      setMatchPhase((prev) => ({
+        ...prev,
+        phase: 'BREAK',
+        timeLeft: data.timeLeft,
+        scripts: data.scripts,
+        readyUserIds: [],
+      }));
+    };
+
+    const handlePlayerReady = (data: { userId: string }) => {
+      setMatchPhase((prev) => ({
+        ...prev,
+        readyUserIds: prev.readyUserIds.includes(data.userId)
+          ? prev.readyUserIds
+          : [...prev.readyUserIds, data.userId],
+      }));
+    };
+
     // Register listeners
     socket.on('connect', handleConnect);
     socket.on('authenticated', handleAuthenticated);
@@ -226,6 +282,9 @@ export const useGameState = (
     socket.on('matchJoinedInfo', handleMatchJoinedInfo);
     socket.on('queryResult', handleQueryResult);
     socket.on('dummyKilled', handleDummyKilled);
+    socket.on('match:phase-changed', handlePhaseChanged);
+    socket.on('match:break-started', handleBreakStarted);
+    socket.on('match:player-ready', handlePlayerReady);
     socket.on('spectatorCount', (count: number) => setSpectatorCount(count));
 
     if (socket.connected) {
@@ -244,6 +303,9 @@ export const useGameState = (
       socket.off('matchJoinedInfo', handleMatchJoinedInfo);
       socket.off('queryResult', handleQueryResult);
       socket.off('dummyKilled', handleDummyKilled);
+      socket.off('match:phase-changed', handlePhaseChanged);
+      socket.off('match:break-started', handleBreakStarted);
+      socket.off('match:player-ready', handlePlayerReady);
       socket.off('spectatorCount');
       socket.disconnect();
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
@@ -265,6 +327,7 @@ export const useGameState = (
     socket,
     matchResult,
     serverConfirmedMode,
+    matchPhase,
     trainingStats,
     // FOG toggle
     fogEnabled,

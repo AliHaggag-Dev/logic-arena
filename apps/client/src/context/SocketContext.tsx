@@ -2,8 +2,11 @@
 
 import { createContext, useContext } from 'react';
 
+export type MatchMode = 'CLASSIC' | 'TACTICAL';
+export type ChallengeSource = 'friend' | 'leaderboard' | 'profile';
+
 interface SocketContextType {
-  sendChallenge: (targetUserId: string, source?: 'friend' | 'leaderboard' | 'profile') => void;
+  sendChallenge: (targetUserId: string, source?: ChallengeSource, mode?: MatchMode) => void;
   sendFriendRequest: (receiverUsername: string, message?: string) => void;
   acceptFriendRequest: (requestId: string) => void;
   declineFriendRequest: (requestId: string) => void;

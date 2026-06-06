@@ -14,4 +14,9 @@ export interface CommandConsoleProps {
     onInsertAndSwitch?: (snippet: string) => void;
     consumeSnippet?: () => string | null;
     snippetVersion?: number;
+    isClassicMode?: boolean;
+    classicTokensLeft?: number;
+    classicMaxTokens?: number;
+    onClassicEdit?: (script: string, tokensLeft: number) => void;
+    initialScript?: string;
 }

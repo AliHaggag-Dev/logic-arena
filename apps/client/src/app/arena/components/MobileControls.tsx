@@ -13,6 +13,11 @@ interface MobileControlsProps {
   availableRobots: string[];
   setSelectedRobotId: (id: string) => void;
   isMobile: boolean;
+  isClassicMode?: boolean;
+  classicTokensLeft?: number;
+  classicMaxTokens?: number;
+  onClassicEdit?: (script: string, tokensLeft: number) => void;
+  initialScript?: string;
 }
 
 export function MobileControls({
@@ -21,6 +26,11 @@ export function MobileControls({
   availableRobots,
   setSelectedRobotId,
   isMobile,
+  isClassicMode = false,
+  classicTokensLeft = 0,
+  classicMaxTokens,
+  onClassicEdit,
+  initialScript,
 }: MobileControlsProps) {
   const [activeSheet, setActiveSheet] = useState<'controls' | 'script' | null>(null);
   // Snippet bridge: HUB inserts code → stored here → ZEN_CORE picks it up
@@ -110,6 +120,11 @@ export function MobileControls({
           onDeployDone={() => setActiveSheet(null)}
           consumeSnippet={consumeSnippet}
           snippetVersion={snippetVersion}
+          isClassicMode={isClassicMode}
+          classicTokensLeft={classicTokensLeft}
+          classicMaxTokens={classicMaxTokens}
+          onClassicEdit={onClassicEdit}
+          initialScript={initialScript}
         />
       </BottomSheet>
 
@@ -128,6 +143,7 @@ export function MobileControls({
           onInsertAndSwitch={handleInsertAndSwitch}
           isMobile={isMobile}
           mobileSheet="controls"
+          initialScript={initialScript}
         />
       </BottomSheet>
     </>

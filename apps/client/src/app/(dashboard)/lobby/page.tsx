@@ -3,29 +3,33 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LobbyMatchCard } from "./components/LobbyMatchCard";
+import type { LobbyMatch } from "./components/LobbyMatchCard";
 import { LobbySkeleton } from "./components/LobbySkeleton";
 import { NoScriptModal } from "./components/NoScriptModal";
 import { ConnectionStatusBar } from "./components/ConnectionStatusBar";
 import { ErrorPanel } from "./components/ErrorPanel";
+import { MatchModeSelector } from "./components/MatchModeSelector";
 import { useLobbySocket } from "./hooks/useLobbySocket";
 import { useDeployMatch } from "./hooks/useDeployMatch";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useAuthState } from "../../../hooks/useAuthState";
 import { getSelectedScriptId } from "../../../lib/client-security";
+import type { MatchMode } from "../../../context/SocketContext";
 
 export default function LobbyPage() {
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [showScriptWarning, setShowScriptWarning] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<MatchMode>("CLASSIC");
   const { isGuest } = useAuthState();
 
-  const { matches, connectionStatus, setRetryKey, socket } = useLobbySocket();
-  const { handleDeployMatch } = useDeployMatch({ socket, onNoScript: () => setShowScriptWarning(true) });
+  const { matches, connectionStatus, setRetryKey, socket } = useLobbySocket(selectedMode);
+  const { handleDeployMatch } = useDeployMatch({ socket, mode: selectedMode, onNoScript: () => setShowScriptWarning(true) });
 
-  const handleJoinMatch = (matchId: string) => {
+  const handleJoinMatch = (match: LobbyMatch) => {
     if (isGuest) return;
     const scriptId = getSelectedScriptId();
-    if (scriptId) router.push(`/arena?scriptId=${scriptId}&matchId=${matchId}`);
+    if (scriptId) router.push(`/arena?scriptId=${scriptId}&matchId=${match.matchId}&mode=${match.mode ?? "CLASSIC"}`);
     else setShowScriptWarning(true);
   };
 
@@ -40,16 +44,19 @@ export default function LobbyPage() {
           </h1>
           <ConnectionStatusBar connectionStatus={connectionStatus} isMobile={false} />
         </div>
-        <button
-          type="button"
-          onClick={handleDeployMatch}
-          disabled={isGuest}
-          className={`px-7 py-3 rounded-md text-[10px] font-black tracking-[0.25em] font-mono transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed 
-          bg-accent/10 border border-accent/30 text-accent/70 hover:bg-accent/20 hover:border-accent/70 hover:text-accent hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.2)]
-          ${isGuest ? 'text-accent/40 cursor-not-allowed' : 'cursor-pointer'}`}
-        >
-          {isGuest ? "LOGIN TO DEPLOY" : "[+] CREATE MATCH"}
-        </button>
+        <div className="flex flex-col items-stretch gap-4">
+          <MatchModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} isMobile={false} />
+          <button
+            type="button"
+            onClick={handleDeployMatch}
+            disabled={isGuest}
+            className={`px-7 py-3 rounded-md text-[10px] font-black tracking-[0.25em] font-mono transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed 
+            bg-accent/10 border border-accent/30 text-accent/70 hover:bg-accent/20 hover:border-accent/70 hover:text-accent hover:shadow-[0_0_20px_rgba(var(--accent-rgb),0.2)]
+            ${isGuest ? 'text-accent/40 cursor-not-allowed' : 'cursor-pointer'}`}
+          >
+            {isGuest ? "LOGIN TO DEPLOY" : "[+] CREATE MATCH"}
+          </button>
+        </div>
       </div>
       <div className="flex flex-col gap-4">
         {connectionStatus === "connecting" ? <LobbySkeleton /> : connectionStatus === "error" ? <ErrorPanel onRetry={() => setRetryKey((k) => k + 1)} /> : matches.length === 0 ? (
@@ -68,6 +75,9 @@ export default function LobbyPage() {
         <p className="text-[9px] tracking-[0.4em] text-accent/70 mb-1.5 uppercase">// LIVE</p>
         <h1 className="m-0 text-2xl font-black tracking-[0.2em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] leading-tight">LOBBY</h1>
         <ConnectionStatusBar connectionStatus={connectionStatus} isMobile={true} />
+        <div className="mt-5">
+          <MatchModeSelector selectedMode={selectedMode} onSelectMode={setSelectedMode} isMobile={true} />
+        </div>
         <button type="button" disabled={isGuest} onClick={handleDeployMatch} className="mt-5 w-full h-[44px] rounded-lg text-[10px] font-black tracking-[0.25em] font-mono transition-transform active:scale-95 bg-accent/10 border border-accent/40 text-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
           {isGuest ? "LOGIN TO CREATE MATCH" : "[+] CREATE MATCH"}
         </button>

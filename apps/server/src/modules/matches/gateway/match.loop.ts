@@ -8,6 +8,9 @@ import { persistMatchResults } from './match.persistence';
 import { computeDeltaDiff, generateSafeSnapshot } from './match.delta-diff';
 import { AchievementsService } from '../../achievements/achievements.service';
 
+const ROUND_START_COUNTDOWN_SECONDS = 3;
+const SECONDS_PER_MS = 1000;
+
 export class MatchLoopManager {
   private timer: NodeJS.Timeout | null = null;
 
@@ -24,6 +27,9 @@ export class MatchLoopManager {
 
     this.timer = setInterval(async () => {
       for (const [matchId, match] of this.state.matches.entries()) {
+        this.advanceMatchPhase(matchId, match);
+        if (this.state.matchPhases.get(matchId) === 'BREAK') continue;
+
         const state = match.getState();
 
         // 1. Snapshot capture
@@ -65,6 +71,7 @@ export class MatchLoopManager {
           });
 
           match.stop();
+          this.state.matchPhases.set(matchId, 'FINISHED');
           this.state.cleanupMatch(matchId);
           continue;
         }
@@ -119,5 +126,111 @@ export class MatchLoopManager {
       clearInterval(this.timer);
       this.timer = null;
     }
+  }
+
+  submitReady(matchId: string, userId: string, script: string): void {
+    const match = this.state.matches.get(matchId);
+    if (!match || this.state.matchPhases.get(matchId) !== 'BREAK') return;
+
+    const submissions =
+      this.state.readySubmissions.get(matchId) ?? new Map();
+    submissions.set(userId, { userId, script });
+    this.state.readySubmissions.set(matchId, submissions);
+
+    match.updateInitialPlayer(userId, script);
+    this.server.to(matchId).emit('match:player-ready', { userId });
+
+    const playerIds = match
+      .getInitialPlayers()
+      .map((player) => player.id)
+      .filter((id) => !id.startsWith('bot-') && !id.startsWith('dummy-'));
+    const allReady =
+      playerIds.length > 0 && playerIds.every((id) => submissions.has(id));
+    if (allReady) {
+      this.startNextRound(matchId, match);
+    }
+  }
+
+  private advanceMatchPhase(matchId: string, match: import('../match.engine').MatchEngine): void {
+    if (this.state.arenaMatchModes.get(matchId) !== 'TACTICAL') return;
+
+    const phase = this.state.matchPhases.get(matchId) ?? 'ROUND_ACTIVE';
+    if (phase === 'FINISHED' || phase === 'WAITING') return;
+
+    if (phase === 'BREAK') {
+      const endsAt = this.state.phaseEndsAt.get(matchId) ?? 0;
+      if (Date.now() >= endsAt) {
+        this.startNextRound(matchId, match);
+      }
+      return;
+    }
+
+    const state = match.getState();
+    const roundNumber = this.state.roundNumbers.get(matchId) ?? 1;
+    const config = this.state.roundConfigs.get(matchId);
+    if (!config) return;
+
+    const roundTimeExpired = Date.now() >= (this.state.phaseEndsAt.get(matchId) ?? Infinity);
+    const healthTriggered =
+      roundNumber === 1 &&
+      state.robots.some(
+        (robot) =>
+          !robot.id.startsWith('bot-') &&
+          !robot.id.startsWith('dummy-') &&
+          robot.health <= config.healthTrigger,
+      );
+
+    if (roundNumber < config.durations.length && (roundTimeExpired || healthTriggered)) {
+      this.startBreak(matchId, match);
+    }
+  }
+
+  private startBreak(matchId: string, match: import('../match.engine').MatchEngine): void {
+    const config = this.state.roundConfigs.get(matchId);
+    if (!config) return;
+
+    match.stop();
+    this.state.matchPhases.set(matchId, 'BREAK');
+    this.state.phaseEndsAt.set(matchId, Date.now() + config.breakDuration * SECONDS_PER_MS);
+    this.state.readySubmissions.set(matchId, new Map());
+
+    const roundNumber = this.state.roundNumbers.get(matchId) ?? 1;
+    const scripts = match.getInitialPlayers().map((player) => ({
+      userId: player.id,
+      script: player.script,
+    }));
+    this.server.to(matchId).emit('match:break-started', {
+      scripts,
+      timeLeft: config.breakDuration,
+    });
+    this.server.to(matchId).emit('match:phase-changed', {
+      phase: 'BREAK',
+      roundNumber,
+      timeLeft: config.breakDuration,
+    });
+  }
+
+  private startNextRound(matchId: string, match: import('../match.engine').MatchEngine): void {
+    const config = this.state.roundConfigs.get(matchId);
+    if (!config) return;
+
+    const nextRound = (this.state.roundNumbers.get(matchId) ?? 1) + 1;
+    this.state.roundNumbers.set(matchId, nextRound);
+    this.state.matchPhases.set(matchId, 'ROUND_ACTIVE');
+    this.state.phaseEndsAt.set(
+      matchId,
+      Date.now() + config.durations[nextRound - 1] * SECONDS_PER_MS,
+    );
+    this.state.readySubmissions.delete(matchId);
+
+    this.server.to(matchId).emit('match:round-starting', {
+      countdown: ROUND_START_COUNTDOWN_SECONDS,
+    });
+    this.server.to(matchId).emit('match:phase-changed', {
+      phase: 'ROUND_ACTIVE',
+      roundNumber: nextRound,
+      timeLeft: config.durations[nextRound - 1],
+    });
+    match.start();
   }
 }

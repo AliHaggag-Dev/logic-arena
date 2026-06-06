@@ -4,6 +4,8 @@ import { CooldownManager } from './cooldown-manager';
 const FIRE_DAMAGE = 25; // HP per FIRE hit
 const BURST_DAMAGE = 8; // HP per BURST_FIRE shot (3 shots × 8 = 24 total)
 const BURST_COUNT = 3;
+const PROJECTILE_SPEED = 400;
+const PROJECTILE_RANGE = 600;
 const BURST_SPREAD_RAD = (8 * Math.PI) / 180; // 8° between shots
 
 export class CombatExecutor {
@@ -11,6 +13,10 @@ export class CombatExecutor {
     private gameLoop: GameLoop,
     private cooldowns: CooldownManager,
     private energyManager: EnergyManager,
+    private onPredictedFire?: (
+      robotId: string,
+      predictedPosition: { x: number; y: number },
+    ) => void,
   ) {}
 
   execute(robotId: string, actionCommand: string): void {
@@ -37,11 +43,18 @@ export class CombatExecutor {
 
     this.cooldowns.markFired(robotId);
 
-    if (actionCommand === 'FIRE') {
+    if (actionCommand === 'FIRE' || actionCommand === 'LEAD_FIRE') {
+      const targetPosition =
+        actionCommand === 'LEAD_FIRE'
+          ? this.calculateLeadPoint(robot, targetRobot, PROJECTILE_SPEED)
+          : targetRobot.position;
+      if (actionCommand === 'LEAD_FIRE') {
+        this.onPredictedFire?.(robotId, targetPosition);
+      }
       this.gameLoop.spawnProjectile(
         robotId,
         { ...robot.position },
-        { x: targetRobot.position.x, y: targetRobot.position.y },
+        { x: targetPosition.x, y: targetPosition.y },
         robot.tracerColor,
       );
       if (!targetRobot.isShielded) {
@@ -57,8 +70,6 @@ export class CombatExecutor {
         targetRobot.position.y - robot.position.y,
         targetRobot.position.x - robot.position.x,
       );
-      const PROJECTILE_RANGE = 600; // arena units — well beyond arena bounds
-
       for (let i = 0; i < BURST_COUNT; i++) {
         // Shot offsets: -8°, 0°, +8° (centred burst)
         const spreadOffset =
@@ -81,5 +92,22 @@ export class CombatExecutor {
         }
       }
     }
+  }
+
+  private calculateLeadPoint(
+    robot: { position: { x: number; y: number } },
+    targetRobot: {
+      position: { x: number; y: number };
+      velocity?: { x: number; y: number };
+    },
+    projectileSpeed: number,
+  ): { x: number; y: number } {
+    const dx = targetRobot.position.x - robot.position.x;
+    const dy = targetRobot.position.y - robot.position.y;
+    const travelTime = Math.hypot(dx, dy) / projectileSpeed;
+    return {
+      x: targetRobot.position.x + (targetRobot.velocity?.x ?? 0) * travelTime,
+      y: targetRobot.position.y + (targetRobot.velocity?.y ?? 0) * travelTime,
+    };
   }
 }

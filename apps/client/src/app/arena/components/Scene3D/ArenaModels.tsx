@@ -239,7 +239,11 @@ export const ArenaModels = ({
       {firedTracer && robots.map(robot => {
         if (robot.id !== firedTracer.robotId) return null;
         const start: [number, number, number] = [toSceneX(robot.position.x), 0.375, toSceneZ(robot.position.y)];
-        const end: [number, number, number] = [toSceneX(firedTracer.targetPosition.x), 0.375, toSceneZ(firedTracer.targetPosition.y)];
+        const tracerTarget =
+          firedTracer.isPredicted && firedTracer.predictedPosition
+            ? firedTracer.predictedPosition
+            : firedTracer.targetPosition;
+        const end: [number, number, number] = [toSceneX(tracerTarget.x), 0.375, toSceneZ(tracerTarget.y)];
         return <LaserBeam key={`tracer-${robot.id}`} start={start} end={end} color={robot.color} />;
       })}
 

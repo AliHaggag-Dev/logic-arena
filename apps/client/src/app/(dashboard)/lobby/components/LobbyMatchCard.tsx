@@ -2,18 +2,20 @@ import React, { useState } from "react";
 import { useMediaQuery } from "../../../../hooks/useMediaQuery";
 import { UserLink } from "../../../../components/ui/UserLink";
 import { Lock } from "lucide-react";
+import type { MatchMode } from "../../../../context/SocketContext";
 
 export interface LobbyMatch {
   hostId: string;
   hostName: string;
   matchId: string;
   createdAt: number;
+  mode?: MatchMode;
 }
 
 interface Props {
   match: LobbyMatch;
   index: number;
-  onJoin: (matchId: string) => void;
+  onJoin: (match: LobbyMatch) => void;
   isGuest?: boolean;
 }
 
@@ -35,13 +37,14 @@ export const LobbyMatchCard = React.memo(function LobbyMatchCard({ match, index,
         </h3>
         <p className="text-[10px] text-accent/70 tracking-[0.18em] uppercase mt-2">
           ID: {match.matchId} <span className="opacity-50 mx-2">|</span> DETECTED: {new Date(match.createdAt).toLocaleTimeString()}
+          <span className="opacity-50 mx-2">|</span> MODE: {match.mode ?? "CLASSIC"}
         </p>
       </div>
 
       <button
         type="button"
         aria-label="Join match"
-        onClick={() => onJoin(match.matchId)}
+        onClick={() => onJoin(match)}
         disabled={isGuest}
         className="px-8 py-2.5 rounded-md text-[10px] font-black tracking-[0.18em] font-mono transition-all duration-200 border disabled:opacity-50 disabled:cursor-not-allowed bg-accent/5 border-accent/30 text-accent/70 hover:bg-accent/20 hover:border-accent/70 hover:text-accent hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.25)]"
       >
@@ -66,13 +69,14 @@ export const LobbyMatchCard = React.memo(function LobbyMatchCard({ match, index,
           <span>ID: </span>
           <span className="truncate flex-1 max-w-[80px]">{match.matchId}</span>
           <span className="opacity-50 mx-1">|</span> {new Date(match.createdAt).toLocaleTimeString()}
+          <span className="opacity-50 mx-1">|</span> {match.mode ?? "CLASSIC"}
         </div>
       </div>
       <div className="w-full mt-1 border-t border-accent/10 pt-3 pb-3">
         <button
           type="button"
           aria-label="Join match"
-          onClick={() => onJoin(match.matchId)}
+          onClick={() => onJoin(match)}
           disabled={isGuest}
           className="w-full h-[44px] flex items-center justify-center bg-accent/10 border border-accent/40 text-accent font-black tracking-[0.2em] text-[10px] rounded-lg transition-transform active:scale-95 shadow-[0_0_8px_rgba(var(--accent-rgb),0.15)] uppercase disabled:opacity-50 disabled:cursor-not-allowed"
         >

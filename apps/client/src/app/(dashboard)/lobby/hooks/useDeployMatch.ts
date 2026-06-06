@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 import { getSelectedScriptId } from "../../../../lib/client-security";
+import type { MatchMode } from "../../../../context/SocketContext";
 
 const DEPLOY_TIMEOUT_MS = 10000;
 
 interface UseDeployMatchOptions {
   socket: Socket;
+  mode: MatchMode;
   onNoScript: () => void;
 }
 
@@ -16,7 +18,7 @@ export interface UseDeployMatchReturn {
   deploying: boolean;
 }
 
-export function useDeployMatch({ socket, onNoScript }: UseDeployMatchOptions): UseDeployMatchReturn {
+export function useDeployMatch({ socket, mode, onNoScript }: UseDeployMatchOptions): UseDeployMatchReturn {
   const [deploying, setDeploying] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -48,13 +50,13 @@ export function useDeployMatch({ socket, onNoScript }: UseDeployMatchOptions): U
       return;
     }
     setDeploying(true);
-    socket.emit("createMatch", { scriptId, hostName: "Player" });
+    socket.emit("createMatch", { scriptId, hostName: "Player", mode });
 
     timeoutRef.current = setTimeout(() => {
       setDeploying(false);
       alert("Match creation timed out. Please try again.");
     }, DEPLOY_TIMEOUT_MS);
-  }, [socket, onNoScript]);
+  }, [socket, mode, onNoScript]);
 
   return { handleDeployMatch, deploying };
 }

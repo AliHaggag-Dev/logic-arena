@@ -81,6 +81,8 @@ export async function createAndStartMatch(
   mode: GameMode,
   mapTheme: MapTheme = 'CYBER',
 ): Promise<MatchEngine> {
+  const engineMode: GameMode =
+    mode === 'CLASSIC' || mode === 'TACTICAL' ? 'COMBAT' : mode;
   let initialPlayers: {
     id: string;
     script: string;
@@ -91,18 +93,18 @@ export async function createAndStartMatch(
     initialFovDirection?: number;
   }[];
 
-  if (mode === 'RACING') {
+  if (engineMode === 'RACING') {
     initialPlayers = [playerToken];
-  } else if (mode === 'TRAINING_SOLO') {
+  } else if (engineMode === 'TRAINING_SOLO') {
     initialPlayers = [
       playerToken,
       { id: 'dummy-1', script: '', color: '#ef4444', model: 'dummy' },
       { id: 'dummy-2', script: '', color: '#eab308', model: 'dummy' },
       { id: 'dummy-3', script: '', color: '#3b82f6', model: 'dummy' },
     ];
-  } else if (mode === 'SURVIVAL') {
+  } else if (engineMode === 'SURVIVAL') {
     initialPlayers = [playerToken];
-  } else if (mode === 'CAPTURE_THE_FLAG') {
+  } else if (engineMode === 'CAPTURE_THE_FLAG') {
     initialPlayers = [
       {
         ...playerToken,
@@ -129,13 +131,28 @@ export async function createAndStartMatch(
   const match = new MatchEngine(
     matchId,
     initialPlayers,
-    { mode, mapTheme, disableProjectiles: mode === 'RACING' },
+    { mode: engineMode, mapTheme, disableProjectiles: engineMode === 'RACING' },
     (event, payload) => {
       server.to(matchId).emit(event, payload);
     },
   );
   state.matches.set(matchId, match);
   state.matchModes.set(matchId, mode);
+  state.arenaMatchModes.set(
+    matchId,
+    mode === 'TACTICAL' ? 'TACTICAL' : 'CLASSIC',
+  );
+  state.matchPhases.set(matchId, 'ROUND_ACTIVE');
+  state.roundNumbers.set(matchId, 1);
+  if (mode === 'TACTICAL') {
+    const config = {
+      durations: [15, 30, 25],
+      breakDuration: 60,
+      healthTrigger: 50,
+    };
+    state.roundConfigs.set(matchId, config);
+    state.phaseEndsAt.set(matchId, Date.now() + config.durations[0] * 1000);
+  }
   state.matchStartTime.set(matchId, Date.now());
   match.start();
 

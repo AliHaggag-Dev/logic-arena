@@ -199,7 +199,7 @@ export class MatchGateway
   @SubscribeMessage('createMatch')
   async handleCreateMatch(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { scriptId: string },
+    @MessageBody() data: { scriptId: string; mode?: 'CLASSIC' | 'TACTICAL' },
   ) {
     return this.lobbyManager.handleCreateMatch(client, data);
   }
@@ -224,6 +224,26 @@ export class MatchGateway
     @MessageBody() data: { robotId: string; scriptContent: string },
   ) {
     return this.lobbyManager.handleUpdateLogic(client, data);
+  }
+  @SubscribeMessage('match:submit-ready')
+  handleSubmitReady(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { script: string },
+  ) {
+    if (!client.matchId || !client.userId) return;
+    this.loopManager.submitReady(client.matchId, client.userId, data.script);
+  }
+  @SubscribeMessage('match:classic-edit')
+  handleClassicEdit(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { script: string; tokensLeft: number },
+  ) {
+    if (!client.matchId || !client.userId) return;
+    if (typeof data.script !== 'string' || data.tokensLeft < 0) return;
+    const match = this.state.matches.get(client.matchId);
+    if (!match) return;
+    match.updateRobotScript(client.userId, data.script);
+    match.updateInitialPlayer(client.userId, data.script);
   }
   @SubscribeMessage('manualCommand')
   handleManualCommand(
@@ -272,7 +292,7 @@ export class MatchGateway
   @SubscribeMessage('send-challenge')
   async handleSendChallenge(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { targetUserId: string },
+    @MessageBody() data: { targetUserId: string; mode?: 'CLASSIC' | 'TACTICAL' },
   ) {
     return this.socialManager.handleSendChallenge(client, data);
   }

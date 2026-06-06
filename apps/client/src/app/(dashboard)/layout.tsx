@@ -16,6 +16,7 @@ import { FriendRequestModal } from "./friends/components/FriendRequestModal";
 import { PWAInstallPrompt } from "../../components/PWAInstallPrompt";
 import { _test_navigateFromNotification } from "./components/layout/components/NotificationDropdown";
 import type { NotificationEntry } from "@/lib/api/notifications.types";
+import type { ChallengeSource, MatchMode } from "@/context/SocketContext";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
@@ -46,8 +47,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   const socketValue = {
-    sendChallenge: (targetUserId: string, source?: 'friend' | 'leaderboard' | 'profile') =>
-      sendChallenge(targetUserId, source),
+    sendChallenge: (targetUserId: string, source?: ChallengeSource, mode?: MatchMode) =>
+      sendChallenge(targetUserId, source, mode),
     sendFriendRequest: () => {},
     acceptFriendRequest: () => {},
     declineFriendRequest: () => {},

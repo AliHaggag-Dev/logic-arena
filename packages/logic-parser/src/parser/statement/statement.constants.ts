@@ -11,5 +11,6 @@ export const ACTION_KEYWORDS = new Set([
     "MOVE_FAST",
     "BACKUP",
     "BURST_FIRE",
+    "LEAD_FIRE",
     "PATHFIND",
 ]);

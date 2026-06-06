@@ -5,6 +5,7 @@ import { API_BASE_URL } from '../lib/api-client';
 import { hasAuthSession } from '../lib/client-security';
 import type { FriendRequestEntry } from '../lib/api/friends.types';
 import type { NotificationEntry } from '../lib/api/notifications.types';
+import type { ChallengeSource, MatchMode } from '../context/SocketContext';
 
 export interface FriendRequestReceivedPayload {
   request: FriendRequestEntry;
@@ -39,10 +40,10 @@ export interface UserStatusUpdatePayload {
 }
 
 interface Handlers {
-  onChallengeReceived: (data: { challengerId: string; challengerName: string }) => void;
+  onChallengeReceived: (data: { challengerId: string; challengerName: string; mode?: MatchMode }) => void;
   onChallengeSent: () => void;
   onChallengeFailed: (reason: string) => void;
-  onChallengeAccepted: (matchId: string) => void;
+  onChallengeAccepted: (matchId: string, mode: MatchMode) => void;
   onFriendRequestReceived: (data: FriendRequestReceivedPayload) => void;
   onFriendRequestAccepted: (data: FriendRequestAcceptedPayload) => void;
   onFriendRequestDeclined: (data: FriendRequestDeclinedPayload) => void;
@@ -91,7 +92,7 @@ function getOrCreateManager(): SocketManager | null {
     router: null,
   };
 
-  socket.on('challenge-received', (data: { challengerId: string; challengerName: string }) => {
+  socket.on('challenge-received', (data: { challengerId: string; challengerName: string; mode?: MatchMode }) => {
     m.handlers.forEach((h) => h.onChallengeReceived?.(data));
   });
   socket.on('challenge-sent', () => {
@@ -100,9 +101,9 @@ function getOrCreateManager(): SocketManager | null {
   socket.on('challenge-failed', ({ reason }: { reason: string }) => {
     m.handlers.forEach((h) => h.onChallengeFailed?.(reason));
   });
-  socket.on('challenge-accepted', ({ matchId }: { matchId: string }) => {
-    m.handlers.forEach((h) => h.onChallengeAccepted?.(matchId));
-    m.router?.push(`/arena?matchId=${matchId}`);
+  socket.on('challenge-accepted', ({ matchId, mode = 'CLASSIC' }: { matchId: string; mode?: MatchMode }) => {
+    m.handlers.forEach((h) => h.onChallengeAccepted?.(matchId, mode));
+    m.router?.push(`/arena?matchId=${matchId}&mode=${mode}`);
   });
   socket.on('friend:request-received', (data: FriendRequestReceivedPayload) => {
     m.handlers.forEach((h) => h.onFriendRequestReceived?.(data));
@@ -162,7 +163,7 @@ export function useGlobalSocket(handlers: PartialHandlers) {
       onChallengeReceived: (data) => handlersRef.current.onChallengeReceived?.(data),
       onChallengeSent: () => handlersRef.current.onChallengeSent?.(),
       onChallengeFailed: (reason) => handlersRef.current.onChallengeFailed?.(reason),
-      onChallengeAccepted: (matchId) => handlersRef.current.onChallengeAccepted?.(matchId),
+      onChallengeAccepted: (matchId, mode) => handlersRef.current.onChallengeAccepted?.(matchId, mode),
       onFriendRequestReceived: (data) => handlersRef.current.onFriendRequestReceived?.(data),
       onFriendRequestAccepted: (data) => handlersRef.current.onFriendRequestAccepted?.(data),
       onFriendRequestDeclined: (data) => handlersRef.current.onFriendRequestDeclined?.(data),
@@ -186,8 +187,8 @@ export function useGlobalSocket(handlers: PartialHandlers) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const sendChallenge = useCallback((targetUserId: string, source?: 'friend' | 'leaderboard' | 'profile') => {
-    manager?.socket.emit('send-challenge', { targetUserId, source });
+  const sendChallenge = useCallback((targetUserId: string, source?: ChallengeSource, mode: MatchMode = 'CLASSIC') => {
+    manager?.socket.emit('send-challenge', { targetUserId, source, mode });
   }, []);
 
   const acceptChallenge = useCallback((challengerId: string) => {

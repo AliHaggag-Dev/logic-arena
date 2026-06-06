@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
 import { PrismaService } from '../../../common/prisma.service';
 import { RedisService } from '../../../common/redis.service';
-import { MatchState } from './match.state';
+import { MatchState, type ArenaMatchMode } from './match.state';
 import { AuthenticatedSocket } from './types';
 import { MatchEngine } from '../match.engine';
 import { GameMode, MapTheme } from '@logic-arena/engine';
@@ -15,6 +15,10 @@ const LOBBY_CACHE_KEY = 'lobby:matches';
 const LOBBY_CACHE_TTL = 120;
 export const LOBBY_ROOM = 'lobby:viewers';
 export const LEADERBOARD_ROOM = 'leaderboard:viewers';
+
+function toArenaMatchMode(mode?: GameMode): ArenaMatchMode {
+  return mode === 'TACTICAL' ? 'TACTICAL' : 'CLASSIC';
+}
 
 export class MatchLobbyManager {
   constructor(
@@ -60,7 +64,8 @@ export class MatchLobbyManager {
 
     let match = this.state.matches.get(data.matchId);
     const currentMode = this.state.matchModes.get(data.matchId);
-    const mode = data.mode || 'COMBAT';
+    const waitingMatch = this.state.lobbyMatches.get(data.matchId);
+    const mode = data.mode || waitingMatch?.mode || 'COMBAT';
     const currentTheme = match?.getState().mapTheme || 'CYBER';
     const requestedTheme = data.mapTheme || 'CYBER';
 
@@ -121,7 +126,11 @@ export class MatchLobbyManager {
 
     client.matchId = data.matchId;
     client.join(data.matchId);
-    client.emit('matchJoinedInfo', { mode });
+    client.emit('matchJoinedInfo', {
+      mode,
+      phase: this.state.matchPhases.get(data.matchId) ?? 'ROUND_ACTIVE',
+      roundNumber: this.state.roundNumbers.get(data.matchId) ?? 1,
+    });
     this.server
       .to(data.matchId)
       .emit('gameState', { type: 'full', state: match.getState() });
@@ -141,7 +150,7 @@ export class MatchLobbyManager {
 
   async handleCreateMatch(
     client: AuthenticatedSocket,
-    data: { scriptId: string },
+    data: { scriptId: string; mode?: GameMode },
   ) {
     if (!client.userId) return;
 
@@ -187,6 +196,7 @@ export class MatchLobbyManager {
       hostName: user?.username || 'Unknown Hacker',
       matchId,
       createdAt: Date.now(),
+      mode: toArenaMatchMode(data.mode),
     });
     client.emit('matchCreated', { matchId });
     await this.publishLobbySnapshot();

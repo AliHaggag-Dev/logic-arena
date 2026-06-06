@@ -633,6 +633,7 @@ export class MatchEngine {
     'BACKUP',
     'STOP',
     'FIRE',
+    'LEAD_FIRE',
     'BURST_FIRE',
     'SCAN',
   ]);

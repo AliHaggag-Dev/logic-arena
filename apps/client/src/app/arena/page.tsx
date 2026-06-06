@@ -21,6 +21,7 @@ import { ArenaStyles } from './components/ArenaStyles';
 import { TrainingHUD } from './components/TrainingMode/TrainingHUD';
 import { RacingHUD } from './components/TrainingMode/RacingHUD';
 import { SpectatorHUD } from './components/SpectatorHUD';
+import { BreakScreen } from './components/BreakScreen';
 
 const Scene3D = dynamic(
   () => import('./components/Scene3D').then(m => m.Scene3D),
@@ -36,6 +37,8 @@ const ROBOT_FILES: Record<string, string> = {
   'chassis-sandman': '/robots/sandman.glb',
 };
 
+const CLASSIC_TOKEN_BUDGET = 10;
+
 const ArenaPageContent = () => {
   const searchParams = useSearchParams();
   const urlScriptId = searchParams.get('scriptId');
@@ -49,6 +52,7 @@ const ArenaPageContent = () => {
   const [localRobotFile, setLocalRobotFile] = useState('/robots/robot.glb');
   const [localRobotColor, setLocalRobotColor] = useState('#22d3ee');
   const [graphicsQuality, setGraphicsQuality] = useState('medium');
+  const [classicTokensLeft, setClassicTokensLeft] = useState(CLASSIC_TOKEN_BUDGET);
   const { arenaSoundsEnabled } = useSoundContext();
 
   const {
@@ -59,10 +63,12 @@ const ArenaPageContent = () => {
     socketUserId,
     firedTracer, speechBubble,
     spectatorCount,
+    matchPhase,
     clearMatchResult,
   } = useGameState(isSpectator ? null : resolvedScriptId, urlMode, isSpectator);
 
   const displayMode = serverConfirmedMode;
+  const isClassicMode = displayMode === 'CLASSIC';
 
 
   const { profile, loading: authLoading } = useAuth();
@@ -112,6 +118,14 @@ const ArenaPageContent = () => {
   const matchId = searchParams.get('matchId') || 'default-match';
   const modeData = uiState?.modeData || gameStateRef.current?.modeData;
 
+  const handleClassicEdit = (nextScript: string, nextTokensLeft: number): void => {
+    setClassicTokensLeft(nextTokensLeft);
+    socket?.emit('match:classic-edit', {
+      script: nextScript,
+      tokensLeft: nextTokensLeft,
+    });
+  };
+
   const isPvP = availableRobots.length >= 2 && !availableRobots.some(id => id.toLowerCase().includes('bot') || id.toLowerCase().includes('dummy'));
 
   const filteredAvailableRobots = isPvP && activeUserId && availableRobots.includes(activeUserId)
@@ -157,6 +171,16 @@ const ArenaPageContent = () => {
           socket={socket}
           matchId={matchId}
           onRematchClient={clearMatchResult}
+        />
+      )}
+
+      {!isSpectator && displayMode === 'TACTICAL' && (
+        <BreakScreen
+          socket={socket}
+          phase={matchPhase}
+          robots={robots}
+          currentUserId={activeUserId}
+          fallbackScript={script?.content ?? ''}
         />
       )}
 
@@ -219,6 +243,11 @@ const ArenaPageContent = () => {
                 availableRobots={filteredAvailableRobots}
                 setSelectedRobotId={setSelectedRobotId}
                 isMobile={isMobile}
+                isClassicMode={isClassicMode}
+                classicTokensLeft={classicTokensLeft}
+                classicMaxTokens={CLASSIC_TOKEN_BUDGET}
+                onClassicEdit={handleClassicEdit}
+                initialScript={script?.content ?? ''}
               />
             </>
           ) : (
@@ -237,6 +266,11 @@ const ArenaPageContent = () => {
               projectiles={projectiles}
               isConnected={isConnected}
               isPvP={isPvP}
+              isClassicMode={isClassicMode}
+              classicTokensLeft={classicTokensLeft}
+              classicMaxTokens={CLASSIC_TOKEN_BUDGET}
+              onClassicEdit={handleClassicEdit}
+              initialScript={script?.content ?? ''}
             />
           )}
         </>

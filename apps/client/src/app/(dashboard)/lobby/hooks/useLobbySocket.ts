@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { LobbyMatch } from "../components/LobbyMatchCard";
 import { getSelectedScriptId, hasAuthSession } from "../../../../lib/client-security";
+import type { MatchMode } from "../../../../context/SocketContext";
 // Socket.IO connects to the server origin — strip the /api path suffix if present
 const SOCKET_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api").replace(/\/api$/, "");
 
@@ -18,7 +19,7 @@ export interface UseLobbySocketReturn {
   socket: Socket;
 }
 
-export function useLobbySocket(): UseLobbySocketReturn {
+export function useLobbySocket(selectedMode: MatchMode): UseLobbySocketReturn {
   const router = useRouter();
   const [matches, setMatches] = useState<LobbyMatch[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
@@ -69,7 +70,7 @@ export function useLobbySocket(): UseLobbySocketReturn {
 
     const onMatchCreated = (data: { matchId: string }) => {
       if (scriptIdRef.current) {
-        router.push(`/arena?scriptId=${scriptIdRef.current}&matchId=${data.matchId}`);
+        router.push(`/arena?scriptId=${scriptIdRef.current}&matchId=${data.matchId}&mode=${selectedMode}`);
       }
     };
 
@@ -87,7 +88,7 @@ export function useLobbySocket(): UseLobbySocketReturn {
       socket.off("lobbyUpdated", onLobbyUpdated);
       socket.off("matchCreated", onMatchCreated);
     };
-  }, [retryKey, router, socket]);
+  }, [retryKey, router, selectedMode, socket]);
 
   useEffect(() => {
     return () => {

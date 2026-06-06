@@ -117,6 +117,8 @@ export interface RobotErrorBoundaryState {
 export interface FiredTracer {
   robotId: string;
   targetPosition: Vec2;
+  isPredicted?: boolean;
+  predictedPosition?: Vec2;
 }
 
 export interface SpeechBubbleState {

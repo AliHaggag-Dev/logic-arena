@@ -261,6 +261,8 @@ export interface GameState {
 // ---------------------------------------------------------------------------
 export type GameMode =
   | 'COMBAT'
+  | 'CLASSIC'
+  | 'TACTICAL'
   | 'RACING'
   | 'TRAINING_SOLO'
   | 'SURVIVAL'

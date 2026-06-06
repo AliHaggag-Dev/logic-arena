@@ -9,6 +9,18 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum MatchMode {
+  CLASSIC
+  TACTICAL
+}
+
+enum MatchPhase {
+  WAITING
+  ROUND_ACTIVE
+  BREAK
+  FINISHED
+}
+
 model User {
   id                   String             @id @default(uuid())
   email                String             @unique
@@ -70,6 +82,10 @@ model RobotScript {
 model Match {
   id                 String             @id @default(uuid())
   type               String
+  mode               MatchMode          @default(CLASSIC)
+  roundNumber        Int                @default(1)
+  phase              MatchPhase         @default(WAITING)
+  roundConfig        Json?
   status             String             @default("pending")
   // pending | in_progress | completed
   winnerId           String?

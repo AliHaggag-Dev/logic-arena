@@ -21,6 +21,8 @@ const BUILTIN_FUNCTIONS = new Set([
     "LENGTH", "PUSH", "POP", "RANDOM", "LOG",
     // ── Phase 1: Advanced Sensory Arrays ──────────────────────────────────
     "GET_ALL_VISIBLE_ENEMIES", "RAYCAST",
+    "MY_HEALTH", "ENEMY_HEALTH", "ENEMY_VELOCITY",
+    "PREDICT_POSITION", "CALCULATE_LEAD",
     // ── Phase 3: Swarm Intelligence (Inter-Robot Communication) ───────────
     "BROADCAST", "RECEIVE",
 ]);

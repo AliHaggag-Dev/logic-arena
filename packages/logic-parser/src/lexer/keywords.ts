@@ -3,7 +3,7 @@ export const KEYWORDS = new Set([
   "WHILE", "DO", 
   "FOR", "TO",
   "FUNCTION", "CALL", "RETURN",
-  "FIRE", "BURST_FIRE",
+  "FIRE", "BURST_FIRE", "LEAD_FIRE",
   "TELEPORT", "SHIELD", "CLOAK", "DASH", "MINE", "TAUNT",
   "MOVE", "MOVE_FAST", "STOP", "BACKUP",
   "PATHFIND", "SET",
