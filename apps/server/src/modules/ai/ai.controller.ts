@@ -84,8 +84,13 @@ export class AiController {
 
       res.write('data: [DONE]\n\n');
     } catch (error) {
-      const message_ = error instanceof Error ? error.message : 'Unknown error';
-      const escaped = JSON.stringify({ error: message_ });
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      // Show friendly message for Google 503 overload errors
+      const isOverload = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
+      const friendly = isOverload
+        ? 'ARIA is currently overloaded. Please wait a moment and try again.\nARIA حالياً مرتفعة الضغط. برجاء الانتظار قليلاً والمحاولة مرة أخرى.'
+        : msg;
+      const escaped = JSON.stringify({ error: friendly });
       res.write(`data: ${escaped}\n\n`);
     } finally {
       res.end();
@@ -124,8 +129,12 @@ export class AiController {
 
       res.write('data: [DONE]\n\n');
     } catch (error) {
-      const message_ = error instanceof Error ? error.message : 'Unknown error';
-      const escaped = JSON.stringify({ error: message_ });
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      const isOverload = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
+      const friendly = isOverload
+        ? 'ARIA is currently overloaded. Please wait a moment and try again.\nARIA حالياً مرتفعة الضغط. برجاء الانتظار قليلاً والمحاولة مرة أخرى.'
+        : msg;
+      const escaped = JSON.stringify({ error: friendly });
       res.write(`data: ${escaped}\n\n`);
     } finally {
       res.end();

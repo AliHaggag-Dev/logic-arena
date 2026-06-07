@@ -25,20 +25,21 @@ Your teaching philosophy — ALWAYS follow this adaptive response strategy:
 5. If the user seems frustrated or confused, acknowledge it first before explaining
 6. End complex answers with a "⚡ Quick tip:" line that gives one actionable insight
 
-IMPORTANT — Context usage:
-- Below your message, you will sometimes receive REFERENCE CONTEXT delimited by <context></context> tags.
-- This context contains documentation about Logic Arena features, AliScript commands, and platform details.
-- USE this context to answer the user's question accurately. If the context is relevant, reference it.
-- If the context doesn't help with the question, ignore it and answer from your own knowledge.
+CRITICAL — Context is MANDATORY:
+- Below your message, you will ALWAYS receive REFERENCE CONTEXT delimited by <context></context> tags.
+- This context is the OFFICIAL and AUTHORITATIVE source of truth about Logic Arena features, AliScript commands, and platform details.
+- You MUST answer using ONLY the information in the context. Do NOT use your own training knowledge for facts about Logic Arena.
+- If the context does not contain the information needed to answer the question, say "I'm not sure — check the official docs" instead of guessing.
 - NEVER say "according to the context" or "based on the reference" — just answer naturally as ARIA.
+- Your training data may be outdated. The context is always correct and up to date.
 
 RULES FOR ACCURACY:
 1. Before answering ANY question about a command's syntax or arguments, check the "Command Signatures Quick Reference" first (usually the first block in <context>).
-2. NEVER invent arguments, parameters, or behaviors that are not explicitly documented in the knowledge base.
-3. If you are not 100% certain about something, say "I'm not sure — check the AliScript docs directly" rather than guessing.
+2. NEVER invent arguments, parameters, or behaviors that are not explicitly documented in the context.
+3. If the context does not contain the answer, say "I'm not sure — check the AliScript docs directly" rather than guessing from your training data.
 4. Do not mix information from different commands. Each command is independent.
 5. If a command takes no arguments, say so explicitly and show the correct usage.
-6. Never say a command "requires" something that isn't in the docs.
+6. Never say a command "requires" something that isn't in the context.
 
 If asked about anything outside AliScript or Logic Arena, politely redirect.`;
 
@@ -109,12 +110,29 @@ export class AiService {
       parts.push({ text: 'Explain this image' });
     }
 
-    const result = await chat.sendMessageStream(parts);
+    // Retry once on stream parse failure, falling back to no context.
+    // Skip retry for 503 (capacity) errors — Google's servers are overloaded.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const result = await chat.sendMessageStream(parts);
 
-    for await (const chunk of result.stream) {
-      const text = chunk.text();
-      if (text) {
-        yield text;
+        for await (const chunk of result.stream) {
+          const text = chunk.text();
+          if (text) {
+            yield text;
+          }
+        }
+        return; // success — exit generator
+      } catch (err) {
+        const msg = (err as Error).message || '';
+        const isOverload = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
+        if (attempt === 0 && !isOverload) {
+          console.warn('[AiService] Stream failed, retrying without context:', msg);
+          parts[0] = { text: message };
+          await new Promise((r) => setTimeout(r, 500));
+        } else {
+          throw err;
+        }
       }
     }
   }

@@ -14,6 +14,7 @@ const FILE_SOURCES = [
   { path: 'docs/system-architecture.md', title: 'System Architecture' },
   { path: 'docs/aliscript-language.md', title: 'AliScript Language Reference' },
   { path: 'docs/rotation-system-guide.md', title: 'Rotation System Guide' },
+  { path: 'docs/website-guide.md', title: 'Website Guide — All Pages & Features' },
   { path: 'README.md', title: 'Project README' },
   { path: 'CHANGELOG.md', title: 'Changelog' },
   { path: 'project-map.md', title: 'Project Map' },
@@ -234,7 +235,7 @@ export class RagService {
     }
   }
 
-  async retrieve(query: string, topK = 3): Promise<string> {
+  async retrieve(query: string, topK = 4): Promise<string> {
     if (!this.ready) {
       await this.warmup();
     }
@@ -269,8 +270,12 @@ export class RagService {
       }
     }
 
-    const retrieved = top
-      .filter((item) => item.score > 0.3 && !priorityIndices.has(item.index))
+    // Take top chunks. Use a very low threshold (0.05) to filter out complete noise
+    // while still allowing cross-language (Arabic/English) queries to pass through.
+    // Always include at least the top-1 chunk even below threshold for coverage.
+    const nonPriority = top.filter((item) => !priorityIndices.has(item.index));
+    const retrieved = nonPriority
+      .filter((item, idx) => idx === 0 || item.score > 0.05)
       .map((item) => {
         const ch = this.chunks[item.index];
         return `[${ch.title}]: ${ch.content}`;
