@@ -42,6 +42,22 @@ const TAG_ICONS: Record<Tag, React.ReactNode> = {
 
 const RELEASES: Release[] = [
   {
+    version: "v3.3.0",
+    date: "2026-06-05",
+    headline: "The Intelligent Editor — AI Script Generation & Inline Diagnostics",
+    summary: "Brought the AliScript editor to life with an inline diagnostics system that catches syntax and logic errors in real time with red underlines and Tab-to-fix suggestions. Launched an AI Script Generator that converts plain English into working AliScript via SSE streaming, plus a 22-recipe Strategy Cookbook. Added a full Achievements & Badges system with tiered progression, a dedicated Arena Guide page, smart viewport-aware autocomplete, and major mobile performance optimizations.",
+    changes: [
+      { tag: "ENGINE", text: "AliScript Inline Diagnostics: Worker-thread parser detects syntax errors (e.g. MOVS → MOVE) via Levenshtein distance and surfaces logic warnings (loop nesting, read-only shadowing, STASIS violations, action dedup). Red wavy underlines in the editor; Tab or hover+click applies the closest fix instantly." },
+      { tag: "QOL", text: "AI Script Generator & Strategy Cookbook: Describe robot behavior in plain English or Arabic — receive working AliScript streamed via SSE directly into the editor. Backed by 22 structured prebuilt recipes across 3 difficulty tiers covering patrol, combat, and evasion strategies." },
+      { tag: "QOL", text: "Achievements & Badges System: Full progression with 4 tiers (Alpha, Beta, Gamma, Delta). Self-healing checkAll logic triggers on match persistence, campaign completion, and cache events. Neon-glowing progress bars, theme-aware tooltips, and inline badge stacks on the leaderboard." },
+      { tag: "QOL", text: "Arena Guide Page & Smart Autocomplete: New dedicated guide page with hover chat triggers. Viewport-aware autocomplete dropdown that renders below when near the top and above when near the bottom — zero clipped suggestions." },
+      { tag: "BUG FIX", text: "Mobile Performance: Replaced backdrop-blur with hardware-accelerated opacity transitions in MobileNav system menu. Optimized useRobotColorTint to update materials directly, preventing WebGL shader recompilations. CSS-based portrait orientation lock for non-arena pages." },
+      { tag: "BUG FIX", text: "Pathfinder Oscillation Fix: Resolved robot corner oscillation with stuck detection and start cell snapping, preventing robots from bouncing indefinitely near wall boundaries." },
+      { tag: "QOL", text: "UX Polish: Dashboard card overflow clipping fixed with scroll arrow visibility. Leaderboard action buttons aligned right to avoid badge overlap. Profile username decoding with enlarged mobile achievement badges. One-click copy buttons on all docs code examples." },
+      { tag: "QOL", text: "New User Experience: Auto-create a default empty script on registration. Persist selected script ID across sessions. Cleaned up arena command console by removing the run override input and closing the Activity Log by default." },
+    ],
+  },
+  {
     version: "v3.2.0",
     date: "2026-05-26",
     headline: "The Production-Grade Polish — SEO, Performance & Arena Environment Overhaul",
