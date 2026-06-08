@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Zap, Lock, CheckCircle, ShoppingCart, UserX } from "lucide-react";
 import { MarketItem } from "../types";
 import { RARITY_STYLES } from "../constants";
+import Image from "next/image";
 
 const GUEST_LOCK_TOOLTIP = "Create an account to equip and customise your robot.";
 
@@ -103,9 +104,11 @@ export const MarketItemCard = React.memo(function MarketItemCard({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             {!imgError ? (
-              <img
+              <Image
                 src={thumbnailUrl}
                 alt={item.name}
+                width={48}
+                height={48}
                 onError={() => setImgError(true)}
                 className="w-12 h-12 rounded-xl object-contain bg-accent/5 border border-white/5"
               />

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { CheckCircle, Loader2, Zap, Eye } from "lucide-react";
 import { MarketItem } from "../../black-market/types";
 import { RARITY_STYLES } from "../../black-market/constants";
+import Image from "next/image";
 
 // ── Rarity dot ────────────────────────────────────────────────────────────────
 
@@ -73,9 +74,11 @@ export function VaultItemCard({
       {/* Thumbnail + rarity */}
       <div className="flex items-center gap-3 mb-3">
         {!imgError ? (
-          <img
+          <Image
             src={thumbnailUrl}
             alt={item.name}
+            width={56}
+            height={56}
             onError={() => setImgError(true)}
             className="w-14 h-14 rounded-xl object-contain bg-accent/5 border border-white/5"
           />

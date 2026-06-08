@@ -2,6 +2,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { GameMode } from '../hooks/useScripts';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 
 interface ArenaSelectorProps {
     selectedMode: GameMode;
@@ -88,10 +89,11 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
             {/* 1. Hero Presentation Box */}
             <div className={`relative w-full shrink-0 h-56 md:h-[340px] rounded-[24px] overflow-hidden border transition-all duration-700 bg-black ${currentTheme.borderClass} ${currentTheme.glowClass}`}>
                 {/* Background Image */}
-                <img 
+                <Image 
                     key={currentMode.value}
                     src={currentMode.image} 
                     alt={currentMode.label}
+                    fill
                     className="absolute inset-0 w-full h-full object-cover filter brightness-[1.15] saturate-[1.2] animate-in fade-in zoom-in-[0.98] duration-700"
                 />
                 
@@ -172,7 +174,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                                         : 'border-white/10 hover:border-accent/40 opacity-60 hover:opacity-100 hover:bg-white/5'
                                     }`}
                                 >
-                                    <img src={mode.image} alt={mode.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-[1.1] saturate-[1.2]" />
+                                    <Image fill src={mode.image} alt={mode.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-[1.1] saturate-[1.2]" />
                                     <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-300 ${isSelected ? 'from-[#030712] via-[#030712]/50 to-transparent' : 'from-black/95 via-black/60 to-black/30 group-hover:from-black/90 group-hover:via-black/50'}`} />
                                     
                                     <div className="absolute bottom-4 left-4 right-4 flex flex-col gap-0.5">
@@ -208,7 +210,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                                         : 'border-white/10 hover:border-white/40 opacity-60 hover:opacity-100 hover:bg-white/5'
                                     }`}
                                 >
-                                    <img src={theme.image} alt={theme.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-[1.1] saturate-[1.2]" />
+                                    <Image fill src={theme.image} alt={theme.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-[1.1] saturate-[1.2]" />
                                     <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-300 ${isSelected ? 'from-[#030712] via-[#030712]/40 to-transparent' : 'from-black/95 via-black/50 to-black/20 group-hover:from-black/90 group-hover:via-black/40'}`} />
                                     
                                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">

@@ -7,6 +7,7 @@ import {
   Flame, Snowflake, Compass, MessageSquareText,
   FileCode2, TerminalSquare, Activity
 } from "lucide-react";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 
@@ -338,9 +339,10 @@ export default function ArenaGuidePage() {
 
       {/* Card Visual Header (Thumbnail Image) */}
       <div className="relative w-full aspect-[16/10] overflow-hidden shrink-0">
-        <img 
+        <Image 
           src={item.image} 
           alt={item.title} 
+          fill
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           style={{
             WebkitMaskImage: theme !== "light" ? "linear-gradient(to top, transparent, black 40%)" : "none",
