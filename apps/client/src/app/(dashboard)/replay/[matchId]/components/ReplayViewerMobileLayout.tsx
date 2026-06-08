@@ -25,7 +25,7 @@ export function ReplayViewerMobileLayout({
         <div className="flex flex-col gap-3">
           <button
             onClick={() => router.back()}
-            className="w-max bg-transparent border border-accent/15 rounded px-2.5 py-1 hover:border-accent/40 text-accent/70 cursor-pointer text-[9px] tracking-[0.25em] font-mono flex items-center gap-1.5 transition-all duration-200 uppercase"
+            className="w-max border rounded-full px-5 py-2 min-h-[44px] bg-accent/[0.03] backdrop-blur-xl border-accent/20 text-accent/80 hover:border-accent/50 hover:bg-accent/20 hover:text-accent hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] cursor-pointer text-[11px] tracking-[0.25em] font-mono flex items-center justify-center gap-2 transition-all duration-300 uppercase active:scale-95"
           >
             ← HISTORY
           </button>

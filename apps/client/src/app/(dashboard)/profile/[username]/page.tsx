@@ -121,7 +121,7 @@ export default function PublicProfilePage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="w-max bg-transparent border border-accent/15 rounded px-2.5 py-1 md:px-3 hover:border-accent/40 hover:bg-accent/20 text-accent/70 cursor-pointer text-[9px] md:text-[10px] tracking-[0.25em] font-mono flex items-center gap-1.5 transition-all duration-200 uppercase"
+              className="w-max border rounded-full md:rounded px-5 py-2 min-h-[44px] md:min-h-0 md:px-3 md:py-1 bg-accent/[0.03] md:bg-transparent backdrop-blur-xl md:backdrop-blur-none border-accent/20 md:border-accent/15 text-accent/80 md:text-accent/70 hover:border-accent/50 hover:bg-accent/20 hover:text-accent hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] cursor-pointer text-[11px] md:text-[10px] tracking-[0.25em] font-mono flex items-center justify-center gap-2 transition-all duration-300 uppercase active:scale-95"
             >
               ← <span className="md:hidden">BACK</span><span className="hidden md:inline">GO BACK</span>
             </button>

@@ -16,13 +16,7 @@ export function ReplayButton({ matchId, isGuest }: Props) {
         <button
             type="button"
             onClick={() => router.push(`/replay/${matchId}`)}
-            className="px-3 py-1.5 rounded-[4px] text-[8px] font-bold tracking-[0.2em]
-                transition-all hover:bg-accent/10 active:scale-95 cursor-pointer"
-            style={{
-                background: "rgba(var(--accent-rgb),0.08)",
-                border: "1px solid rgba(var(--accent-rgb),0.2)",
-                color: "var(--accent)",
-            }}
+            className="px-3 py-1.5 rounded-[4px] text-[8px] font-bold tracking-[0.2em] bg-accent/[0.08] border border-accent/20 text-accent transition-all duration-300 hover:bg-accent/20 hover:border-accent/50 hover:shadow-[0_0_10px_rgba(var(--accent-rgb),0.4)] active:scale-95 cursor-pointer"
         >
             VIEW
         </button>

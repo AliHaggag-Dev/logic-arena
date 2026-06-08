@@ -26,7 +26,7 @@ export function ReplayViewerDesktopLayout({
         <div className="flex flex-col gap-4">
           <button
             onClick={() => router.back()}
-            className="w-max bg-transparent border border-accent/15 rounded px-3 py-1 hover:border-accent/40 text-accent/70 cursor-pointer text-[10px] tracking-[0.25em] font-mono mb-2 flex items-center gap-1.5 transition-all duration-200 uppercase"
+            className="w-max bg-transparent border border-accent/15 rounded px-3 py-1 hover:border-accent/50 hover:bg-accent/20 text-accent/70 hover:text-accent hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] cursor-pointer text-[10px] tracking-[0.25em] font-mono mb-2 flex items-center gap-1.5 transition-all duration-300 uppercase active:scale-95"
           >
             ← BACK TO HISTORY
           </button>
