@@ -42,6 +42,22 @@ const TAG_ICONS: Record<Tag, React.ReactNode> = {
 
 const RELEASES: Release[] = [
   {
+    version: "v3.2.0",
+    date: "2026-05-26",
+    headline: "The Production-Grade Polish — SEO, Performance & Arena Environment Overhaul",
+    summary: "A massive quality-of-life and infrastructure release. Complete landing page and SEO overhaul, full PWA immersion with arena landscape lock, campaign AliScript v2 security migration, dashboard redesign with gaming cards, King of the Hill mode, AI Tutor upgrades, critical arena theme fixes for LAVA and ICE double-damage stacking, and major mobile performance optimization eliminating scroll lag.",
+    changes: [
+      { tag: "QOL", text: "Landing Page & SEO: Server Component migration for maximum initial load speed, OG image for social sharing, Google Analytics (G-1QN8VTS98H), Google Search Console verification, sitemap.xml, 404 page fix, and full SEO metadata across all public pages." },
+      { tag: "QOL", text: "Dashboard Redesign: Complete above-the-fold optimization with premium gaming cards, legendary script cards, redesigned mobile layout with tab strip scrolling fixes, and light mode background correction." },
+      { tag: "ENGINE", text: "Campaign & Parser Security: All 60 campaign levels migrated to AliScript v2 syntax (AND/OR/NOT replacing &&/||/!). Replaced unsafe eval with a secure custom logic parser used in both client and server. Revamped CampaignScriptEditor with visual line numbers, placeholder styling, and smart autocomplete positioning." },
+      { tag: "COMBAT", text: "King of the Hill & Survival Modes: New KOTH mode with zone control (radius 80, 300 tick score target), glowing amber cylinder render with rotating ring boundary, and 4 fortress walls for cover. Survival mode overhaul — dummy robots no longer target same-team entities, dynamic enemy spawning from match engine, and wave/enemy stats in HUD." },
+      { tag: "BUG FIX", text: "Arena Environment Theme Fixes: NEO-CYBER obstacles were leaking into LAVA and ICE themes causing thematic inconsistency and double lava damage stacking (static 5 HP/sec + dynamic 10 HP/sec). Removed CYBER-only filter to properly render TRAP/LAVA on all themes. Replaced AABB with OBB collision detection for accurate rotated obstacle hitboxes. Fixed ice patch state reset per tick and moved FOV aiming before ice early return so turrets track targets while sliding." },
+      { tag: "BUG FIX", text: "Mobile Performance Optimization: Eliminated scroll lag by optimizing 3D canvas with IntersectionObserver (pauses when off-screen). Removed blur filter causing repaint storms. Memoized GridHelper and Floor to prevent 60fps GPU memory leaks. Disabled CSS transitions during theme changes to prevent frame drops. Extracted ImageCard into Client Component allowing the landing page to be a pure Server Component." },
+      { tag: "QOL", text: "PWA & Mobile Experience: Arena auto-rotates to landscape on mount with global portrait guard. iOS-specific install prompt added. Android status and navigation bars synced to app theme colors. Splash screen background set to pure black for seamless logo blend. App name separated into two words in manifest. Global nav hidden on arena with immersive fullscreen on touch." },
+      { tag: "QOL", text: "AI Tutor, UX & Polish: AI Tutor supports image uploads, rich markdown styling, and smart auto-scroll via React Portals. Script editor with autocomplete and syntax highlighting ported to dashboard modal. Consistent back buttons on all dynamic child pages. Platform terminology overhauled from sci-fi jargon to intuitive English across 60 levels and all UI components." },
+    ],
+  },
+  {
     version: "v3.1.0",
     date: "2026-05-22",
     headline: "The Living Arena & Mobile Revolution",

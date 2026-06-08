@@ -2248,6 +2248,7 @@ The guiding rule throughout: a subfolder is only created when it will contain 3 
 * Logic Arena is now architecturally clean from packages to pages. Every module has a single responsibility. Every file is under 250 lines. Every dead file is deleted. The campaign delivers a live battle experience that no comparable platform offers. The enemy AI operates with surgical precision through a hidden control layer invisible to players. The semantic warning system teaches algorithmic thinking in real time.
 * **Ready for:** Fog of War, University Competition launch, and full multiplayer stress testing.
 
+
 ## [3.1.0] - The Living Arena & Mobile Revolution — 2026-05-22
 
 Shipped the most visually ambitious update in Logic Arena's history — a complete resurrection of the 3D arena from a static battlefield into a living, breathing cinematic experience. Delivered five new game modes, nine AliScript super powers, a groundbreaking mobile block editor that eliminates the keyboard entirely, a legendary winner screen overhaul, dynamic environment themes with gameplay consequences, robot skeletal animations, a global sound architecture, and a sweeping platform-wide polish pass covering auth, garage, campaign, and the admin command center.
@@ -2336,4 +2337,59 @@ Shipped the most visually ambitious update in Logic Arena's history — a comple
 ### Current Status
 
 * Logic Arena is now a living, cinematic platform. The arena breathes with skeletal robot animations, environmental weather, and dynamic obstacle themes. Players on mobile compose AliScript programs without a keyboard. Six tactical super powers demand resource management thinking at the language level. Three new game modes reframe what winning means. The winner screen is a moment worth playing toward. Every memory leak is plugged. Every re-render eliminated. Every auth flow resolves in under 10 seconds.
+* **Ready for:** Fog of War, University Competition launch, and full multiplayer stress testing.
+
+## [3.2.0] - The Production-Grade Polish — SEO, Performance & Arena Environment Overhaul — 2026-05-26
+
+A massive quality-of-life and infrastructure release packaging over 50 commits across two weeks of intensive work. Complete landing page and SEO overhaul with OG image and Google Analytics, full PWA immersion with arena landscape lock, campaign AliScript v2 security migration eliminating unsafe eval, complete dashboard redesign with premium gaming cards, King of the Hill game mode, AI Tutor with image upload, critical arena environment fixes for LAVA/ICE double-damage stacking, and major mobile 3D performance optimization eliminating scroll lag.
+
+---
+
+### New Features
+
+* **Landing Page & SEO Overhaul:**
+  The landing page was refactored into a Server Component for maximum initial load speed, with ImageCard extracted as a dedicated Client Component. OG image generation enables rich social sharing previews. Google Analytics (G-1QN8VTS98H) and Google Search Console verification were integrated for production traffic monitoring. A dynamic sitemap.xml and robots.txt were added for full crawler indexing, and the 404 page was fixed. All public pages now have complete SEO metadata including Open Graph and Twitter Cards.
+
+* **Complete Dashboard Redesign:**
+  The dashboard was rebuilt with above-the-fold optimization and premium gaming cards integration. Legendary script cards with glassmorphism design replace the previous flat layout. Mobile tab strip scrolling was fixed on gaps, and light mode background colors were corrected across all three themes.
+
+* **Campaign & Parser Security Migration (AliScript v2):**
+  All 60 campaign levels were migrated from legacy AliScript v1 syntax (`&&`, `||`, `!`) to v2 (`AND`, `OR`, `NOT`). The unsafe `eval` function powering the client-side evaluator was removed and replaced with a secure custom logic parser that runs identically in both client and server environments. The CampaignScriptEditor was revamped with visual line numbers, placeholder styling, and smart autocomplete positioning that prevents mobile clipping and footer overlap.
+
+* **King of the Hill Mode & Survival Overhaul:**
+  A new KOTH game mode — zone control at arena center (400,300) with radius 80 and a 300-tick score target. The zone renders as a glowing amber cylinder with rotating ring boundary. Four fortress walls spawn around the zone for tactical cover. Survival mode was overhauled — dummy robots fixed to ignore same-team entities in scanner, distance calculations properly initialized so dummies actually move, and dynamic enemy spawning moved from lobby initialization into the match engine. Wave and enemy stats now display in both DesktopHUD and MobileTopRightHUD.
+
+* **PWA & Mobile Fullscreen Experience:**
+  The arena forces landscape orientation on mount with a global portrait guard preventing incorrect orientation on non-arena pages. An iOS-specific install prompt was added. Android status and navigation bars are fully synced to the active theme via dynamic `theme-color` and body background updates. The splash screen was set to pure black for seamless logo blend. The manifest was updated to separate the app name into two words and change orientation from `portrait` to `any`. Global nav is hidden on the arena with immersive fullscreen on touch.
+
+* **AI Tutor, UX & Platform Polish:**
+  AI Tutor gained image upload support and rich markdown styling with smart auto-scroll via React Portals. The script editor with autocomplete and syntax highlighting was ported to a dashboard modal. Consistent back buttons were added to all dynamic child pages. Platform terminology was overhauled — complex sci-fi jargon (protocol, chassis, neural, uplink) translated to intuitive English across all 60 campaign levels and UI components. Desktop text selection was re-enabled.
+
+* **Redis Email Queue & Admin Caching:**
+  An async email queue built on Redis LPUSH/BRPOP decouples email delivery from the HTTP thread with 3 retries and exponential backoff. Redis caching was added to admin endpoints — paginated feedback queries cached at 60s, overview stats at 60s, health endpoint at 30s, with pattern-based invalidation.
+
+---
+
+### Technical Scars and Resolutions
+
+* **Issue — "The Mobile Scroll Lag Catastrophe" (3D Canvas GPU Memory Leak & Blur Repaint Storm):**
+  Mobile scrolling on the landing page and dashboard was severely stuttery, destroying the user experience on mid-range and low-end devices. The root cause was a triple cascade of performance bugs. The 3D background objects (GridHelper and Floor) were being recreated every frame, causing continuous GPU memory allocation churn that exhausted video memory. The CSS `backdrop-blur` filter on glassmorphism cards forced the browser's compositor to repaint the entire viewport 60 times per second — every scroll frame triggered a full pixel-level recomputation. CSS transitions on theme properties fired simultaneously with scroll events, causing frame drops as the browser interpolated colors while processing repaints.
+
+  **Resolution:** GridHelper and Floor were wrapped in `useMemo` so they are created exactly once — GPU memory leak eliminated. The blur filter was removed from mobile styles entirely, replaced with solid backgrounds on mobile breakpoints — this single fix eliminated the 60fps repaint storm and had the highest measurable impact on smoothness. CSS transitions are now globally disabled during theme changes via a `disable-transitions` class on the document root. An IntersectionObserver was added to pause 3D canvas rendering when the scene scrolls out of viewport, saving GPU resources while users read content below the fold. The result: buttery-smooth scrolling even on mid-range Android devices.
+
+* **Issue — "The LAVA and ICE Thematic Contamination" (NEO-CYBER Obstacles Leaking Into Wrong Environments with Double Damage):**
+  The MAGMA CORE (LAVA) and GLACIAL TUNDRA (ICE) arena themes were visually contaminated — obstacles from the default NEO-CYBER theme were rendering on top of the active theme's obstacles, breaking the visual identity of each environment. Worse, this caused a gameplay-breaking bug: static LAVA obstacles from the CYBER theme were applying damage simultaneously with the dynamic LAVA_POOL obstacles (5 HP/sec + 10 HP/sec = 15 HP/sec), instantly melting any robot standing in lava zones on LAVA or ICE maps. The collision system used Axis-Aligned Bounding Boxes (AABB) for TRAP and LAVA obstacles, which could not account for obstacle rotation — a rotated rectangular trap had a hitbox extending well past its visual boundary, causing phantom damage.
+
+  **Resolution:** The CYBER-only filter in ObstacleModel was removed, allowing TRAP and LAVA obstacles to render correctly on all three themes (CYBER, LAVA, ICE) with theme-appropriate materials. The match engine was fixed to remove static LAVA obstacles specifically on LAVA and ICE themes, eliminating double damage stacking entirely. The collision detection system for TRAP and LAVA obstacles was upgraded from AABB to OBB (Oriented Bounding Box), properly accounting for obstacle rotation so hitboxes match visual rendering exactly. The `insideIcePatch` flag was reset alongside `insideLava` and `speedMultiplier` every tick for consistency. `_SYS_FACE_X/Y` FOV aiming was moved before the ice early return so turrets still track targets while sliding on ICE_PATCH hazards. The pathfinder was hardened against mid-path oscillation — replacing the 500ms forced-recompute window with a one-shot A* recompute per wall hit.
+
+* **Issue — "The Global Socket Disconnect Storm" (Connection State Corruption on Page Navigation):**
+  Rapid navigation between pages caused the global WebSocket to disconnect and reconnect multiple times, accumulating stale event listeners that fired against unmounted React component trees. Challenge requests were broadcasting to public rooms where any client could intercept sensitive match data. The server's presence tracking would lose track of online users during reconnection storms, making the leaderboard show everyone as offline.
+
+  **Resolution:** Socket presence tracking and challenge routing were refactored to use private rooms, ensuring challenge requests only reach the intended recipient. All event listeners are properly cleaned up on unmount with `.off()` teardown. A connection lifecycle state machine prevents duplicate handlers from accumulating. Challenge request permission checks verify the target user is actually online before emitting. The settings page debounce was removed in favor of instant optimistic UI — changes appear immediately with background API calls and rollback on failure.
+
+---
+
+### Current Status
+
+* Logic Arena is now a production-grade platform with full SEO visibility, PWA capability across iOS and Android, a secure AliScript v2 parser with zero eval surface, a stunning redesigned dashboard, buttery-smooth mobile scrolling even on mid-range devices, and thematically correct arena environments with zero phantom damage stacking. King of the Hill mode joins the rotation with dedicated HUD elements. The AI Tutor accepts images and renders rich markdown. The Redis email queue ensures reliable asynchronous delivery. Every performance leak is plugged, every theme is visually consistent, and the platform speaks plain English to every user.
 * **Ready for:** Fog of War, University Competition launch, and full multiplayer stress testing.

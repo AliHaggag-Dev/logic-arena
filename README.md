@@ -9,7 +9,7 @@
 ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝    ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝
 ```
 
-**v3.1.0 | Program your robot. Outsmart your opponent. Dominate the arena.**
+**v3.2.0 | Program your robot. Outsmart your opponent. Dominate the arena.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-97.5%25-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
@@ -21,7 +21,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=flat-square&logo=docker)](https://www.docker.com/)
 [![Live](https://img.shields.io/badge/Live-logicarena.dev-22d3ee?style=flat-square&logo=vercel)](https://logicarena.dev)
 
-[**Live Demo (v3.1.0)**](https://logicarena.dev) · [**Documentation**](#project-documentation) · [**Report Bug**](https://github.com/Ali-Haggag7/logic-arena/issues)
+[**Live Demo (v3.2.0)**](https://logicarena.dev) · [**Documentation**](#project-documentation) · [**Report Bug**](https://github.com/Ali-Haggag7/logic-arena/issues)
 
 </div>
 
