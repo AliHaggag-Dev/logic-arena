@@ -206,7 +206,7 @@ const ScriptModeSelector = ({
                     e.stopPropagation();
                     setIsOpen(!isOpen);
                 }}
-                className={`bg-purple-500/10 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded border border-purple-500/20 hover:bg-purple-500/20 hover:border-purple-500/40 transition-all uppercase flex items-center gap-1 group ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                className={`bg-purple-500/10 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded border border-purple-500/20 hover:bg-purple-500/20 hover:border-purple-500/40 transition-all uppercase flex items-center gap-1 group ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
             >
                 {currentMode}
                 <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6"/></svg>
@@ -224,7 +224,7 @@ const ScriptModeSelector = ({
                                 onChange(opt);
                                 setIsOpen(false);
                             }}
-                            className={`w-full text-left px-2 py-1.5 text-[9px] font-black tracking-widest uppercase transition-colors cursor-pointer ${currentMode === opt ? "bg-purple-500/20 text-purple-600 dark:text-purple-400" : "text-text-secondary hover:bg-purple-500/10 hover:text-purple-600 dark:hover:text-purple-300"}`}
+                            className={`w-full text-left px-2 py-1.5 text-[9px] font-black tracking-widest uppercase transition-colors cursor-pointer ${currentMode === opt ? "bg-purple-500/20 text-purple-700 dark:text-purple-400" : "text-text-secondary hover:!bg-purple-500/20 hover:!text-purple-700 dark:hover:!text-purple-400"}`}
                         >
                             {opt}
                         </button>

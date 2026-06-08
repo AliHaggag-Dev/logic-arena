@@ -151,6 +151,8 @@ export function useScripts() {
         const optimisticUpdated = { ...target, matchMode: newMode };
         handleOptimisticUpdate(optimisticUpdated);
 
+        if (isGuest) return;
+
         try {
             await apiClient.put(`/scripts/${id}`, {
                 title: target.title,
@@ -164,7 +166,7 @@ export function useScripts() {
             setStatus({ message: "[ERR] MODE UPDATE FAILED", type: "error" });
             setTimeout(() => setStatus({ message: "", type: null }), 3000);
         }
-    }, [scripts, handleOptimisticUpdate]);
+    }, [scripts, handleOptimisticUpdate, isGuest]);
 
     const handleRevert = useCallback((original: RobotScript) => {
         setScripts((prev) => prev.map((s) => (s.id === original.id ? original : s)));
