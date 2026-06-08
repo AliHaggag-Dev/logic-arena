@@ -11,18 +11,18 @@ interface FriendsEmptyStateProps {
 const COPY: Record<FriendsEmptyStateProps['variant'], { icon: React.ReactNode; title: string; body: string }> = {
   friends: {
     icon: <Users size={28} aria-hidden="true" />,
-    title: 'NO ALLIES YET',
-    body: 'Build your network — search for operators and send your first friend request.',
+    title: 'NO FRIENDS YET',
+    body: 'Expand your network — search for players and send your first friend request.',
   },
   requests: {
     icon: <Inbox size={28} aria-hidden="true" />,
     title: 'INBOX EMPTY',
-    body: 'No pending requests right now. New requests will appear here in real time.',
+    body: 'No pending requests at the moment. New requests will appear here in real time.',
   },
   suggestions: {
     icon: <Sparkles size={28} aria-hidden="true" />,
     title: 'NO SUGGESTIONS YET',
-    body: 'Play a few matches — we will suggest operators near your rank and recent opponents.',
+    body: 'Play a few matches — we will suggest players near your skill level and recent opponents.',
   },
 };
 

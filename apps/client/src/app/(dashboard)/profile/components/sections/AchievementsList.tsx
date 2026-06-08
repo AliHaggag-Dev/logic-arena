@@ -54,10 +54,10 @@ export const AchievementsList = ({
           unlockedLevel: 0,
           currentProgress: 0,
           stages: [
-            { level: 1, label: 'Alpha', value: 10, reward: 100 },
-            { level: 2, label: 'Beta', value: 50, reward: 250 },
-            { level: 3, label: 'Gamma', value: 150, reward: 500 },
-            { level: 4, label: 'Delta', value: 300, reward: 1000 },
+            { level: 1, label: 'Bronze', value: 10, reward: 100 },
+            { level: 2, label: 'Silver', value: 50, reward: 250 },
+            { level: 3, label: 'Gold', value: 150, reward: 500 },
+            { level: 4, label: 'Platinum', value: 300, reward: 1000 },
           ],
         },
         {
@@ -67,10 +67,10 @@ export const AchievementsList = ({
           unlockedLevel: 0,
           currentProgress: 0,
           stages: [
-            { level: 1, label: 'Alpha', value: 5, reward: 100 },
-            { level: 2, label: 'Beta', value: 25, reward: 300 },
-            { level: 3, label: 'Gamma', value: 75, reward: 600 },
-            { level: 4, label: 'Delta', value: 150, reward: 1200 },
+            { level: 1, label: 'Bronze', value: 5, reward: 100 },
+            { level: 2, label: 'Silver', value: 25, reward: 300 },
+            { level: 3, label: 'Gold', value: 75, reward: 600 },
+            { level: 4, label: 'Platinum', value: 150, reward: 1200 },
           ],
         },
         {
@@ -80,10 +80,10 @@ export const AchievementsList = ({
           unlockedLevel: 0,
           currentProgress: 0,
           stages: [
-            { level: 1, label: 'Alpha', value: 50, reward: 150 },
-            { level: 2, label: 'Beta', value: 150, reward: 400 },
-            { level: 3, label: 'Gamma', value: 300, reward: 800 },
-            { level: 4, label: 'Delta', value: 500, reward: 1500 },
+            { level: 1, label: 'Bronze', value: 50, reward: 150 },
+            { level: 2, label: 'Silver', value: 150, reward: 400 },
+            { level: 3, label: 'Gold', value: 300, reward: 800 },
+            { level: 4, label: 'Platinum', value: 500, reward: 1500 },
           ],
         },
         {
@@ -93,10 +93,10 @@ export const AchievementsList = ({
           unlockedLevel: 0,
           currentProgress: 0,
           stages: [
-            { level: 1, label: 'Alpha', value: 3, reward: 100 },
-            { level: 2, label: 'Beta', value: 8, reward: 300 },
-            { level: 3, label: 'Gamma', value: 15, reward: 600 },
-            { level: 4, label: 'Delta', value: 22, reward: 1200 },
+            { level: 1, label: 'Bronze', value: 3, reward: 100 },
+            { level: 2, label: 'Silver', value: 8, reward: 300 },
+            { level: 3, label: 'Gold', value: 15, reward: 600 },
+            { level: 4, label: 'Platinum', value: 22, reward: 1200 },
           ],
         },
       ]);
@@ -124,7 +124,7 @@ export const AchievementsList = ({
     return (
       <div className="mb-8">
         <div className="text-[10px] tracking-[0.25em] font-black uppercase text-accent/40 mb-4 pb-2 border-b border-accent/15">
-          OPERATOR ACHIEVEMENTS
+          ACHIEVEMENTS
         </div>
         <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
           {[0, 1, 2, 3].map((i) => (
@@ -138,7 +138,7 @@ export const AchievementsList = ({
   return (
     <div className="mb-8">
       <div className="text-[10px] tracking-[0.25em] font-black uppercase text-accent/40 mb-4 pb-2 border-b border-accent/15">
-        OPERATOR ACHIEVEMENTS
+        ACHIEVEMENTS
       </div>
 
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>

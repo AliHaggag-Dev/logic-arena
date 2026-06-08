@@ -35,7 +35,7 @@ const ENTRIES: EnergyEntry[] = [
   { command: 'MOVE_FAST', cost: 4, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: Circle, note: '2× speed for 2× the cost. Blocked during STASIS.' },
   { command: 'PATHFIND',  cost: 3, unit: '/tick', category: 'movement', color: 'var(--docs-green)', icon: Circle, note: 'A* navigation toward nearest visible target. Blocked during STASIS.' },
   // Sensor
-  { command: 'SCAN', cost: 3, unit: '/call', category: 'sensor', color: 'var(--docs-cyan)', icon: Diamond, note: 'BLOCKED during STASIS — use WAIT to pause execution and let STASIS regen energy.' },
+  { command: 'SCAN', cost: 3, unit: '/call', category: 'sensor', color: 'var(--docs-cyan)', icon: Diamond, note: 'BLOCKED during STASIS — use WAIT to pause the script and let STASIS regen energy.' },
   // Combat
   { command: 'FIRE',       cost: 8,  unit: '/shot',  category: 'combat', color: 'var(--docs-orange)', icon: Target, note: '25 HP damage on hit. Only fires if an enemy is within FOV.' },
   { command: 'BURST_FIRE', cost: 18, unit: '/burst', category: 'combat', color: 'var(--docs-red)', icon: Target, note: '3 shots × 8 HP = up to 24 HP total. Requires enemy in FOV.' },

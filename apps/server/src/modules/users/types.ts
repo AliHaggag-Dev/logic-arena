@@ -83,6 +83,13 @@ export interface MatchSummary {
   duration: number | null;
 }
 
+export interface MatchHistoryResponse {
+  matches: MatchSummary[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 export interface UserLoadout {
   selectedRobotId: string | null;
   selectedColor: string | null;

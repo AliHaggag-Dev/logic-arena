@@ -8,7 +8,7 @@ export function LoadingState() {
         <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-accent animate-spin" />
       </div>
       <p className="text-[10px] tracking-[0.4em] text-accent/50 uppercase font-black animate-pulse">
-        Decrypting Campaign Data...
+        Loading Campaign Data...
       </p>
     </div>
   );
@@ -25,7 +25,7 @@ export function GuestState() {
           Access Restricted
         </h2>
         <p className="text-[11px] text-accent/40 tracking-wider max-w-sm uppercase leading-relaxed">
-          Log in to access the algorithmic proving grounds.
+          Log in to access the coding challenges.
         </p>
       </div>
     </div>

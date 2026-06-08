@@ -1,10 +1,11 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { PrismaService } from '../../../common/prisma.service';
 import { RedisService } from '../../../common/redis.service';
 import { SocialQueryService } from '../queries/social-query.service';
 import {
   LeaderboardEntry,
+  MatchHistoryResponse,
   LEADERBOARD_LIMIT,
   LEADERBOARD_TTL,
   leaderboardRankKey,
@@ -128,5 +129,16 @@ export class SocialController {
     }
 
     return profile;
+  }
+
+  @Get(':userId/matches')
+  async getMatches(
+    @Param('userId') userId: string,
+    @Query('page') pageStr?: string,
+    @Query('limit') limitStr?: string,
+  ): Promise<MatchHistoryResponse> {
+    const page = Math.max(1, parseInt(pageStr || '1', 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(limitStr || '5', 10) || 5));
+    return this.socialQuery.getMatchesPaginated(userId, page, limit);
   }
 }

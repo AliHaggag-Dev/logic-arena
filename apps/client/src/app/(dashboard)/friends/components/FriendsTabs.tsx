@@ -37,7 +37,7 @@ const TAB_DEFS: Array<{
   icon: React.ReactNode;
   countKey: 'friends' | 'incoming' | 'suggestions';
 }> = [
-  { id: 'friends', label: 'ALLIES', icon: <Users size={13} aria-hidden="true" />, countKey: 'friends' },
+  { id: 'friends', label: 'FRIENDS', icon: <Users size={13} aria-hidden="true" />, countKey: 'friends' },
   { id: 'requests', label: 'REQUESTS', icon: <Inbox size={13} aria-hidden="true" />, countKey: 'incoming' },
   { id: 'suggestions', label: 'SUGGEST', icon: <Sparkles size={13} aria-hidden="true" />, countKey: 'suggestions' },
 ];
@@ -100,7 +100,7 @@ export function FriendsTabs(props: FriendsTabsProps) {
           type="button"
           onClick={() => setAddOpen(true)}
           aria-label="Add a new friend"
-          title="Add Ally"
+          title="Add Friend"
           className="w-[44px] h-[44px] shrink-0 flex items-center justify-center border border-accent/40 bg-accent/10 hover:bg-accent/20 hover:border-accent/60 text-accent rounded-xl transition-all duration-200 cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
         >
           <UserPlus size={20} aria-hidden="true" />

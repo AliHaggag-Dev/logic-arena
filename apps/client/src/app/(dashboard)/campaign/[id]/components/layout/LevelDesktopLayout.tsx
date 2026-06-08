@@ -145,16 +145,16 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
 
           <div className="border border-accent/15 rounded-xl p-5 bg-accent/[0.025]">
             <p className="text-[9px] tracking-[0.3em] text-accent/45 mb-3 uppercase">
-              {'// '}ENEMY_INTEL
+              {'// '}ENEMY DETAILS
             </p>
             <div className="flex flex-col gap-2.5">
               <div className="flex justify-between items-center text-[10px]">
-                <span className="text-accent/70 tracking-[0.15em]">DESIGNATION</span>
+                <span className="text-accent/70 tracking-[0.15em]">NAME</span>
                 <span className="font-bold text-accent/70 tracking-[0.12em]">{level.title}</span>
               </div>
               <div className="h-[1px] bg-accent/10" />
               <div className="flex justify-between items-center text-[10px]">
-                <span className="text-accent/70 tracking-[0.15em]">THREAT LEVEL</span>
+                <span className="text-accent/70 tracking-[0.15em]">DIFFICULTY</span>
                 <span className="font-bold tracking-[0.12em]" style={{ color: dc.color }}>{level.difficulty}</span>
               </div>
               <div className="h-[1px] bg-accent/10" />

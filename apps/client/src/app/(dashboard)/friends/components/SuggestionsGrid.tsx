@@ -153,7 +153,7 @@ export function SuggestionsGrid({
             {s.mutualFriends > 0 && (
               <div className="text-[10px] font-mono tracking-wider text-text-secondary/80 mb-3">
                 <span className="text-accent font-bold">{s.mutualFriends}</span>{' '}
-                {s.mutualFriends === 1 ? 'MUTUAL ALLY' : 'MUTUAL ALLIES'}
+                {s.mutualFriends === 1 ? 'FRIEND IN COMMON' : 'FRIENDS IN COMMON'}
               </div>
             )}
 
@@ -184,7 +184,7 @@ export function SuggestionsGrid({
                 className="w-full min-h-[40px] flex items-center justify-center gap-1.5 text-[10px] tracking-[0.15em] font-bold border border-accent/40 bg-accent/10 hover:bg-accent/20 hover:border-accent/60 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-accent rounded-lg transition-all cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
               >
                 <UserPlus size={12} aria-hidden="true" />
-                ADD ALLY
+                ADD FRIEND
               </button>
             )}
           </article>

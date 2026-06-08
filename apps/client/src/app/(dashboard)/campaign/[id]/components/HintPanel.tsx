@@ -125,7 +125,7 @@ function LockedHintSlot({ index, onReveal, isGloballyRevealing }: LockedHintSlot
       >
         <span className="hint-slot__icon"><Lock size={14} /></span>
         <span className="hint-slot__label">HINT {index + 1}</span>
-        <span className="hint-slot__action">DECRYPT [{cost} PTS]</span>
+        <span className="hint-slot__action">UNLOCK [{cost} PTS]</span>
       </button>
     );
   }
@@ -134,7 +134,7 @@ function LockedHintSlot({ index, onReveal, isGloballyRevealing }: LockedHintSlot
     return (
       <div className="hint-slot hint-slot--confirming" role="group" aria-label={`Confirm reveal hint ${index + 1}`}>
         <span className="hint-slot__confirm-text">
-          Spend <strong>{cost} pts</strong> to reveal hint {index + 1}?
+          Spend <strong>{cost} pts</strong> to unlock hint {index + 1}?
         </span>
         <div className="hint-slot__confirm-actions">
           <button
@@ -172,7 +172,7 @@ function LockedHintSlot({ index, onReveal, isGloballyRevealing }: LockedHintSlot
   return (
     <div className="hint-slot hint-slot--loading" aria-busy="true">
       <span className="hint-slot__spinner" aria-hidden="true" />
-      <span className="hint-slot__label">DECRYPTING...</span>
+      <span className="hint-slot__label">UNLOCKING...</span>
     </div>
   );
 }

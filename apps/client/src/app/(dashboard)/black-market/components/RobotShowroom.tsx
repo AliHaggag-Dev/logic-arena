@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment, useGLTF } from "@react-three/drei";
 import { Box3, Group, Vector3 } from 'three';
+import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useRobotColorTint } from "../../garage/hooks/useRobotColorTint";
 
 const CHASSIS_MODEL_PATHS: Record<string, string> = {
@@ -12,6 +13,9 @@ const CHASSIS_MODEL_PATHS: Record<string, string> = {
   "chassis-titan": "/robots/armored-robot.glb",
   "chassis-sandman": "/robots/sandman.glb",
 };
+
+// Aggressively preload all chassis models to eliminate Canvas suspend stutters when switching robots
+Object.values(CHASSIS_MODEL_PATHS).forEach((path) => useGLTF.preload(path));
 
 function usePrefersReducedMotion(): boolean {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -44,9 +48,16 @@ function RobotMesh({ chassisId, paintColor, tracerColor, animate }: RobotMeshPro
   // Load only the active GLTF model instead of all chassis models per showroom.
   const activeGLTF = useGLTF(modelPath ?? "/robots/robot.glb");
   const activeScene = modelPath ? activeGLTF.scene : null;
+  
+  // Clone the scene graph using SkeletonUtils.
+  // This prevents React Three Fiber from thrashing the global cached instance when unmounting/remounting.
+  const clonedScene = useMemo(() => {
+    if (!activeScene) return null;
+    return SkeletonUtils.clone(activeScene);
+  }, [activeScene]);
 
-  // Apply color tint to the loaded GLTF model
-  useRobotColorTint(activeScene, paintColor);
+  // Apply color tint to the cloned GLTF model
+  useRobotColorTint(clonedScene as unknown as Group, paintColor);
 
   useFrame((_, delta) => {
     if (!animate) return;
@@ -59,8 +70,8 @@ function RobotMesh({ chassisId, paintColor, tracerColor, animate }: RobotMeshPro
   // GLB — regardless of export units — fills the same viewport height.
   const TARGET_MODEL_HEIGHT = 2.0;
   const { modelScale, modelOffsetY } = useMemo(() => {
-    if (!activeScene) return { modelScale: 1.5, modelOffsetY: -0.85 };
-    const box = new Box3().setFromObject(activeScene);
+    if (!clonedScene) return { modelScale: 1.5, modelOffsetY: -0.85 };
+    const box = new Box3().setFromObject(clonedScene);
     const size = new Vector3();
     box.getSize(size);
     const center = new Vector3();
@@ -69,7 +80,7 @@ function RobotMesh({ chassisId, paintColor, tracerColor, animate }: RobotMeshPro
     const scale = TARGET_MODEL_HEIGHT / size.y;
     const offsetY = -center.y * scale;
     return { modelScale: scale, modelOffsetY: offsetY };
-  }, [activeScene]);
+  }, [clonedScene]);
 
   // Primitive meshes need a valid hex colour — use grey when factory spec (DEFAULT).
   // The GLB path uses useRobotColorTint which handles DEFAULT by restoring originals.
@@ -77,14 +88,14 @@ function RobotMesh({ chassisId, paintColor, tracerColor, animate }: RobotMeshPro
   const safePaintColor = paintColor === 'DEFAULT' ? PRIMITIVE_DEFAULT_COLOR : paintColor;
 
   // Boolean flags for fallback primitive geometry (used when no GLB loaded)
-  const isTitanPrimitive = chassisId.includes('titan') && !activeScene;
-  const isWraithPrimitive = chassisId.includes('wraith') && !activeScene;
+  const isTitanPrimitive = chassisId.includes('titan') && !clonedScene;
+  const isWraithPrimitive = chassisId.includes('wraith') && !clonedScene;
 
   return (
     <group ref={groupRef} position={[0, 0.3, 0]}>
-      {activeScene ? (
+      {clonedScene ? (
         <primitive
-          object={activeScene}
+          object={clonedScene}
           position={[0, modelOffsetY, 0]}
           scale={modelScale}
         />
@@ -260,8 +271,13 @@ export function RobotShowroom({ chassisId, paintColor, tracerColor, quality }: R
         style={{ background: "transparent" }}
       >
         <SceneLights color={paintColor} highQuality={highQuality} />
-        {activeQuality !== "low" && <Environment preset="city" />}
-        <RobotMesh chassisId={chassisId} paintColor={paintColor} tracerColor={tracerColor} animate={shouldAnimate} />
+        
+        {/* Suspense boundary ensures the canvas doesn't freeze or crash while fetching assets */}
+        <Suspense fallback={null}>
+          {activeQuality !== "low" && <Environment preset="city" />}
+          <RobotMesh chassisId={chassisId} paintColor={paintColor} tracerColor={tracerColor} animate={shouldAnimate} />
+        </Suspense>
+
         <OrbitControls
           enablePan={true}
           enableZoom={true}

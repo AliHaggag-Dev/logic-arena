@@ -85,7 +85,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
           <div className="flex-1 min-w-0 pr-4">
             {/* Breadcrumb */}
             <p className="text-[9px] tracking-[0.3em] text-accent/50 uppercase mb-2 font-bold">
-              {level.tabId.replace('-', ' ')} · ORDER {String(level.order).padStart(2, '0')}
+              {level.tabId.replace('-', ' ')} · LEVEL {String(level.order).padStart(2, '0')}
             </p>
 
             {/* Title */}
@@ -139,7 +139,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
         <div className="p-6 pb-4">
           <div className="flex items-center gap-2 mb-3">
             <Cpu className="w-3.5 h-3.5 text-accent/60" />
-            <span className="text-[9px] tracking-[0.3em] text-accent/50 uppercase font-bold">Intel Report</span>
+            <span className="text-[9px] tracking-[0.3em] text-accent/50 uppercase font-bold">Mission Details</span>
           </div>
           <p className="text-[12px] leading-[1.85] text-accent/80 tracking-[0.04em]">
             {level.description}
@@ -163,7 +163,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
           >
             <span className="text-[9px] tracking-[0.3em] text-accent/60 uppercase font-bold flex items-center gap-2">
               <Shield className="w-3 h-3 text-yellow-500/70" />
-              Reveal Tactical Hint
+              SHOW HINT
             </span>
             {hintOpen
               ? <ChevronUp className="w-3.5 h-3.5 text-accent/50" />
@@ -212,7 +212,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 <Zap className="w-3.5 h-3.5" />
-                ENGAGE ENEMY
+                START BATTLE
               </span>
               <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"

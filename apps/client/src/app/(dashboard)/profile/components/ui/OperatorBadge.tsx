@@ -16,12 +16,12 @@ interface Tier {
 // Icon placed directly in TIERS — eliminates the GLYPH_MAP indirection and the
 // duplicate Hexagon mapping that caused ROOKIE and LEGENDARY to look identical.
 const TIERS: Tier[] = [
-  { label: "GHOST",     minRank:   0, color: "#6b7280", Icon: Diamond  },
-  { label: "ROOKIE",    minRank:  10, color: "#22d3ee", Icon: Circle   },
-  { label: "SYNAPTIC",  minRank:  50, color: "#4ade80", Icon: Shield   },
-  { label: "OVERDRIVE", minRank: 100, color: "#f97316", Icon: Target   },
-  { label: "APEX",      minRank: 200, color: "#a855f7", Icon: Star     },
-  { label: "LEGENDARY", minRank: 500, color: "#facc15", Icon: Hexagon  },
+  { label: "BRONZE",    minRank:   0, color: "#6b7280", Icon: Diamond  },
+  { label: "SILVER",    minRank:  10, color: "#22d3ee", Icon: Circle   },
+  { label: "GOLD",      minRank:  50, color: "#4ade80", Icon: Shield   },
+  { label: "PLATINUM",  minRank: 100, color: "#f97316", Icon: Target   },
+  { label: "DIAMOND",   minRank: 200, color: "#a855f7", Icon: Star     },
+  { label: "MASTER",    minRank: 500, color: "#facc15", Icon: Hexagon  },
 ];
 
 function getTier(rank: number): Tier {

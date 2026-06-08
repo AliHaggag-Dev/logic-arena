@@ -107,7 +107,7 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between gap-3 w-full mb-4 shrink-0">
                             <h3 className="text-accent font-black uppercase tracking-[0.18em] text-xs flex items-center gap-2">
                                 <span className="w-1.5 h-5 bg-accent rounded-sm animate-pulse" />
-                                DEVELOPMENT LAB
+                                YOUR SCRIPTS
                             </h3>
                             <div className="flex items-center gap-2 px-3 py-1 bg-accent/10 border border-accent/20 rounded-full shrink-0">
                                 <Terminal size={10} className="text-accent" />

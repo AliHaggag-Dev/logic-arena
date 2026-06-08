@@ -129,7 +129,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                 {/* Game Modes Horizontal Carousel */}
                 <div className="flex flex-col gap-3 w-full group/carousel">
                     <h4 className="text-[10px] font-black text-accent tracking-[0.2em] uppercase ml-1 flex items-center gap-3">
-                        SELECT PROTOCOL
+                        SELECT GAME MODE
                         <span className="h-px bg-accent/20 flex-1" />
                     </h4>
                     

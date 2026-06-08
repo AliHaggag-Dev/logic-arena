@@ -54,16 +54,10 @@ export class ProfileQueryService {
             unlockedLevel: true,
           },
         },
-        Match: {
-          orderBy: { createdAt: 'desc' },
-          take: 100,
+        _count: {
           select: {
-            id: true,
-            type: true,
-            winnerId: true,
-            duration: true,
-            createdAt: true,
-            participants: { select: { id: true, username: true } },
+            Match: true,
+            wonMatches: true,
           },
         },
       },
@@ -71,24 +65,10 @@ export class ProfileQueryService {
 
     if (!user) return null;
 
-    const totalMatches = user.Match.length;
-    const wins = user.Match.filter((m) => m.winnerId === userId).length;
-    const losses = totalMatches - wins;
-    const winRate =
-      totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
-
-    const matchHistory: MatchSummary[] = user.Match.map((m) => {
-      const opponent = m.participants.find((p) => p.id !== userId);
-      return {
-        id: m.id,
-        date: m.createdAt,
-        type: m.type,
-        opponent: opponent?.username ?? 'N/A',
-        opponentId: opponent?.id ?? null,
-        result: m.winnerId === userId ? 'WIN' : 'LOSS',
-        duration: m.duration,
-      };
-    });
+    const totalMatches = user._count.Match;
+    const wins = user._count.wonMatches;
+    const losses = Math.max(0, totalMatches - wins);
+    const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
     const zeroCombatStats: CombatStats = {
       efficiency: 0,
@@ -118,7 +98,7 @@ export class ProfileQueryService {
       wins,
       losses,
       winRate,
-      matchHistory,
+      matchHistory: [], // Populated dynamically by frontend via paginated endpoint
       hasGoogle: !!user.googleId,
       hasGithub: !!user.githubId,
       provider: user.provider,

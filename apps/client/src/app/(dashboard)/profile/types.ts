@@ -8,6 +8,13 @@ export interface MatchEntry {
   duration: number | null; // seconds; null if match ended abnormally
 }
 
+export interface MatchHistoryResponse {
+  matches: MatchEntry[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 export interface CombatStats {
   efficiency: number;  // 0-100
   aggression: number;  // 0-100

@@ -12,11 +12,11 @@ export const STAT_COLORS: Record<keyof CombatStats, string> = {
 
 // ── Dominant-archetype display labels ────────────────────────────────────────
 export const STAT_LABELS: Record<keyof CombatStats, string> = {
-  efficiency: "EFFICIENT",
-  aggression: "AGGRESSIVE",
-  defense:    "DEFENSIVE",
-  precision:  "PRECISE",
-  speed:      "SWIFT",
+  efficiency: "SMART",
+  aggression: "ATTACKER",
+  defense:    "DEFENDER",
+  precision:  "ACCURATE",
+  speed:      "FAST",
 };
 
 // ── Zero-value fallback for new players ─────────────────────────────────────

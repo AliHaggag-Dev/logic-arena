@@ -20,8 +20,8 @@ export function MatchHistorySection({ profile, loading, isMobile, isGuest }: Pro
         sub={profile ? `TOTAL: ${profile.totalMatches}` : undefined}
       />
       <MatchHistoryTable
-        loading={loading}
-        history={profile?.matchHistory ?? []}
+        userId={profile?.id}
+        profileLoading={loading}
         isMobile={isMobile}
         isGuest={isGuest}
       />

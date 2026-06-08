@@ -150,7 +150,7 @@ export const AlgorithmChallenges = ({ onLoadScript, isMobile }: AlgorithmChallen
               Efficiency Rule
             </div>
             <p className="text-[11px] text-text-primary/40 leading-relaxed tracking-wide font-medium">
-              Every AliScript command costs energy. Write <strong className="text-text-primary/60">efficient algorithms</strong> to maximize your Efficiency Score.
+              Every AliScript command costs energy. Write <strong className="text-text-primary/60">efficient code</strong> to maximize your Efficiency Score.
             </p>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { RedisService } from '../../../common/redis.service';
 import {
   PublicProfile,
   MatchSummary,
+  MatchHistoryResponse,
   CombatStats,
   publicProfileKey,
   PUBLIC_PROFILE_TTL,
@@ -47,16 +48,10 @@ export class SocialQueryService {
             unlockedLevel: true,
           },
         },
-        Match: {
-          orderBy: { createdAt: 'desc' },
-          take: 100,
+        _count: {
           select: {
-            id: true,
-            type: true,
-            winnerId: true,
-            duration: true,
-            createdAt: true,
-            participants: { select: { id: true, username: true } },
+            Match: true,
+            wonMatches: true,
           },
         },
       },
@@ -64,24 +59,10 @@ export class SocialQueryService {
 
     if (!user) return null;
 
-    const totalMatches = user.Match.length;
-    const wins = user.Match.filter((m) => m.winnerId === user.id).length;
-    const losses = totalMatches - wins;
-    const winRate =
-      totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
-
-    const matchHistory: MatchSummary[] = user.Match.map((m) => {
-      const opponent = m.participants.find((p) => p.id !== user.id);
-      return {
-        id: m.id,
-        date: m.createdAt,
-        type: m.type,
-        opponent: opponent?.username ?? 'N/A',
-        opponentId: opponent?.id ?? null,
-        result: m.winnerId === user.id ? 'WIN' : 'LOSS',
-        duration: m.duration,
-      };
-    });
+    const totalMatches = user._count.Match;
+    const wins = user._count.wonMatches;
+    const losses = Math.max(0, totalMatches - wins);
+    const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
     const zeroCombatStats: CombatStats = {
       efficiency: 0,
@@ -101,7 +82,7 @@ export class SocialQueryService {
       wins,
       losses,
       winRate,
-      matchHistory,
+      matchHistory: [], // Populated dynamically by frontend via paginated endpoint
       combatStats: (user.combatStats as CombatStats | null) ?? zeroCombatStats,
       achievements: user.achievements,
       isOnline: false,
@@ -115,6 +96,52 @@ export class SocialQueryService {
 
     await this.redis.set(cacheKey, profile, PUBLIC_PROFILE_TTL);
     return profile;
+  }
+
+  async getMatchesPaginated(userId: string, page: number, limit: number): Promise<MatchHistoryResponse> {
+    const skip = (page - 1) * limit;
+
+    const [total, matches] = await Promise.all([
+      this.prisma.match.count({
+        where: { participants: { some: { id: userId } } },
+      }),
+      this.prisma.match.findMany({
+        where: { participants: { some: { id: userId } } },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          type: true,
+          winnerId: true,
+          duration: true,
+          createdAt: true,
+          participants: { select: { id: true, username: true } },
+        },
+      }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    const matchHistory: MatchSummary[] = matches.map((m) => {
+      const opponent = m.participants.find((p) => p.id !== userId);
+      return {
+        id: m.id,
+        date: m.createdAt,
+        type: m.type,
+        opponent: opponent?.username ?? 'N/A',
+        opponentId: opponent?.id ?? null,
+        result: m.winnerId === userId ? 'WIN' : 'LOSS',
+        duration: m.duration,
+      };
+    });
+
+    return {
+      matches: matchHistory,
+      total,
+      page,
+      totalPages,
+    };
   }
 
   async findOne(id: string) {

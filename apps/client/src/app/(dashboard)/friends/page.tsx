@@ -93,7 +93,7 @@ export default function FriendsPage() {
           <h1
             className={`text-accent font-black tracking-[0.15em] drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)] ${isMobile ? "text-xl" : "text-4xl"}`}
           >
-            ALLIANCE NETWORK
+            FRIENDS
           </h1>
           <p className="text-accent/60 text-[10px] tracking-widest uppercase mt-2">
             Friends · Requests · Suggestions

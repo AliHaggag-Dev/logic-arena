@@ -155,7 +155,7 @@ const GAME_MODES: GuideItem[] = [
     colorClass: "text-cyan-400",
     bgGlow: "shadow-[0_0_25px_rgba(34,211,238,0.15)]",
     borderClass: "border-cyan-500/20 hover:border-cyan-500/50",
-    description: "A stress-free environment designed for experimenting. Write custom code, test algorithms, and practice commands without scoring pressure.",
+    description: "A stress-free environment designed for experimenting. Write custom code, test strategies, and practice commands without scoring pressure.",
     simpleRules: [
       "No health loss or scoring - pure sandbox mode.",
       "Perfect for testing complex state loops or custom variables.",
@@ -257,7 +257,7 @@ const SCRIPT_MODES: GuideItem[] = [
     simpleRules: [
       "Write one script before the match.",
       "No manual overrides allowed.",
-      "Test thoroughly before queuing."
+      "Test thoroughly before joining a match."
     ],
     ariaPrompt: "What is Classic Mode and how do I prepare for it?",
     specs: [
@@ -301,7 +301,7 @@ const SCRIPT_MODES: GuideItem[] = [
     borderClass: "border-purple-500/20 hover:border-purple-500/50",
     description: "The ultimate test of speed and coding. Edit your robot's logic in real-time while the match is running. React instantly to changing battlefield conditions.",
     simpleRules: [
-      "Live code execution.",
+      "Live code editing.",
       "Write small tactical overrides.",
       "Requires high APM (Actions Per Minute)."
     ],
@@ -427,7 +427,7 @@ export default function ArenaGuidePage() {
             ARENA GUIDE
           </h1>
           <p className="text-[10px] text-text-secondary tracking-widest uppercase leading-relaxed max-w-2xl font-bold font-sans">
-            Learn the rules of the different combat protocols and map features to write better, smarter robot scripts.
+            Learn the rules of the different game modes and map features to write better, smarter robot scripts.
           </p>
         </header>
 

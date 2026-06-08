@@ -104,14 +104,16 @@ export function VaultMobileLayout({
 
       {/* Hero header */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-3 px-5 pt-4 pb-2">
-        <PackageOpen className="w-5 h-5 text-accent" />
-        <div>
-          <h1 className="text-base font-black tracking-[0.22em] text-accent drop-shadow-[0_0_10px_rgba(var(--accent-rgb),0.7)]">
-            THE VAULT
-          </h1>
-          <p className="text-[8px] tracking-[0.18em] text-accent/50 font-bold uppercase">
-            Personal Hangar
-          </p>
+        <div className="flex items-center gap-3 w-full">
+          <PackageOpen className="w-8 h-8 text-accent shrink-0" />
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-xl sm:text-2xl font-black tracking-widest text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)] truncate">
+              GARAGE
+            </h1>
+            <p className="text-[9px] tracking-[0.2em] text-accent/60 uppercase font-bold truncate">
+              Choose your robot and colors
+            </p>
+          </div>
         </div>
       </div>
 

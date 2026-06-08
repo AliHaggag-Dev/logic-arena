@@ -68,10 +68,10 @@ export function VaultDesktopLayout({
           <PackageOpen className="w-8 h-8 text-accent" />
           <div>
             <h1 className="text-2xl md:text-3xl font-black tracking-widest text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.8)]">
-              THE VAULT
+              GARAGE
             </h1>
             <p className="text-[10px] tracking-[0.2em] text-accent/60 uppercase font-bold">
-              Personal Hangar &amp; Loadout Configuration
+              Choose your robot and colors
             </p>
           </div>
         </div>

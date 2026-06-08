@@ -18,7 +18,7 @@ export const GUEST_LOADOUT: Record<ItemCategory, string> = {
 };
 
 export const MARKET_ITEMS: MarketItem[] = [
-  // ── ROBOT CHASSIS ──────────────────────────────────────────────
+  // ── ROBOTS ──────────────────────────────────────────────
   {
     id: "chassis-unit-01",
     name: "UNIT-01",
@@ -27,7 +27,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     color: "#ffffff",
     glowColor: "#ffffff",
     rarity: "COMMON",
-    description: "Original starter robot. Balanced and iconic.",
+    description: "Starter robot. Balanced and reliable.",
   },
   {
     id: "chassis-unit-02",
@@ -37,7 +37,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     color: "#ffffff",
     glowColor: "#ffffff",
     rarity: "COMMON",
-    description: "Classic backup robot. Reliable performance.",
+    description: "Backup robot. Fast and light.",
   },
 
   {
@@ -48,7 +48,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     color: "#f59e0b",
     glowColor: "#f59e0b",
     rarity: "LEGENDARY",
-    description: "Military-grade armored mech. Extreme durability and mass.",
+    description: "Heavy armor. Built for survival.",
   },
   {
     id: "chassis-sandman",
@@ -58,14 +58,14 @@ export const MARKET_ITEMS: MarketItem[] = [
     color: "#a3a3a3",
     glowColor: "#ffffff",
     rarity: "LEGENDARY",
-    description: "D.Va's mech from Overwatch. ",
+    description: "Advanced prototype mech.",
   },
 
-  // ── NEON PAINTS ────────────────────────────────────────────────
+  // ── COLORS ────────────────────────────────────────────────
   {
     id: "paint-default",
-    name: "Factory Spec",
-    description: "Original manufacturer colors. Clean and pristine.",
+    name: "Original",
+    description: "Clean factory white.",
     price: 0,
     category: "paint",
     rarity: "COMMON",
@@ -74,82 +74,82 @@ export const MARKET_ITEMS: MarketItem[] = [
   },
   {
     id: "paint-crimson",
-    name: "CRIMSON FURY",
+    name: "Red",
     category: "paint",
     price: 300,
     color: "#ef4444",
     glowColor: "#ef4444",
     rarity: "COMMON",
-    description: "Blood-red neon coat. Strike fear before the first shot.",
+    description: "Bright red neon paint.",
   },
   {
     id: "paint-void",
-    name: "VOID BLACK",
+    name: "Dark Blue",
     category: "paint",
     price: 500,
     color: "#1e1b4b",
     glowColor: "#818cf8",
     rarity: "RARE",
-    description: "Deepspace matte finish. Absorbs all visible light.",
+    description: "Deep space blue finish.",
   },
   {
     id: "paint-aurora",
-    name: "AURORA SHIFT",
+    name: "Green",
     category: "paint",
     price: 700,
     color: "#10b981",
     glowColor: "#10b981",
     rarity: "RARE",
-    description: "Adaptive chromatic iridescence. Mesmerizing mid-combat.",
+    description: "Bright neon green.",
   },
   {
     id: "paint-solar",
-    name: "SOLAR FLARE",
+    name: "Orange",
     category: "paint",
     price: 1200,
     color: "#f97316",
     glowColor: "#f97316",
     rarity: "LEGENDARY",
-    description: "Molten plasma pigment. Rivals the surface of the sun.",
+    description: "Glowing orange magma.",
   },
 
-  // ── TRACER ROUNDS ──────────────────────────────────────────────
+  // ── LASERS ──────────────────────────────────────────────
   {
     id: "tracer-pulse",
-    name: "PULSE TRACER",
+    name: "Cyan Laser",
     category: "tracer",
     price: 200,
     color: "#22d3ee",
     glowColor: "#22d3ee",
     rarity: "COMMON",
-    description: "Standard cyan energy tracer. Classic operator choice.",
+    description: "Classic cyan energy beam.",
   },
   {
     id: "tracer-inferno",
-    name: "INFERNO SHOT",
+    name: "Orange Laser",
     category: "tracer",
     price: 450,
     color: "#fb923c",
     glowColor: "#fb923c",
     rarity: "RARE",
-    description: "Incendiary tracer round. Leaves a burning contrail.",
+    description: "Burning orange tracer.",
   },
   {
     id: "tracer-ghost",
-    name: "GHOST BEAM",
+    name: "Purple Laser",
     category: "tracer",
     price: 600,
     color: "#c084fc",
     glowColor: "#c084fc",
     rarity: "LEGENDARY",
-    description: "Spectral projectile. Partially phases through barriers.",
+    description: "Bright purple spectral beam.",
   },
 ];
 
 export const CATEGORY_LABELS: Record<ItemCategory, string> = {
-  chassis: "Robot Model",
-  paint: "Neon Paints",
-  tracer: "Tracer Rounds",
+  chassis: "Robots",
+  paint: "Colors",
+  tracer: "Lasers",
 };
 
 export const RARITY_ORDER = { COMMON: 0, RARE: 1, LEGENDARY: 2 } as const;

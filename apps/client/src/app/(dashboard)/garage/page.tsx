@@ -181,8 +181,8 @@ export default function GaragePage() {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        title="VAULT LOCKED"
-        message="Your personal hangar is restricted to registered operators. Initialize an account to unlock, manage, and equip your customizations."
+        title="GARAGE LOCKED"
+        message="Your garage is restricted to registered players. Create an account to unlock, manage, and equip your customizations."
       />
 
       {toast && <VaultToast message={toast.message} type={toast.type} />}
