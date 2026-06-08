@@ -13,7 +13,7 @@ import { ChallengeModal } from "./components/layout/components/ChallengeModal";
 import { ToastNotification } from "./components/layout/components/ToastNotification";
 import { NotificationToasts } from "./components/layout/components/NotificationToasts";
 import { FriendRequestModal } from "./friends/components/FriendRequestModal";
-import { PWAInstallPrompt } from "../../components/PWAInstallPrompt";
+
 import { _test_navigateFromNotification } from "./components/layout/components/NotificationDropdown";
 import type { NotificationEntry } from "@/lib/api/notifications.types";
 import type { ChallengeSource, MatchMode } from "@/context/SocketContext";
@@ -96,8 +96,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           onClick={handleNotificationToastClick}
         />
 
-        {/* PWA install prompt — appears after 30s or immediately on /dashboard */}
-        <PWAInstallPrompt />
+
 
         {incomingChallenge && (
           <ChallengeModal

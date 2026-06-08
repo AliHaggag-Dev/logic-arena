@@ -13,6 +13,7 @@ import PullToRefresh from "../components/PullToRefresh";
 import { ServiceWorkerRegistrar } from "../components/ServiceWorkerRegistrar";
 import { PortraitGuard } from "../components/PortraitGuard";
 import { AiTutorClient } from "../components/AiTutorClient";
+import { PWAInstallPrompt } from "../components/PWAInstallPrompt";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-geist-sans",
@@ -231,6 +232,7 @@ export default function RootLayout({
 
         <ServiceWorkerRegistrar />
         <PortraitGuard />
+        <PWAInstallPrompt />
       </body>
     </html>
   );
