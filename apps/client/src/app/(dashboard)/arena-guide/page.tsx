@@ -4,8 +4,10 @@
 import React, { useState } from "react";
 import { 
   Swords, Shield, Flag, Trophy, Zap, Cpu, 
-  Flame, Snowflake, Compass, MessageSquareText 
+  Flame, Snowflake, Compass, MessageSquareText,
+  FileCode2, TerminalSquare, Activity
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 
 interface GuideItemSpec {
@@ -241,9 +243,82 @@ const ARENA_MAPS: GuideItem[] = [
   }
 ];
 
+const SCRIPT_MODES: GuideItem[] = [
+  {
+    id: "classic",
+    title: "CLASSIC MODE",
+    category: "mode",
+    image: "/thumbnails/classic-arena-mode.png",
+    icon: <FileCode2 className="w-6 h-6" />,
+    colorClass: "text-[var(--accent)]",
+    bgGlow: "shadow-[0_0_25px_rgba(var(--accent-rgb),0.15)]",
+    borderClass: "border-[var(--accent)]/20 hover:border-[var(--accent)]/50",
+    description: "The original Logic Arena experience. Scripts are locked before the match. Write a single comprehensive script that handles all situations without human intervention.",
+    simpleRules: [
+      "Write one script before the match.",
+      "No manual overrides allowed.",
+      "Test thoroughly before queuing."
+    ],
+    ariaPrompt: "What is Classic Mode and how do I prepare for it?",
+    specs: [
+      { label: "INTERVENTION", value: "None (Fully Auto)" },
+      { label: "SCRIPT TYPE", value: "Comprehensive AI" },
+      { label: "DIFFICULTY", value: "Hard" },
+      { label: "TACTICAL ADVICE", value: "Plan for every edge case" }
+    ]
+  },
+  {
+    id: "tactical",
+    title: "TACTICAL MODE",
+    category: "mode",
+    image: "/thumbnails/tactical-arena-mode.png",
+    icon: <TerminalSquare className="w-6 h-6" />,
+    colorClass: "text-emerald-400",
+    bgGlow: "shadow-[0_0_25px_rgba(52,211,153,0.15)]",
+    borderClass: "border-emerald-500/20 hover:border-emerald-500/50",
+    description: "Take control of the battle. The match runs in rounds, allowing you to rewrite or tweak your robot's logic during the break between rounds.",
+    simpleRules: [
+      "Match pauses between rounds.",
+      "Update your script to counter the enemy.",
+      "Adaptability is key."
+    ],
+    ariaPrompt: "How do I take advantage of the breaks in Tactical Mode?",
+    specs: [
+      { label: "INTERVENTION", value: "Between Rounds" },
+      { label: "SCRIPT TYPE", value: "Adaptive & Iterative" },
+      { label: "DIFFICULTY", value: "Medium" },
+      { label: "TACTICAL ADVICE", value: "Analyze opponent habits" }
+    ]
+  },
+  {
+    id: "hybrid",
+    title: "HYBRID MODE",
+    category: "mode",
+    image: "/thumbnails/hybrid-arena-mode.png",
+    icon: <Activity className="w-6 h-6" />,
+    colorClass: "text-purple-400",
+    bgGlow: "shadow-[0_0_25px_rgba(168,85,247,0.15)]",
+    borderClass: "border-purple-500/20 hover:border-purple-500/50",
+    description: "The ultimate test of speed and coding. Edit your robot's logic in real-time while the match is running. React instantly to changing battlefield conditions.",
+    simpleRules: [
+      "Live code execution.",
+      "Write small tactical overrides.",
+      "Requires high APM (Actions Per Minute)."
+    ],
+    ariaPrompt: "Give me some quick real-time scripts for Hybrid Mode.",
+    specs: [
+      { label: "INTERVENTION", value: "Real-time Live" },
+      { label: "SCRIPT TYPE", value: "Quick Overrides" },
+      { label: "DIFFICULTY", value: "Extreme" },
+      { label: "TACTICAL ADVICE", value: "Use short conditional blocks" }
+    ]
+  }
+];
+
 export default function ArenaGuidePage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [activeTab, setActiveTab] = useState<"modes" | "maps">("modes");
+  const { theme } = useTheme();
+  const [activeTab, setActiveTab] = useState<"modes" | "maps" | "scripts">("modes");
 
   const triggerAriaHelp = (prompt: string) => {
     const event = new CustomEvent("aria:ask", { detail: { prompt } });
@@ -267,9 +342,11 @@ export default function ArenaGuidePage() {
           src={item.image} 
           alt={item.title} 
           className="absolute inset-0 w-full h-full object-cover filter brightness-[1.1] saturate-[1.1] transition-transform duration-700 group-hover:scale-105"
+          style={{
+            WebkitMaskImage: theme !== "light" ? "linear-gradient(to top, transparent, black 40%)" : "none",
+            maskImage: theme !== "light" ? "linear-gradient(to top, transparent, black 40%)" : "none"
+          }}
         />
-        {/* Dark subtle overlay on the image */}
-        <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-transparent to-black/20" />
         
         {/* Floating icon overlapping the image bottom edge */}
         <div className={`absolute bottom-3 left-4 p-3 bg-bg-primary rounded-2xl border border-accent/15 ${item.colorClass} shadow-[0_4px_12px_rgba(0,0,0,0.4)]`}>
@@ -355,14 +432,14 @@ export default function ArenaGuidePage() {
         </header>
 
         {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-8 border-b border-white/5 pb-4">
+        <div className="flex gap-2 mb-8 border-b border-accent/10 pb-4 overflow-x-auto snap-x hide-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab("modes")}
-            className={`px-6 py-2.5 rounded-lg text-[10px] font-black tracking-[0.2em] uppercase border transition-all cursor-pointer ${
+            className={`px-4 md:px-6 py-2.5 rounded-lg text-[10px] font-black tracking-[0.2em] uppercase border transition-all cursor-pointer whitespace-nowrap snap-start ${
               activeTab === "modes"
                 ? "bg-accent/15 text-accent border-accent/50 shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]"
-                : "border-white/10 text-text-secondary hover:border-white/20 hover:text-white"
+                : "border-transparent text-text-secondary hover:bg-accent/5 hover:border-accent/20 hover:text-accent/80"
             }`}
           >
             COMBAT PROTOCOLS
@@ -370,13 +447,24 @@ export default function ArenaGuidePage() {
           <button
             type="button"
             onClick={() => setActiveTab("maps")}
-            className={`px-6 py-2.5 rounded-lg text-[10px] font-black tracking-[0.2em] uppercase border transition-all cursor-pointer ${
+            className={`px-4 md:px-6 py-2.5 rounded-lg text-[10px] font-black tracking-[0.2em] uppercase border transition-all cursor-pointer whitespace-nowrap snap-start ${
               activeTab === "maps"
                 ? "bg-accent/15 text-accent border-accent/50 shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]"
-                : "border-white/10 text-text-secondary hover:border-white/20 hover:text-white"
+                : "border-transparent text-text-secondary hover:bg-accent/5 hover:border-accent/20 hover:text-accent/80"
             }`}
           >
             ARENA MAPS
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("scripts")}
+            className={`px-4 md:px-6 py-2.5 rounded-lg text-[10px] font-black tracking-[0.2em] uppercase border transition-all cursor-pointer whitespace-nowrap snap-start ${
+              activeTab === "scripts"
+                ? "bg-accent/15 text-accent border-accent/50 shadow-[0_0_15px_rgba(var(--accent-rgb),0.15)]"
+                : "border-transparent text-text-secondary hover:bg-accent/5 hover:border-accent/20 hover:text-accent/80"
+            }`}
+          >
+            SCRIPT MODES
           </button>
         </div>
 
@@ -384,7 +472,9 @@ export default function ArenaGuidePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {activeTab === "modes"
             ? GAME_MODES.map(renderCard)
-            : ARENA_MAPS.map(renderCard)}
+            : activeTab === "maps"
+            ? ARENA_MAPS.map(renderCard)
+            : SCRIPT_MODES.map(renderCard)}
         </div>
       </div>
     </div>
