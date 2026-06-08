@@ -97,7 +97,7 @@ export function DesktopHUD({
       >
         <div className="flex flex-col items-center justify-center gap-4 h-full w-full">
           <span className="text-cyan-400 font-black tracking-[0.2em] transform -rotate-90 whitespace-nowrap text-[10px] opacity-50 group-hover:opacity-100 transition-opacity">
-            {isLeftPanelOpen ? 'ZEN_MODE' : 'SYS_HUD'}
+            {isLeftPanelOpen ? 'Zen Mode' : 'Arena HUD'}
           </span>
           <span className={`text-cyan-400 font-mono text-2xl font-black transition-transform duration-500 drop-shadow-[0_0_10px_var(--arena-cyan)] ${isLeftPanelOpen ? 'rotate-0' : 'rotate-180'}`}>
             {'<'}
@@ -264,7 +264,7 @@ export function DesktopHUD({
       <div className="absolute top-8 right-8 z-20 w-72 h-56 group">
         <div className="absolute inset-0 bg-cyan-950/10 backdrop-blur-xl border border-cyan-500/20 rounded-sm overflow-hidden transition-all group-hover:border-cyan-400/50 shadow-2xl">
           <div className="bg-cyan-900/20 px-3 py-2 flex justify-between items-center border-b border-cyan-500/20">
-            <span className="text-cyan-400 text-[10px] font-black tracking-[0.3em]">RADAR VIEW</span>
+            <span className="text-cyan-400 text-[10px] font-black tracking-[0.3em]">RADAR</span>
             <div className="flex items-center gap-2 px-3 py-1 bg-cyan-950/50 rounded-full border border-cyan-500/30">
               <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
               <span className="text-[10px] font-mono text-cyan-400 tracking-wider">
@@ -360,21 +360,21 @@ export function DesktopHUD({
 
       <div className="absolute bottom-8 right-8 z-20 flex items-center gap-6">
         <div className="flex flex-col items-end">
-          <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">Connection_Status</span>
+          <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">Connection</span>
           <span className={`text-[11px] font-black tracking-widest ${isConnected ? 'text-cyan-400' : 'text-yellow-500 animate-pulse'}`}>
             {isConnected ? 'ONLINE' : 'RECONNECTING...'}
           </span>
         </div>
         <div className="h-8 w-px bg-cyan-900/50" />
         <div className="flex flex-col items-end">
-          <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">FOV_SYSTEM</span>
+          <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">Fog</span>
           <span className={`text-[11px] font-black tracking-widest ${fogEnabled ? 'text-cyan-400' : 'text-white/30'}`}>
             {fogEnabled ? 'ACTIVE' : 'DISABLED'}
           </span>
         </div>
         <div className="h-8 w-px bg-cyan-900/50" />
         <div className="flex flex-col items-end">
-          <span className="text-[10px] text-amber-800 font-bold uppercase tracking-widest">LOCK_VISION</span>
+          <span className="text-[10px] text-amber-800 font-bold uppercase tracking-widest">Camera Lock</span>
           <span className={`text-[11px] font-black tracking-widest ${lockVision ? 'text-amber-400' : 'text-white/30'}`}>
             {lockVision ? 'LINKED' : 'FREE'}
           </span>

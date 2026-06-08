@@ -38,29 +38,29 @@ const HOW_IT_WORKS_STEPS = [
     step: "01",
     title: "WRITE",
     icon: Code2,
-    desc: "Script your robot's intelligence using AliScript — our Turing-complete battle language with loops, functions, swarm APIs, and 9 tactical super powers",
+    desc: "Script your robot's intelligence using AliScript — our battle language with loops, functions, and swarm APIs.",
   },
   {
     step: "02",
     title: "DEPLOY",
     icon: Swords,
-    desc: "Upload your script to the arena. Watch it execute live at 60fps against real opponents or AI-driven campaign enemies",
+    desc: "Upload your script to the arena. Watch it execute live at 60fps against real opponents.",
   },
   {
     step: "03",
     title: "EVOLVE",
     icon: TrendingUp,
-    desc: "Study replays frame by frame. Climb the ELO leaderboard. Unlock chassis in the Black Market. Compete in tournaments",
+    desc: "Study replays. Climb the ELO leaderboard. Unlock upgrades in the Black Market.",
   },
 ] as const;
 
 const GAME_MODES = [
   { name: "DEATHMATCH", img: "/thumbnails/mode-combat.png", desc: "Classic 1v1. Eliminate or be eliminated." },
-  { name: "SURVIVAL", img: "/thumbnails/mode-survival.png", desc: "Outlast endless enemy waves. Each wave harder." },
+  { name: "SURVIVAL", img: "/thumbnails/mode-survival.png", desc: "Outlast endless enemy waves." },
   { name: "CTF", img: "/thumbnails/mode-ctf.png", desc: "Capture the flag. Return it. Repeat." },
   { name: "KOTH", img: "/thumbnails/mode-koth.png", desc: "Hold the center zone longest to win." },
   { name: "RACING", img: "/thumbnails/mode-racing.png", desc: "First to the finish line. Obstacles included." },
-  { name: "TRAINING", img: "/thumbnails/mode-training.png", desc: "Infinite sandbox. Refine your logic safely." },
+  { name: "TRAINING", img: "/thumbnails/mode-training.png", desc: "Infinite sandbox. Refine your logic." },
 ] as const;
 
 const ARENAS = [
@@ -100,11 +100,17 @@ const PLATFORM_FEATURES = [
 
 const TECH_STACK = [
   { name: "TypeScript", icon: "/tech-icons/typescript.svg", color: "#3178C6" },
+  { name: "Next.js", icon: "/tech-icons/nextjs.svg", color: "#FFFFFF" },
+  { name: "React", icon: "/tech-icons/react.svg", color: "#61DAFB" },
   { name: "Three.js", icon: "/tech-icons/threejs.svg", color: "#049EF4" },
-  { name: "Socket.IO", icon: "/tech-icons/socketio.svg", color: "#25c2a0" },
+  { name: "TailwindCSS", icon: "/tech-icons/tailwindcss.svg", color: "#06B6D4" },
+  { name: "Framer Motion", icon: "/tech-icons/framermotion.svg", color: "#FFFFFF" },
   { name: "NestJS", icon: "/tech-icons/nestjs.svg", color: "#E0234E" },
-  { name: "Redis", icon: "/tech-icons/redis.svg", color: "#DC382D" },
+  { name: "Socket.IO", icon: "/tech-icons/socketio.svg", color: "#25c2a0" },
   { name: "PostgreSQL", icon: "/tech-icons/postgresql.svg", color: "#4169E1" },
+  { name: "Prisma", icon: "/tech-icons/prisma.svg", color: "#FFFFFF" },
+  { name: "Redis", icon: "/tech-icons/redis.svg", color: "#DC382D" },
+  { name: "Docker", icon: "/tech-icons/docker.svg", color: "#2496ED" },
 ] as const;
 
 const PARTICLE_COUNT = 12;
@@ -150,6 +156,8 @@ WHILE TRUE DO
     PATHFIND
   END
 END`;
+
+const HIGHLIGHTED_EXAMPLE = highlightAliScript(aliScriptExample);
 
 
 // ── PAGE ──
@@ -469,7 +477,7 @@ export default function LandingPage(): React.JSX.Element {
         <div className="max-w-7xl mx-auto">
           <div className="section-reveal text-center mb-4">
             <h2 className="text-accent text-3xl sm:text-4xl md:text-5xl font-black tracking-[0.1em] uppercase drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]">
-              POWERED BY ALISCRIPT v2.4
+              POWERED BY ALISCRIPT
             </h2>
           </div>
           <p className="section-reveal text-text-secondary text-center text-sm sm:text-base tracking-[0.15em] uppercase mb-12 sm:mb-16">
@@ -523,7 +531,7 @@ export default function LandingPage(): React.JSX.Element {
                 <div className="relative p-4 sm:p-5">
                   <div className="landing-terminal-scan" aria-hidden="true" />
                   <pre className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-mono">
-                    <code dangerouslySetInnerHTML={highlightAliScript(aliScriptExample)} />
+                    <code dangerouslySetInnerHTML={HIGHLIGHTED_EXAMPLE} />
                   </pre>
                 </div>
               </div>
@@ -541,11 +549,11 @@ export default function LandingPage(): React.JSX.Element {
         <div className="max-w-7xl mx-auto">
           <div className="section-reveal text-center mb-4">
             <h2 className="text-accent text-3xl sm:text-4xl md:text-5xl font-black tracking-[0.1em] uppercase drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]">
-              BUILD YOUR OPERATOR
+              BUILD YOUR ROBOT
             </h2>
           </div>
           <p className="section-reveal text-text-secondary text-center text-sm sm:text-base tracking-[0.15em] uppercase mb-12 sm:mb-16">
-            Choose your robot model. Paint it. Equip tracer rounds. Fight.
+            Choose a chassis. Paint it. Fight.
           </p>
 
           {/* Mobile: Horizontal carousel / Desktop: Grid */}
@@ -681,8 +689,9 @@ export default function LandingPage(): React.JSX.Element {
             {TECH_STACK.map((tech, i) => (
               <div
                 key={tech.name}
-                className="landing-tech-logo glass-card rounded-xl px-4 py-5 sm:py-6 flex flex-col items-center justify-center gap-3 cursor-default"
+                className="landing-tech-logo glass-card rounded-xl px-4 py-5 sm:py-6 flex flex-col items-center justify-center gap-3 cursor-default outline-none"
                 style={{ animationDelay: `${i * 0.5}s` }}
+                tabIndex={0}
               >
                 <div className="relative w-10 h-10 flex items-center justify-center">
                   <div 
@@ -730,7 +739,7 @@ export default function LandingPage(): React.JSX.Element {
           </div>
 
           <p className="section-reveal text-text-secondary text-sm sm:text-base md:text-lg tracking-[0.15em] uppercase mb-10 sm:mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join as a guest — no account required. Or sign in to save your rank and climb the leaderboard.
+            Join as a guest or sign in to climb the leaderboard.
           </p>
 
           <div className="section-reveal flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 w-full sm:w-auto">

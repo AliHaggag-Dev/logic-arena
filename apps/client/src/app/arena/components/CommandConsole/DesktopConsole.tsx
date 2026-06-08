@@ -57,14 +57,14 @@ export const DesktopConsole: React.FC<DesktopConsoleProps> = ({
             <div className="flex justify-between items-center mb-4 border-b border-cyan-900/50 pb-2 shrink-0">
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_var(--accent)]" />
-                    <span className="text-cyan-400 text-[10px] font-black tracking-[0.2em] uppercase font-sans">ALISCRIPT V2.0</span>
+                    <span className="text-cyan-400 text-[10px] font-black tracking-[0.2em] uppercase font-sans">ALISCRIPT</span>
                 </div>
                 <button
                     type="button"
                     onClick={() => setIsZenMode(!isZenMode)}
                     className="group relative px-4 py-1.5 bg-black/50 border border-purple-500/50 text-purple-300 text-[10px] font-bold rounded uppercase tracking-widest hover:bg-purple-500/20 hover:border-purple-400 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.15)] overflow-hidden cursor-pointer"
                 >
-                    <span className="relative z-10">{isZenMode ? "Exit Zen Core" : "Enter Zen Mode"}</span>
+                    <span className="relative z-10">{isZenMode ? "Exit Zen" : "Zen Mode"}</span>
                     <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-purple-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
                 </button>
             </div>

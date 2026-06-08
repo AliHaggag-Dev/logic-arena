@@ -102,7 +102,7 @@ export const SceneContent = (props: Scene3DComponentProps) => {
       {/* DYNAMIC WEATHER EFFECTS */}
       {mapTheme === 'ICE' && (
         <Sparkles 
-          count={1500} 
+          count={500} 
           scale={[35, 15, 35]} 
           position={[0, 7.5, 0]} 
           size={3.5} 
@@ -113,7 +113,7 @@ export const SceneContent = (props: Scene3DComponentProps) => {
       )}
       {mapTheme === 'LAVA' && (
         <Sparkles 
-          count={800} 
+          count={300} 
           scale={[35, 12, 35]} 
           position={[0, 6, 0]} 
           size={5} 

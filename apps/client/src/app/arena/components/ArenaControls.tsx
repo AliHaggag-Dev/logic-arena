@@ -36,7 +36,7 @@ export const ArenaControls: React.FC<ArenaControlsProps> = ({
         >
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_5px_var(--accent)]" />
-            <span className="text-[10px] font-black tracking-widest text-cyan-600 uppercase">Activity Log</span>
+            <span className="text-[10px] font-black tracking-widest text-cyan-600 uppercase">Logs</span>
             {output.length > 0 && (
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-900/50 text-cyan-400 border border-cyan-700/40">
                 {output.length}

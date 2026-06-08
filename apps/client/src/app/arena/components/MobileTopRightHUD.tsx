@@ -5,10 +5,10 @@ import { Socket } from 'socket.io-client';
 import { TacticalRadar } from './TacticalRadar';
 import { RobotState, ProjectileState, ModeData } from '../types';
 import { Users, ShieldAlert, Target } from 'lucide-react';
+import { useFPS } from '../hooks/useFPS';
 
 interface MobileHUDProps {
   modeData?: ModeData;
-  fps: number;
   fogEnabled: boolean;
   setFogEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   socket: Socket | null;
@@ -20,9 +20,10 @@ interface MobileHUDProps {
 }
 
 export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
-  modeData, fps, fogEnabled, setFogEnabled, socket, isConnected,
+  modeData, fogEnabled, setFogEnabled, socket, isConnected,
   robots, projectiles, displayMode, isPvP = false,
 }) => {
+  const fps = useFPS();
   const fpsColor = fps >= 50 ? 'var(--arena-fps-good)' : fps >= 30 ? 'var(--arena-fps-warn)' : 'var(--arena-fps-bad)';
   const [lockVision, setLockVision] = useState(false);
 
@@ -53,7 +54,7 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
       <div className="fixed top-3 right-3 z-40 flex flex-row-reverse items-start gap-2">
         <div className="w-28 bg-black/50 backdrop-blur-md border border-cyan-500/15 rounded-xl overflow-hidden shadow-xl">
           <div className="px-2 py-0.5 border-b border-cyan-500/10 flex justify-between items-center">
-            <span className="text-[6px] text-cyan-700 font-black tracking-widest uppercase font-sans">Radar</span>
+            <span className="text-[6px] text-cyan-700 font-black tracking-widest uppercase font-sans">RADAR</span>
             <span className="w-1 h-1 bg-cyan-400/60 rounded-full animate-pulse" />
           </div>
           <div className="aspect-square w-full">
@@ -107,7 +108,7 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
                 <span className="w-1.5 h-1.5 rounded-full bg-arena-training-brand shadow-[0_0_4px_rgba(var(--arena-training-brand-rgb),0.8)]" />
               </span>
               <span className="text-[7px] text-arena-training-brand/80 font-black tracking-widest uppercase flex items-center gap-1">
-                RESPAWN DUMMIES
+                RESPAWN
                 {dummies.length > 0 && (
                   <span className={`px-1 py-0.5 rounded text-[6px] ${allDead ? 'bg-arena-red text-white' : 'bg-arena-training-brand/20 text-arena-training-brand'}`}>
                     {aliveDummies}/{dummies.length}
@@ -156,7 +157,7 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
               </span>
               <span className={`text-[7px] font-black tracking-widest uppercase transition-colors ${lockVision ? 'text-amber-400/70' : 'text-white/25'
                 }`}>
-                {lockVision ? 'Vision: Linked' : 'Vision: Free'}
+                {lockVision ? 'Camera: Linked' : 'Camera: Free'}
               </span>
             </button>
           )}

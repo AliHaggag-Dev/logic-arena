@@ -35,7 +35,7 @@ export function ImageCard({
 
   return (
     <div 
-      className="relative overflow-hidden rounded-xl border border-accent/20 group hover:border-accent/50 active:border-accent/50 transition-all duration-300 cursor-pointer"
+      className="relative overflow-hidden rounded-xl border border-accent/20 group hover:border-accent/50 focus:border-accent/50 active:border-accent/50 transition-all duration-300 outline-none"
       tabIndex={0}
     >
       <div className="overflow-hidden">
@@ -44,7 +44,7 @@ export function ImageCard({
           alt={name}
           width={400}
           height={300}
-          className={`object-cover w-full ${className} transition-transform duration-500 ease-out group-hover:scale-[1.08] group-active:scale-[1.08] group-focus:scale-[1.08]`}
+          className={`object-cover w-full ${className} transition-transform duration-500 ease-out group-hover:scale-[1.08] group-focus:scale-[1.08] group-active:scale-[1.08]`}
           style={{ width: "auto", height: "auto" }}
           loading="lazy"
           onError={() => setErrored(true)}
@@ -66,7 +66,7 @@ export function ImageCard({
 
       {/* Hover glow border effect */}
       <div
-        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 group-active:opacity-100 group-focus:opacity-100 transition-opacity duration-300 pointer-events-none"
+        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity duration-300 pointer-events-none"
         style={{
           boxShadow: "inset 0 0 30px rgba(var(--accent-rgb), 0.1), 0 0 20px rgba(var(--accent-rgb), 0.05)",
         }}

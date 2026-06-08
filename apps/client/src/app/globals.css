@@ -1073,6 +1073,9 @@ textarea::selection,
   padding: 8px 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Fade edges for smooth clipping */
+  mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
 }
 
 .landing-carousel::-webkit-scrollbar {
@@ -1125,9 +1128,10 @@ textarea::selection,
   transition: all 0.3s ease;
 }
 
-.landing-tech-logo:hover, .landing-tech-logo:active {
+.landing-tech-logo:hover, .landing-tech-logo:active, .landing-tech-logo:focus {
   transform: translateY(-4px) scale(1.05);
   filter: drop-shadow(0 0 12px rgba(var(--accent-rgb), 0.4));
+  outline: none;
 }
 
 /* ── Image Card Overlay ── */

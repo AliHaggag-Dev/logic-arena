@@ -12,7 +12,6 @@ import { getAuthUserId } from '../../lib/client-security';
 import { useSoundContext } from '../../context/SoundContext';
 
 // Refactored Components
-import { useFPS } from './hooks/useFPS';
 import { useScriptResolver } from './hooks/useScriptResolver';
 import { OrientationLock } from './components/OrientationLock';
 import { MobileTopRightHUD } from './components/MobileTopRightHUD';
@@ -49,7 +48,6 @@ const ArenaPageContent = () => {
   const isSpectator = searchParams.get('spectate') === 'true';
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const isPortrait = useMediaQuery("(orientation: portrait)");
-  const fps = useFPS();
 
   const { script, loading, error, resolvedScriptId } = useScriptResolver(urlScriptId, isSpectator);
   const [localRobotFile, setLocalRobotFile] = useState('/robots/robot.glb');
@@ -235,7 +233,6 @@ const ArenaPageContent = () => {
           {isMobile ? (
             <>
               <MobileTopRightHUD
-                fps={fps}
                 fogEnabled={fogEnabled}
                 setFogEnabled={setFogEnabled}
                 socket={socket}
