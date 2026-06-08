@@ -62,7 +62,7 @@ export default function FeatureRequestsPage() {
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12 sm:pb-20">
         {/* Back */}
-        <Link href="/dashboard" className="group inline-flex items-center gap-2.5 mb-10 transition-all" style={{ color: "rgba(var(--accent-rgb),0.6)" }}>
+        <Link href="/dashboard" aria-label="Go back" className="group inline-flex items-center gap-2.5 mb-10 transition-all" style={{ color: "rgba(var(--accent-rgb),0.6)" }}>
           <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
           <span className="text-[10px] font-black tracking-[0.3em] uppercase group-hover:text-accent transition-colors" style={{ fontFamily: "var(--font-mono)" }}>Back to Home</span>
         </Link>
@@ -80,7 +80,7 @@ export default function FeatureRequestsPage() {
             </h1>
             <div className="h-px max-w-sm mb-4" style={{ background: "linear-gradient(to right, rgba(var(--accent-rgb),0.5), transparent)" }} />
             <p className="text-[13px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb),0.65)", fontFamily: "var(--font-mono)" }}>
-              Have an idea that would make Logic Arena even more legendary? We build what the community needs. Top requests are reviewed every sprint — the best ideas ship.
+              Got an idea? Describe your feature and how it improves the arena.
             </p>
           </div>
         </header>
@@ -89,7 +89,7 @@ export default function FeatureRequestsPage() {
         <div className="mb-6 flex gap-3 items-start p-4 rounded-xl" style={{ background: "rgba(var(--accent-rgb),0.04)", border: "1px solid rgba(var(--accent-rgb),0.15)" }}>
           <Info size={14} className="shrink-0 mt-0.5" style={{ color: "var(--accent)" }} />
           <p className="text-[12px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb),0.65)", fontFamily: "var(--font-mono)" }}>
-            The most effective requests include a clear problem statement and a concrete use case. Vague requests like &quot;make the editor better&quot; are harder to act on than specific ones like &quot;I want real-time instruction count in the editor as I type.&quot;
+            Be specific. Tell us exactly what you want and how it helps your strategy.
           </p>
         </div>
 

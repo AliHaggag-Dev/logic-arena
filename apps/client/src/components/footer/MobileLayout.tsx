@@ -123,7 +123,7 @@ export function MobileLayout() {
           WHERE CODE MEETS COMBAT
         </p>
         <p className="text-[11px] font-mono tracking-[0.1em] text-accent/40 leading-relaxed max-w-[340px]">
-          The competitive programming arena where your algorithms fight to the death.
+          Code your robot. Enter the arena. Dominate.
         </p>
         <MobileSocialIcons />
       </div>

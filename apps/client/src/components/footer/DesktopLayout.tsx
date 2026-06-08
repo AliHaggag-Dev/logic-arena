@@ -74,7 +74,7 @@ export function DesktopLayout() {
             WHERE CODE MEETS COMBAT
           </p>
           <p className="text-[11px] font-mono tracking-[0.1em] text-accent/40 leading-relaxed max-w-xs mb-2">
-            The competitive programming arena where your algorithms fight to the death.
+            Code your robot. Enter the arena. Dominate.
           </p>
           <DesktopSocialIcons />
         </div>

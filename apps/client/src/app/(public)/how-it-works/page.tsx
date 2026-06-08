@@ -23,12 +23,12 @@ const SECTIONS: PublicSection[] = [
 ];
 
 const ALISCRIPT_FEATURES = [
-  { icon: <Code2 size={15} />, label: "Imperative Syntax", desc: "Familiar control flow: IF / ELSE / WHILE — zero learning curve if you know any basic programming logic." },
-  { icon: <Zap size={15} />, label: "Robot API Built-In", desc: "MOVE, FIRE, SCAN — native uppercase language primitives, not a library." },
-  { icon: <RefreshCw size={15} />, label: "Deterministic Execution", desc: "Runs inside the engine at 20 ticks/second (50ms) with a fixed instruction quota ensuring hardware-independent outcomes." },
-  { icon: <Shield size={15} />, label: "Sandboxed & Safe", desc: "No filesystem or network access. Pure battle logic — no side-channel attacks, no infinite loops escaping the quota." },
-  { icon: <Layers size={15} />, label: "Version History", desc: "Every script submission is versioned. Roll back to any prior version from your Garage at any time." },
-  { icon: <Trophy size={15} />, label: "Instant Replay", desc: "Every match is recorded and replayable frame-by-frame in the 3D Arena viewer, complete with event annotations." },
+  { icon: <Code2 size={15} />, label: "Imperative Syntax", desc: "Familiar control flow: IF / ELSE / WHILE — zero learning curve." },
+  { icon: <Zap size={15} />, label: "Robot API Built-In", desc: "Native uppercase commands like MOVE, FIRE, and SCAN." },
+  { icon: <RefreshCw size={15} />, label: "Deterministic Execution", desc: "Runs at 20 ticks/second with a fixed instruction quota." },
+  { icon: <Shield size={15} />, label: "Sandboxed & Safe", desc: "Pure battle logic. No external network or filesystem access." },
+  { icon: <Layers size={15} />, label: "Version History", desc: "Every script is versioned. Roll back from your Garage at any time." },
+  { icon: <Trophy size={15} />, label: "Instant Replay", desc: "Matches are recorded and replayable frame-by-frame." },
 ];
 
 const ENGINE_FACTS = [
@@ -45,32 +45,32 @@ export default function HowItWorksPage() {
       number: "01",
       title: "Write Your Script",
       icon: <Code2 size={16} />,
-      body: "Use AliScript — our purpose-built combat scripting language — to define your robot's movement, attack patterns, and decision logic. The editor provides full autocomplete, real-time syntax checking, inline documentation, and an instruction-count profiler. You see performance impact before you ever deploy.",
-      detail: "AliScript runs in a sandboxed execution environment. Every script you write is fully isolated — it can read sensor data and issue commands, but it cannot access the network, filesystem, or any resources outside the engine.",
+      body: "Write your robot's logic using AliScript. The editor checks syntax and tracks instruction limits in real-time.",
+      detail: "AliScript runs in a sandboxed environment. Your code is fully isolated from external networks and filesystems.",
     },
     {
       id: "deploy-your-robot",
       number: "02",
       title: "Deploy Your Robot",
       icon: <Layers size={16} />,
-      body: "When your script is ready, deploy it to the Logic Arena cloud with a single click. The engine compiles your code to deterministic bytecode and runs it through a verification suite — checking for sandbox violations, quota breaches, and syntax errors — before it ever touches a live match.",
-      detail: "Every successful deployment creates a numbered version in your Garage. You can maintain multiple robot configurations simultaneously and switch between them freely. Deployments take effect immediately for asynchronous matches and at the next queue entry for live matches.",
+      body: "Deploy your script with a single click. Our engine compiles it to deterministic bytecode and verifies it for safety and quota limits.",
+      detail: "Deployments create a new version in your Garage. You can maintain multiple loadouts and switch between them freely.",
     },
     {
       id: "enter-the-arena",
       number: "03",
       title: "Enter the Arena",
       icon: <Swords size={16} />,
-      body: "Queue for a ranked match, challenge a friend in the Lobby, or tackle algorithmic boss fights in the Campaign. The matchmaking engine pairs you fairly. Once confirmed, the battle engine executes your scripts deterministically on the server — and the result streams live to the 3D Arena viewer in your browser.",
-      detail: "Matches are fully observable in real-time. Every robot action, health delta, and AI decision is rendered faithfully in the 3D viewer. Spectator Mode is always on — anyone can watch top players battle live directly from the Global Leaderboard.",
+      body: "Queue for ranked matches, play with friends, or battle bosses in the Campaign. Matches stream live to the 3D Arena viewer.",
+      detail: "Matches are fully observable in real-time. Spectator Mode lets anyone watch top players battle live.",
     },
     {
       id: "climb-the-ranks",
       number: "04",
       title: "Climb the Ranks",
       icon: <Crown size={16} />,
-      body: "Wins earn ELO rating points; losses reduce them. The ELO delta per match is determined by the skill gap between you and your opponent — defeating a higher-ranked player earns significantly more. Study your match replays to identify strategic weaknesses, iterate your script, and ascend the global leaderboard.",
-      detail: "The leaderboard is global, real-time, and backed by Redis for instant updates. Rise to the top of the ranks and establish yourself as an elite Logic Arena operator.",
+      body: "Earn rating points (ELO) by winning matches. Study your replays, improve your logic, and climb the global leaderboard.",
+      detail: "The leaderboard updates instantly. Rise to the top and become an elite Logic Arena operator.",
     },
   ];
 
