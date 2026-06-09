@@ -125,7 +125,7 @@
 
 .docs-snav-mobile-container {
   position: fixed;
-  top: 60px;
+  top: calc(56px + env(safe-area-inset-top, 0px));
   left: 0;
   right: 0;
   z-index: 45;
