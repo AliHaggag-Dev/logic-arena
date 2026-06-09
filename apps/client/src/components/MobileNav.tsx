@@ -65,7 +65,7 @@ export function MobileNav() {
   }, [pathname]);
 
   const hiddenRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/verify-email", "/arena", "/replay"];
-  const isHiddenPage = hiddenRoutes.some(route => {
+  const isHiddenPage = pathname === "/" || hiddenRoutes.some(route => {
     if (route === "/arena") {
       return pathname === "/arena" || pathname.startsWith("/arena/");
     }

@@ -15,7 +15,7 @@ export default function Footer() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Suppress footer on full-screen app routes (e.g. the 3D arena)
-  if (FOOTER_SUPPRESSED_PATHS.some((p) => pathname?.startsWith(p))) return null;
+  if (FOOTER_SUPPRESSED_PATHS.some((p) => pathname === p || pathname?.startsWith(`${p}/`))) return null;
 
   return (
     <>

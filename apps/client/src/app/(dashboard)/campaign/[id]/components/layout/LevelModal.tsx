@@ -41,7 +41,7 @@ export function LevelModal({ modal, setModal, reward, stars, level, isMobile, ro
   const handleHint = (): void => setShowHint(true);
 
   return (
-    <div className={`fixed inset-0 z-[120] flex bg-bg-primary/85 backdrop-blur-md ${isMobile ? "items-stretch justify-center p-0" : "items-center justify-center px-4"}`} role="dialog" aria-modal="true">
+    <div className={`fixed inset-0 z-[120] flex bg-bg-primary/85 backdrop-blur-md items-center justify-center ${isMobile ? "p-4" : "px-4"}`} role="dialog" aria-modal="true">
       {modal === "victory" && (
         <VictoryScreen
           reward={reward}

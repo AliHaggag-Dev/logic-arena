@@ -4,10 +4,10 @@ import React, { useEffect, useMemo } from "react";
 import { useSoundEffects } from "../../../../../../hooks/useSoundEffects";
 
 const DEFEAT_MESSAGES = [
-  "Analyze the enemy pattern.",
-  "Adapt your strategy.",
-  "Study the script. Find the weakness.",
-  "Every defeat is data.",
+  "Check the enemy script.",
+  "Try a different strategy.",
+  "Find the weakness in your code.",
+  "Review the logs and try again.",
 ];
 
 interface DefeatScreenProps {
@@ -27,7 +27,7 @@ export function DefeatScreen({ levelTitle, isMobile, onRetry, onHint, onBack }: 
   }, [playDefeat]);
 
   return (
-    <div className={`${isMobile ? "min-h-screen w-full rounded-none px-5 py-10" : "w-full max-w-[430px] rounded-2xl p-10"} border border-[rgba(var(--sem-danger-rgb),0.3)] bg-bg-primary text-center font-mono shadow-[0_0_60px_rgba(var(--sem-danger-rgb),0.16)] defeat-border`}>
+    <div className={`${isMobile ? "w-full max-w-[95%] rounded-2xl p-6" : "w-full max-w-[430px] rounded-2xl p-10"} border border-[rgba(var(--sem-danger-rgb),0.3)] bg-bg-primary text-center font-mono shadow-[0_0_60px_rgba(var(--sem-danger-rgb),0.16)] defeat-border`}>
       <style>{`
         @keyframes defeatBorderGlitch {
           0%, 100% { box-shadow: 0 0 36px rgba(var(--sem-danger-rgb),0.10); }
@@ -42,7 +42,7 @@ export function DefeatScreen({ levelTitle, isMobile, onRetry, onHint, onBack }: 
       `}</style>
       <p className="mb-2 text-[9px] font-black tracking-[0.32em] text-[rgba(var(--sem-danger-rgb),0.35)] uppercase">{levelTitle}</p>
       <h2 className="mb-4 text-[18px] font-black tracking-[0.24em] text-[rgba(var(--sem-danger-rgb),0.8)] drop-shadow-[0_0_12px_rgba(var(--sem-danger-rgb),0.55)] uppercase">
-        SYSTEM FAILURE
+        LEVEL FAILED
       </h2>
       <p className="mb-8 text-[10px] font-bold tracking-[0.16em] text-[rgba(var(--sem-danger-rgb),0.5)] uppercase">{message}</p>
       <div className="flex flex-col gap-3">
@@ -53,7 +53,7 @@ export function DefeatScreen({ levelTitle, isMobile, onRetry, onHint, onBack }: 
           SHOW HINT
         </button>
         <button type="button" onClick={onBack} className="cursor-pointer h-[44px] rounded-lg border border-transparent bg-transparent text-[10px] font-black tracking-[0.22em] text-[rgba(var(--sem-danger-rgb),0.45)] uppercase transition-colors hover:text-[rgba(var(--sem-danger-rgb),0.7)]">
-          RETREAT
+          BACK TO MAP
         </button>
       </div>
     </div>

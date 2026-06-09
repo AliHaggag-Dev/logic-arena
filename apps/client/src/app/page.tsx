@@ -473,7 +473,7 @@ export default function LandingPage(): React.JSX.Element {
       {/* ══════════════════════════════════
           ALISCRIPT SHOWCASE — Code Theater
          ══════════════════════════════════ */}
-      <section className="py-20 sm:py-28 px-4" id="aliscript">
+      <section className="py-20 sm:py-28 px-4 overflow-hidden" id="aliscript">
         <div className="max-w-7xl mx-auto">
           <div className="section-reveal text-center mb-4">
             <h2 className="text-accent text-3xl sm:text-4xl md:text-5xl font-black tracking-[0.1em] uppercase drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]">
