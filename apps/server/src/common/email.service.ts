@@ -1,39 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
 
   constructor() {
-    const port = parseInt(process.env.SMTP_PORT ?? '587', 10);
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST ?? 'smtp.gmail.com',
-      port,
-      secure: port === 465,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
-    this.transporter
-      .verify()
-      .then(() => this.logger.log('✅ SMTP Ready'))
-      .catch((err) =>
-        this.logger.error(`❌ SMTP Connection failed: ${err.message}`),
-      );
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
   async sendVerificationCode(to: string, code: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
-        from: process.env.SMTP_FROM || `"Logic Arena" <${process.env.SMTP_USER}>`,
+      await this.resend.emails.send({
+        from: process.env.SMTP_FROM || 'noreply@logicarena.dev',
         to,
         subject: '[ Logic Arena ] — Email Verification Code',
         html: `
           <div style="background:#030712;color:#22d3ee;font-family:monospace;padding:32px;border:1px solid rgba(34,211,238,0.2);border-radius:8px;max-width:480px">
+            <div style="text-align:center;padding:20px 0">
+              <img src="https://logicarena.dev/icons/logic-arena-logo.jpeg" alt="Logic Arena" style="height:48px;width:auto" />
+            </div>
             <h2 style="color:#22d3ee;letter-spacing:0.2em;margin:0 0 8px">LOGIC ARENA</h2>
             <p style="color:rgba(168,85,247,0.7);font-size:11px;letter-spacing:0.3em;margin:0 0 24px">[ IDENTITY VERIFICATION ]</p>
             <p style="color:#e2e8f0;margin:0 0 16px">Enter the following code to verify your identity:</p>
@@ -50,12 +37,15 @@ export class EmailService {
 
   async sendResetCode(to: string, code: string): Promise<void> {
     try {
-      await this.transporter.sendMail({
-        from: process.env.SMTP_FROM || `"Logic Arena" <${process.env.SMTP_USER}>`,
+      await this.resend.emails.send({
+        from: process.env.SMTP_FROM || 'noreply@logicarena.dev',
         to,
         subject: '[ Logic Arena ] — Password Reset Code',
         html: `
           <div style="background:#030712;color:#a855f7;font-family:monospace;padding:32px;border:1px solid rgba(168,85,247,0.2);border-radius:8px;max-width:480px">
+            <div style="text-align:center;padding:20px 0">
+              <img src="https://logicarena.dev/icons/logic-arena-logo.jpeg" alt="Logic Arena" style="height:48px;width:auto" />
+            </div>
             <h2 style="color:#22d3ee;letter-spacing:0.2em;margin:0 0 8px">LOGIC ARENA</h2>
             <p style="color:rgba(168,85,247,0.7);font-size:11px;letter-spacing:0.3em;margin:0 0 24px">[ SECURITY KEY RESET ]</p>
             <p style="color:#e2e8f0;margin:0 0 16px">Enter this code to reset your security key:</p>
