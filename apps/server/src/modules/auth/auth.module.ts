@@ -6,7 +6,7 @@ import { AuthOAuthService } from './auth-oauth.service';
 import { AuthController } from './auth.controller';
 import { PrismaService } from '../../common/prisma.service';
 import { EmailService } from '../../common/email.service';
-import { EmailQueueService } from '../../common/email-queue.service';
+
 
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './strategies/google.strategy';
@@ -21,7 +21,6 @@ import { GithubStrategy } from './strategies/github.strategy';
     AuthOAuthService,
     PrismaService,
     EmailService,
-    EmailQueueService,
     GoogleStrategy,
     GithubStrategy,
   ],
