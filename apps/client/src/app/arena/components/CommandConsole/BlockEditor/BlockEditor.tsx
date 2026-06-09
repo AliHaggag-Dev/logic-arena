@@ -8,6 +8,7 @@ import {
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -25,6 +26,7 @@ interface BlockEditorProps {
   setScriptInput: (value: string) => void;
   handleDeployBrain: (script: string) => void;
   onDeployDone?: () => void;
+  displayMode?: string;
 }
 
 type ContainerId = "root" | `${string}:${BlockSlot}`;
@@ -185,12 +187,17 @@ export function BlockEditor({
   setScriptInput,
   handleDeployBrain,
   onDeployDone,
+  displayMode,
 }: BlockEditorProps): React.ReactElement {
   const [blocks, setBlocks] = useState<BlockNode[]>(() => defaultBlocks());
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [activePaletteType, setActivePaletteType] = useState<BlockType | null>(null);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: DRAG_DISTANCE_PX } }));
+  
+  const mouseSensor = useSensor(PointerSensor, { activationConstraint: { distance: DRAG_DISTANCE_PX } });
+  const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } });
+  const sensors = useSensors(mouseSensor, touchSensor);
+  
   const generatedScript = useMemo(() => generateScript(blocks), [blocks]);
 
   const addBlock = (type: BlockType): void => setBlocks((current) => insertBlock(current, "root", createBlock(type)));
@@ -248,88 +255,75 @@ export function BlockEditor({
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="relative flex min-h-0 w-full flex-1 flex-col gap-2 overflow-hidden">
-        <header
-          className="flex shrink-0 items-center gap-2 rounded-2xl p-1.5"
-          style={{
-            background: "color-mix(in srgb, var(--card) 10%, rgba(var(--arena-black-rgb),0.45))",
-            border: "1px solid rgba(var(--arena-white-rgb),0.1)",
-            boxShadow: "inset 0 1px 0 rgba(var(--arena-white-rgb),0.06)",
-            backdropFilter: "blur(16px)",
-          }}
-        >
-          <div className="flex min-w-0 gap-1.5">
-            <button
-              type="button"
-              aria-label="Add command"
-              title="Add command"
-              onClick={() => setIsPaletteOpen(true)}
-              className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-200 active:scale-[0.98]"
-              style={{
-                color: "var(--arena-bg-dark)",
-                background: "var(--arena-cyan)",
-                border: "1px solid rgba(var(--arena-white-rgb),0.18)",
-                boxShadow: "0 6px 18px rgba(var(--arena-cyan-rgb),0.22)",
-              }}
-            >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              aria-label={previewOpen ? "Hide preview" : "Show preview"}
-              title={previewOpen ? "Hide preview" : "Show preview"}
-              onClick={() => setPreviewOpen((open) => !open)}
-              aria-pressed={previewOpen}
-              className="flex h-11 w-11 items-center justify-center rounded-xl transition-colors duration-200"
-              style={{
-                color: previewOpen ? "var(--arena-bg-dark)" : "rgba(var(--arena-white-rgb),0.78)",
-                background: previewOpen ? "var(--arena-cyan)" : "rgba(var(--arena-white-rgb),0.06)",
-                border: "1px solid rgba(var(--arena-white-rgb),0.12)",
-              }}
-            >
-              {previewOpen ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-            </button>
-          </div>
-          <div className="min-w-0 flex-1">
-            <button
-              type="button"
-              onClick={deploy}
-              className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl px-3.5 text-[10px] font-semibold transition-transform duration-200 active:scale-[0.98]"
-              style={{
-                color: "var(--arena-bg-dark)",
-                background: "linear-gradient(135deg, var(--arena-green), color-mix(in srgb, var(--arena-green) 78%, var(--arena-cyan)))",
-                border: "1px solid rgba(var(--arena-white-rgb),0.18)",
-                boxShadow: "0 6px 18px rgba(var(--arena-green-rgb),0.22)",
-              }}
-            >
-              <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
-              Deploy
-            </button>
-          </div>
-        </header>
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
 
-        {previewOpen && (
-          <textarea
-            aria-label="Generated AliScript preview"
-            readOnly
-            value={generatedScript}
-            className="h-24 shrink-0 resize-none rounded-xl p-3 font-mono text-[11px] leading-5 outline-none"
-            style={{
-              color: "var(--arena-cyan)",
-              background: "rgba(var(--arena-white-rgb),0.05)",
-              border: "1px solid rgba(var(--arena-white-rgb),0.1)",
-            }}
-          />
-        )}
-
-        <div className="flex w-full min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="flex w-full h-full flex-col overflow-hidden relative">
           <div
-            className="flex-1 min-h-0 overflow-hidden rounded-2xl"
+            className="flex-1 min-h-0 overflow-hidden rounded-2xl bg-black/40 relative"
             style={{ border: "1px solid rgba(var(--arena-white-rgb),0.08)" }}
           >
             <BlockCanvas blocks={blocks} onInputChange={changeInput} onAddChild={addChild} onDelete={deleteBlock} />
+            
+            {previewOpen && (
+              <textarea
+                aria-label="Generated AliScript preview"
+                readOnly
+                value={generatedScript}
+                className="absolute inset-0 z-30 h-full w-full resize-none p-4 font-mono text-xs leading-6 outline-none shadow-2xl"
+                style={{
+                  color: "var(--arena-cyan)",
+                  background: "rgba(var(--arena-black-rgb),0.95)",
+                  backdropFilter: "blur(8px)",
+                }}
+              />
+            )}
           </div>
 
+          {/* Floating Action Buttons */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-3 z-40 px-4 py-1.5 rounded-full" style={{ background: "rgba(var(--arena-black-rgb),0.6)", backdropFilter: "blur(12px)", border: "1px solid rgba(var(--arena-white-rgb),0.1)" }}>
+            <button
+              type="button"
+              aria-label={previewOpen ? "Hide preview" : "Show preview"}
+              onClick={() => setPreviewOpen((open) => !open)}
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200 shadow-lg"
+              style={{
+                color: previewOpen ? "var(--arena-bg-dark)" : "var(--arena-cyan)",
+                background: previewOpen ? "var(--arena-cyan)" : "rgba(var(--arena-white-rgb),0.05)",
+                border: "1px solid rgba(var(--arena-cyan-rgb),0.3)",
+              }}
+            >
+              {previewOpen ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
+            </button>
+            <button
+              type="button"
+              aria-label="Add command"
+              onClick={() => setIsPaletteOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-transform duration-200 active:scale-[0.9]"
+              style={{
+                color: "var(--arena-bg-dark)",
+                background: "var(--arena-cyan)",
+                border: "1px solid rgba(var(--arena-cyan-rgb),0.5)",
+                boxShadow: "0 4px 15px rgba(var(--arena-cyan-rgb),0.4)",
+              }}
+            >
+              <Plus className="h-5 w-5" aria-hidden="true" />
+            </button>
+            {displayMode !== 'TACTICAL' && (
+              <button
+                type="button"
+                onClick={deploy}
+                className="flex h-10 items-center justify-center gap-1.5 rounded-full px-3 text-[10px] font-semibold transition-transform duration-200 active:scale-[0.98]"
+                style={{
+                  color: "var(--arena-bg-dark)",
+                  background: "linear-gradient(135deg, var(--arena-green), color-mix(in srgb, var(--arena-green) 78%, var(--arena-cyan)))",
+                  boxShadow: "0 4px 15px rgba(var(--arena-green-rgb),0.2)",
+                }}
+              >
+                <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
+                Deploy
+              </button>
+            )}
+          </div>
         </div>
 
         <div

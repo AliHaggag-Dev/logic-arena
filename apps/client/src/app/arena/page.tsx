@@ -23,6 +23,7 @@ import { RacingHUD } from './components/TrainingMode/RacingHUD';
 import { SpectatorHUD } from './components/SpectatorHUD';
 import { BreakScreen } from './components/BreakScreen';
 import { RoundTransitionOverlay } from './components/Tactical/RoundTransitionOverlay';
+import { PhaseBanner } from './components/Tactical/PhaseBanner';
 
 const Scene3D = dynamic(
   () => import('./components/Scene3D').then(m => m.Scene3D),
@@ -177,7 +178,7 @@ const ArenaPageContent = () => {
         />
       )}
 
-      {!isSpectator && displayMode === 'TACTICAL' && (
+      {!isSpectator && !isMobile && displayMode === 'TACTICAL' && (
         <BreakScreen
           socket={socket}
           phase={matchPhase}
@@ -230,6 +231,10 @@ const ArenaPageContent = () => {
             />
           )}
 
+          {displayMode === 'TACTICAL' && matchPhase?.phase && (
+            <PhaseBanner phase={matchPhase.phase as unknown as string} phaseEndsAt={matchPhase.phaseEndsAt} />
+          )}
+
           {isMobile ? (
             <>
               <MobileTopRightHUD
@@ -255,7 +260,9 @@ const ArenaPageContent = () => {
                 onClassicEdit={handleClassicEdit}
                 initialScript={script?.content ?? ''}
                 displayMode={displayMode}
-                matchPhase={matchPhase.phase as unknown as string}
+                matchPhase={matchPhase?.phase as unknown as string}
+                matchPhaseState={matchPhase}
+                currentUserId={activeUserId}
               />
             </>
           ) : (

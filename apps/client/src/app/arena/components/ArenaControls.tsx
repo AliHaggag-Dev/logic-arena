@@ -25,9 +25,9 @@ export const ArenaControls: React.FC<ArenaControlsProps> = ({
   isLoading = false,
 }) => {
   return (
-    <div className={`flex flex-col gap-4 ${isMobile ? 'w-full' : ''}`}>
+    <div className={`flex flex-col gap-4 ${isMobile ? 'w-full h-full' : ''}`}>
       {/* Telemetry Log */}
-      <div className="shrink-0 border border-cyan-900/30 rounded-lg overflow-hidden bg-black/20 backdrop-blur-md">
+      <div className={`shrink-0 border border-cyan-900/30 rounded-lg overflow-hidden bg-black/20 backdrop-blur-md ${isMobile ? 'flex flex-col h-full' : ''}`}>
         {/* Header toggle */}
         <button
           type="button"
@@ -53,10 +53,10 @@ export const ArenaControls: React.FC<ArenaControlsProps> = ({
 
         {/* Collapsible body */}
         <div
-          className="overflow-hidden transition-all duration-300 ease-in-out"
-          style={{ maxHeight: isLogsOpen ? (isMobile ? '140px' : '96px') : '0px' }}
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${isMobile && isLogsOpen ? 'flex-1 min-h-0' : ''}`}
+          style={{ maxHeight: isLogsOpen ? (isMobile ? '100%' : '96px') : '0px' }}
         >
-          <div className="overflow-y-auto custom-scrollbar" style={{ maxHeight: isMobile ? '140px' : '96px' }}>
+          <div className={`overflow-y-auto custom-scrollbar ${isMobile ? 'h-full' : ''}`} style={{ maxHeight: isMobile ? 'none' : '96px' }}>
             <TerminalOutput output={output} />
           </div>
         </div>

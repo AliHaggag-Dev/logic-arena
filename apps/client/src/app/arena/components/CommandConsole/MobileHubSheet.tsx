@@ -7,8 +7,8 @@ import { AiGeneratePanel } from './AiGeneratePanel';
 
 interface MobileHubSheetProps {
     isMobile: boolean;
-    hubTab: 'controls' | 'bots' | 'handbook' | 'generate';
-    setHubTab: Dispatch<SetStateAction<'controls' | 'bots' | 'handbook' | 'generate'>>;
+    hubTab: 'logs' | 'handbook' | 'generate';
+    setHubTab: Dispatch<SetStateAction<'logs' | 'handbook' | 'generate'>>;
     commandInput: string;
     setCommandInput: (val: string) => void;
     handleCommandSubmit: (e: React.FormEvent) => void;
@@ -26,8 +26,7 @@ export const MobileHubSheet: React.FC<MobileHubSheetProps> = ({
     output, isLogsOpen, setIsLogsOpen, availableRobots, robotId, onRobotChange, onInsertAndSwitch
 }) => {
     const tabs = [
-        { id: 'controls' as const, label: 'CTRL',     icon: <Settings className="w-3.5 h-3.5" /> },
-        { id: 'bots'     as const, label: 'BOTS',     icon: <Bot      className="w-3.5 h-3.5" /> },
+        { id: 'logs'     as const, label: 'LOGS',     icon: <Settings className="w-3.5 h-3.5" /> },
         { id: 'handbook' as const, label: 'COOKBOOK', icon: <BookOpen className="w-3.5 h-3.5" /> },
         { id: 'generate' as const, label: 'AI GEN',   icon: <Sparkles className="w-3.5 h-3.5" /> },
     ];
@@ -55,26 +54,27 @@ export const MobileHubSheet: React.FC<MobileHubSheetProps> = ({
 
             {/* Tab Content */}
             <div className="flex-1 min-h-0 flex flex-col">
-                {hubTab === 'controls' && (
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        <ArenaControls
-                            isMobile={isMobile}
-                            commandInput={commandInput}
-                            setCommandInput={setCommandInput}
-                            handleCommandSubmit={handleCommandSubmit}
-                            output={output}
-                            isLogsOpen={isLogsOpen}
-                            setIsLogsOpen={setIsLogsOpen}
-                        />
-                    </div>
-                )}
-                {hubTab === 'bots' && (
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        <BotSelector
-                            availableRobots={availableRobots}
-                            robotId={robotId}
-                            onRobotChange={onRobotChange}
-                        />
+                {hubTab === 'logs' && (
+                    <div className="flex-1 min-h-0 flex flex-row gap-3">
+                        <div className="w-[45%] flex flex-col min-h-0 border-r border-cyan-900/30 pr-2">
+                            <BotSelector
+                                availableRobots={availableRobots}
+                                robotId={robotId}
+                                onRobotChange={onRobotChange}
+                                isMobile={isMobile}
+                            />
+                        </div>
+                        <div className="flex-1 flex flex-col min-h-0 pl-1">
+                            <ArenaControls
+                                isMobile={isMobile}
+                                commandInput={commandInput}
+                                setCommandInput={setCommandInput}
+                                handleCommandSubmit={handleCommandSubmit}
+                                output={output}
+                                isLogsOpen={isLogsOpen}
+                                setIsLogsOpen={setIsLogsOpen}
+                            />
+                        </div>
                     </div>
                 )}
                 {hubTab === 'handbook' && (

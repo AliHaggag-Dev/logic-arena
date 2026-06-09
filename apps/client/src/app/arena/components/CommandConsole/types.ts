@@ -21,4 +21,6 @@ export interface CommandConsoleProps {
     initialScript?: string;
     displayMode?: string;
     matchPhase?: string;
+    matchPhaseState?: any;
+    currentUserId?: string | null;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import { Zap, Terminal, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -20,6 +20,8 @@ interface MobileControlsProps {
   initialScript?: string;
   displayMode?: string;
   matchPhase?: string;
+  matchPhaseState?: any;
+  currentUserId?: string | null;
 }
 
 export function MobileControls({
@@ -35,6 +37,8 @@ export function MobileControls({
   initialScript,
   displayMode,
   matchPhase,
+  matchPhaseState,
+  currentUserId,
 }: MobileControlsProps) {
   const [activeSheet, setActiveSheet] = useState<'controls' | 'script' | null>(null);
   // Snippet bridge: HUB inserts code → stored here → ZEN_CORE picks it up
@@ -52,6 +56,12 @@ export function MobileControls({
     pendingSnippetRef.current = null;
     return snippet;
   };
+
+  useEffect(() => {
+    if (matchPhase === 'BREAK') {
+      setActiveSheet('script');
+    }
+  }, [matchPhase]);
 
   if (!isMobile) return null;
 
@@ -131,6 +141,8 @@ export function MobileControls({
           initialScript={initialScript}
           displayMode={displayMode}
           matchPhase={matchPhase}
+          matchPhaseState={matchPhaseState}
+          currentUserId={currentUserId}
         />
       </BottomSheet>
 

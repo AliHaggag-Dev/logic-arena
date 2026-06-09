@@ -8,7 +8,7 @@ import { TacticalRadar } from './TacticalRadar';
 import { RefreshCw, Eye, EyeOff, Lock, Unlock, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { RobotState, ProjectileState, ModeData } from '../types';
-import { PhaseBanner } from './Tactical/PhaseBanner';
+
 
 interface DesktopHUDProps {
   robots: RobotState[];
@@ -85,10 +85,6 @@ export function DesktopHUD({
 
   return (
     <>
-      {displayMode === 'TACTICAL' && matchPhase && (
-        <PhaseBanner phase={matchPhase} phaseEndsAt={phaseEndsAt} />
-      )}
-      
       <button
         type="button"
         aria-label={isLeftPanelOpen ? 'Collapse arena HUD panel' : 'Expand arena HUD panel'}

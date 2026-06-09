@@ -70,57 +70,58 @@ export function BreakScreen({
       aria-label="Tactical break"
     >
       <div
-        className="w-full max-w-4xl rounded-lg border p-4 backdrop-blur-md"
+        className="w-full max-w-4xl max-h-[95vh] overflow-y-auto rounded-lg border p-2.5 md:p-4 backdrop-blur-md"
         style={{
           background: 'var(--card)',
           borderColor: 'rgba(var(--accent-rgb), 0.45)',
           color: 'var(--text-primary)',
         }}
       >
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
-            <ShieldAlert size={18} />
+        <div className="mb-2 md:mb-4 flex items-center justify-between gap-2 md:gap-3">
+          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-sm font-black uppercase tracking-widest">
+            <ShieldAlert className="w-3.5 h-3.5 md:w-[18px] md:h-[18px]" />
             <span>Break - Round {phase.roundNumber} Complete</span>
           </div>
-          <div className="flex items-center gap-2 text-sm font-black tabular-nums">
-            <Clock size={16} />
+          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-sm font-black tabular-nums">
+            <Clock className="w-3.5 h-3.5 md:w-4 md:h-4" />
             {minutes}:{String(seconds).padStart(TIMER_PAD, '0')}
           </div>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="mb-2 md:mb-4 grid grid-cols-2 gap-2 md:gap-3">
           <RobotVitals label="You" health={ownRobot?.health ?? 0} />
           <RobotVitals label="Enemy" health={enemyRobot?.health ?? 0} />
         </div>
 
-        <label className="mb-2 block text-xs font-black uppercase tracking-widest text-text-secondary">
+        <label className="mb-1 md:mb-2 block text-[10px] md:text-xs font-black uppercase tracking-widest text-text-secondary">
           Script
         </label>
         <textarea
           aria-label="Break script editor"
-          className="h-72 w-full resize-none rounded border bg-bg-primary p-3 font-mono text-sm text-text-primary outline-none"
+          className="h-20 md:h-72 w-full resize-none rounded border bg-bg-primary p-2 md:p-3 font-mono text-xs md:text-sm text-text-primary outline-none"
           style={{ borderColor: 'rgba(var(--accent-rgb), 0.35)' }}
           value={draftScript}
           onChange={(event) => setDraftScript(event.target.value)}
           spellCheck={false}
         />
 
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="flex gap-4 text-xs font-black uppercase tracking-widest text-text-secondary">
+        <div className="mt-2 md:mt-4 flex items-center justify-between gap-2 md:gap-3">
+          <div className="flex flex-col md:flex-row gap-1 md:gap-4 text-[9px] md:text-xs font-black uppercase tracking-widest text-text-secondary">
             <span>{isReady ? 'You ready' : 'You waiting'}</span>
+            <span className="hidden md:inline">•</span>
             <span>{opponentReady ? 'Opponent ready' : 'Opponent waiting'}</span>
           </div>
           <button
             type="button"
             onClick={handleReady}
             disabled={isReady}
-            className="flex h-11 items-center gap-2 rounded border px-4 text-xs font-black uppercase tracking-widest text-accent disabled:opacity-50"
+            className="flex h-8 md:h-11 items-center gap-1.5 md:gap-2 rounded border px-3 md:px-4 text-[10px] md:text-xs font-black uppercase tracking-widest text-accent disabled:opacity-50"
             style={{
               background: 'rgba(var(--accent-rgb), 0.12)',
               borderColor: 'rgba(var(--accent-rgb), 0.45)',
             }}
           >
-            <Check size={16} />
+            <Check className="w-3.5 h-3.5 md:w-4 md:h-4" />
             Ready
           </button>
         </div>
@@ -132,14 +133,14 @@ export function BreakScreen({
 function RobotVitals({ label, health }: { label: string; health: number }) {
   return (
     <div
-      className="rounded border p-3"
+      className="rounded border p-1.5 md:p-3"
       style={{ borderColor: 'rgba(var(--accent-rgb), 0.28)' }}
     >
-      <div className="mb-2 text-xs font-black uppercase tracking-widest text-text-secondary">
+      <div className="mb-0.5 md:mb-2 text-[9px] md:text-xs font-black uppercase tracking-widest text-text-secondary">
         {label}
       </div>
-      <div className="flex items-center gap-2 text-lg font-black">
-        <Heart size={18} />
+      <div className="flex items-center gap-1.5 md:gap-2 text-sm md:text-lg font-black">
+        <Heart className="w-3.5 h-3.5 md:w-[18px] md:h-[18px]" />
         {Math.round(health)}
       </div>
     </div>

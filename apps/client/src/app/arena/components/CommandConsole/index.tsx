@@ -10,14 +10,14 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
     onDeployDone, onInsertAndSwitch, consumeSnippet, snippetVersion,
     isZenMode: isZenModeProp, setIsZenMode: setIsZenModeProp,
     isClassicMode = false, classicTokensLeft = 0, classicMaxTokens,
-    onClassicEdit, initialScript, displayMode, matchPhase
+    onClassicEdit, initialScript, displayMode, matchPhase, matchPhaseState, currentUserId
 }) => {
     const consoleState = useConsole(socket, robotId);
     const [isZenModeLocal, setIsZenModeLocal] = useState(false);
     const isZenMode = isZenModeProp ?? isZenModeLocal;
     const setIsZenMode = setIsZenModeProp ?? setIsZenModeLocal;
     const [isLogsOpen, setIsLogsOpen] = useState(false);
-    const [hubTab, setHubTab] = useState<'controls' | 'bots' | 'handbook' | 'generate'>('controls');
+    const [hubTab, setHubTab] = useState<'logs' | 'handbook' | 'generate'>('logs');
 
     const lastSnippetVersion = useRef(snippetVersion ?? 0);
     const initialScriptSet = useRef(false);
@@ -41,7 +41,7 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
     }
 
     if (isMobile && mobileSheet === 'script') {
-        return <MobileScriptSheet scriptInput={consoleState.scriptInput} setScriptInput={consoleState.setScriptInput} handleDeployBrain={consoleState.handleDeployBrain} onDeployDone={onDeployDone} isClassicMode={isClassicMode} classicTokensLeft={classicTokensLeft} classicMaxTokens={classicMaxTokens} onClassicEdit={onClassicEdit} displayMode={displayMode} matchPhase={matchPhase} />;
+        return <MobileScriptSheet socket={socket} scriptInput={consoleState.scriptInput} setScriptInput={consoleState.setScriptInput} handleDeployBrain={consoleState.handleDeployBrain} onDeployDone={onDeployDone} isClassicMode={isClassicMode} classicTokensLeft={classicTokensLeft} classicMaxTokens={classicMaxTokens} onClassicEdit={onClassicEdit} displayMode={displayMode} matchPhase={matchPhase} matchPhaseState={matchPhaseState} currentUserId={currentUserId} />;
     }
 
     return <DesktopConsole isMobile={isMobile} isZenMode={isZenMode} setIsZenMode={setIsZenMode} commandInput={consoleState.commandInput} setCommandInput={consoleState.setCommandInput} handleCommandSubmit={consoleState.handleCommandSubmit} output={consoleState.output} isLogsOpen={isLogsOpen} setIsLogsOpen={setIsLogsOpen} availableRobots={availableRobots} robotId={robotId} onRobotChange={onRobotChange} scriptInput={consoleState.scriptInput} setScriptInput={consoleState.setScriptInput} handleDeployBrain={consoleState.handleDeployBrain} isLibraryOpen={consoleState.isLibraryOpen} setIsLibraryOpen={consoleState.setIsLibraryOpen} setActivePrebuilt={consoleState.setActivePrebuilt} appendScriptLine={consoleState.appendScriptLine} isClassicMode={isClassicMode} classicTokensLeft={classicTokensLeft} classicMaxTokens={classicMaxTokens} onClassicEdit={onClassicEdit} displayMode={displayMode} matchPhase={matchPhase} />;

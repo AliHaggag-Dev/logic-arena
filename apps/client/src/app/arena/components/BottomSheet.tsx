@@ -83,15 +83,13 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       {/* Sheet — 85dvh gives nearly full-screen with peek at arena behind */}
       <div
         ref={sheetRef}
-        className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col rounded-t-2xl border-t transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col rounded-t-2xl border-t transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
         style={{
           height: '92dvh',
           maxHeight: 'calc(100vh - 8px)',
-          background: "color-mix(in srgb, var(--card) 14%, rgba(var(--arena-black-rgb),0.94))",
+          background: "var(--arena-black)",
           borderColor: "rgba(var(--arena-white-rgb),0.12)",
-          boxShadow: "0 -24px 64px rgba(var(--arena-black-rgb),0.75), inset 0 1px 0 rgba(var(--arena-white-rgb),0.06)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
+          boxShadow: "0 -24px 64px rgba(var(--arena-black-rgb),0.9), inset 0 1px 0 rgba(var(--arena-white-rgb),0.06)",
           transform: `translateY(${translateY}%)`,
           touchAction: 'none',
         }}
@@ -109,25 +107,20 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           />
         </div>
 
-        {/* Header */}
+        {/* Header - Close Button */}
         <div
-          className="flex shrink-0 items-center justify-between border-b px-3 py-1"
-          style={{ borderColor: "rgba(var(--arena-white-rgb),0.08)" }}
+          className="absolute top-1 right-1 z-[110]"
         >
-          <div className="min-w-0">
-            <p className="truncate text-xs font-semibold" style={{ color: "var(--arena-white)" }}>
-              {title}
-            </p>
-          </div>
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-sm transition-colors duration-200"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold transition-transform duration-200 active:scale-95"
             style={{
-              color: "rgba(var(--arena-white-rgb),0.55)",
-              background: "rgba(var(--arena-white-rgb),0.06)",
-              border: "1px solid rgba(var(--arena-white-rgb),0.1)",
+              color: "white",
+              background: "#ef4444", // solid red-500
+              border: "1px solid #dc2626", // solid red-600
+              boxShadow: "0 4px 10px rgba(239, 68, 68, 0.4)",
             }}
           >
             ✕
@@ -136,7 +129,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
         {/* Content — fills remaining space with flex-1 + overflow scroll */}
         <div
-          className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 py-2"
+          className="flex min-h-0 flex-1 flex-col overflow-hidden px-1 md:px-2.5 py-1"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {children}

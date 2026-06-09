@@ -15,14 +15,23 @@ interface MobileScriptSheetProps {
     onClassicEdit?: (script: string, tokensLeft: number) => void;
     displayMode?: string;
     matchPhase?: string;
+    socket?: any;
+    matchPhaseState?: any;
+    currentUserId?: string | null;
 }
 
 export const MobileScriptSheet: React.FC<MobileScriptSheetProps> = ({
     scriptInput, setScriptInput, handleDeployBrain, onDeployDone,
     isClassicMode = false, classicTokensLeft = 0, classicMaxTokens, onClassicEdit,
-    displayMode, matchPhase
+    displayMode, matchPhase, socket, matchPhaseState, currentUserId
 }) => {
-    const [isReady, setIsReady] = React.useState(false);
+    const isReady = matchPhaseState && currentUserId ? matchPhaseState.readyUserIds?.includes(currentUserId) : false;
+
+    const handleToggleReady = () => {
+        if (!isReady && socket) {
+            socket.emit('match:submit-ready', { script: scriptInput });
+        }
+    };
 
     if (isClassicMode && onClassicEdit) {
         return (
@@ -56,8 +65,8 @@ export const MobileScriptSheet: React.FC<MobileScriptSheetProps> = ({
                     <BreakControls 
                         isActive={matchPhase === 'BREAK'}
                         isReady={isReady}
-                        opponentReady={false} // Placeholder until backend is wired
-                        onToggleReady={() => setIsReady(!isReady)}
+                        opponentReady={false} // Backend wiring placeholder
+                        onToggleReady={handleToggleReady}
                     />
                 </div>
             )}
