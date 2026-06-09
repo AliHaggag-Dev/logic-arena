@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 const usernameSchema = z
   .string({ error: 'Username is required' })
+  .trim()
   .min(3, 'Username must be at least 3 characters')
   .max(16, 'Username must be at most 16 characters')
   .regex(

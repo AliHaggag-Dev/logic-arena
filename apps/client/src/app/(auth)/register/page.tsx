@@ -61,7 +61,7 @@ export default function RegisterPage() {
     setStatus({ message: "Creating your account...", type: "loading" });
 
     try {
-      await apiClient.post("/auth/register", { email, username, password });
+      await apiClient.post("/auth/register", { email, username: username.trim(), password });
       setStatus({ message: "Account created! Sending you to email verification...", type: "success" });
       setSafeTimeout(() => router.push(`/verify-email?email=${encodeURIComponent(email)}`), 1500);
     } catch (error: unknown) {

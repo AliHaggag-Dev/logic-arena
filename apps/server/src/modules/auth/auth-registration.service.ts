@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -24,6 +25,7 @@ export class AuthRegistrationService {
   ) {}
 
   async register(email: string, username: string, password: string) {
+    username = username.trim();
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const verifyCode = randomInt(100000, 999999).toString();
 
@@ -52,9 +54,14 @@ export class AuthRegistrationService {
       try {
         await this.emailService.sendVerificationCode(email, verifyCode);
       } catch (emailErr: any) {
+        const msg = emailErr?.message ?? String(emailErr);
+        if (msg.toLowerCase().includes('invalid')) {
+          throw new BadRequestException(
+            "This email address doesn't exist. Please check and try again.",
+          );
+        }
         throw new InternalServerErrorException(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          `Account created but verification email failed: ${emailErr.message}`,
+          `Account created but verification email failed: ${msg}`,
         );
       }
       return this.stripPassword(user);

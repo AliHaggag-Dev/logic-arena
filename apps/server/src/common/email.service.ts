@@ -32,6 +32,7 @@ export class EmailService {
       this.logger.log(`Verification email sent → ${to}`);
     } catch (error: any) {
       this.logger.error(`Failed to send verification email to ${to}: ${error.message}`);
+      throw error;
     }
   }
 
@@ -57,6 +58,7 @@ export class EmailService {
       this.logger.log(`Reset email sent → ${to}`);
     } catch (error: any) {
       this.logger.error(`Failed to send reset email to ${to}: ${error.message}`);
+      throw error;
     }
   }
 }

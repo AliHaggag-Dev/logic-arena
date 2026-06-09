@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
@@ -19,6 +19,14 @@ interface StatusState {
   type: "error" | "success" | "info" | "loading" | null;
 }
 
+const REQUIREMENTS: { key: string; label: string; test: (pw: string) => boolean }[] = [
+  { key: "minLength",  label: "At least 8 characters",              test: (pw: string) => pw.length >= 8 },
+  { key: "hasUppercase", label: "One uppercase letter",              test: (pw: string) => /[A-Z]/.test(pw) },
+  { key: "hasLowercase", label: "One lowercase letter",              test: (pw: string) => /[a-z]/.test(pw) },
+  { key: "hasNumber",  label: "One number",                         test: (pw: string) => /[0-9]/.test(pw) },
+  { key: "hasSpecialChar", label: "One special character",          test: (pw: string) => /[^a-zA-Z0-9]/.test(pw) },
+];
+
 function ResetPasswordContent() {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -30,8 +38,24 @@ function ResetPasswordContent() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { setSafeTimeout } = useSafeTimeout();
 
+  const nextRequirement = useMemo(() => {
+    if (!newPassword) return "";
+    const unmet = REQUIREMENTS.find((r) => !r.test(newPassword));
+    return unmet ? unmet.label : "";
+  }, [newPassword]);
+
+  const isPasswordValid = useMemo(
+    () => REQUIREMENTS.every((r) => r.test(newPassword)),
+    [newPassword],
+  );
+
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isPasswordValid) {
+      setStatus({ errors: [nextRequirement || "Finish all password requirements"], type: "error" });
+      return;
+    }
+
     setIsLoading(true);
     setStatus({ message: "Updating your password...", type: "loading" });
 
@@ -105,17 +129,24 @@ function ResetPasswordContent() {
           />
         </div>
 
-        <AuthInput
-          id="newPassword"
-          label="New password"
-          type="password"
-          value={newPassword}
-          onChange={setNewPassword}
-          placeholder="Create a new password"
-          required
-          disabled={isLoading}
-          autoComplete="new-password"
-        />
+        <div className="flex flex-col gap-1.5">
+          <AuthInput
+            id="newPassword"
+            label="New password"
+            type="password"
+            value={newPassword}
+            onChange={setNewPassword}
+            placeholder="Create a new password"
+            required
+            disabled={isLoading}
+            autoComplete="new-password"
+          />
+          {nextRequirement && (
+            <p className="text-xs" style={{ color: 'var(--sem-warning)' }}>
+              {nextRequirement}
+            </p>
+          )}
+        </div>
 
         <AuthStatusMessage status={status} />
 
