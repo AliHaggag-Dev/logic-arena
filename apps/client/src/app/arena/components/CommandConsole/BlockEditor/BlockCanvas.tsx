@@ -14,6 +14,8 @@ interface BlockCanvasProps {
   onInputChange: (blockId: string, key: string, value: string | number) => void;
   onAddChild: (parentId: string, slot: BlockSlot, type: BlockType) => void;
   onDelete: (blockId: string) => void;
+  showArrows?: boolean;
+  onMoveBlock?: (blockId: string, direction: "up" | "down") => void;
 }
 
 const NESTED_CANVAS_MIN_HEIGHT_PX = 52;
@@ -26,6 +28,8 @@ export function BlockCanvas({
   onInputChange,
   onAddChild,
   onDelete,
+  showArrows = false,
+  onMoveBlock,
 }: BlockCanvasProps): React.ReactElement {
   const { setNodeRef, isOver } = useDroppable({ id: containerId });
   const blockIds = blocks.map((block) => block.id);
@@ -61,6 +65,8 @@ export function BlockCanvas({
               onInputChange={onInputChange}
               onAddChild={onAddChild}
               onDelete={onDelete}
+              showArrows={showArrows}
+              onMoveBlock={onMoveBlock}
               childContent={
                 <BlockCanvas
                   blocks={block.children ?? []}
@@ -70,6 +76,8 @@ export function BlockCanvas({
                   onInputChange={onInputChange}
                   onAddChild={onAddChild}
                   onDelete={onDelete}
+                  showArrows={showArrows}
+                  onMoveBlock={onMoveBlock}
                 />
               }
               elseContent={
@@ -81,6 +89,8 @@ export function BlockCanvas({
                   onInputChange={onInputChange}
                   onAddChild={onAddChild}
                   onDelete={onDelete}
+                  showArrows={showArrows}
+                  onMoveBlock={onMoveBlock}
                 />
               }
             />

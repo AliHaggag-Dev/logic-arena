@@ -20,6 +20,7 @@ import { generateScript } from "./blockToScript";
 import type { BlockNode, BlockType } from "./blockTypes";
 import { BLOCK_DEFINITION_BY_TYPE } from "./blockTypes";
 import type { BlockSlot } from "./Block";
+import { useMediaQuery } from "../../../../../hooks/useMediaQuery";
 
 interface BlockEditorProps {
   scriptInput: string;
@@ -193,6 +194,7 @@ export function BlockEditor({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [activePaletteType, setActivePaletteType] = useState<BlockType | null>(null);
+  const isTouchDevice = useMediaQuery("(pointer: coarse)");
   
   const mouseSensor = useSensor(PointerSensor, { activationConstraint: { distance: DRAG_DISTANCE_PX } });
   const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } });
@@ -212,6 +214,19 @@ export function BlockEditor({
 
   const changeInput = (blockId: string, key: string, value: string | number): void => {
     setBlocks((current) => updateBlockInput(current, blockId, key, value));
+  };
+
+  const moveBlock = (blockId: string, direction: "up" | "down"): void => {
+    setBlocks((current) => {
+      const containerId = findContainer(current, blockId);
+      if (!containerId) return current;
+      const sourceBlocks = getContainerBlocks(current, containerId);
+      const index = sourceBlocks.findIndex((b) => b.id === blockId);
+      if (index < 0) return current;
+      const newIndex = direction === "up" ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= sourceBlocks.length) return current;
+      return updateContainer(current, containerId, (source) => arrayMove(source, index, newIndex));
+    });
   };
 
   const handleDragStart = (event: DragStartEvent): void => {
@@ -262,7 +277,7 @@ export function BlockEditor({
             className="flex-1 min-h-0 overflow-hidden rounded-2xl bg-black/40 relative"
             style={{ border: "1px solid rgba(var(--arena-white-rgb),0.08)" }}
           >
-            <BlockCanvas blocks={blocks} onInputChange={changeInput} onAddChild={addChild} onDelete={deleteBlock} />
+            <BlockCanvas blocks={blocks} onInputChange={changeInput} onAddChild={addChild} onDelete={deleteBlock} showArrows={isTouchDevice} onMoveBlock={moveBlock} />
             
             {previewOpen && (
               <textarea

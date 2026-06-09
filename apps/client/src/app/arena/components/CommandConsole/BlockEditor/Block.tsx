@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { BlockSelect } from "./BlockSelect";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -21,6 +22,8 @@ interface BlockProps {
   onInputChange: (blockId: string, key: string, value: string | number) => void;
   onAddChild: (parentId: string, slot: BlockSlot, type: BlockType) => void;
   onDelete: (blockId: string) => void;
+  showArrows?: boolean;
+  onMoveBlock?: (blockId: string, direction: "up" | "down") => void;
   childContent?: React.ReactNode;
   elseContent?: React.ReactNode;
 }
@@ -196,6 +199,8 @@ export function Block({
   onInputChange,
   onAddChild,
   onDelete,
+  showArrows = false,
+  onMoveBlock,
   childContent,
   elseContent,
 }: BlockProps): React.ReactElement {
@@ -218,24 +223,62 @@ export function Block({
           boxShadow: "inset 0 1px 0 rgba(var(--arena-white-rgb),0.05)",
         }}
       >
-        <div className="grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
-          <button
-            type="button"
-            aria-label={`Drag ${definition.label} block`}
-            title="Drag block"
-            {...attributes}
-            {...listeners}
-            className="flex shrink-0 items-center justify-center rounded-lg text-[11px]"
-            style={{
-              minHeight: ACTION_BUTTON_SIZE_PX,
-              minWidth: ACTION_BUTTON_SIZE_PX,
-              color: "rgba(var(--arena-white-rgb),0.55)",
-              background: "rgba(var(--arena-white-rgb),0.06)",
-              border: "1px solid rgba(var(--arena-white-rgb),0.1)",
-            }}
-          >
-            ⋮⋮
-          </button>
+        <div className="grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2">
+          <div className="flex items-start gap-0.5">
+            <button
+              type="button"
+              aria-label={`Drag ${definition.label} block`}
+              title="Drag block"
+              {...attributes}
+              {...listeners}
+              className="flex shrink-0 items-center justify-center rounded-lg text-[11px]"
+              style={{
+                minHeight: ACTION_BUTTON_SIZE_PX,
+                minWidth: ACTION_BUTTON_SIZE_PX,
+                color: "rgba(var(--arena-white-rgb),0.55)",
+                background: "rgba(var(--arena-white-rgb),0.06)",
+                border: "1px solid rgba(var(--arena-white-rgb),0.1)",
+              }}
+            >
+              ⋮⋮
+            </button>
+            {showArrows && (
+              <div className="flex flex-col gap-0.5">
+                <button
+                  type="button"
+                  aria-label="Move block up"
+                  title="Move block up"
+                  onClick={(e) => { e.stopPropagation(); onMoveBlock?.(block.id, "up"); }}
+                  className="flex items-center justify-center rounded-lg"
+                  style={{
+                    height: 22,
+                    width: 22,
+                    color: "rgba(var(--arena-white-rgb),0.55)",
+                    background: "rgba(var(--arena-white-rgb),0.06)",
+                    border: "1px solid rgba(var(--arena-white-rgb),0.1)",
+                  }}
+                >
+                  <ChevronUp size={14} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Move block down"
+                  title="Move block down"
+                  onClick={(e) => { e.stopPropagation(); onMoveBlock?.(block.id, "down"); }}
+                  className="flex items-center justify-center rounded-lg"
+                  style={{
+                    height: 22,
+                    width: 22,
+                    color: "rgba(var(--arena-white-rgb),0.55)",
+                    background: "rgba(var(--arena-white-rgb),0.06)",
+                    border: "1px solid rgba(var(--arena-white-rgb),0.1)",
+                  }}
+                >
+                  <ChevronDown size={14} />
+                </button>
+              </div>
+            )}
+          </div>
           <div className="min-w-0">
             <span className="block truncate font-mono text-[12px] font-semibold" style={{ color: definition.colorVar }}>
               {definition.label}
