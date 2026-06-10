@@ -16,6 +16,7 @@
     "@logic-arena/logic-parser": "workspace:*",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "@sentry/nextjs": "^10.57.0",
     "axios": "^1.15.0",
     "framer-motion": "^11.2.10",
     "isomorphic-dompurify": "^3.12.0",
