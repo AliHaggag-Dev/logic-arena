@@ -48,7 +48,7 @@ export function DashboardHeader({ username, avatarUrl }: DashboardHeaderProps) {
         aria-label="Logic Arena — Go to dashboard"
       >
         <Image
-          src="/dashboard-logo.png"
+          src="/dashboard-logo.webp"
           alt="Logic Arena"
           width={50}
           height={50}

@@ -1,6 +1,5 @@
 import type { NextConfig } from "next";
 import path from "path";
-import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -20,10 +19,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
-  org: "cs-arena",
-  project: "logic-arena-client",
-  silent: true,
-  widenClientFileUpload: true,
-  disableLogger: true,
-});
+export default nextConfig;
