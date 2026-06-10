@@ -34,6 +34,7 @@ export function VaultCategoryTabs({ activeCategory, onChange }: VaultCategoryTab
             key={cat}
             role="tab"
             aria-selected={isActive}
+            aria-label={CATEGORY_LABELS[cat]}
             onClick={() => onChange(cat)}
             className={`
               flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-xl

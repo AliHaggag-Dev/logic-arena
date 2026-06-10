@@ -15,6 +15,7 @@ export const ActionButton = ({ icon, tooltip, onClick, disabled, colorClass, glo
         type="button"
         onClick={onClick}
         disabled={disabled}
+        aria-label={tooltip}
         className={`group/btn relative flex items-center justify-center w-9 h-9 md:w-8 md:h-8 rounded-lg transition-all duration-300 outline-none ${disabled ? 'opacity-30 cursor-not-allowed grayscale' : `cursor-pointer ${colorClass}`}`}
     >
         <div className="relative z-10 transition-transform duration-300 group-hover/btn:scale-110 group-active/btn:scale-90">

@@ -53,7 +53,7 @@ export function DashboardHeader({ username, avatarUrl }: DashboardHeaderProps) {
           width={180}
           height={48}
           className="app-logo-img block"
-          style={{ height: "44px", width: "auto" }}
+          style={{ width: '180px', height: '48px', objectFit: 'contain' }}
           unoptimized
           priority
         />
