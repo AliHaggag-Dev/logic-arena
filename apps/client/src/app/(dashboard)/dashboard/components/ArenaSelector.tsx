@@ -94,6 +94,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                     src={currentMode.image} 
                     alt={currentMode.label}
                     fill
+                    priority
                     sizes="(max-width: 768px) 205px, 266px"
                     className="absolute inset-0 w-full h-full object-cover filter brightness-[1.15] saturate-[1.2] animate-in fade-in zoom-in-[0.98] duration-700"
                 />
