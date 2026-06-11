@@ -86,8 +86,8 @@ export class GridBuilder {
   }
 
   /** Returns true when a robot center segment keeps physical clearance from all solid obstacles. */
-  hasWorldClearance(a: Vec2, b: Vec2): boolean {
-    const clearance = PATH_CONFIG.ROBOT_RADIUS + PATH_CONFIG.CLEARANCE_MARGIN;
+  hasWorldClearance(a: Vec2, b: Vec2, relaxed = false): boolean {
+    const clearance = relaxed ? 1 : PATH_CONFIG.ROBOT_RADIUS + PATH_CONFIG.CLEARANCE_MARGIN;
 
     for (const obs of this.gameLoop.getObstacles()) {
       if (obs.type !== 'SOLID') continue;
@@ -131,7 +131,7 @@ export class GridBuilder {
           if (!this.isWalkable(nr, nc)) continue;
 
           const center = this.cellCenter(nr, nc);
-          if (origin && !this.hasWorldClearance(origin, center)) continue;
+          if (origin && !this.hasWorldClearance(origin, center, true)) continue;
 
           const score = origin
             ? Math.hypot(origin.x - center.x, origin.y - center.y)

@@ -1,5 +1,4 @@
 'use client';
-'use client';
 import React, { memo, useRef, useEffect, useState, useMemo } from 'react';
 import { AnimationClip, CanvasTexture, Color, Group, LinearFilter, Material, MathUtils, Mesh, MeshStandardMaterial, Object3D, Vector3 } from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
@@ -12,6 +11,7 @@ import {
 import { HIT_FLASH_DURATION } from '../sceneConstants';
 import { EnergyBarSprite } from './EnergyBar';
 import { SpeechBubble } from './SpeechBubble';
+import { interpolationBuffer } from '../../../core/interpolation-buffer';
 
 const EMPTY_ANIMATION_CLIPS: AnimationClip[] = [];
 const MOVEMENT_THRESHOLD = 0.01;
@@ -124,7 +124,7 @@ export const RobotModelInner = memo(({
   energy = 1000, maxEnergy = 1000, inStasis = false, fovDirection,
   scale = 2, hideHealthBar = false, speechBubble, inFog = false,
   isShielded = false, isCloaked = false, animations = EMPTY_ANIMATION_CLIPS,
-  displayMode
+  displayMode, robotId
 }: RobotModelInnerProps) => {
   const groupRef = useRef<Group>(null);
   const modelMotionRef = useRef<Group>(null);
@@ -270,6 +270,23 @@ export const RobotModelInner = memo(({
     const group = groupRef.current;
     if (!group) return;
 
+    // --- INTERPOLATION BUFFER: sub-frame smooth positioning ---
+    // Query the buffer ONCE per frame at native refresh rate (60/120fps)
+    // for a perfectly interpolated position + rotation between two
+    // confirmed server snapshots. Falls back to React props if unavailable.
+    const SCENE_SCALE = 40;
+    const SCENE_OFFSET_X = 10;
+    const SCENE_OFFSET_Z = 7.5;
+    const interp = robotId ? interpolationBuffer.getInterpolatedRobot(robotId) : null;
+
+    if (interp) {
+      targetPosition.current.set(
+        (interp.position.x / SCENE_SCALE) - SCENE_OFFSET_X,
+        0.15,
+        (interp.position.y / SCENE_SCALE) - SCENE_OFFSET_Z,
+      );
+    }
+
     // Smooth position lerp
     const lerpFactor = 1 - Math.pow(POSITION_LERP_DECAY, delta * POSITION_LERP_SPEED);
     if (basePosition.current.distanceTo(targetPosition.current) > SNAP_DISTANCE) {
@@ -282,7 +299,8 @@ export const RobotModelInner = memo(({
     // The robot BODY always follows `rotation` (tracks/movement direction).
     // `fovDirection` is handled separately by the FovCone component.
     let targetRot: number | null = null;
-    const r = resolveRotation(rotation);
+    const effectiveRotation = interp ? interp.rotation : rotation;
+    const r = resolveRotation(effectiveRotation);
     targetRot = r !== null ? HALF_PI - r : null;
 
     if (targetRot !== null) {

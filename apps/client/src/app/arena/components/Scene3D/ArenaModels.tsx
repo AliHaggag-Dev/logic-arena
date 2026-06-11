@@ -22,6 +22,7 @@ import { KothZone } from './models/KothZone';
 import { CtfFlagModel } from './models/CtfFlag';
 import { CtfBase } from './models/CtfBase';
 import { ModeData, CtfFlag as CtfFlagType } from '../../types';
+import { interpolationBuffer } from '../../core/interpolation-buffer';
 
 /** Convert arena units (0–800, 0–600) to 3D scene units (-10→10, -7.5→7.5) */
 const toSceneX = (x: number) => (x / 40) - 10;
@@ -94,8 +95,20 @@ export const ArenaModels = ({
     setRenderTick(t => t + 1);
   });
 
-  const robots = gameStateRef.current?.robots ?? [];
-  const projectiles = gameStateRef.current?.projectiles ?? [];
+  // Read interpolated state from the buffer for smooth rendering.
+  // Falls back to raw gameStateRef if the buffer has no data yet (first 100ms).
+  const interpolatedState = interpolationBuffer.getDelayedSnapshot();
+  const liveRobots = gameStateRef.current?.robots ?? [];
+  const liveProjectiles = gameStateRef.current?.projectiles ?? [];
+  // Merge: use delayed state for known robots (100ms-old position = smooth interpolation),
+  // but include live robots/projectiles that don't exist in the delayed snapshot yet
+  // (e.g. newly spawned in survival mode) so they never vanish from the visual.
+  const robots = interpolatedState?.robots
+    ? liveRobots.map(live => interpolatedState.robots.find(d => d.id === live.id) ?? live)
+    : liveRobots;
+  const projectiles = interpolatedState?.projectiles
+    ? liveProjectiles.map(live => interpolatedState.projectiles.find(d => d.id === live.id) ?? live)
+    : liveProjectiles;
 
   const { hitBurstsRef, hitFlashMapRef, isSpotted } = useSceneAnimation(robots, firedTracer, soundFx);
 
@@ -226,6 +239,7 @@ export const ArenaModels = ({
                         robot.model ? (ROBOT_FILES[robot.model] ?? robot.model) : '/robots/robot.glb'
                       }
                       speechBubble={speechBubble?.robotId === robot.id ? speechBubble.message : null}
+                      robotId={robot.id}
                     />
                   </group>
                 </RobotErrorBoundary>
@@ -252,6 +266,7 @@ export const ArenaModels = ({
         <LaserModel
           key={p.id}
           position={[toSceneX(p.position.x), 0.375, toSceneZ(p.position.y)]}
+          projectileId={p.id}
         />
       ))}
     </>

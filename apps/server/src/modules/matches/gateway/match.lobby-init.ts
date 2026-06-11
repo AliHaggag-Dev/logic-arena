@@ -141,11 +141,11 @@ export async function createAndStartMatch(
   state.matchModes.set(matchId, mode);
   state.arenaMatchModes.set(
     matchId,
-    matchMode !== 'CLASSIC' ? 'TACTICAL' : 'CLASSIC',
+    matchMode === 'TACTICAL' ? 'TACTICAL' : 'CLASSIC',
   );
   state.matchPhases.set(matchId, 'ROUND_ACTIVE');
   state.roundNumbers.set(matchId, 1);
-  if (matchMode !== 'CLASSIC') {
+  if (matchMode === 'TACTICAL') {
     const config = {
       durations: [20, 30, 45],
       breakDuration: 60,

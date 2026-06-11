@@ -9,6 +9,7 @@ import {
 import { getAuthUserId } from '../../../../lib/client-security';
 import { useSocket } from './useSocket';
 import { useSpeechBubbles } from './useSpeechBubbles';
+import { interpolationBuffer } from '../../core/interpolation-buffer';
 
 export interface MatchPhaseState {
   phase: 'WAITING' | 'ROUND_ACTIVE' | 'BREAK' | 'FINISHED';
@@ -181,18 +182,24 @@ export const useGameState = (
 
       gameStateRef.current = parsed;
 
+      // Push every snapshot into the interpolation buffer for smooth 120fps rendering
+      interpolationBuffer.push(parsed);
+
       // Throttled UI state update — 10×/sec max
+      // Uses the DELAYED snapshot (100ms ago) so React component liveness
+      // matches the visual timeline — projectiles won't vanish mid-air.
       const now = performance.now();
       if (now - lastUiUpdateRef.current > 100) {
         lastUiUpdateRef.current = now;
-        setUiState({ ...parsed, obstacles: [] });
+        const delayedState = interpolationBuffer.getDelayedSnapshot() ?? parsed;
+        setUiState({ ...delayedState, obstacles: [] });
         const activeUserId = getAuthUserId() || socketUserId;
         setSelectedRobotId(prev => {
-          const hasUser = activeUserId && parsed.robots.some(r => r.id === activeUserId);
-          const hasPrev = prev && parsed.robots.some(r => r.id === prev);
+          const hasUser = activeUserId && delayedState.robots.some(r => r.id === activeUserId);
+          const hasPrev = prev && delayedState.robots.some(r => r.id === prev);
 
-          if (!hasPrev && parsed.robots.length > 0) {
-            return hasUser ? activeUserId : parsed.robots[0].id;
+          if (!hasPrev && delayedState.robots.length > 0) {
+            return hasUser ? activeUserId : delayedState.robots[0].id;
           }
           return prev;
         });

@@ -45,6 +45,17 @@ export class LogicEvaluator {
     this.wasInStasis.delete(robotId);
   }
 
+  /**
+   * Reset a robot's runtime state (memory, cooldowns, wait ticks) without
+   * clearing its AST or function definitions. The robot will re-execute its
+   * script from the top on the next tick, allowing recovery from transient
+   * errors (e.g. state corruption, infinite loop TLE).
+   */
+  resetRuntimeState(robotId: string): void {
+    this.registry.resetRuntimeState(robotId);
+    this.wasInStasis.delete(robotId);
+  }
+
   evaluate(robotId: string): void {
     const program = this.registry.robotLogic.get(robotId);
     const robot = this.gameLoop.getRobots().find((r) => r.id === robotId);

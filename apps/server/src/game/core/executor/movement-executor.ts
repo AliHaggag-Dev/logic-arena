@@ -53,7 +53,7 @@ export class MovementExecutor {
       robot.fovDirection = Math.atan2(dy, dx);
     }
 
-    if (robot.insideIcePatch) {
+    if (robot.insideIcePatch && Math.hypot(robot.velocity.x, robot.velocity.y) > 0.1) {
       return;
     }
 

@@ -26,8 +26,9 @@ export class MatchLoopManager {
     if (this.timer) return;
 
     this.timer = setInterval(async () => {
-      for (const [matchId, match] of this.state.matches.entries()) {
-        this.advanceMatchPhase(matchId, match);
+      try {
+        for (const [matchId, match] of this.state.matches.entries()) {
+          this.advanceMatchPhase(matchId, match);
         if (this.state.matchPhases.get(matchId) === 'BREAK') continue;
 
         const state = match.getState();
@@ -141,7 +142,11 @@ export class MatchLoopManager {
           this.server.to(matchId).emit('gameState', delta);
         }
       }
-    }, 50);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[MatchLoop] Tick loop crashed: ${msg}`);
+    }
+  }, 50);
   }
 
   stopLoop() {

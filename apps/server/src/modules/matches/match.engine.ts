@@ -275,35 +275,51 @@ export class MatchEngine {
   // ---------------------------------------------------------------------------
 
   tick(): void {
-    this.tickCount += 1;
-    this.processHazards();
+    try {
+      this.tickCount += 1;
+      this.processHazards();
 
-    this.gameLoop.getRobots().forEach((robot) => {
-      if (!robot.isAlive) return;
-      // Clear flag so logic executor can set it if an action is performed
-      robot.executedCommandThisTick = false;
-      this.deps.logicEvaluator.evaluate(robot.id);
-      // Flush buffered action emits after all scripts for this robot have
-      // been evaluated — prevents command alternation spam in the display.
-      this.deps.actionExecutor.flushEmits(robot.id);
-    });
-
-    const modeData = this.gameLoop.getModeData();
-    if (modeData) {
-      const robots = this.gameLoop.getRobots();
-      if (modeData.type === 'KOTH') {
-        this.gameLoop.setModeData(processKothTick(robots, modeData));
-      } else if (modeData.type === 'CTF') {
-        this.gameLoop.setModeData(processCtfTick(robots, modeData));
-      } else if (modeData.type === 'SURVIVAL') {
-        const result = processSurvivalTick(robots, modeData);
-        this.gameLoop.setModeData(result.modeData);
-        if (result.waveComplete) {
-          this.spawnSurvivalWave(result.modeData.wave);
+      this.gameLoop.getRobots().forEach((robot) => {
+        if (!robot.isAlive) return;
+        // Clear flag so logic executor can set it if an action is performed
+        robot.executedCommandThisTick = false;
+        try {
+          this.deps.logicEvaluator.evaluate(robot.id);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          this.logger.error(`Script error for robot ${robot.id}: ${msg}`);
+          this.onEvent?.('scriptError', { robotId: robot.id, error: msg });
+          // Reset runtime state so the robot can recover on the next tick
+          // instead of being permanently frozen with stale memory/cooldowns.
+          this.deps.logicEvaluator.resetRuntimeState(robot.id);
         }
-      } else if (modeData.type === 'RACING') {
-        this.gameLoop.setModeData(processRacingTick(robots, modeData));
+        // Flush buffered action emits after all scripts for this robot have
+        // been evaluated — prevents command alternation spam in the display.
+        this.deps.actionExecutor.flushEmits(robot.id);
+      });
+
+      const modeData = this.gameLoop.getModeData();
+      if (modeData) {
+        const robots = this.gameLoop.getRobots();
+        if (modeData.type === 'KOTH') {
+          this.gameLoop.setModeData(processKothTick(robots, modeData));
+        } else if (modeData.type === 'CTF') {
+          this.gameLoop.setModeData(processCtfTick(robots, modeData));
+        } else if (modeData.type === 'SURVIVAL') {
+          const result = processSurvivalTick(robots, modeData);
+          this.gameLoop.setModeData(result.modeData);
+          if (result.waveComplete) {
+            this.spawnSurvivalWave(result.modeData.wave);
+          }
+        } else if (modeData.type === 'RACING') {
+          this.gameLoop.setModeData(processRacingTick(robots, modeData));
+        }
       }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Fatal tick error: ${msg}`);
+      // Outer guard: never let a crash escape tick().
+      // The match continues; next tick runs fresh in 100ms.
     }
   }
 

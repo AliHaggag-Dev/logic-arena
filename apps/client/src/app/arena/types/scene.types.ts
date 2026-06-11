@@ -90,6 +90,8 @@ export interface RobotModelProps {
   speechBubble?: string | null;
   /** When true the robot is hidden by fog of war — render at low opacity with blue-gray tint */
   inFog?: boolean;
+  /** Robot ID — used to query the interpolation buffer for sub-frame smooth positioning */
+  robotId?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -169,6 +171,8 @@ export interface FallbackRobotProps {
 
 export interface LaserModelProps {
   position: [number, number, number];
+  /** Projectile ID — used to query the interpolation buffer for sub-frame smooth positioning */
+  projectileId?: string;
 }
 
 export interface ObstacleModelProps {

@@ -127,7 +127,16 @@ export class GameLoop {
     if (!this.isRunning) return;
     const deltaTime = (currentTime - this.lastFrameTime) / 1000;
     this.lastFrameTime = currentTime;
-    this.update(deltaTime);
+    // Safety net: if update() throws, the loop MUST continue scheduling
+    // the next frame. Without this try/catch an error anywhere in the
+    // physics pipeline (projectiles, robots, collisions, FOV) silently
+    // kills the entire simulation — robots and projectiles freeze mid-air.
+    try {
+      this.update(deltaTime);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[GameLoop] Physics update crashed: ${msg}`);
+    }
     this.animationFrameId = requestAnimationFrame(this.loop);
   };
 

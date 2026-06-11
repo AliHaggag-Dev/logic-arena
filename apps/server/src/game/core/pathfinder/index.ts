@@ -28,6 +28,7 @@ export class Pathfinder {
   private readonly lastTarget = new Map<string, Vec2>();
   private readonly lastWallHitTime = new Map<string, number>();
   private readonly progressCache = new Map<string, PathProgress>();
+  private readonly unreachableCache = new Map<string, Vec2>();
 
   constructor(private readonly gameLoop: GameLoop) {
     this.gridBuilder = new GridBuilder(this.gameLoop);
@@ -77,18 +78,39 @@ export class Pathfinder {
     const directPathBlocked =
       path.length === 0 &&
       !this.gridBuilder.hasWorldClearance(robot.position, target.position);
+
+    const lastUnreachable = this.unreachableCache.get(id);
+    const targetIsStillUnreachable = lastUnreachable && Math.hypot(target.position.x - lastUnreachable.x, target.position.y - lastUnreachable.y) < PATH_CONFIG.RECOMPUTE_DIST;
+
+    // Allow recomputation when the robot hits a wall (position changed) or
+    // target moved significantly, even if the target was previously cached
+    // as unreachable. Only gate the directPathBlocked check on the cache.
     const targetMoved =
-      moved > PATH_CONFIG.RECOMPUTE_DIST || newWallHit || directPathBlocked;
+      moved > PATH_CONFIG.RECOMPUTE_DIST || newWallHit || (directPathBlocked && !targetIsStillUnreachable);
 
     if (targetMoved) {
       // Target moved, collision happened, or direct route is blocked.
       path = this.computePath(robot.position, target.position);
 
+      if (path.length === 0) {
+        this.unreachableCache.set(id, { x: target.position.x, y: target.position.y });
+      } else {
+        this.unreachableCache.delete(id);
+      }
+
       this.pathCache.set(id, path);
       this.lastTarget.set(id, { x: target.position.x, y: target.position.y });
       this.progressCache.delete(id);
     } else if (path.length === 0) {
-      // Path exhausted but target hasn't moved — steer directly to target.
+      // If direct route is blocked AND target is cached as unreachable,
+      // don't steer into walls. Wait for the target to move or for a wall
+      // hit to trigger recomputation.
+      if (!this.gridBuilder.hasWorldClearance(robot.position, target.position)) {
+        robot.velocity.x = 0;
+        robot.velocity.y = 0;
+        return;
+      }
+      // Path exhausted but direct route is clear — steer directly to target.
       // Do NOT recompute A*: that would generate a path whose first waypoint
       // is behind the robot (robot overshot the last grid cell centre),
       // causing the back-and-forth oscillation.
@@ -158,6 +180,7 @@ export class Pathfinder {
     this.lastTarget.delete(robotId);
     this.lastWallHitTime.delete(robotId);
     this.progressCache.delete(robotId);
+    this.unreachableCache.delete(robotId);
   }
 
   private computePath(start: Vec2, target: Vec2): Vec2[] {
