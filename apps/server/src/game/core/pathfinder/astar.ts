@@ -53,16 +53,8 @@ export class AStarProtocol {
     let adjustedSR = sR;
     let adjustedSC = sC;
 
-    // Snap a blocked origin to the safest adjacent walkable cell
-    if (this.gridBuilder.impassable[sR]?.[sC]) {
-      const snapped = this.gridBuilder.nearestWalkable(sR, sC, {
-        x: startX,
-        y: startY,
-      });
-      if (!snapped) return [];
-      adjustedSR = snapped.r;
-      adjustedSC = snapped.c;
-    }
+    // Start snapping removed: A* must start at the true physical cell
+    // to prevent generating paths that start behind the robot.
 
     // Snap a blocked target to the safest adjacent walkable cell
     if (this.gridBuilder.impassable[tR]?.[tC]) {
@@ -155,7 +147,12 @@ export class AStarProtocol {
         if (tG < bestG) {
           gScore.set(nKey, tG);
           parent.set(nKey, curKey);
-          const tH = this.octile(Math.abs(tR - nr), Math.abs(tC - nc));
+          
+          // Deterministic tie-breaker to eliminate "Path Churn" (oscillation) 
+          // between mirrored equidistant paths around obstacles.
+          let tH = this.octile(Math.abs(tR - nr), Math.abs(tC - nc));
+          tH += nr * 0.0001 + nc * 0.000001;
+
           heap.push({
             f: tG + tH,
             g: tG,

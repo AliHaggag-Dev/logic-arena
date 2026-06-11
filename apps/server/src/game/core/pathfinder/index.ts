@@ -132,6 +132,16 @@ export class Pathfinder {
     ) {
       path.shift();
     }
+
+    // Continuous Dynamic String Pulling:
+    // If the robot has direct physical clearance to the NEXT waypoint (path[1]),
+    // safely skip the current waypoint (path[0]). This dynamically smooths out
+    // A* grid "staircases" into perfectly smooth, rounded curves around obstacles,
+    // completely eliminating robotic zigzagging (spinning) when following cached paths.
+    while (path.length > 1 && this.gridBuilder.hasWorldClearance(robot.position, path[1])) {
+      path.shift();
+    }
+
     this.pathCache.set(id, path);
 
     if (
@@ -184,22 +194,10 @@ export class Pathfinder {
   }
 
   private computePath(start: Vec2, target: Vec2): Vec2[] {
-    const path = this.astar.performAStar(start.x, start.y, target.x, target.y);
-
-    if (path.length > 0 && this.isSameCell(start, path[0])) {
-      path.shift();
-    }
-
-    return path;
+    return this.astar.performAStar(start.x, start.y, target.x, target.y);
   }
 
-  private isSameCell(a: Vec2, b: Vec2): boolean {
-    return (
-      Math.floor(a.x / PATH_CONFIG.CELL) ===
-        Math.floor(b.x / PATH_CONFIG.CELL) &&
-      Math.floor(a.y / PATH_CONFIG.CELL) === Math.floor(b.y / PATH_CONFIG.CELL)
-    );
-  }
+
 
   private isStalled(robotId: string, distance: number): boolean {
     const previous = this.progressCache.get(robotId);
