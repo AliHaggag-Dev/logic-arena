@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useScripts } from "./hooks/useScripts";
 import { ArenaSelector } from "./components/ArenaSelector";
@@ -26,6 +26,15 @@ export default function DashboardPage() {
         handleCreateScript, handleGoToArena, handleGoToLobby, handleEditScript,
         handleOptimisticUpdate, handleChangeScriptMode, handleRevert, handleDeleteScript
     } = useScripts();
+
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 767px)');
+        setIsMobile(mq.matches);
+        const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
 
     return (
         <div className="min-h-dvh bg-bg-primary font-mono text-accent selection:bg-accent/30 relative overflow-hidden pb-[calc(80px+env(safe-area-inset-bottom))] lg:pb-0">
@@ -131,7 +140,7 @@ export default function DashboardPage() {
                         {/* Scrolling scripts list */}
                         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-3 px-3 pb-6 flex flex-col gap-3 no-scrollbar">
                             {initialLoad ? (
-                                <ScriptSkeleton />
+                                <ScriptSkeleton isMobile={isMobile} />
                             ) : scripts.length === 0 ? (
                                 <div className="flex-1 flex flex-col items-center justify-center p-8 bg-bg-secondary/10 border border-dashed border-accent/15 rounded-2xl text-center gap-3 text-text-secondary">
                                     <div className="relative">

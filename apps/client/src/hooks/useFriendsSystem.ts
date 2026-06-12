@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { friendsApi } from '../lib/api/friends';
 import type {
   FriendEntry,
@@ -220,7 +220,10 @@ export function useFriendsSystem() {
     [showToast],
   );
 
-  const onlineFriends = friends.filter((f) => f.status !== 'offline');
+  const onlineFriends = useMemo(
+    () => friends.filter((f) => f.status !== 'offline'),
+    [friends],
+  );
 
   return {
     friends,

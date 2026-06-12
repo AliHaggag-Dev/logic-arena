@@ -303,15 +303,6 @@ export function useNotifications(): UseNotificationsReturn {
   const hasMore = useStoreState((s) => s.hasMore);
   const isOpen = useStoreState((s) => s.isOpen);
   const toasts = useStoreState((s) => s.toasts);
-  const [, force] = useState(0);
-
-  const isMountedRef = useRef(true);
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
 
   useEffect(() => {
     const s = getStore();
@@ -373,9 +364,6 @@ export function useNotifications(): UseNotificationsReturn {
   const dismissToastFn = useCallback((id: string) => {
     dismissToast(id);
   }, []);
-
-  void force;
-  void isMountedRef;
 
   const unreadFriendsRequestCount = items.filter(
     (n) => n.type === 'FRIEND_REQUEST' && !n.read,

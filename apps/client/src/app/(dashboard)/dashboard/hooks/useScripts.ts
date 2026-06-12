@@ -82,7 +82,7 @@ export function useScripts() {
         setSafeTimeout(() => setStatus({ message: "", type: null }), delay);
     }, [clearAllSafeTimeouts, setSafeTimeout]);
 
-    const handleCreateScript = async (e: React.FormEvent) => {
+    const handleCreateScript = useCallback(async (e: React.FormEvent) => {
         if (e) e.preventDefault();
         if (isGuest) {
             setShowAuthModal(true);
@@ -117,7 +117,7 @@ export function useScripts() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [isGuest, newScriptTitle, newScriptMode, clearStatusAfter]);
 
     const handleGoToArena = useCallback((scriptId: string) => {
         const script = scripts.find((s) => s.id === scriptId);

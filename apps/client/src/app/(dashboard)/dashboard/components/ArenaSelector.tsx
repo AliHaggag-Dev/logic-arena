@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { GameMode } from '../hooks/useScripts';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
@@ -60,19 +60,29 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
 
-    const handleScroll = () => {
+    const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleScroll = useCallback(() => {
         if (modesRef.current) {
             const { scrollLeft, scrollWidth, clientWidth } = modesRef.current;
             setCanScrollLeft(scrollLeft > 20);
             setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
         }
-    };
+    }, []);
+
+    const handleResize = useCallback(() => {
+        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+        resizeTimerRef.current = setTimeout(handleScroll, 150);
+    }, [handleScroll]);
 
     useEffect(() => {
         handleScroll();
-        window.addEventListener('resize', handleScroll);
-        return () => window.removeEventListener('resize', handleScroll);
-    }, []);
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+        };
+    }, [handleScroll, handleResize]);
 
     const scroll = (dir: 'left' | 'right') => {
         if (modesRef.current) {

@@ -46,16 +46,6 @@ export function NotificationToasts({ toasts, onDismiss, onClick }: NotificationT
           onClick={onClick}
         />
       ))}
-      <style jsx>{`
-        @keyframes toastIn {
-          from { opacity: 0; transform: translateX(20px) scale(0.95); }
-          to { opacity: 1; transform: translateX(0) scale(1); }
-        }
-        @keyframes toastOut {
-          from { opacity: 1; transform: translateX(0) scale(1); }
-          to { opacity: 0; transform: translateX(20px) scale(0.95); }
-        }
-      `}</style>
     </div>
   );
 }

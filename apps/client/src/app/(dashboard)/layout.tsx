@@ -57,16 +57,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <SocketContext.Provider value={socketValue}>
-      <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        @keyframes modalIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to   { opacity: 1; transform: scale(1); }
-        }
-      `}</style>
 
       <div className="flex min-h-dvh bg-bg-primary font-mono selection:bg-accent/30">
         {!isAdminRoute && (
