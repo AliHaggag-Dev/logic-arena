@@ -28,6 +28,8 @@ interface BlockEditorProps {
   handleDeployBrain: (script: string) => void;
   onDeployDone?: () => void;
   displayMode?: string;
+  editorBlocks?: BlockNode[] | null;
+  setEditorBlocks?: React.Dispatch<React.SetStateAction<BlockNode[] | null>>;
 }
 
 type ContainerId = "root" | `${string}:${BlockSlot}`;
@@ -189,8 +191,23 @@ export function BlockEditor({
   handleDeployBrain,
   onDeployDone,
   displayMode,
+  editorBlocks,
+  setEditorBlocks,
 }: BlockEditorProps): React.ReactElement {
-  const [blocks, setBlocks] = useState<BlockNode[]>(() => defaultBlocks());
+  const [localBlocks, setLocalBlocks] = useState<BlockNode[]>(() => defaultBlocks());
+  const blocks = editorBlocks ?? localBlocks;
+  
+  const setBlocks = (updater: BlockNode[] | ((current: BlockNode[]) => BlockNode[])) => {
+    if (setEditorBlocks) {
+      setEditorBlocks((prev) => {
+        const current = prev ?? defaultBlocks();
+        return typeof updater === "function" ? updater(current) : updater;
+      });
+    } else {
+      setLocalBlocks(updater as any);
+    }
+  };
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [activePaletteType, setActivePaletteType] = useState<BlockType | null>(null);

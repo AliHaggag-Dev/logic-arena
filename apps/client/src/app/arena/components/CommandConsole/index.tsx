@@ -41,7 +41,7 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
     }
 
     if (isMobile && mobileSheet === 'script') {
-        return <MobileScriptSheet socket={socket} scriptInput={consoleState.scriptInput} setScriptInput={consoleState.setScriptInput} handleDeployBrain={consoleState.handleDeployBrain} onDeployDone={onDeployDone} isClassicMode={isClassicMode} classicTokensLeft={classicTokensLeft} classicMaxTokens={classicMaxTokens} onClassicEdit={onClassicEdit} displayMode={displayMode} matchPhase={matchPhase} matchPhaseState={matchPhaseState} currentUserId={currentUserId} />;
+        return <MobileScriptSheet socket={socket} scriptInput={consoleState.scriptInput} setScriptInput={consoleState.setScriptInput} editorBlocks={consoleState.editorBlocks} setEditorBlocks={consoleState.setEditorBlocks} handleDeployBrain={consoleState.handleDeployBrain} onDeployDone={onDeployDone} isClassicMode={isClassicMode} classicTokensLeft={classicTokensLeft} classicMaxTokens={classicMaxTokens} onClassicEdit={onClassicEdit} displayMode={displayMode} matchPhase={matchPhase} matchPhaseState={matchPhaseState} currentUserId={currentUserId} />;
     }
 
     const handleSubmitReady = () => {

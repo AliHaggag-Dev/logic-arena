@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Socket } from "socket.io-client";
+import { BlockNode } from "../components/CommandConsole/BlockEditor/blockTypes";
 
 export const useConsole = (socket: Socket | null, robotId: string, currentUserId?: string | null) => {
     const [output, setOutput] = useState<string[]>([]);
     const [commandInput, setCommandInput] = useState<string>("");
     const [scriptInput, setScriptInput] = useState<string>("");
+    const [editorBlocks, setEditorBlocks] = useState<BlockNode[] | null>(null);
     const [isLibraryOpen, setIsLibraryOpen] = useState(false);
     const [activePrebuilt, setActivePrebuilt] = useState<string | null>(null);
 
@@ -89,6 +91,8 @@ export const useConsole = (socket: Socket | null, robotId: string, currentUserId
         setCommandInput,
         scriptInput,
         setScriptInput,
+        editorBlocks,
+        setEditorBlocks,
         isLibraryOpen,
         setIsLibraryOpen,
         activePrebuilt,

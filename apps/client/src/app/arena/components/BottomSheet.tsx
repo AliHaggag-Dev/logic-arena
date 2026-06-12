@@ -66,7 +66,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     }
   };
 
-  if (!isMobile || !isRendered) return null;
+  if (!isMobile) return null;
 
   return (
     <>
@@ -76,7 +76,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         aria-label="Close"
         className={`fixed inset-0 z-[60] transition-opacity duration-300 border-0 outline-none p-0 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
-        style={{ background: 'linear-gradient(to top, rgba(var(--arena-black-rgb),0.9) 50%, rgba(var(--arena-black-rgb),0.4) 100%)' }}
+        style={{ 
+          background: 'linear-gradient(to top, rgba(var(--arena-black-rgb),0.9) 50%, rgba(var(--arena-black-rgb),0.4) 100%)',
+          display: isRendered ? 'block' : 'none'
+        }}
         onClick={onClose}
       />
 
@@ -86,12 +89,13 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         className="fixed bottom-0 left-0 right-0 z-[100] flex flex-col rounded-t-2xl border-t transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
         style={{
           height: '92dvh',
-          maxHeight: 'calc(100vh - 8px)',
+          maxHeight: 'calc(100dvh - 8px)',
           background: "var(--arena-black)",
           borderColor: "rgba(var(--arena-white-rgb),0.12)",
           boxShadow: "0 -24px 64px rgba(var(--arena-black-rgb),0.9), inset 0 1px 0 rgba(var(--arena-white-rgb),0.06)",
           transform: `translateY(${translateY}%)`,
           touchAction: 'none',
+          display: isRendered ? 'flex' : 'none'
         }}
       >
         {/* Drag Handle */}

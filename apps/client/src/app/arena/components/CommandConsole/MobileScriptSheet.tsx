@@ -7,6 +7,8 @@ import { BreakControls } from '../Tactical/BreakControls';
 interface MobileScriptSheetProps {
     scriptInput: string;
     setScriptInput: (val: string) => void;
+    editorBlocks?: any[] | null;
+    setEditorBlocks?: React.Dispatch<React.SetStateAction<any[] | null>>;
     handleDeployBrain: (script: string) => void;
     onDeployDone?: () => void;
     isClassicMode?: boolean;
@@ -21,7 +23,7 @@ interface MobileScriptSheetProps {
 }
 
 export const MobileScriptSheet: React.FC<MobileScriptSheetProps> = ({
-    scriptInput, setScriptInput, handleDeployBrain, onDeployDone,
+    scriptInput, setScriptInput, editorBlocks, setEditorBlocks, handleDeployBrain, onDeployDone,
     isClassicMode = false, classicTokensLeft = 0, classicMaxTokens, onClassicEdit,
     displayMode, matchPhase, socket, matchPhaseState, currentUserId
 }) => {
@@ -57,6 +59,8 @@ export const MobileScriptSheet: React.FC<MobileScriptSheetProps> = ({
             <BlockEditor
                 scriptInput={scriptInput}
                 setScriptInput={setScriptInput}
+                editorBlocks={editorBlocks}
+                setEditorBlocks={setEditorBlocks}
                 handleDeployBrain={handleDeployBrain}
                 onDeployDone={onDeployDone}
             />
