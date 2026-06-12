@@ -30,6 +30,9 @@ export const useGameState = (
   const matchIdFromUrl = searchParams.get('matchId');
   const themeFromUrl = searchParams.get('theme') || 'CYBER';
 
+  // Generate matchId once per component lifecycle to survive socket reconnects
+  const sessionMatchId = useMemo(() => matchIdFromUrl || crypto.randomUUID(), [matchIdFromUrl]);
+
   const socket = useSocket();
   const { speechBubble, setRobotBubble, cleanupBubbles } = useSpeechBubbles();
 
@@ -38,7 +41,7 @@ export const useGameState = (
   const obstaclesRef = useRef<ObstacleState[]>([]);
   const [uiState, setUiState] = useState<GameState>({ robots: [], projectiles: [], obstacles: [] });
   const [firedTracer, setFiredTracer] = useState<FiredTracer | null>(null);
-  const [selectedRobotId, setSelectedRobotId] = useState<string>('');
+  const [selectedRobotId, setSelectedRobotId] = useState<string>(getAuthUserId() || '');
   const [socketUserId, setSocketUserId] = useState<string | null>(null);
 
   const [trainingStats, setTrainingStats] = useState({
@@ -72,11 +75,19 @@ export const useGameState = (
   const tracerTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    gameStateRef.current = { robots: [], projectiles: [], obstacles: [] };
+    // ── Full state reset between arena mounts ──────────────────────────
+    // Without this, stale IDs from the previous match leak into the new
+    // one, causing updateLogic to send the wrong robotId and the server
+    // to silently reject it.
+    gameStateRef.current = { robots: [], projectiles: [], obstacles: [], mapTheme: undefined };
     obstaclesRef.current = [];
+    interpolationBuffer.clear();
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUiState({ robots: [], projectiles: [], obstacles: [] });
+    setUiState({ robots: [], projectiles: [], obstacles: [], mapTheme: undefined });
     setMatchResult(null);
+    setSelectedRobotId('');
+    setSocketUserId(null);
+    setTrainingStats({ shotsFired: 0, startTime: Date.now(), dummiesDestroyed: 0 });
 
     // -----------------------------------------------------------------------
     // Socket event handlers
@@ -84,11 +95,10 @@ export const useGameState = (
 
     const handleConnect = () => {
       console.log('[Socket] Connected');
-      const matchId = matchIdFromUrl || crypto.randomUUID();
       if (isSpectator) {
-        socket.emit('spectate', { matchId });
+        socket.emit('spectate', { matchId: sessionMatchId });
       } else if (scriptId) {
-        socket.emit('joinMatch', { matchId, scriptId, mode: mode || 'COMBAT', matchMode: matchMode || 'HYBRID', mapTheme: themeFromUrl });
+        socket.emit('joinMatch', { matchId: sessionMatchId, scriptId, mode: mode || 'COMBAT', matchMode: matchMode || 'HYBRID', mapTheme: themeFromUrl });
       }
     };
 
@@ -109,6 +119,9 @@ export const useGameState = (
       console.log('[Socket] Authenticated:', data);
       if (data.userId) {
         setSocketUserId(data.userId);
+        // Force-set selectedRobotId to the new userId. Using prev || id
+        // would keep a stale guest ID from the previous socket connection.
+        setSelectedRobotId(data.userId);
       }
     };
 
@@ -306,6 +319,10 @@ export const useGameState = (
     }
 
     return () => {
+      // Notify server to forcefully clean up the match before disconnecting
+      if (socket.connected) {
+        socket.emit('leaveMatch', { matchId: sessionMatchId });
+      }
       socket.off('connect', handleConnect);
       socket.off('authenticated', handleAuthenticated);
       socket.off('error', handleError);
@@ -322,6 +339,7 @@ export const useGameState = (
       socket.disconnect();
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
       cleanupBubbles();
+      interpolationBuffer.clear();
     };
   }, [socket, scriptId, matchIdFromUrl, mode, isSpectator, themeFromUrl, setRobotBubble, cleanupBubbles]);
 
@@ -346,6 +364,7 @@ export const useGameState = (
     setFogEnabled,
     socketUserId,
     spectatorCount,
+    sessionMatchId,
     clearMatchResult: () => setMatchResult(null),
   };
 };

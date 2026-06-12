@@ -325,22 +325,16 @@ export class MatchEngine {
 
   private initEnvironmentHazards(): void {
     if (this.mapTheme === 'LAVA') {
-      // Remove static LAVA obstacles — replaced by dynamic LAVA_POOL hazards
-      const obstacles = this.gameLoop.getObstacles();
-      for (let i = obstacles.length - 1; i >= 0; i--) {
-        if (obstacles[i].type === 'LAVA') obstacles.splice(i, 1);
-      }
+      // GameLoop already loaded LAVA_OBSTACLES (volcanic rock walls).
+      // Just add dynamic LAVA_POOL lava circles on top.
       this.spawnThemeHazards(
         'LAVA_POOL',
         MatchEngine.LAVA_POOL_RADIUS,
         this.randomInt(3, 4),
       );
     } else if (this.mapTheme === 'ICE') {
-      // Remove static LAVA obstacles — inconsistent with glacial theme
-      const obstacles = this.gameLoop.getObstacles();
-      for (let i = obstacles.length - 1; i >= 0; i--) {
-        if (obstacles[i].type === 'LAVA') obstacles.splice(i, 1);
-      }
+      // GameLoop already loaded ICE_OBSTACLES (crystal formations).
+      // Just add dynamic ICE_PATCH slippery zones on top.
       this.spawnThemeHazards(
         'ICE_PATCH',
         MatchEngine.ICE_PATCH_RADIUS,
@@ -631,10 +625,10 @@ export class MatchEngine {
     this.deps.logicEvaluator.clearLogicForRobot(userId);
   }
 
-  updateRobotScript(robotId: string, scriptContent: string): void {
+  updateRobotScript(robotId: string, scriptContent: string): boolean {
     const exists = this.gameLoop.getRobots().some((r) => r.id === robotId);
-    if (exists)
-      parseAndSetLogic(robotId, scriptContent, this.deps.logicEvaluator);
+    if (!exists) return false;
+    return parseAndSetLogic(robotId, scriptContent, this.deps.logicEvaluator);
   }
 
   updateInitialPlayer(userId: string, script: string): void {

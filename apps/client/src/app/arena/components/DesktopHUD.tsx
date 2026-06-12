@@ -6,7 +6,7 @@ import { Socket } from 'socket.io-client';
 import { CommandConsole } from './CommandConsole';
 import { TacticalRadar } from './TacticalRadar';
 import { RefreshCw, Eye, EyeOff, Lock, Unlock, ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { RobotState, ProjectileState, ModeData } from '../types';
 
 
@@ -32,6 +32,7 @@ interface DesktopHUDProps {
   initialScript?: string;
   matchPhase?: string;
   phaseEndsAt?: number;
+  sessionMatchId?: string;
 }
 
 export function DesktopHUD({
@@ -56,10 +57,21 @@ export function DesktopHUD({
   initialScript,
   matchPhase,
   phaseEndsAt = 0,
+  sessionMatchId,
 }: DesktopHUDProps) {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [lockVision, setLockVision] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
+  const router = useRouter();
+
+  // Explicit cleanup before navigation — emit leaveMatch so the server
+  // tears down the match before Next.js unmounts the arena components.
+  const handleBackToDashboard = useCallback(() => {
+    if (socket && sessionMatchId) {
+      socket.emit('leaveMatch', { matchId: sessionMatchId });
+    }
+    router.push('/dashboard');
+  }, [socket, sessionMatchId, router]);
 
   // Listen for lockVision state changes from the server
   useEffect(() => {
@@ -105,13 +117,14 @@ export function DesktopHUD({
         <div className="absolute top-6 left-8 pointer-events-none flex flex-col gap-1">
           <div className="flex items-end gap-6">
             <div className="flex items-center gap-3">
-              <Link 
-                href="/dashboard"
-                className="pointer-events-auto group flex items-center justify-center w-8 h-8 rounded-full bg-cyan-950/40 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all"
+              <button
+                type="button"
+                onClick={handleBackToDashboard}
+                className="pointer-events-auto group flex items-center justify-center w-8 h-8 rounded-full bg-cyan-950/40 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all cursor-pointer"
                 title="Abort Session & Return to Dashboard"
               >
                 <ChevronLeft size={16} className="text-cyan-400 group-hover:-translate-x-0.5 transition-transform" />
-              </Link>
+              </button>
               <h1 className="text-4xl font-black tracking-tighter text-cyan-400 italic leading-none drop-shadow-[0_0_20px_rgba(var(--arena-cyan-rgb),0.6)]">
                 LOGIC ARENA
               </h1>

@@ -49,6 +49,11 @@ interface InterpolatedEntity {
 class InterpolationBuffer {
   private snapshots: TimestampedSnapshot[] = [];
 
+  // ── Flush all snapshots (call between arena mounts) ─────────────────────
+  clear(): void {
+    this.snapshots = [];
+  }
+
   // ── Push a new server snapshot ──────────────────────────────────────────
   push(state: GameState): void {
     const now = performance.now();

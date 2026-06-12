@@ -6,7 +6,7 @@ import { FovCalculator } from '../fov-calculator';
 import { EnergyManager } from '../energy-manager';
 import { performance } from 'node:perf_hooks';
 import { cancelAnimationFrame, requestAnimationFrame } from '../utils/animation-loop';
-import { ARENA_WIDTH, ARENA_HEIGHT, DEFAULT_FOV, DEFAULT_OBSTACLES, RACING_OBSTACLES } from '../constants';
+import { ARENA_WIDTH, ARENA_HEIGHT, DEFAULT_FOV, DEFAULT_OBSTACLES, LAVA_OBSTACLES, ICE_OBSTACLES, RACING_OBSTACLES } from '../constants';
 import { updateRobotPhysics } from './robot-updater';
 
 export class GameLoop {
@@ -54,6 +54,16 @@ export class GameLoop {
       }));
     } else if (this.config?.mode === 'TRAINING_SOLO' || this.config?.mode === ('SANDBOX' as GameMode)) {
       this.obstacles = [];
+    } else if (this.mapTheme === 'LAVA') {
+      this.obstacles = LAVA_OBSTACLES.map((obstacle) => ({
+        ...obstacle,
+        position: { ...obstacle.position },
+      }));
+    } else if (this.mapTheme === 'ICE') {
+      this.obstacles = ICE_OBSTACLES.map((obstacle) => ({
+        ...obstacle,
+        position: { ...obstacle.position },
+      }));
     } else {
       this.obstacles = DEFAULT_OBSTACLES.map((obstacle) => ({
         ...obstacle,

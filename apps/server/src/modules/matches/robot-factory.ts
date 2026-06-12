@@ -61,12 +61,14 @@ export function parseAndSetLogic(
   id: string,
   script: string,
   logicEvaluator: LogicEvaluator,
-): void {
+): boolean {
   try {
     const parser = new Parser(script);
     const ast = parser.parse();
     logicEvaluator.setLogic(id, ast);
+    return true;
   } catch (e) {
     console.error(`[RobotFactory] Error parsing script for robot ${id}:`, e);
+    return false;
   }
 }

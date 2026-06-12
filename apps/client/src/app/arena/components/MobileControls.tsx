@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import { Zap, Terminal, ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BottomSheet } from './BottomSheet';
 import { CommandConsole } from './CommandConsole';
 
@@ -22,6 +22,7 @@ interface MobileControlsProps {
   matchPhase?: string;
   matchPhaseState?: any;
   currentUserId?: string | null;
+  sessionMatchId?: string;
 }
 
 export function MobileControls({
@@ -39,8 +40,17 @@ export function MobileControls({
   matchPhase,
   matchPhaseState,
   currentUserId,
+  sessionMatchId,
 }: MobileControlsProps) {
   const [activeSheet, setActiveSheet] = useState<'controls' | 'script' | null>(null);
+  const router = useRouter();
+
+  const handleBackToDashboard = () => {
+    if (socket && sessionMatchId) {
+      socket.emit('leaveMatch', { matchId: sessionMatchId });
+    }
+    router.push('/dashboard');
+  };
   // Snippet bridge: HUB inserts code → stored here → ZEN_CORE picks it up
   const pendingSnippetRef = useRef<string | null>(null);
   const [snippetVersion, setSnippetVersion] = useState(0);
@@ -69,13 +79,14 @@ export function MobileControls({
     <>
       {/* ── Top Left Back Button ──────────────────────────────── */}
       <div className="fixed top-3 left-3 z-50 pointer-events-auto">
-        <Link 
-          href="/dashboard"
-          className="flex items-center justify-center w-10 h-10 rounded-xl bg-black/60 backdrop-blur-md border border-cyan-500/20 active:scale-95 transition-all shadow-[0_4px_15px_rgba(0,0,0,0.5)]"
+        <button
+          type="button"
+          onClick={handleBackToDashboard}
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-black/60 backdrop-blur-md border border-cyan-500/20 active:scale-95 transition-all shadow-[0_4px_15px_rgba(0,0,0,0.5)] cursor-pointer"
           title="Abort Session & Return to Dashboard"
         >
           <ChevronLeft className="w-5 h-5 text-cyan-400" />
-        </Link>
+        </button>
       </div>
 
       {/* ── Floating Dock ─────────────────────────────────────────── */}

@@ -98,6 +98,7 @@ export class MatchLobbyManager {
       );
     } else {
       if (this.state.lobbyMatches.has(data.matchId)) {
+        // Lobby-to-match flow: replace bot-2 placeholder
         match.removePlayer('bot-2');
         match.addPlayer({
           id: client.userId,
@@ -109,14 +110,25 @@ export class MatchLobbyManager {
         this.state.lobbyMatches.delete(data.matchId);
         await this.publishLobbySnapshot();
       } else {
-        const isReconnect = match
-          .getState()
-          .robots.some((r) => r.id === client.userId);
-        if (!isReconnect) {
-          match.removePlayer('bot-2');
-        } else {
+        // Non-lobby match: handle reconnect or join
+        const existingRobots = match.getState().robots;
+        const isReconnect = existingRobots.some((r) => r.id === client.userId);
+
+        if (isReconnect) {
+          // Same userId reconnecting — remove and re-add
           match.removePlayer(client.userId);
+        } else {
+          // New userId joining an existing match
+          // Remove any stale robot from a previous guest connection first
+          const staleGuestRobot = existingRobots.find(
+            (r) => r.id.startsWith('guest_') && r.id !== client.userId,
+          );
+          if (staleGuestRobot) {
+            match.removePlayer(staleGuestRobot.id);
+          }
+          match.removePlayer('bot-2');
         }
+
         match.addPlayer({
           id: client.userId,
           script: loadout.scriptContent,
@@ -229,6 +241,48 @@ export class MatchLobbyManager {
     client.leave(LOBBY_ROOM);
   }
 
+  handleLeaveMatch(
+    client: AuthenticatedSocket,
+    data: { matchId: string },
+  ) {
+    const matchId = data.matchId;
+    const match = this.state.matches.get(matchId);
+
+    if (match) {
+      const mode = this.state.matchModes.get(matchId);
+      const isSoloMode =
+        mode === 'TRAINING_SOLO' ||
+        mode === 'SURVIVAL' ||
+        mode === 'RACING';
+
+      if (isSoloMode) {
+        // Solo: full teardown — no other players to keep it alive for
+        match.stop();
+        this.state.cleanupMatch(matchId);
+      } else {
+        // Multiplayer: only remove this player's robot, keep match running
+        if (client.userId) {
+          match.removePlayer(client.userId);
+        }
+      }
+    }
+
+    client.leave(matchId);
+    client.matchId = undefined;
+
+    // Clear user status so the leaderboard doesn't show stale "in-match"
+    if (client.userId && !client.isGuest) {
+      this.state.userStatus.set(client.userId, { status: 'idle' });
+      this.server
+        .to(LEADERBOARD_ROOM)
+        .emit('userStatusUpdate', { userId: client.userId, status: 'idle' });
+    }
+
+    if (this.state.lobbyMatches.has(matchId)) {
+      this.state.lobbyMatches.delete(matchId);
+    }
+  }
+
   handleResetGame(client: AuthenticatedSocket, data: { matchId: string }) {
     if (client.matchId && this.state.matches.has(client.matchId)) {
       const match = this.state.matches.get(client.matchId);
@@ -243,44 +297,98 @@ export class MatchLobbyManager {
     client: AuthenticatedSocket,
     data: { robotId: string; scriptContent: string },
   ) {
-    if (client.matchId && this.state.matches.has(client.matchId)) {
-      if (data.robotId !== client.userId && !data.robotId.startsWith('bot-'))
-        return;
-      const match = this.state.matches.get(client.matchId);
-      match?.updateRobotScript(data.robotId, data.scriptContent);
+    if (!client.matchId) {
       client.emit('logicExecuted', {
         robotId: data.robotId,
-        action: 'SCRIPT_DEPLOYED',
-        message: 'Neural payload active.',
+        action: 'SCRIPT_FAILED',
+        message: '[ERR] Not in a match. Re-join the arena.',
       });
+      return;
     }
+    const match = this.state.matches.get(client.matchId);
+    if (!match) {
+      client.emit('logicExecuted', {
+        robotId: data.robotId,
+        action: 'SCRIPT_FAILED',
+        message: '[ERR] Match not found. Re-join the arena.',
+      });
+      return;
+    }
+
+    // Resolve the actual robotId: prefer the one sent, fall back to client.userId
+    let resolvedRobotId = data.robotId;
+    const robotExists = match.getState().robots.some((r) => r.id === resolvedRobotId);
+    if (!robotExists && client.userId && resolvedRobotId !== client.userId) {
+      // Client sent a stale robotId (e.g. from a previous socket connection);
+      // try the current socket's userId instead.
+      const fallbackExists = match.getState().robots.some((r) => r.id === client.userId);
+      if (fallbackExists) {
+        resolvedRobotId = client.userId;
+      } else {
+        client.emit('logicExecuted', {
+          robotId: data.robotId,
+          action: 'SCRIPT_FAILED',
+          message: `[ERR] Robot "${data.robotId}" not found in match. Try re-joining.`,
+        });
+        return;
+      }
+    } else if (!robotExists) {
+      client.emit('logicExecuted', {
+        robotId: data.robotId,
+        action: 'SCRIPT_FAILED',
+        message: `[ERR] Robot "${data.robotId}" not found in match. Try re-joining.`,
+      });
+      return;
+    }
+
+    // Security: only allow updating own robot or bots/dummies in the match
+    const isOwnRobot = resolvedRobotId === client.userId;
+    const isBotOrDummy = /^bot-|^dummy-/.test(resolvedRobotId);
+    if (!isOwnRobot && !isBotOrDummy) {
+      client.emit('logicExecuted', {
+        robotId: resolvedRobotId,
+        action: 'SCRIPT_FAILED',
+        message: '[ERR] Cannot update another player\'s robot.',
+      });
+      return;
+    }
+
+    const success = match.updateRobotScript(resolvedRobotId, data.scriptContent);
+    client.emit('logicExecuted', {
+      robotId: resolvedRobotId,
+      action: success ? 'SCRIPT_DEPLOYED' : 'SCRIPT_FAILED',
+      message: success
+        ? 'Neural payload active.'
+        : '[ERR] Script compilation failed — check syntax.',
+    });
   }
 
   handleManualCommand(
     client: AuthenticatedSocket,
     data: { robotId?: string; command: string },
   ) {
-    if (client.matchId && this.state.matches.has(client.matchId)) {
-      const targetRobotId = data.robotId || client.userId!;
-      // Only allow if it's the user's own robot or a test bot
-      if (targetRobotId !== client.userId && !targetRobotId.startsWith('bot-'))
-        return;
+    if (!client.matchId) return;
+    const match = this.state.matches.get(client.matchId);
+    if (!match) return;
+    const targetRobotId = data.robotId || client.userId!;
+    // Only allow if it's the user's own robot or a test bot/dummy
+    const isOwnRobot = targetRobotId === client.userId;
+    const isBotOrDummy = /^bot-|^dummy-/.test(targetRobotId);
+    if (!isOwnRobot && !isBotOrDummy) return;
 
-      const match = this.state.matches.get(client.matchId)!;
-      const executed = match.receiveManualCommand(targetRobotId, data.command);
-      if (!executed) {
-        client.emit('logicExecuted', {
-          robotId: targetRobotId,
-          action: 'STASIS',
-          message: '[STASIS] Manual override rejected — robot is recharging.',
-        });
-      } else {
-        client.emit('logicExecuted', {
-          robotId: targetRobotId,
-          action: data.command.toUpperCase(),
-          message: `Manual override: ${data.command.toUpperCase()}`,
-        });
-      }
+    const executed = match.receiveManualCommand(targetRobotId, data.command);
+    if (!executed) {
+      client.emit('logicExecuted', {
+        robotId: targetRobotId,
+        action: 'STASIS',
+        message: '[STASIS] Manual override rejected — robot is recharging.',
+      });
+    } else {
+      client.emit('logicExecuted', {
+        robotId: targetRobotId,
+        action: data.command.toUpperCase(),
+        message: `Manual override: ${data.command.toUpperCase()}`,
+      });
     }
   }
 

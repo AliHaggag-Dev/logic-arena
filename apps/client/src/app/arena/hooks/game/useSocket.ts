@@ -10,6 +10,6 @@ export const useSocket = (): Socket => {
       .replace('https://', 'wss://')
       .replace('http://', 'ws://')
       .replace(/\/api$/, '');
-    return io(wsUrl, { autoConnect: false, withCredentials: true });
+    return io(wsUrl, { forceNew: true, autoConnect: false, withCredentials: true });
   }, []);
 };

@@ -67,6 +67,7 @@ const ArenaPageContent = () => {
     spectatorCount,
     matchPhase,
     clearMatchResult,
+    sessionMatchId,
   } = useGameState(isSpectator ? null : resolvedScriptId, urlMode, urlMatchMode, isSpectator);
 
   const displayMode = ['CLASSIC', 'TACTICAL'].includes(serverConfirmedMode) 
@@ -186,6 +187,7 @@ const ArenaPageContent = () => {
 
       <div className="absolute inset-0 z-0">
         <Scene3D
+          key={`scene-${searchParams.get('theme') || 'CYBER'}`}
           gameStateRef={gameStateRef}
           obstacles={obstacles}
           firedTracer={firedTracer ?? null}
@@ -196,7 +198,7 @@ const ArenaPageContent = () => {
           localRobotFile={localRobotFile}
           localRobotColor={localRobotColor}
           displayMode={displayMode}
-          mapTheme={uiState?.mapTheme || searchParams.get('theme') || 'CYBER'}
+          mapTheme={searchParams.get('theme') || uiState?.mapTheme || 'CYBER'}
         />
       </div>
 
@@ -255,6 +257,7 @@ const ArenaPageContent = () => {
                 matchPhase={matchPhase?.phase as unknown as string}
                 matchPhaseState={matchPhase}
                 currentUserId={activeUserId}
+                sessionMatchId={sessionMatchId}
               />
             </>
           ) : (
@@ -280,6 +283,7 @@ const ArenaPageContent = () => {
               initialScript={script?.content ?? ''}
               matchPhase={matchPhase.phase as unknown as string}
               phaseEndsAt={matchPhase.phaseEndsAt}
+              sessionMatchId={sessionMatchId}
             />
           )}
         </>

@@ -161,10 +161,22 @@ export class MatchGateway
       }
     }
 
+    // Guard: if handleLeaveMatch already cleared matchId, skip match cleanup
     if (client.matchId && this.state.matches.has(client.matchId)) {
-      const numClients =
-        this.server.sockets.adapter.rooms.get(client.matchId)?.size ?? 0;
-      if (numClients === 0) {
+      const matchMode = this.state.matchModes.get(client.matchId);
+      const isSoloMode =
+        matchMode === 'TRAINING_SOLO' ||
+        matchMode === 'SURVIVAL' ||
+        matchMode === 'RACING';
+      // Solo modes: always clean up immediately.
+      // Multiplayer: only clean up when no clients remain in the room.
+      let shouldCleanup = isSoloMode;
+      if (!shouldCleanup) {
+        const numClients =
+          this.server.sockets.adapter.rooms.get(client.matchId)?.size ?? 0;
+        shouldCleanup = numClients === 0;
+      }
+      if (shouldCleanup) {
         const match = this.state.matches.get(client.matchId);
         if (match) {
           match.stop();
@@ -210,6 +222,13 @@ export class MatchGateway
   @SubscribeMessage('leaveLobby')
   handleLeaveLobby(@ConnectedSocket() client: AuthenticatedSocket) {
     return this.lobbyManager.handleLeaveLobby(client);
+  }
+  @SubscribeMessage('leaveMatch')
+  handleLeaveMatch(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { matchId: string },
+  ) {
+    return this.lobbyManager.handleLeaveMatch(client, data);
   }
   @SubscribeMessage('resetGame')
   handleResetGame(

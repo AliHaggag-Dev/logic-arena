@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Socket } from "socket.io-client";
 
-export const useConsole = (socket: Socket | null, robotId: string) => {
+export const useConsole = (socket: Socket | null, robotId: string, currentUserId?: string | null) => {
     const [output, setOutput] = useState<string[]>([]);
     const [commandInput, setCommandInput] = useState<string>("");
     const [scriptInput, setScriptInput] = useState<string>("");
@@ -27,12 +27,16 @@ export const useConsole = (socket: Socket | null, robotId: string) => {
         e.preventDefault();
         const command = commandInput.trim().toUpperCase();
         if (!command) return;
+        if (!robotId) {
+            appendOutputLine("[ERR] No robot selected. Cannot send command.");
+            return;
+        }
 
         appendOutputLine(`> ${commandInput}`);
 
         if (socket) {
             if (command === "FIRE") {
-                socket.emit("manualCommand", { robotId, targetX: 600, targetY: 400 });
+                socket.emit("manualCommand", { robotId, command });
                 appendOutputLine(`[SYS] Command Broadcast: ${command}`);
             } else {
                 appendOutputLine(`[ERR] Unknown sequence: ${command}`);
@@ -44,9 +48,14 @@ export const useConsole = (socket: Socket | null, robotId: string) => {
     };
 
     const handleDeployBrain = (scriptToDeploy: string = scriptInput) => {
+        const targetRobotId = robotId || currentUserId || '';
+        if (!targetRobotId) {
+            appendOutputLine("[ERR] No robot selected. Cannot deploy.");
+            return;
+        }
         if (socket) {
-            socket.emit("updateLogic", { robotId, scriptContent: scriptToDeploy });
-            appendOutputLine(`[SYS] Uploading logic script to ${robotId}...`);
+            socket.emit("updateLogic", { robotId: targetRobotId, scriptContent: scriptToDeploy });
+            appendOutputLine(`[SYS] Uploading logic script to ${targetRobotId}...`);
         } else {
             appendOutputLine("[ERR] Connection lost. Offline.");
         }

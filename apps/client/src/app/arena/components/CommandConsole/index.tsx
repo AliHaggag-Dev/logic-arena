@@ -12,7 +12,7 @@ const CommandConsoleComponent: React.FC<CommandConsoleProps> = ({
     isClassicMode = false, classicTokensLeft = 0, classicMaxTokens,
     onClassicEdit, initialScript, displayMode, matchPhase, matchPhaseState, currentUserId
 }) => {
-    const consoleState = useConsole(socket, robotId);
+    const consoleState = useConsole(socket, robotId, currentUserId);
     const [isZenModeLocal, setIsZenModeLocal] = useState(false);
     const isZenMode = isZenModeProp ?? isZenModeLocal;
     const setIsZenMode = setIsZenModeProp ?? setIsZenModeLocal;
