@@ -4,20 +4,19 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Sparkles, Float, Cloud, Clouds, Billboard, Instances, Instance } from "@react-three/drei";
 import { Group, Mesh, MeshBasicMaterial, Vector3, Quaternion, AdditiveBlending, DoubleSide, InstancedMesh, Matrix4, Color, Euler, Object3D } from "three";
 import { MapTheme } from "../../types";
+import { getGlobalAudioContext, getGlobalMasterGain } from "../../../../context/SoundContext";
 
 interface DynamicEnvironmentProps {
   mapTheme: MapTheme;
   graphicsQuality?: string;
 }
 
-let ambientAudioCtx: AudioContext | null = null;
-function getAmbientCtx() {
-  if (typeof window === "undefined") return null;
-  if (ambientAudioCtx) return ambientAudioCtx;
-  const Ctor = window.AudioContext || (window as any).webkitAudioContext;
-  if (!Ctor) return null;
-  ambientAudioCtx = new Ctor();
-  return ambientAudioCtx;
+export function getAmbientCtx() {
+  return getGlobalAudioContext();
+}
+
+function getAmbientMasterGain() {
+  return getGlobalMasterGain();
 }
 
 interface AmbientSynthesizerProps {
@@ -41,6 +40,7 @@ const AmbientSynthesizer = ({ position, distanceFunc, type, maxDistance = 350, m
     
     const masterGain = ctx.createGain();
     masterGain.gain.value = 0;
+    // Connect directly to destination to avoid volume collapse from global master gain
     masterGain.connect(ctx.destination);
     gainNodeRef.current = masterGain;
 
@@ -195,7 +195,7 @@ const AmbientSynthesizer = ({ position, distanceFunc, type, maxDistance = 350, m
     return () => {
       document.removeEventListener("click", resumeIfSuspended);
       masterGain.gain.value = 0;
-      masterGain.disconnect();
+      try { masterGain.disconnect(); } catch (e) {}
       nodesToDisconnect.forEach(n => {
         try { n.disconnect(); } catch(e){}
         if ((n as OscillatorNode).stop) {

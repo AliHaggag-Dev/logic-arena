@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef } from "react";
-import { useSoundContext } from "../../../context/SoundContext";
+import { useSoundContext, getGlobalAudioContext, getGlobalMasterGain } from "../../../context/SoundContext";
 
 // ─── Web Audio helpers ────────────────────────────────────────────────────────
 // Re-use the same module-level AudioContext as SoundContext (same JS module
@@ -21,32 +21,9 @@ interface ToneStep {
   type: OscillatorType;
 }
 
-// Module-level AudioContext (shared with SoundContext singleton)
-let _audioCtx: AudioContext | null = null;
-let _masterGain: GainNode | null = null;
-
-interface WebKitAudioWindow extends Window {
-  webkitAudioContext?: typeof AudioContext;
-}
-
-function getArenAudioCtx(): AudioContext | null {
-  if (typeof window === "undefined") return null;
-  if (_audioCtx) return _audioCtx;
-
-  const w = window as WebKitAudioWindow;
-  const Ctor = window.AudioContext ?? w.webkitAudioContext;
-  if (!Ctor) return null;
-
-  _audioCtx = new Ctor();
-  _masterGain = _audioCtx.createGain();
-  _masterGain.gain.value = MASTER_GAIN;
-  _masterGain.connect(_audioCtx.destination);
-  return _audioCtx;
-}
-
 function playArenaSequence(steps: ToneStep[]): void {
-  const ctx = getArenAudioCtx();
-  const out = _masterGain;
+  const ctx = getGlobalAudioContext();
+  const out = getGlobalMasterGain();
   if (!ctx || !out) return;
   if (ctx.state === "suspended") void ctx.resume();
 

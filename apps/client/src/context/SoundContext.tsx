@@ -41,8 +41,7 @@ function getAudioCtor(): typeof AudioContext | null {
   return window.AudioContext ?? w.webkitAudioContext ?? null;
 }
 
-function ensureAudioCtx(): AudioContext | null {
-  if (!unlocked) return null;
+export function getGlobalAudioContext(): AudioContext | null {
   if (audioCtx) return audioCtx;
   const Ctor = getAudioCtor();
   if (!Ctor) return null;
@@ -53,9 +52,13 @@ function ensureAudioCtx(): AudioContext | null {
   return audioCtx;
 }
 
+export function getGlobalMasterGain(): GainNode | null {
+  return masterGain;
+}
+
 function unlockAudio(): void {
   unlocked = true;
-  const ctx = ensureAudioCtx();
+  const ctx = getGlobalAudioContext();
   if (ctx?.state === "suspended") void ctx.resume();
   if (typeof window === "undefined") return;
   INIT_EVENTS.forEach((ev) => window.removeEventListener(ev, unlockAudio, true));
@@ -71,7 +74,7 @@ function installUnlockListeners(): void {
 }
 
 function playTone(steps: ToneStep[]): void {
-  const ctx = ensureAudioCtx();
+  const ctx = getGlobalAudioContext();
   const out = masterGain;
   if (!ctx || !out) return;
   if (ctx.state === "suspended") void ctx.resume();

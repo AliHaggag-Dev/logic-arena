@@ -213,9 +213,8 @@ export function BlockEditor({
   const [activePaletteType, setActivePaletteType] = useState<BlockType | null>(null);
   const isTouchDevice = useMediaQuery("(pointer: coarse)");
   
-  const mouseSensor = useSensor(PointerSensor, { activationConstraint: { distance: DRAG_DISTANCE_PX } });
-  const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } });
-  const sensors = useSensors(mouseSensor, touchSensor);
+  const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: DRAG_DISTANCE_PX } });
+  const sensors = useSensors(pointerSensor);
   
   const generatedScript = useMemo(() => generateScript(blocks), [blocks]);
 

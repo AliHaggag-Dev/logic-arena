@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Geist_Mono, Alexandria } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -111,6 +111,14 @@ export const metadata: Metadata = {
   verification: {
     google: "5N0GMr8mxTY9zb0A9rUhrHZo39jdVfRAbAM_h_FYcTg",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

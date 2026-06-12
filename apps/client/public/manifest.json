@@ -4,7 +4,7 @@
   "description": "Competitive real-time robot battle simulator",
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone", "minimal-ui"],
-  "orientation": "any",
+  "orientation": "portrait",
   "start_url": "/dashboard",
   "scope": "/",
   "theme_color": "#030712",

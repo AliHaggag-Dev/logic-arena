@@ -235,6 +235,7 @@ export function Block({
               style={{
                 minHeight: ACTION_BUTTON_SIZE_PX,
                 minWidth: ACTION_BUTTON_SIZE_PX,
+                touchAction: "none",
                 color: "rgba(var(--arena-white-rgb),0.55)",
                 background: "rgba(var(--arena-white-rgb),0.06)",
                 border: "1px solid rgba(var(--arena-white-rgb),0.1)",
