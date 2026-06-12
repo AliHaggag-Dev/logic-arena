@@ -7,6 +7,7 @@ import { ArenaModels } from "./ArenaModels";
 import { Scene3DComponentProps } from "../../types/scene.types";
 import { TrainingEnvironment } from "../TrainingMode/TrainingEnvironment";
 import { MapTheme } from "../../types";
+import { DynamicEnvironment } from "./DynamicEnvironment";
 
 const THEME_GRID_COLORS: Record<MapTheme, { primary: string; secondary: string }> = {
   CYBER: { primary: "#1a1a4a", secondary: "#0d0d2a" },
@@ -99,29 +100,8 @@ export const SceneContent = (props: Scene3DComponentProps) => {
         <TrainingEnvironment width={arena.width} height={arena.height} />
       )}
 
-      {/* DYNAMIC WEATHER EFFECTS */}
-      {mapTheme === 'ICE' && (
-        <Sparkles 
-          count={500} 
-          scale={[35, 15, 35]} 
-          position={[0, 7.5, 0]} 
-          size={3.5} 
-          speed={0.6} 
-          opacity={0.8} 
-          color="#ffffff" 
-        />
-      )}
-      {mapTheme === 'LAVA' && (
-        <Sparkles 
-          count={300} 
-          scale={[35, 12, 35]} 
-          position={[0, 6, 0]} 
-          size={5} 
-          speed={1.2} 
-          opacity={1} 
-          color="#ff5500" 
-        />
-      )}
+      {/* DYNAMIC WEATHER & BACKGROUND EFFECTS */}
+      <DynamicEnvironment mapTheme={mapTheme} graphicsQuality={props.graphicsQuality} />
     </>
   );
 };
