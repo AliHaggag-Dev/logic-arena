@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useSoundContext } from "../../../context/SoundContext";
 
 // ─── Web Audio helpers ────────────────────────────────────────────────────────
@@ -82,29 +82,30 @@ function playArenaSequence(steps: ToneStep[]): void {
 
 // ─── Arena sound recipes ──────────────────────────────────────────────────────
 
-/** Projectile fired — high-pitched sawtooth swoop down */
+/** Projectile fired — high-pitched swoop down, softened */
 function fireLaserBurst(): void {
+  const r = 1 + (Math.random() * 0.1 - 0.05); // +/- 5%
   playArenaSequence([
-    { frequency: 1200, endFrequency: 220, duration: 0.12, startOffset: 0, gain: 0.55, type: "sawtooth" },
-    { frequency: 2400, endFrequency: 800, duration: 0.06, startOffset: 0, gain: 0.18, type: "square" },
+    { frequency: 1000 * r, endFrequency: 300 * r, duration: 0.1, startOffset: 0, gain: 0.25, type: "sine" },
+    { frequency: 2000 * r, endFrequency: 600 * r, duration: 0.05, startOffset: 0, gain: 0.1, type: "triangle" },
   ]);
 }
 
-/** Projectile hits a robot — sharp mid-range impact crunch */
+/** Projectile hits a robot — soft, deep thud */
 function fireHitBurst(): void {
+  const r = 1 + (Math.random() * 0.2 - 0.1); // +/- 10%
   playArenaSequence([
-    { frequency: 320, endFrequency: 90, duration: 0.14, startOffset: 0, gain: 0.6, type: "sawtooth" },
-    { frequency: 160, endFrequency: 55, duration: 0.18, startOffset: 0.02, gain: 0.45, type: "triangle" },
-    { frequency: 640, endFrequency: 160, duration: 0.07, startOffset: 0, gain: 0.22, type: "square" },
+    { frequency: 180 * r, endFrequency: 50 * r, duration: 0.15, startOffset: 0, gain: 0.2, type: "triangle" },
+    { frequency: 90 * r, endFrequency: 30 * r, duration: 0.2, startOffset: 0.02, gain: 0.15, type: "sine" },
   ]);
 }
 
-/** Robots collide — low metallic clang */
+/** Robots collide — low metallic thud */
 function fireClangBurst(): void {
+  const r = 1 + (Math.random() * 0.15 - 0.075); // +/- 7.5%
   playArenaSequence([
-    { frequency: 180, endFrequency: 60, duration: 0.22, startOffset: 0, gain: 0.65, type: "sawtooth" },
-    { frequency: 90, endFrequency: 40, duration: 0.30, startOffset: 0.03, gain: 0.50, type: "triangle" },
-    { frequency: 360, endFrequency: 120, duration: 0.10, startOffset: 0, gain: 0.20, type: "square" },
+    { frequency: 140 * r, endFrequency: 50 * r, duration: 0.18, startOffset: 0, gain: 0.3, type: "triangle" },
+    { frequency: 70 * r, endFrequency: 35 * r, duration: 0.25, startOffset: 0.02, gain: 0.2, type: "sine" },
   ]);
 }
 
@@ -119,14 +120,24 @@ interface GameSoundOptions {
 export const useGameSounds = ({ enabled = true }: GameSoundOptions = {}) => {
   const { arenaSoundsEnabled } = useSoundContext();
   const active = enabled && arenaSoundsEnabled;
+  const lastClangRef = useRef<number>(0);
+  const lastHitRef = useRef<number>(0);
 
   const playHit = useCallback((): void => {
     if (!active) return;
+    const now = Date.now();
+    if (now - lastHitRef.current < 100) return; // Prevent overlapping hits from exploding audio
+    lastHitRef.current = now;
     fireHitBurst();
   }, [active]);
 
   const playClang = useCallback((): void => {
     if (!active) return;
+    const now = Date.now();
+    // 400ms debounce: Only plays on initial impact. 
+    // If robots are stuck together colliding 60 times a second, it won't re-trigger continuously.
+    if (now - lastClangRef.current < 400) return; 
+    lastClangRef.current = now;
     fireClangBurst();
   }, [active]);
 

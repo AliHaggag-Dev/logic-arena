@@ -28,7 +28,14 @@ export function PreferencesSection({ isGuest = false }: { isGuest?: boolean }) {
   const lastSaved = useRef<ArenaPreferences>(DEFAULT_PREFS);
 
   const { profile, loading: authLoading } = useAuth();
-  const { clickSoundsEnabled, arenaSoundsEnabled, setClickSoundsEnabled, setArenaSoundsEnabled } = useSoundContext();
+  const { 
+    clickSoundsEnabled, 
+    arenaSoundsEnabled, 
+    notificationSoundsEnabled, 
+    setClickSoundsEnabled, 
+    setArenaSoundsEnabled, 
+    setNotificationSoundsEnabled 
+  } = useSoundContext();
 
   // ── Load from backend once via AuthContext ─────────────────────────────────
   useEffect(() => {
@@ -105,21 +112,22 @@ export function PreferencesSection({ isGuest = false }: { isGuest?: boolean }) {
         </div>
       </div>
 
-      {/* Arena Sound & Music Toggles */}
+      {/* Arena Sound & Notification Toggles */}
       <div className="flex flex-col gap-1">
         <div className="text-[9px] tracking-[0.22em] text-accent/50 font-bold uppercase mb-1">Arena Audio</div>
         <div className="flex flex-col gap-0 border border-accent/10 rounded-xl overflow-hidden">
           {([
             { id: "soundFx"  as const, label: "Arena Sound Effects", sub: "In-arena audio feedback (shots, hits, collisions)" },
-            { id: "music"    as const, label: "Music",                sub: "Background music during matches" },
+            { id: "music"    as const, label: "Notifications",       sub: "Alerts for challenges and friend requests" },
           ] as const).map(({ id, label, sub }, i, arr) => (
             <div key={id} className={`flex items-center justify-between px-4 py-4 bg-bg-secondary ${i < arr.length - 1 ? "border-b border-accent/10" : ""} ${isGuest ? "opacity-60 grayscale-[0.5]" : ""}`}>
               <div>
                 <div className="text-[11px] font-bold tracking-[0.1em] text-text-primary">{label}</div>
                 <div className="text-[9px] text-text-secondary/50 tracking-[0.06em] mt-0.5">{sub}</div>
               </div>
-              <Toggle id={id} ariaLabel={label} checked={id === "soundFx" ? arenaSoundsEnabled && prefs[id] : prefs[id]} onChange={(v) => {
+              <Toggle id={id} ariaLabel={label} checked={id === "soundFx" ? arenaSoundsEnabled : notificationSoundsEnabled} onChange={(v) => {
                 if (id === "soundFx") setArenaSoundsEnabled(v);
+                if (id === "music") setNotificationSoundsEnabled(v);
                 update(id, v);
               }} isGuest={isGuest} />
             </div>
