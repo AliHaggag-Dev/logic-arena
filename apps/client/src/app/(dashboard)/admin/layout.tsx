@@ -58,8 +58,8 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
 
   if (isCheckingAccess) {
     return (
-      <div className="min-h-screen bg-bg-primary font-mono text-text-primary">
-        <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6">
+      <div className="min-h-dvh bg-bg-primary font-mono text-text-primary">
+        <div className="mx-auto flex min-h-dvh max-w-7xl items-center justify-center px-6">
           <div className="rounded-lg border border-accent/20 bg-card px-6 py-5 text-center shadow-[var(--card-shadow)]">
             <PageSkeleton />
           </div>
@@ -70,7 +70,7 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
 
   return (
     <AdminViewportContext.Provider value={{ isMobile }}>
-      <div className="flex min-h-screen w-full bg-bg-primary font-mono text-text-primary">
+      <div className="flex min-h-dvh w-full bg-bg-primary font-mono text-text-primary">
         {!isMobile && (
           <AdminSidebar
             isCollapsed={isCollapsed}
@@ -78,7 +78,7 @@ export default function AdminLayout({ children }: AdminLayoutProps): React.React
           />
         )}
         {isMobile && <AdminMobileNav />}
-        <main className={isMobile ? "flex min-h-screen w-full flex-1 flex-col pt-[76px]" : "flex min-h-screen w-full flex-1 flex-col"}>
+        <main className={isMobile ? "flex min-h-dvh w-full flex-1 flex-col pt-[76px]" : "flex min-h-dvh w-full flex-1 flex-col"}>
           <div className={isMobile ? "w-full px-4 pb-8" : "w-full px-8 py-8"}>
             <AnimatePresence mode="wait">
               <motion.div

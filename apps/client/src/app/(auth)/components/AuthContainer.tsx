@@ -8,7 +8,7 @@ interface Props {
 
 export function AuthContainer({ children, isMobile }: Props) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-primary font-sans selection:bg-accent/30 relative overflow-hidden px-4 py-16">
+    <div className="min-h-dvh flex items-center justify-center bg-bg-primary font-sans selection:bg-accent/30 relative overflow-hidden px-4 py-16">
       <style>{`
         @keyframes auth-fade-up {
           from { opacity: 0; transform: translateY(20px); }

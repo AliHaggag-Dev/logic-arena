@@ -198,7 +198,7 @@ export default function CampaignLevelPage() {
 
   if (fetching) {
     return (
-      <div className="min-h-screen bg-bg-primary font-mono flex items-center justify-center">
+      <div className="min-h-dvh bg-bg-primary font-mono flex items-center justify-center">
         <div className="text-accent/70 text-[11px] tracking-[0.3em] animate-pulse">
           LOADING LEVEL DATA...
         </div>
@@ -208,7 +208,7 @@ export default function CampaignLevelPage() {
 
   if (displayError || !level) {
     return (
-      <div className="min-h-screen bg-bg-primary font-mono flex flex-col items-center justify-center p-4 text-center">
+      <div className="min-h-dvh bg-bg-primary font-mono flex flex-col items-center justify-center p-4 text-center">
         <div className="text-accent/80 text-[14px] font-black tracking-[0.2em] mb-4">
           {displayError || "An unknown error occurred."}
         </div>
@@ -224,7 +224,7 @@ export default function CampaignLevelPage() {
   }
 
   return (
-    <div className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile ? "" : "pb-12"}`}>
+    <div className={`min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile ? "" : "pb-12"}`}>
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{

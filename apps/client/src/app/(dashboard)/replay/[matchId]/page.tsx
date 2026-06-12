@@ -69,7 +69,7 @@ export default function ReplayPage() {
         }
       `}</style>
 
-      <div className="min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden pb-[calc(80px+env(safe-area-inset-bottom))] md:pb-0">
+      <div className="min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-hidden pb-[calc(80px+env(safe-area-inset-bottom))] md:pb-0">
         {/* Cyber Grid Background */}
         <div
           className="fixed inset-0 pointer-events-none z-0"

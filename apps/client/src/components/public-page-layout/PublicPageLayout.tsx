@@ -23,7 +23,7 @@ export function PublicPageLayout({
 
   return (
     <div
-      className="min-h-screen relative"
+      className="min-h-dvh relative"
       style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
     >
       {/* ── Ambient background layer ──────────────────────── */}

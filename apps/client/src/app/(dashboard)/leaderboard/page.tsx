@@ -117,7 +117,7 @@ const LeaderboardPage = () => {
 
   return (
     <div
-      className={`min-h-screen bg-bg-primary font-mono text-accent selection:bg-accent/30 relative overflow-hidden ${isMobile ? "pb-[calc(80px+env(safe-area-inset-bottom))]" : "pb-12"}`}
+      className={`min-h-dvh bg-bg-primary font-mono text-accent selection:bg-accent/30 relative overflow-hidden ${isMobile ? "pb-[calc(80px+env(safe-area-inset-bottom))]" : "pb-12"}`}
     >
       {/* Background Grid */}
       <div

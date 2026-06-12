@@ -52,7 +52,7 @@ export default function FeatureRequestsPage() {
   const reset = () => { setSubmitted(false); setError(""); setTitle(""); setDescription(""); setUseCase(""); setPriority(""); };
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+    <div className="min-h-dvh relative overflow-x-hidden" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
       {/* Ambient background */}
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute inset-0" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(var(--accent-rgb),0.008) 3px, rgba(var(--accent-rgb),0.008) 4px)" }} />

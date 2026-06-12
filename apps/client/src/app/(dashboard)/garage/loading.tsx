@@ -1,6 +1,6 @@
 export default function GarageLoading() {
   return (
-    <div className="min-h-screen bg-bg-primary font-mono text-accent relative overflow-hidden pb-[calc(80px+env(safe-area-inset-bottom))] lg:pb-0">
+    <div className="min-h-dvh bg-bg-primary font-mono text-accent relative overflow-hidden pb-[calc(80px+env(safe-area-inset-bottom))] lg:pb-0">
       {/* Background grid */}
       <div className="absolute inset-0 z-0 opacity-15 pointer-events-none bg-[linear-gradient(rgba(var(--accent-rgb),0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(var(--accent-rgb),0.15)_1px,transparent_1px)] bg-[size:40px_40px]" />
 

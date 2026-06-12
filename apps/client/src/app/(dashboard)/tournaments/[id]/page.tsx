@@ -31,7 +31,7 @@ export default function TournamentBracketPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden">
+      <div className="min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-hidden">
         <div
           className="fixed inset-0 pointer-events-none z-0"
           style={{
@@ -48,7 +48,7 @@ export default function TournamentBracketPage() {
 
   if (!tournament) {
     return (
-      <div className="min-h-screen bg-bg-primary flex items-center justify-center font-mono text-red-500/50 text-[11px] tracking-[0.2em] uppercase font-bold">
+      <div className="min-h-dvh bg-bg-primary flex items-center justify-center font-mono text-red-500/50 text-[11px] tracking-[0.2em] uppercase font-bold">
         [ERROR] Tournament not found
       </div>
     );
@@ -56,7 +56,7 @@ export default function TournamentBracketPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden">
+      <div className="min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-hidden">
         {/* Grid bg */}
         <div
           className="fixed inset-0 pointer-events-none z-0"

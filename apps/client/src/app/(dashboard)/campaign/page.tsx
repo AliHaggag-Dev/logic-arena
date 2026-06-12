@@ -44,7 +44,7 @@ export default function CampaignPage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
-    <div className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile ? "pb-[calc(80px+env(safe-area-inset-bottom))]" : "pb-12"}`}>
+    <div className={`min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile ? "pb-[calc(80px+env(safe-area-inset-bottom))]" : "pb-12"}`}>
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{

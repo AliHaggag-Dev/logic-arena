@@ -1,6 +1,6 @@
 export default function ArenaLoading() {
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center font-mono select-none">
+    <div className="min-h-dvh bg-black flex flex-col items-center justify-center font-mono select-none">
       {/* Central loading indicator */}
       <div className="flex flex-col items-center gap-6">
         {/* Pulsing ring */}

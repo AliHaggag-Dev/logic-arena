@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-primary font-mono p-6 selection:bg-accent/30 relative overflow-hidden">
+    <div className="min-h-dvh flex items-center justify-center bg-bg-primary font-mono p-6 selection:bg-accent/30 relative overflow-hidden">
       {/* Background Grid */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(rgba(var(--accent-rgb),0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--accent-rgb),0.2) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 

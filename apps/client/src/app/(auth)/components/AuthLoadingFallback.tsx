@@ -1,6 +1,6 @@
 export function AuthLoadingFallback({ label = "Loading..." }: { label?: string }) {
     return (
-        <div className="min-h-screen bg-bg-primary flex items-center justify-center relative overflow-hidden">
+        <div className="min-h-dvh bg-bg-primary flex items-center justify-center relative overflow-hidden">
             <div
                 className="absolute inset-0 pointer-events-none"
                 style={{

@@ -24,7 +24,7 @@ export default function InsightsPage() {
   } = useInsights();
 
   return (
-    <div className="min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden">
+    <div className="min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-hidden">
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
         style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, var(--accent) 0%, transparent 70%)' }}
       />

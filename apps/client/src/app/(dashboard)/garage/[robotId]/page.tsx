@@ -102,7 +102,7 @@ export default function RobotDetailPage() {
   return (
     <>
       <div
-        className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile
+        className={`min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${isMobile
             ? "pb-[calc(8rem+env(safe-area-inset-bottom))]"
             : "pb-20"
           }`}

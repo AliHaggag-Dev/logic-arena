@@ -26,7 +26,7 @@ export default function BlackMarketPage() {
     <>
       <BlackMarketStyles />
 
-      <div className="min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-x-hidden">
+      <div className="min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-x-hidden">
         <div
           className="fixed inset-0 pointer-events-none z-0"
           style={{

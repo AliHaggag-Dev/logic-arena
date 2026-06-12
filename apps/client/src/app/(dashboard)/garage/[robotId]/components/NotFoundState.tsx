@@ -12,7 +12,7 @@ export function NotFoundState({ robotId }: NotFoundStateProps) {
 
     return (
         <div
-            className="min-h-screen bg-bg-primary font-mono text-accent/90 flex items-center justify-center"
+            className="min-h-dvh bg-bg-primary font-mono text-accent/90 flex items-center justify-center"
             style={{ animation: "garageFadeIn 0.35s ease" }}
         >
             <div className="text-center border border-accent/10 rounded-xl p-10 bg-card/40 backdrop-blur-md max-w-sm">

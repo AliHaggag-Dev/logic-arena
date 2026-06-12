@@ -31,7 +31,7 @@ export function SettingsLayout({
   const router = useRouter();
   return (
     <>
-      <div className="min-h-screen bg-bg-primary font-mono">
+      <div className="min-h-dvh bg-bg-primary font-mono">
         {/* Page title — matches other dashboard pages (inline, not a second header bar) */}
         <div className={`${isMobile ? "px-4 pt-4 pb-3" : "max-w-5xl mx-auto pt-16 px-6"}`}>
           <div className="mb-0 border-b border-accent/20 pb-6">

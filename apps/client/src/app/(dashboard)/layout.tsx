@@ -68,7 +68,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
       `}</style>
 
-      <div className="flex min-h-screen bg-bg-primary font-mono selection:bg-accent/30">
+      <div className="flex min-h-dvh bg-bg-primary font-mono selection:bg-accent/30">
         {!isAdminRoute && (
           <div className="hidden md:block shrink-0">
             <DashboardSidebar

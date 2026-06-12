@@ -164,7 +164,7 @@ const HIGHLIGHTED_EXAMPLE = highlightAliScript(aliScriptExample);
 
 export default function LandingPage(): React.JSX.Element {
   return (
-    <div className="min-h-screen bg-bg-primary font-mono text-text-primary selection:bg-accent/30">
+    <div className="min-h-dvh bg-bg-primary font-mono text-text-primary selection:bg-accent/30">
 
       {/* ══════════════════════════════════
           NAVBAR — Frosted Glass

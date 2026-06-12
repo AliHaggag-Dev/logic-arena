@@ -112,8 +112,8 @@ const ArenaPageContent = () => {
     };
   }, [isMobile]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">Loading Arena...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 font-mono">ERROR 404: {error}</div>;
+  if (loading) return <div className="min-h-dvh flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">Loading Arena...</div>;
+  if (error) return <div className="min-h-dvh flex items-center justify-center bg-black text-red-500 font-mono">ERROR 404: {error}</div>;
 
   const robots = uiState?.robots || [];
   const obstacles = obstaclesRef.current || [];
@@ -138,7 +138,7 @@ const ArenaPageContent = () => {
     : availableRobots;
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden font-mono select-none">
+    <div className="fixed inset-0 w-full h-[100dvh] bg-black overflow-hidden font-mono select-none">
       <ArenaStyles />
 
       {isMobile && isPortrait && <OrientationLock />}
@@ -294,7 +294,7 @@ const ArenaPageContent = () => {
 
 export default function ArenaPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">Loading Arena...</div>}>
+    <Suspense fallback={<div className="min-h-dvh bg-black flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">Loading Arena...</div>}>
       <ArenaPageContent />
     </Suspense>
   );

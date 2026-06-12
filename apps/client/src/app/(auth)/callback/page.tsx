@@ -42,7 +42,7 @@ function CallbackContent() {
         }
       `}</style>
 
-      <div className="min-h-screen bg-bg-primary flex items-center justify-center font-mono relative overflow-hidden">
+      <div className="min-h-dvh bg-bg-primary flex items-center justify-center font-mono relative overflow-hidden">
         {/* Background Grid Illusion */}
         <div
           className="absolute inset-0 z-0 pointer-events-none"

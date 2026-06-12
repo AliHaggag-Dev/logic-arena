@@ -42,7 +42,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
 
   return (
     <aside
-      className="flex flex-col bg-bg-primary/95 border-r border-accent/[0.12] shadow-[4px_0_30px_rgba(var(--accent-rgb),0.04)] sticky top-0 h-screen overflow-hidden z-50 shrink-0"
+      className="flex flex-col bg-bg-primary/95 border-r border-accent/[0.12] shadow-[4px_0_30px_rgba(var(--accent-rgb),0.04)] sticky top-0 h-dvh overflow-hidden z-50 shrink-0"
       style={{ width: SIDEBAR_WIDTH }}
     >
       {/* Scanline overlay */}

@@ -4,7 +4,7 @@ const MATCH_ROW_COUNT = 4;
 export default function ProfileLoading() {
   return (
     <div
-      className="min-h-screen font-mono relative overflow-hidden"
+      className="min-h-dvh font-mono relative overflow-hidden"
       style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
     >
       {/* Grid background */}

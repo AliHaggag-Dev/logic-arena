@@ -40,7 +40,7 @@ export default function DocsPage() {
 
   return (
     <div
-      className={`min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${
+      className={`min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-hidden ${
         isMobile ? 'pb-[env(safe-area-inset-bottom)]' : ''
       }`}
     >

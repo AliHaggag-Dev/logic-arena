@@ -2,7 +2,7 @@ const ROW_COUNT = 8;
 
 export default function LeaderboardLoading() {
   return (
-    <div className="min-h-screen bg-bg-primary font-mono text-accent relative overflow-hidden pb-12">
+    <div className="min-h-dvh bg-bg-primary font-mono text-accent relative overflow-hidden pb-12">
       {/* Background grid */}
       <div
         className="absolute inset-0 z-0 opacity-20 pointer-events-none"

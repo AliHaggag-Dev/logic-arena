@@ -70,7 +70,7 @@ export function AdminMobileNav(): React.ReactElement {
       <AnimatePresence>
         {isOpen && (
           <motion.aside
-            className="fixed inset-y-0 left-0 z-[190] h-screen w-screen border-r border-accent/20 bg-bg-primary shadow-[0_0_42px_rgba(var(--accent-rgb),0.14)]"
+            className="fixed inset-y-0 left-0 z-[190] h-dvh w-screen border-r border-accent/20 bg-bg-primary shadow-[0_0_42px_rgba(var(--accent-rgb),0.14)]"
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}

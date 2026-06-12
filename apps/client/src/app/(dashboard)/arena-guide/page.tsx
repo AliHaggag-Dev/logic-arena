@@ -407,7 +407,7 @@ export default function ArenaGuidePage() {
   );
 
   return (
-    <div className="min-h-screen bg-bg-primary font-mono text-accent/90 relative overflow-hidden pb-12">
+    <div className="min-h-dvh bg-bg-primary font-mono text-accent/90 relative overflow-hidden pb-12">
       {/* Background Cyber Grid */}
       <div
         className="fixed inset-0 pointer-events-none z-0"

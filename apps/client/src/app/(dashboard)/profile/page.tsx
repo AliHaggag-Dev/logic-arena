@@ -85,7 +85,7 @@ export default function ProfilePage() {
   return (
     <>
       <div
-        className="min-h-screen font-mono relative overflow-hidden"
+        className="min-h-dvh font-mono relative overflow-hidden"
         style={{
           background: "var(--bg-primary)",
           color:      "var(--text-primary)",
