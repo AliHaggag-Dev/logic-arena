@@ -47,19 +47,65 @@ const AmbientSynthesizer = ({ position, distanceFunc, type, maxDistance = 350, m
     const nodesToDisconnect: AudioNode[] = [];
 
     if (type === 'blackhole') {
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = 45;
-      const lfo = ctx.createOscillator();
-      lfo.type = 'sine';
-      lfo.frequency.value = 0.5;
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 5;
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc.frequency);
-      osc.connect(masterGain);
-      osc.start(); lfo.start();
-      nodesToDisconnect.push(osc, lfo, lfoGain);
+      // 1. Deep Sub-bass Rumble (Sawtooth + Triangle detuning for massive rolling beat)
+      const osc1 = ctx.createOscillator();
+      osc1.type = 'sawtooth';
+      osc1.frequency.value = 48; // Deep rumble
+
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'triangle';
+      osc2.frequency.value = 48.5; // Slightly detuned for rolling beat
+
+      const filterSub = ctx.createBiquadFilter();
+      filterSub.type = 'lowpass';
+      filterSub.frequency.value = 65; // Remove buzz, keep heavy bassgrowl
+
+      osc1.connect(filterSub);
+      osc2.connect(filterSub);
+      filterSub.connect(masterGain);
+
+      // 2. Ghostly Cosmic Howl (NASA Sonification style filtered noise)
+      const bufferSize = ctx.sampleRate * 2;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1; // White noise
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      // Eerie resonance bandpass filter
+      const filterHowl = ctx.createBiquadFilter();
+      filterHowl.type = 'bandpass';
+      filterHowl.frequency.value = 120;
+      filterHowl.Q.value = 5.0; // High resonance creates howling whistle
+
+      // Modulate howl frequency slowly (0.07Hz LFO) to simulate cosmic winds shifting
+      const lfoHowl = ctx.createOscillator();
+      lfoHowl.type = 'sine';
+      lfoHowl.frequency.value = 0.07;
+      
+      const lfoGainHowl = ctx.createGain();
+      lfoGainHowl.gain.value = 35; // Modulates 85Hz to 155Hz
+
+      lfoHowl.connect(lfoGainHowl);
+      lfoGainHowl.connect(filterHowl.frequency);
+
+      const howlGain = ctx.createGain();
+      howlGain.gain.value = 0.45; // Volume balance for howl
+
+      noise.connect(filterHowl);
+      filterHowl.connect(howlGain);
+      howlGain.connect(masterGain);
+
+      // Start all sound generators
+      osc1.start();
+      osc2.start();
+      noise.start();
+      lfoHowl.start();
+
+      nodesToDisconnect.push(osc1, osc2, filterSub, noise, filterHowl, lfoHowl, lfoGainHowl, howlGain);
     } else if (type === 'lava' || type === 'meteor') {
       const bufferSize = ctx.sampleRate * 2;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -224,7 +270,7 @@ const AmbientSynthesizer = ({ position, distanceFunc, type, maxDistance = 350, m
     vol = Math.pow(vol, 2); 
     
     let defaultVol = 0.15;
-    if (type === 'blackhole') defaultVol = 0.8;
+    if (type === 'blackhole') defaultVol = 1.8;
     else if (type === 'lava') defaultVol = 0.5;
     else if (type === 'meteor') defaultVol = 0.35;
     else if (type === 'asteroid') defaultVol = 0.3;
@@ -520,7 +566,7 @@ const CyberEnvironment = ({ isHighQuality }: { isHighQuality: boolean }) => {
 
       {isHighQuality && (
         <group>
-          <AmbientSynthesizer type="blackhole" position={[200, 80, -250]} maxDistance={550} />
+          <AmbientSynthesizer type="blackhole" position={[200, 80, -250]} maxDistance={850} maxVol={1.8} />
           {/* Massive Interstellar Black Hole */}
           <BlackHole position={[200, 80, -250]} scale={2.5} />
 
