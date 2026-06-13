@@ -9,7 +9,11 @@ import { RedisService } from '../redis.service';
 import { AUTH_COOKIE_NAME } from '../../modules/auth/types';
 
 const CACHE_TTL = 60; // seconds — public non-user-specific GET responses
-const PUBLIC_CACHEABLE_PATHS = new Set(['/users/leaderboard']);
+// Note: /users/leaderboard is NOT listed here because all leaderboard requests
+// carry an HttpOnly auth cookie, which causes this interceptor to BYPASS them.
+// Leaderboard caching is handled in the controller via Redis per-page snapshots
+// and the Cache-Control response header on the endpoint itself.
+const PUBLIC_CACHEABLE_PATHS = new Set<string>([]);
 
 type HeaderValue = string | string[] | undefined;
 

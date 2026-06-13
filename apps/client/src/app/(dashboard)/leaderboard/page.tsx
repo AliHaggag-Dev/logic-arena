@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../lib/api-client";
 import { LeaderboardTable } from "./components/LeaderboardTable";
+import { PaginationControls } from "./components/ui/PaginationControls";
 import { useSocket } from "../../../context/SocketContext";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useAuthState } from "../../../hooks/useAuthState";
 import { useGlobalSocket } from "../../../hooks/useGlobalSocket";
 import { useVisibilityPause } from "../../../hooks/useVisibilityPause";
 import type { UserStatusSnapshotEntry, UserStatusUpdatePayload } from "../../../hooks/useGlobalSocket";
-import type { LeaderboardUser } from "./types";
-import { POLL_INTERVAL_MS } from "./types";
+import type { LeaderboardUser, LeaderboardPageResponse } from "./types";
+import { POLL_INTERVAL_MS, DEFAULT_PAGE_LIMIT } from "./types";
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -21,6 +22,14 @@ const LeaderboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const currentPageRef = useRef(currentPage);
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
+
   // Reactive auth state — correctly handles async session load after HttpOnly cookie auth
   const { isGuest, userId } = useAuthState();
   const currentUserId = userId ?? "";
@@ -28,7 +37,7 @@ const LeaderboardPage = () => {
   const { sendChallenge } = useSocket();
   const isMobile = useMediaQuery("(max-width: 768px)");
 
-  // Apply a status update to a single user in the users list.
+  // Apply a single user's status change in-place.
   const applyStatusUpdate = useCallback(
     (payload: UserStatusUpdatePayload) => {
       setUsers((prev) =>
@@ -49,11 +58,13 @@ const LeaderboardPage = () => {
     [],
   );
 
+  // O(n) snapshot apply via Map lookup instead of nested Array.find.
   const applySnapshot = useCallback(
     (snapshot: UserStatusSnapshotEntry[]) => {
+      const byId = new Map(snapshot.map((s) => [s.userId, s]));
       setUsers((prev) =>
         prev.map((u) => {
-          const entry = snapshot.find((s) => s.userId === u.id);
+          const entry = byId.get(u.id);
           if (!entry) return u;
           return {
             ...u,
@@ -81,12 +92,14 @@ const LeaderboardPage = () => {
     };
   }, [joinLeaderboard, leaveLeaderboard]);
 
-  const fetchLeaderboard = useCallback(async () => {
+  const fetchLeaderboard = useCallback(async (page: number) => {
     try {
-      const response = await apiClient.get<LeaderboardUser[]>(
+      const response = await apiClient.get<LeaderboardPageResponse>(
         "/users/leaderboard",
+        { params: { page, limit: DEFAULT_PAGE_LIMIT } },
       );
-      setUsers(response.data);
+      setUsers(response.data.data);
+      setTotalPages(response.data.totalPages);
       setHasError(false);
     } catch {
       setHasError(true);
@@ -95,12 +108,32 @@ const LeaderboardPage = () => {
     }
   }, []);
 
-  // Polling with visibility pause — fires once immediately, then every POLL_INTERVAL_MS
-  useVisibilityPause(fetchLeaderboard, POLL_INTERVAL_MS);
+  // Polling: always resets to page 1 to avoid stale page state.
+  const pollFetch = useCallback(() => {
+    setCurrentPage(1);
+    currentPageRef.current = 1;
+    void fetchLeaderboard(1);
+  }, [fetchLeaderboard]);
+
+  useVisibilityPause(pollFetch, POLL_INTERVAL_MS);
+
+  // On manual page change: fetch new page without resetting.
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setCurrentPage(page);
+      setIsLoading(true);
+      void fetchLeaderboard(page);
+    },
+    [fetchLeaderboard],
+  );
 
   // Listen for global refresh events (e.g. from challenge completion)
   useEffect(() => {
-    const handleGlobalRefresh = () => fetchLeaderboard();
+    const handleGlobalRefresh = () => {
+      setCurrentPage(1);
+      currentPageRef.current = 1;
+      void fetchLeaderboard(1);
+    };
     window.addEventListener("global-refresh", handleGlobalRefresh);
     return () => {
       window.removeEventListener("global-refresh", handleGlobalRefresh);
@@ -114,6 +147,9 @@ const LeaderboardPage = () => {
     },
     [router, emitSpectate],
   );
+
+  // Zero-based offset so child tables can display the correct global rank number.
+  const globalRankOffset = (currentPage - 1) * DEFAULT_PAGE_LIMIT;
 
   return (
     <div
@@ -146,15 +182,24 @@ const LeaderboardPage = () => {
               Failed to load rankings. Check your connection.
             </div>
           ) : (
-            <LeaderboardTable
-              users={users}
-              isLoading={isLoading}
-              currentUserId={currentUserId}
-              onChallenge={(userId) => sendChallenge(userId, 'leaderboard')}
-              onSpectate={handleSpectate}
-              isGuest={isGuest}
-              isMobile={true}
-            />
+            <>
+              <LeaderboardTable
+                users={users}
+                isLoading={isLoading}
+                currentUserId={currentUserId}
+                onChallenge={(id) => sendChallenge(id, 'leaderboard')}
+                onSpectate={handleSpectate}
+                isGuest={isGuest}
+                isMobile={true}
+                globalRankOffset={globalRankOffset}
+              />
+              <PaginationControls
+                page={currentPage}
+                totalPages={totalPages}
+                isLoading={isLoading}
+                onPageChange={handlePageChange}
+              />
+            </>
           )}
         </div>
       ) : (
@@ -174,15 +219,24 @@ const LeaderboardPage = () => {
               Failed to load rankings. Check your connection and try refreshing.
             </div>
           ) : (
-            <LeaderboardTable
-              users={users}
-              isLoading={isLoading}
-              currentUserId={currentUserId}
-              onChallenge={(userId) => sendChallenge(userId, 'leaderboard')}
-              onSpectate={handleSpectate}
-              isGuest={isGuest}
-              isMobile={false}
-            />
+            <>
+              <LeaderboardTable
+                users={users}
+                isLoading={isLoading}
+                currentUserId={currentUserId}
+                onChallenge={(id) => sendChallenge(id, 'leaderboard')}
+                onSpectate={handleSpectate}
+                isGuest={isGuest}
+                isMobile={false}
+                globalRankOffset={globalRankOffset}
+              />
+              <PaginationControls
+                page={currentPage}
+                totalPages={totalPages}
+                isLoading={isLoading}
+                onPageChange={handlePageChange}
+              />
+            </>
           )}
 
           {/* Footer Decoration */}

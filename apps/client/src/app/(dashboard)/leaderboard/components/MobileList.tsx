@@ -15,6 +15,7 @@ export function MobileList({
   onChallenge,
   onSpectate,
   isGuest,
+  globalRankOffset,
 }: LeaderboardViewProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -41,11 +42,11 @@ export function MobileList({
                 <div className="flex items-center gap-3">
                   <span
                     className="font-black text-xl"
-                    style={{ color: getRankColor(index) }}
+                    style={{ color: getRankColor(globalRankOffset + index) }}
                   >
-                    #{index + 1}
+                    #{globalRankOffset + index + 1}
                   </span>
-                  {index === 0 && (
+                  {globalRankOffset === 0 && index === 0 && (
                     <Crown
                       size={14}
                       style={{ color: "var(--rank-gold)" }}
@@ -84,7 +85,7 @@ export function MobileList({
                           </div>
 
                           {/* Unified Premium Tooltip Card */}
-                          <div className={`absolute ${index < 3 ? "top-full mt-2" : "bottom-full mb-2"} left-0 scale-0 group-hover/badges-stack:scale-100 group-focus/badges-stack:scale-100 transition-all duration-200 bg-card/95 border border-accent/20 rounded-lg pt-3.5 pb-2.5 px-3 z-[100] pointer-events-none shadow-lg min-w-[170px] backdrop-blur-md`}>
+                          <div className={`absolute ${globalRankOffset + index < 3 ? "top-full mt-2" : "bottom-full mb-2"} left-0 scale-0 group-hover/badges-stack:scale-100 group-focus/badges-stack:scale-100 transition-all duration-200 bg-card/95 border border-accent/20 rounded-lg pt-3.5 pb-2.5 px-3 z-[100] pointer-events-none shadow-lg min-w-[170px] backdrop-blur-md`}>
                             <div className="text-[10px] font-black text-accent tracking-widest border-b border-accent/15 pb-1.5 mb-1.5 uppercase font-mono">
                               Player Badges
                             </div>

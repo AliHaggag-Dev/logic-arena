@@ -16,8 +16,20 @@ export interface LeaderboardUser {
   } | null;
 }
 
+/** Paginated response shape returned by GET /users/leaderboard */
+export interface LeaderboardPageResponse {
+  data: LeaderboardUser[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 /** Maximum rank bar display cap (users above this show a full bar) */
 export const RANK_BAR_MAX = 1000;
+
+/** Default number of rows per leaderboard page */
+export const DEFAULT_PAGE_LIMIT = 10;
 
 /** Poll interval for leaderboard refresh, in milliseconds */
 export const POLL_INTERVAL_MS = 30_000;

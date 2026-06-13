@@ -10,6 +10,8 @@ export const preferencesKey = (id: string) => `user:preferences:${id}`;
 export const blackMarketKey = (id: string) => `user:black-market:${id}`;
 export const combatLoadoutKey = (id: string) => `user:combat-loadout:${id}`;
 export const leaderboardSnapshotKey = 'leaderboard:snapshot';
+export const leaderboardPageSnapshotKey = (page: number, limit: number) =>
+  `leaderboard:snapshot:p${page}:l${limit}`;
 export const leaderboardRankKey = 'leaderboard:rank';
 
 export const BCRYPT_ROUNDS = 12;
@@ -119,16 +121,29 @@ export interface LeaderboardEntry {
   username: string;
   rank: number;
   isOnline: boolean;
-  combatStats?: any;
+  combatStats?: CombatStats | null;
   _count: { wonMatches: number };
   achievements?: { achievementId: string; unlockedLevel: number }[];
 }
 
-/** Maximum number of players returned by the leaderboard endpoint */
-export const LEADERBOARD_LIMIT = 10;
+/** Paginated response shape for GET /users/leaderboard */
+export interface LeaderboardPageResponse {
+  data: LeaderboardEntry[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
-/** Redis TTL for the leaderboard snapshot, in seconds */
-export const LEADERBOARD_TTL = 20;
+/** Default page size for the leaderboard endpoint */
+export const LEADERBOARD_DEFAULT_LIMIT = 10;
+
+/** Maximum allowed page size to prevent abuse */
+export const LEADERBOARD_MAX_LIMIT = 50;
+
+/** Redis TTL for the leaderboard snapshot, in seconds.
+ *  Must be >= client POLL_INTERVAL_MS (30 s) so the cache is always warm on poll. */
+export const LEADERBOARD_TTL = 35;
 
 /** Shape returned by GET /users/black-market */
 export interface BlackMarketData {

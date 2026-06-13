@@ -239,9 +239,7 @@ async function deleteAll(): Promise<void> {
 function toggleOpen(): void {
   if (!store) return;
   store.isOpen = !store.isOpen;
-  if (store.isOpen && !store.fetchedOnce) {
-    void refresh();
-  } else if (store.isOpen) {
+  if (store.isOpen) {
     void refresh();
   }
   notify();

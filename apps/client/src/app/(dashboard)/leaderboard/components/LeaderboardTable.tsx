@@ -18,6 +18,7 @@ export const LeaderboardTable = memo(function LeaderboardTable({
   onSpectate,
   isGuest,
   isMobile,
+  globalRankOffset,
 }: LeaderboardTableProps) {
   return isMobile ? (
     <MobileList
@@ -27,6 +28,7 @@ export const LeaderboardTable = memo(function LeaderboardTable({
       onChallenge={onChallenge}
       onSpectate={onSpectate}
       isGuest={isGuest}
+      globalRankOffset={globalRankOffset}
     />
   ) : (
     <DesktopTable
@@ -36,6 +38,7 @@ export const LeaderboardTable = memo(function LeaderboardTable({
       onChallenge={onChallenge}
       onSpectate={onSpectate}
       isGuest={isGuest}
+      globalRankOffset={globalRankOffset}
     />
   );
 });

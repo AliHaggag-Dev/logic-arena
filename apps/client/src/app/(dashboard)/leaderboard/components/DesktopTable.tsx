@@ -17,6 +17,7 @@ export function DesktopTable({
   onChallenge,
   onSpectate,
   isGuest,
+  globalRankOffset,
 }: LeaderboardViewProps) {
   return (
     <div
@@ -76,11 +77,11 @@ export function DesktopTable({
                       <div className="flex items-center gap-2">
                         <span
                           className="font-black text-lg drop-shadow-[0_0_8px_rgba(var(--accent-rgb),0.3)]"
-                          style={{ color: getRankColor(index) }}
+                          style={{ color: getRankColor(globalRankOffset + index) }}
                         >
-                          #{index + 1}
+                          #{globalRankOffset + index + 1}
                         </span>
-                        {index === 0 && (
+                        {globalRankOffset === 0 && index === 0 && (
                           <Crown
                             size={16}
                             style={{ color: "var(--rank-gold)" }}
@@ -126,7 +127,7 @@ export function DesktopTable({
                               </div>
 
                               {/* Unified Premium Tooltip Card */}
-                              <div className={`absolute ${index < 3 ? "top-full mt-2" : "bottom-full mb-2"} left-1/2 -translate-x-1/2 scale-0 group-hover/badges-stack:scale-100 group-focus/badges-stack:scale-100 transition-all duration-200 bg-card/95 border border-accent/20 rounded-lg pt-3.5 pb-2.5 px-3 z-[100] pointer-events-none shadow-lg min-w-[170px] backdrop-blur-md`}>
+                              <div className={`absolute ${globalRankOffset + index < 3 ? "top-full mt-2" : "bottom-full mb-2"} left-1/2 -translate-x-1/2 scale-0 group-hover/badges-stack:scale-100 group-focus/badges-stack:scale-100 transition-all duration-200 bg-card/95 border border-accent/20 rounded-lg pt-3.5 pb-2.5 px-3 z-[100] pointer-events-none shadow-lg min-w-[170px] backdrop-blur-md`}>
                                 <div className="text-[10px] font-black text-accent tracking-widest border-b border-accent/15 pb-1.5 mb-1.5 uppercase font-mono">
                                   Player Badges
                                 </div>
