@@ -566,7 +566,7 @@ const CyberEnvironment = ({ isHighQuality }: { isHighQuality: boolean }) => {
 
       {isHighQuality && (
         <group>
-          <AmbientSynthesizer type="blackhole" position={[200, 80, -250]} maxDistance={850} maxVol={1.8} />
+          <AmbientSynthesizer type="blackhole" position={[200, 80, -250]} maxDistance={480} maxVol={1.2} />
           {/* Massive Interstellar Black Hole */}
           <BlackHole position={[200, 80, -250]} scale={2.5} />
 
@@ -650,7 +650,7 @@ const LavaMeteor = ({ startPos, speed, dir }: { startPos: [number, number, numbe
 
   return (
     <group ref={groupRef} position={startPos} quaternion={quaternion}>
-      <AmbientSynthesizer type="meteor" maxDistance={400} maxVol={0.5} />
+      <AmbientSynthesizer type="meteor" maxDistance={150} maxVol={0.35} />
       <mesh>
         <dodecahedronGeometry args={[3, 1]} />
         <meshStandardMaterial color="#ff2200" emissive="#ff3300" emissiveIntensity={2} flatShading />
@@ -868,7 +868,7 @@ const IceEnvironment = ({ isHighQuality }: { isHighQuality: boolean }) => {
 
           {/* 360 Luxurious Crystal Clusters */}
           <group ref={crystalsRef}>
-            <AmbientSynthesizer type="crystal" distanceFunc={getCrystalDist} maxDistance={100} maxVol={0.2} />
+            <AmbientSynthesizer type="crystal" distanceFunc={getCrystalDist} maxDistance={55} maxVol={0.12} />
             <Instances limit={105} range={105}>
               <dodecahedronGeometry args={[1, 0]} />
               <meshStandardMaterial {...CRYSTAL_MAT_PROPS} />
