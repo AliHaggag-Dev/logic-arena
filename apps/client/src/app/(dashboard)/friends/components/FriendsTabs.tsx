@@ -19,7 +19,7 @@ interface FriendsTabsProps {
   isLoadingRequests: boolean;
   isLoadingSuggestions: boolean;
   isMobile: boolean;
-  sentSuggestionIds: React.RefObject<Set<string>>;
+  sentSuggestionIds: Set<string>;
   onChallenge: (userId: string) => void;
   onSpectate: (matchId: string) => void;
   onUnfriend: (friendId: string) => void;
