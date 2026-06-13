@@ -3,7 +3,7 @@
 import React, { useRef, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Color, Group, Mesh, AdditiveBlending, DoubleSide } from "three";
-import { Billboard } from "@react-three/drei";
+import { Billboard, Stars } from "@react-three/drei";
 import { MapTheme } from "../../types";
 
 interface SpaceBackgroundProps {
@@ -387,6 +387,10 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
   const galaxyRef = useRef<Group>(null);
   const { camera } = useThree();
 
+  const starCount = useMemo(() => {
+    return graphicsQuality === "high" ? 5000 : graphicsQuality === "low" ? 400 : 1500;
+  }, [graphicsQuality]);
+
   // Keep the background centered on the camera at all times (Infinite Parallax effect)
   useFrame((_, delta) => {
     if (backgroundRef.current) {
@@ -563,6 +567,17 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
 
   return (
     <group ref={backgroundRef}>
+      {/* 🌟 Infinite Parallax Starfield */}
+      <Stars
+        radius={350}
+        depth={80}
+        count={starCount}
+        factor={7}
+        saturation={0}
+        fade
+        speed={1.2}
+      />
+
       {/* 🌌 Procedural Spiral Galaxy */}
       <group
         ref={galaxyRef}
