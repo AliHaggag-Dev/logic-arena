@@ -16,7 +16,7 @@ export const SceneCanvas = ({ children, graphicsQuality = 'medium' }: { children
 
   return (
     <Canvas dpr={dpr} gl={{ powerPreference: "high-performance", antialias: graphicsQuality !== 'low' }}>
-      <PerspectiveCamera makeDefault position={[0, 22, 14]} />
+      <PerspectiveCamera makeDefault position={[0, 22, 14]} far={10000} />
       <OrbitControls target={[0, 0, 0]} />
       {graphicsQuality !== 'low' && (
         <Stars radius={100} depth={50} count={starCount} factor={4} saturation={0} fade speed={1} />

@@ -8,6 +8,7 @@ import { Scene3DComponentProps } from "../../types/scene.types";
 import { TrainingEnvironment } from "../TrainingMode/TrainingEnvironment";
 import { MapTheme } from "../../types";
 import { DynamicEnvironment } from "./DynamicEnvironment";
+import { SpaceBackground } from "./SpaceBackground";
 
 const THEME_GRID_COLORS: Record<MapTheme, { primary: string; secondary: string }> = {
   CYBER: { primary: "#1a1a4a", secondary: "#0d0d2a" },
@@ -102,6 +103,7 @@ export const SceneContent = (props: Scene3DComponentProps) => {
 
       {/* DYNAMIC WEATHER & BACKGROUND EFFECTS */}
       <DynamicEnvironment mapTheme={mapTheme} graphicsQuality={props.graphicsQuality} />
+      <SpaceBackground mapTheme={mapTheme} graphicsQuality={props.graphicsQuality} />
     </>
   );
 };
