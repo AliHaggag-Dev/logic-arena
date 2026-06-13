@@ -2,7 +2,7 @@
 import React, { useRef, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Sparkles, Float, Cloud, Clouds, Billboard, Instances, Instance } from "@react-three/drei";
-import { Group, Mesh, MeshBasicMaterial, Vector3, Quaternion, AdditiveBlending, DoubleSide, InstancedMesh, Matrix4, Color, Euler, Object3D } from "three";
+import { Group, Mesh, MeshBasicMaterial, Vector3, Quaternion, AdditiveBlending, DoubleSide, InstancedMesh, Matrix4, Color, Euler, Object3D, IcosahedronGeometry, Float32BufferAttribute } from "three";
 import { MapTheme } from "../../types";
 import { getGlobalAudioContext, getGlobalMasterGain } from "../../../../context/SoundContext";
 
@@ -520,6 +520,57 @@ const CyberEnvironment = ({ isHighQuality }: { isHighQuality: boolean }) => {
   const cubeMeshRef = useRef<InstancedMesh>(null);
   const _cubeDummy = useMemo(() => new Object3D(), []);
 
+  // Programmatically generate a jagged, detailed space rock geometry with vertex colors
+  const asteroidGeometry = useMemo(() => {
+    const geom = new IcosahedronGeometry(1.2, 2); // 2 subdivisions for detail
+    const posAttr = geom.getAttribute("position");
+    const count = posAttr.count;
+    const tempV = new Vector3();
+    
+    // Perturb vertices along their normal direction to create jagged rock facets
+    for (let i = 0; i < count; i++) {
+      tempV.fromBufferAttribute(posAttr, i);
+      const dir = tempV.clone().normalize();
+      
+      const noiseVal = 
+        Math.sin(tempV.x * 6.0) * Math.cos(tempV.y * 6.0) * 0.15 +
+        Math.cos(tempV.z * 5.0) * Math.sin(tempV.x * 3.0) * 0.10;
+        
+      tempV.addScaledVector(dir, noiseVal);
+      posAttr.setXYZ(i, tempV.x, tempV.y, tempV.z);
+    }
+    
+    geom.computeVertexNormals();
+    
+    // Build mineral vein shading colors (vertex colors)
+    const colors: number[] = [];
+    for (let i = 0; i < count; i++) {
+      tempV.fromBufferAttribute(posAttr, i);
+      
+      // Vein wave pattern
+      const veinVal = Math.sin(tempV.x * 5.0) * Math.cos(tempV.y * 5.0) * Math.sin(tempV.z * 5.0);
+      let r = 0.12, g = 0.14, b = 0.18; // dark slate gray rock base
+      
+      if (veinVal > 0.3) {
+        // Glowing cyan veins
+        r = 0.1; g = 0.9; b = 1.0;
+      } else if (veinVal < -0.3) {
+        // Glowing magenta veins
+        r = 1.0; g = 0.1; b = 0.9;
+      } else {
+        // Height shading variation
+        const height = (tempV.length() - 0.9) / 0.55;
+        r += height * 0.08;
+        g += height * 0.08;
+        b += height * 0.12;
+      }
+      colors.push(r, g, b);
+    }
+    
+    geom.setAttribute("color", new Float32BufferAttribute(colors, 3));
+    return geom;
+  }, []);
+
   const cubeData = useMemo(() => [...Array(cubeCount)].map(() => ({
     size: Math.random() * 8 + 2,
     pos: getRandomPos(100, 300, -20, 150),
@@ -537,6 +588,7 @@ const CyberEnvironment = ({ isHighQuality }: { isHighQuality: boolean }) => {
       _cubeDummy.scale.setScalar(d.size);
       _cubeDummy.updateMatrix();
       cubeMeshRef.current!.setMatrixAt(i, _cubeDummy.matrix);
+      // The instance color multiplies the vertex colors to tint the veins/rock
       cubeMeshRef.current!.setColorAt(i, d.color === "#00ffff" ? colorA : colorB);
     });
     cubeMeshRef.current.instanceMatrix.needsUpdate = true;
@@ -601,12 +653,17 @@ const CyberEnvironment = ({ isHighQuality }: { isHighQuality: boolean }) => {
             );
           })}
 
-          {/* Random floating data cubes around the entire map */}
+          {/* Random floating space asteroids around the entire map */}
           <group ref={cubesRef}>
             <AmbientSynthesizer type="datacube" distanceFunc={getCubeDist} maxDistance={80} />
-            <instancedMesh ref={cubeMeshRef} args={[undefined as any, undefined as any, cubeCount]}>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshBasicMaterial wireframe transparent opacity={0.3} />
+            <instancedMesh ref={cubeMeshRef} args={[asteroidGeometry, undefined as any, cubeCount]}>
+              <meshStandardMaterial
+                vertexColors={true}
+                roughness={0.85}
+                metalness={0.3}
+                flatShading={true}
+                emissive="#060612"
+              />
             </instancedMesh>
           </group>
 
