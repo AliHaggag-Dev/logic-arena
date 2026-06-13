@@ -47,12 +47,13 @@ export function useLobbySocket(selectedMode: MatchMode): UseLobbySocketReturn {
     setConnectionStatus("connecting");
     if (!socket.connected) {
       socket.connect();
+    } else {
+      socket.emit("getLobby", { mode: selectedMode });
     }
 
     const onConnect = () => {
       console.log("Connected to lobby socket");
-      socket.emit("getLobby");
-      setTimeout(() => setConnectionStatus("connected"), 500);
+      socket.emit("getLobby", { mode: selectedMode });
     };
 
     const onConnectError = () => {
@@ -65,7 +66,7 @@ export function useLobbySocket(selectedMode: MatchMode): UseLobbySocketReturn {
     };
 
     const onLobbyUpdated = (data: LobbyMatch[]) => {
-      setMatches(data);
+      setMatches(data.filter(m => m.mode === selectedMode));
     };
 
     const onMatchCreated = (data: { matchId: string }) => {

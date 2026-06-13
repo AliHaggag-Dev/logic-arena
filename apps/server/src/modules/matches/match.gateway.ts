@@ -216,8 +216,11 @@ export class MatchGateway
     return this.lobbyManager.handleCreateMatch(client, data);
   }
   @SubscribeMessage('getLobby')
-  async handleGetLobby(@ConnectedSocket() client: AuthenticatedSocket) {
-    return this.lobbyManager.handleGetLobby(client);
+  async handleGetLobby(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data?: { mode?: 'CLASSIC' | 'TACTICAL' },
+  ) {
+    return this.lobbyManager.handleGetLobby(client, data);
   }
   @SubscribeMessage('leaveLobby')
   handleLeaveLobby(@ConnectedSocket() client: AuthenticatedSocket) {

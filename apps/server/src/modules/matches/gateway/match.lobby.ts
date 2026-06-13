@@ -225,16 +225,38 @@ export class MatchLobbyManager {
     return { matchId };
   }
 
-  async handleGetLobby(client: AuthenticatedSocket) {
+  async handleGetLobby(
+    client: AuthenticatedSocket,
+    data?: { mode?: 'CLASSIC' | 'TACTICAL' }
+  ) {
     client.join(LOBBY_ROOM);
+    const targetMode = data?.mode;
+
     const localLobby = Array.from(this.state.lobbyMatches.values());
     if (localLobby.length > 0) {
-      client.emit('lobbyList', localLobby);
+      const filtered = targetMode ? localLobby.filter(m => m.mode === targetMode) : localLobby;
+      client.emit('lobbyList', filtered);
       return;
     }
 
-    const cachedLobby = await this.redis.get<unknown[]>(LOBBY_CACHE_KEY);
-    client.emit('lobbyList', cachedLobby ?? []);
+    // Try parsing the cached string as an array of lobby matches
+    let cachedLobby: Array<{ hostId: string; hostName: string; matchId: string; createdAt: number; mode: ArenaMatchMode }> | null = null;
+    try {
+      const cached = await this.redis.get<unknown[]>(LOBBY_CACHE_KEY);
+      if (Array.isArray(cached)) {
+        cachedLobby = cached as any;
+      }
+    } catch (e) {
+      // Ignore cache errors
+    }
+
+    if (cachedLobby) {
+      const filtered = targetMode ? cachedLobby.filter(m => m.mode === targetMode) : cachedLobby;
+      client.emit('lobbyList', filtered);
+      return;
+    }
+
+    client.emit('lobbyList', []);
   }
 
   handleLeaveLobby(client: AuthenticatedSocket) {
