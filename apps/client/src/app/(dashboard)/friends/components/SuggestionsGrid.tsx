@@ -14,8 +14,8 @@ interface SuggestionsGridProps {
   outgoingRequests: import('@/lib/api/friends.types').FriendRequestEntry[];
   isLoading: boolean;
   isMobile: boolean;
-  /** Ref to the persistent sent-IDs set owned by useFriendsSystem */
-  sentSuggestionIds: React.RefObject<Set<string>>;
+  /** The persistent sent-IDs set owned by useFriendsSystem */
+  sentSuggestionIds: Set<string>;
   onRequestSent: (username: string) => void;
   onError: (message: string) => void;
   /** Called when a request succeeds — adds id to the shared set */
@@ -52,9 +52,8 @@ export function SuggestionsGrid({
   const [, forceUpdate] = useState(0);
 
   const handleSend = useCallback(async (s: FriendSuggestion) => {
-    const sent = sentSuggestionIds.current;
     // Prevent double-sending
-    if (sendingIds.has(s.id) || sent.has(s.id)) return;
+    if (sendingIds.has(s.id) || sentSuggestionIds.has(s.id)) return;
 
     // Optimistic update: immediately show "Request Sent"
     onMarkSent(s.id);
@@ -107,7 +106,7 @@ export function SuggestionsGrid({
     <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-3'}`}>
       {suggestions.map((s) => {
         const isSent =
-          sentSuggestionIds.current.has(s.id) ||
+          sentSuggestionIds.has(s.id) ||
           outgoingRequests.some((r) => r.receiver.id === s.id);
         const isSending = sendingIds.has(s.id);
 

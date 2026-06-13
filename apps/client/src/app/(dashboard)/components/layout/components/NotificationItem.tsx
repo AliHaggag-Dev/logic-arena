@@ -102,17 +102,17 @@ export function NotificationItem({
           <Icon size={17} />
         </div>
         <div className="flex-1 min-w-0" style={{ paddingTop: 2 }}>
-          <div className="flex items-center justify-between gap-2 mb-0.5">
-            <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: color }}>
-              {label}
-            </span>
+          <div className="flex items-center gap-2 mb-0.5">
             {!notification.read && (
               <span
-                className="w-2 h-2 rounded-full shrink-0"
+                className="w-1.5 h-1.5 rounded-full shrink-0 shadow-[0_0_8px_var(--accent)]"
                 style={{ background: 'var(--accent)' }}
                 aria-label="Unread"
               />
             )}
+            <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: color }}>
+              {label}
+            </span>
           </div>
           <p
             className="text-sm leading-snug line-clamp-2"

@@ -57,17 +57,59 @@ function notify(): void {
   store.listeners.forEach((fn) => fn());
 }
 
-function useStoreState<T>(selector: (s: NotificationsStore) => T): T {
-  const s = getStore();
-  const [, force] = useState(0);
+interface NotificationsSnapshot {
+  items: NotificationEntry[];
+  unreadCount: number;
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
+  isOpen: boolean;
+  toasts: NotificationToast[];
+}
+
+function selectSnapshot(s: NotificationsStore): NotificationsSnapshot {
+  return {
+    items: s.items,
+    unreadCount: s.unreadCount,
+    isLoading: s.isLoading,
+    isLoadingMore: s.isLoadingMore,
+    hasMore: s.hasMore,
+    isOpen: s.isOpen,
+    toasts: s.toasts,
+  };
+}
+
+function useStoreSnapshot(): NotificationsSnapshot {
+  const [snapshot, setSnapshot] = useState<NotificationsSnapshot>(() =>
+    selectSnapshot(getStore()),
+  );
+
   useEffect(() => {
-    const listener = () => force((n) => n + 1);
+    const s = getStore();
+    const listener = () => {
+      setSnapshot((prev) => {
+        const next = selectSnapshot(s);
+        if (
+          prev.items === next.items &&
+          prev.unreadCount === next.unreadCount &&
+          prev.isLoading === next.isLoading &&
+          prev.isLoadingMore === next.isLoadingMore &&
+          prev.hasMore === next.hasMore &&
+          prev.isOpen === next.isOpen &&
+          prev.toasts === next.toasts
+        ) {
+          return prev;
+        }
+        return next;
+      });
+    };
     s.listeners.add(listener);
     return () => {
       s.listeners.delete(listener);
     };
-  }, [s]);
-  return selector(s);
+  }, []);
+
+  return snapshot;
 }
 
 async function refresh(): Promise<void> {
@@ -296,13 +338,7 @@ export interface UseNotificationsReturn {
 export function useNotifications(): UseNotificationsReturn {
   useSocketBridge();
 
-  const items = useStoreState((s) => s.items);
-  const unreadCount = useStoreState((s) => s.unreadCount);
-  const isLoading = useStoreState((s) => s.isLoading);
-  const isLoadingMore = useStoreState((s) => s.isLoadingMore);
-  const hasMore = useStoreState((s) => s.hasMore);
-  const isOpen = useStoreState((s) => s.isOpen);
-  const toasts = useStoreState((s) => s.toasts);
+  const { items, unreadCount, isLoading, isLoadingMore, hasMore, isOpen, toasts } = useStoreSnapshot();
 
   useEffect(() => {
     const s = getStore();

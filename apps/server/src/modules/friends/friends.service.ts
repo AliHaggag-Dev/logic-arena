@@ -427,11 +427,19 @@ export class FriendsService {
           select: { userAId: true, userBId: true },
         }),
         this.prisma.friendRequest.findMany({
-          where: { senderId: viewerId, receiverId: { in: userIds } },
+          where: { 
+            senderId: viewerId, 
+            receiverId: { in: userIds },
+            expiresAt: { gt: new Date() }
+          },
           select: { receiverId: true },
         }),
         this.prisma.friendRequest.findMany({
-          where: { receiverId: viewerId, senderId: { in: userIds } },
+          where: { 
+            receiverId: viewerId, 
+            senderId: { in: userIds },
+            expiresAt: { gt: new Date() }
+          },
           select: { senderId: true },
         }),
         this.prisma.block.findMany({

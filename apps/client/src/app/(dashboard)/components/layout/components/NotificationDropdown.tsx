@@ -176,11 +176,9 @@ export function NotificationDropdown({
       className="max-sm:fixed max-sm:inset-x-4 max-sm:top-[64px] max-sm:w-auto max-sm:max-w-full sm:absolute sm:right-0 sm:top-full sm:mt-2 sm:w-[420px] max-sm:max-h-[80vh] sm:max-h-[560px] z-[70] font-mono flex flex-col overflow-hidden"
       style={{
         borderRadius: 20,
-        background: 'rgba(var(--bg-card), 0.92)',
-        backdropFilter: 'blur(32px)',
-        WebkitBackdropFilter: 'blur(32px)',
-        border: '1px solid rgba(var(--accent-rgb), 0.15)',
-        boxShadow: '0 20px 48px rgba(0,0,0,0.35), 0 0 0 1px rgba(var(--accent-rgb),0.06)',
+        backgroundColor: 'rgb(var(--bg-card-rgb))', // Using solid background color
+        border: '1px solid rgba(var(--accent-rgb), 0.3)',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(var(--accent-rgb),0.2), inset 0 0 20px rgba(var(--accent-rgb),0.05)',
         animation: 'dropdownIn 0.2s cubic-bezier(0.16,1,0.3,1)',
       }}
     >

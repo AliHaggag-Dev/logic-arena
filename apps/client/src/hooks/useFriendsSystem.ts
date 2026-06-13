@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { friendsApi } from '../lib/api/friends';
 import type {
   FriendEntry,
@@ -9,7 +9,6 @@ import type {
 } from '../lib/api/friends.types';
 import { useGlobalSocket } from '../hooks/useGlobalSocket';
 import { useAuth } from '../context/AuthContext';
-import { useSafeTimeout } from '../hooks/useSafeTimeout';
 import type { AxiosError } from 'axios';
 
 interface ToastState {
@@ -24,81 +23,117 @@ export interface IncomingFriendRequest {
   unreadCount: number;
 }
 
+interface FriendsStore {
+  friends: FriendEntry[];
+  incomingRequests: FriendRequestEntry[];
+  outgoingRequests: FriendRequestEntry[];
+  suggestions: FriendSuggestion[];
+  incomingRequest: IncomingFriendRequest | null;
+  toast: ToastState | null;
+  unreadCount: number;
+  isLoadingFriends: boolean;
+  isLoadingRequests: boolean;
+  isLoadingSuggestions: boolean;
+  
+  fetchedOnce: boolean;
+  toastTimer: ReturnType<typeof setTimeout> | null;
+  sentSuggestionIds: Set<string>;
+}
+
+let storeState: FriendsStore = {
+  friends: [],
+  incomingRequests: [],
+  outgoingRequests: [],
+  suggestions: [],
+  incomingRequest: null,
+  toast: null,
+  unreadCount: 0,
+  isLoadingFriends: false,
+  isLoadingRequests: false,
+  isLoadingSuggestions: false,
+  fetchedOnce: false,
+  toastTimer: null,
+  sentSuggestionIds: new Set(),
+};
+
+const listeners = new Set<() => void>();
+
+function getSnapshot() {
+  return storeState;
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function updateStore(partial: Partial<FriendsStore>) {
+  storeState = { ...storeState, ...partial };
+  listeners.forEach((l) => l());
+}
+
+function showToast(message: string, type: ToastState['type'] = 'info') {
+  if (storeState.toastTimer) clearTimeout(storeState.toastTimer);
+  const timer = setTimeout(() => {
+    updateStore({ toast: null, toastTimer: null });
+  }, 3500);
+  updateStore({ toast: { message, type }, toastTimer: timer });
+}
+
+export async function fetchFriends() {
+  if (storeState.isLoadingFriends) return;
+  try {
+    updateStore({ isLoadingFriends: true });
+    const data = await friendsApi.listFriends();
+    updateStore({ friends: data, isLoadingFriends: false });
+  } catch {
+    updateStore({ isLoadingFriends: false });
+  }
+}
+
+export async function fetchRequests() {
+  if (storeState.isLoadingRequests) return;
+  try {
+    updateStore({ isLoadingRequests: true });
+    const [incoming, outgoing] = await Promise.all([
+      friendsApi.listIncomingRequests(0, 50),
+      friendsApi.listOutgoingRequests(0, 50),
+    ]);
+    updateStore({ 
+      incomingRequests: incoming.items, 
+      outgoingRequests: outgoing,
+      isLoadingRequests: false 
+    });
+  } catch {
+    updateStore({ isLoadingRequests: false });
+  }
+}
+
+export async function fetchSuggestions() {
+  if (storeState.isLoadingSuggestions) return;
+  try {
+    updateStore({ isLoadingSuggestions: true });
+    const data = await friendsApi.getSuggestions();
+    updateStore({ suggestions: data, isLoadingSuggestions: false });
+  } catch {
+    updateStore({ isLoadingSuggestions: false });
+  }
+}
+
 export function useFriendsSystem() {
   const { profile } = useAuth();
-  const { clearAllSafeTimeouts, setSafeTimeout } = useSafeTimeout();
-
-  const [friends, setFriends] = useState<FriendEntry[]>([]);
-  const [incomingRequests, setIncomingRequests] = useState<FriendRequestEntry[]>([]);
-  const [outgoingRequests, setOutgoingRequests] = useState<FriendRequestEntry[]>([]);
-  const [suggestions, setSuggestions] = useState<FriendSuggestion[]>([]);
-  const [incomingRequest, setIncomingRequest] = useState<IncomingFriendRequest | null>(null);
-  const [toast, setToast] = useState<ToastState | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
-  // Start as false — skeletons should only appear once a fetch is actually in flight
-  const [isLoadingFriends, setIsLoadingFriends] = useState(false);
-  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-
-  // Persists across tab switches and re-renders (useRef — no re-renders needed for persistence)
-  const sentSuggestionIds = useRef<Set<string>>(new Set());
-
-  const allowFriendRequests = profile?.notificationSettings?.friendRequests !== false;
-
-  const showToast = useCallback(
-    (message: string, type: ToastState['type'] = 'info') => {
-      clearAllSafeTimeouts();
-      setToast({ message, type });
-      setSafeTimeout(() => setToast(null), 3500);
-    },
-    [clearAllSafeTimeouts, setSafeTimeout],
-  );
-
-  const fetchFriends = useCallback(async () => {
-    try {
-      setIsLoadingFriends(true);
-      const data = await friendsApi.listFriends();
-      setFriends(data);
-    } catch {
-      /* keep last state */
-    } finally {
-      setIsLoadingFriends(false);
-    }
-  }, []);
-
-  const fetchRequests = useCallback(async () => {
-    try {
-      setIsLoadingRequests(true);
-      const [incoming, outgoing] = await Promise.all([
-        friendsApi.listIncomingRequests(0, 50),
-        friendsApi.listOutgoingRequests(0, 50),
-      ]);
-      setIncomingRequests(incoming.items);
-      setOutgoingRequests(outgoing);
-    } catch {
-      /* keep last state */
-    } finally {
-      setIsLoadingRequests(false);
-    }
-  }, []);
-
-  const fetchSuggestions = useCallback(async () => {
-    try {
-      setIsLoadingSuggestions(true);
-      const data = await friendsApi.getSuggestions();
-      setSuggestions(data);
-    } catch {
-      /* keep last state */
-    } finally {
-      setIsLoadingSuggestions(false);
-    }
-  }, []);
-
+  const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  
   useEffect(() => {
     if (!profile) return;
-    // Run both fetches in parallel — no sequential dependency between them
-    void Promise.all([fetchFriends(), fetchRequests()]);
-  }, [profile, fetchFriends, fetchRequests]);
+    if (!storeState.fetchedOnce) {
+      updateStore({ fetchedOnce: true });
+      void fetchFriends();
+      void fetchRequests();
+    }
+  }, [profile]);
 
   const { sendFriendRequest, acceptFriendRequest, declineFriendRequest, unfriendSocket } =
     useGlobalSocket({
@@ -107,27 +142,32 @@ export function useFriendsSystem() {
       onChallengeFailed: () => {},
       onChallengeAccepted: () => {},
       onFriendRequestReceived: (data) => {
-        setIncomingRequest(data);
-        setIncomingRequests((prev) => {
-          if (prev.some((r) => r.id === data.request.id)) return prev;
-          return [data.request, ...prev];
-        });
-        setUnreadCount(data.unreadCount);
-        showToast(`${data.request.sender.username} sent you a friend request`, 'info');
+        if (!storeState.incomingRequests.some((r) => r.id === data.request.id)) {
+          updateStore({
+            incomingRequest: data,
+            incomingRequests: [data.request, ...storeState.incomingRequests],
+            unreadCount: data.unreadCount,
+          });
+          showToast(`${data.request.sender.username} sent you a friend request`, 'info');
+        }
       },
       onFriendRequestAccepted: (data) => {
         showToast(`${data.by.username} accepted your friend request`, 'success');
-        setUnreadCount(data.unreadCount);
+        updateStore({ unreadCount: data.unreadCount });
         void fetchFriends();
         void fetchRequests();
       },
       onFriendRequestDeclined: (data) => {
         showToast(`${data.by.username} declined your friend request`, 'info');
-        setOutgoingRequests((prev) => prev.filter((r) => r.receiver.id !== data.by.id));
+        updateStore({
+          outgoingRequests: storeState.outgoingRequests.filter((r) => r.receiver.id !== data.by.id)
+        });
       },
       onFriendRemoved: (data) => {
         showToast(`${data.by.username} removed you from their friends`, 'info');
-        setFriends((prev) => prev.filter((f) => f.id !== data.by.id));
+        updateStore({
+          friends: storeState.friends.filter((f) => f.id !== data.by.id)
+        });
       },
       onFriendsListInvalidate: () => {
         void fetchFriends();
@@ -139,10 +179,11 @@ export function useFriendsSystem() {
     async (username: string, message?: string): Promise<FriendRequestEntry> => {
       try {
         const request = await friendsApi.sendRequest(username, message);
-        setOutgoingRequests((prev) => {
-          if (prev.some((r) => r.id === request.id)) return prev;
-          return [request, ...prev];
-        });
+        if (!storeState.outgoingRequests.some((r) => r.id === request.id)) {
+          updateStore({
+            outgoingRequests: [request, ...storeState.outgoingRequests]
+          });
+        }
         showToast(`Friend request sent to ${username}`, 'success');
         return request;
       } catch (err: unknown) {
@@ -154,22 +195,26 @@ export function useFriendsSystem() {
         throw err;
       }
     },
-    [showToast],
+    [],
   );
 
   const markSuggestionSent = useCallback((suggestionId: string) => {
-    sentSuggestionIds.current.add(suggestionId);
+    storeState.sentSuggestionIds.add(suggestionId);
+    updateStore({}); // trigger re-render
   }, []);
 
   const clearSuggestionSent = useCallback((suggestionId: string) => {
-    sentSuggestionIds.current.delete(suggestionId);
+    storeState.sentSuggestionIds.delete(suggestionId);
+    updateStore({}); // trigger re-render
   }, []);
 
   const acceptRequest = useCallback(
     async (requestId: string) => {
       try {
         const updated = await friendsApi.acceptRequest(requestId);
-        setIncomingRequests((prev) => prev.filter((r) => r.id !== requestId));
+        updateStore({
+          incomingRequests: storeState.incomingRequests.filter((r) => r.id !== requestId)
+        });
         showToast(`You are now friends with ${updated.sender.username}`, 'success');
         await fetchFriends();
       } catch (err: unknown) {
@@ -181,14 +226,16 @@ export function useFriendsSystem() {
         throw err;
       }
     },
-    [showToast, fetchFriends],
+    [],
   );
 
   const declineRequest = useCallback(
     async (requestId: string) => {
       try {
         await friendsApi.declineRequest(requestId);
-        setIncomingRequests((prev) => prev.filter((r) => r.id !== requestId));
+        updateStore({
+          incomingRequests: storeState.incomingRequests.filter((r) => r.id !== requestId)
+        });
         showToast('Friend request declined', 'info');
       } catch (err: unknown) {
         const axiosErr = err as AxiosError<{ message?: string }>;
@@ -199,14 +246,16 @@ export function useFriendsSystem() {
         throw err;
       }
     },
-    [showToast],
+    [],
   );
 
   const unfriend = useCallback(
     async (friendId: string) => {
       try {
         await friendsApi.unfriend(friendId);
-        setFriends((prev) => prev.filter((f) => f.id !== friendId));
+        updateStore({
+          friends: storeState.friends.filter((f) => f.id !== friendId)
+        });
         showToast('Friend removed', 'info');
       } catch (err: unknown) {
         const axiosErr = err as AxiosError<{ message?: string }>;
@@ -217,28 +266,20 @@ export function useFriendsSystem() {
         throw err;
       }
     },
-    [showToast],
+    [],
   );
 
-  const onlineFriends = useMemo(
-    () => friends.filter((f) => f.status !== 'offline'),
-    [friends],
-  );
+  const setIncomingRequest = useCallback((req: IncomingFriendRequest | null) => {
+    updateStore({ incomingRequest: req });
+  }, []);
+
+  const onlineFriends = state.friends.filter((f) => f.status !== 'offline');
+  const allowFriendRequests = profile?.notificationSettings?.friendRequests !== false;
 
   return {
-    friends,
+    ...state,
     onlineFriends,
-    incomingRequests,
-    outgoingRequests,
-    suggestions,
-    incomingRequest,
-    toast,
-    unreadCount,
-    isLoadingFriends,
-    isLoadingRequests,
-    isLoadingSuggestions,
     allowFriendRequests,
-    sentSuggestionIds,
     fetchFriends,
     fetchRequests,
     fetchSuggestions,
