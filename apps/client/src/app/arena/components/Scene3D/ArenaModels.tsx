@@ -8,7 +8,7 @@ import {
 import { Group, Material, Mesh, Object3D } from 'three';
 import { useThree } from '@react-three/fiber';
 import { useSceneAnimation } from '../../hooks/useSceneAnimation';
-import { RobotModel } from './models/RobotModelLoaders';
+import { RobotModel, PreloadArenaModels } from './models/RobotModelLoaders';
 import { RobotErrorBoundary, FallbackRobot } from './models/RobotModel';
 import { ObstaclesInstanced } from './models/ObstacleModel';
 import { LaserModel } from './models/ProjectileModel';
@@ -131,8 +131,18 @@ export const ArenaModels = ({
     return set;
   }, [robots]);
 
+  // Extract unique chassis IDs from the first two non-dummy robots for targeted preloading
+  const [preloadUser, preloadOpponent] = useMemo(() => {
+    const playerRobots = robots.filter(r => !r.id.startsWith('dummy-'));
+    return [
+      playerRobots[0]?.model ?? null,
+      playerRobots[1]?.model ?? null,
+    ];
+  }, [robots]);
+
   return (
     <>
+      <PreloadArenaModels userChassisId={preloadUser} opponentChassisId={preloadOpponent} />
       <BoundaryLine points={boundaryPoints} />
       <HitParticles burstsRef={hitBurstsRef} />
 
