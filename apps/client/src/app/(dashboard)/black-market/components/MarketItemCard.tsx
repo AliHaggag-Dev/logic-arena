@@ -5,6 +5,7 @@ import { Zap, Lock, CheckCircle, ShoppingCart, UserX } from "lucide-react";
 import { MarketItem } from "../types";
 import { RARITY_STYLES } from "../constants";
 import Image from "next/image";
+import { useAuth } from "../../../../context/AuthContext";
 
 const GUEST_LOCK_TOOLTIP = "Create an account to equip and customise your robot.";
 
@@ -21,7 +22,7 @@ interface MarketItemCardProps {
 
 export const MarketItemCard = React.memo(function MarketItemCard({
   item,
-  isGuest,
+  isGuest: _isGuestProp,
   isOwned,
   isEquipped,
   isPreview,
@@ -29,6 +30,7 @@ export const MarketItemCard = React.memo(function MarketItemCard({
   onPreview,
   onPurchase,
 }: MarketItemCardProps) {
+  const { isGuest } = useAuth();
   const styles = RARITY_STYLES[item.rarity];
   const [imgError, setImgError] = useState(false);
   const thumbnailUrl = `/thumbnails/${item.id}.png`;
@@ -43,22 +45,22 @@ export const MarketItemCard = React.memo(function MarketItemCard({
 
   const handleAction = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isGuest && !isOwned) return;
+    if (isGuest) return;
     onPurchase(item);
   };
 
   const isActionDisabled =
-    (isGuest && !isOwned) ||
+    isGuest ||
     (isOwned && isEquipped) ||
     (!canAfford && item.price > 0 && !isOwned);
 
   const buttonClass =
-    isOwned && isEquipped
-      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default"
-      : isOwned && !isEquipped
-        ? "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
-        : isGuest
-          ? "bg-accent/[0.03] border-accent/10 text-accent/25 cursor-not-allowed opacity-50"
+    isGuest
+      ? "bg-accent/[0.03] border-accent/10 text-accent/25 cursor-not-allowed opacity-50"
+      : isOwned && isEquipped
+        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 cursor-default"
+        : isOwned && !isEquipped
+          ? "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer"
           : !canAfford && item.price > 0
             ? "bg-red-500/5 border-red-500/20 text-red-500/40 cursor-not-allowed opacity-60"
             : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer";
@@ -103,7 +105,7 @@ export const MarketItemCard = React.memo(function MarketItemCard({
         {/* Thumbnail + rarity */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
-            {!imgError ? (
+            {item.category === "chassis" && !imgError ? (
               <Image
                 src={thumbnailUrl}
                 alt={item.name}
@@ -180,7 +182,12 @@ export const MarketItemCard = React.memo(function MarketItemCard({
               ${buttonClass}
             `}
           >
-            {isOwned && isEquipped ? (
+            {isGuest ? (
+              <>
+                <Lock className="w-3 h-3" />
+                LOGIN TO PURCHASE
+              </>
+            ) : isOwned && isEquipped ? (
               <>
                 <CheckCircle className="w-3 h-3" />
                 EQUIPPED
@@ -189,11 +196,6 @@ export const MarketItemCard = React.memo(function MarketItemCard({
               <>
                 <Zap className="w-3 h-3" />
                 EQUIP
-              </>
-            ) : isGuest ? (
-              <>
-                <Lock className="w-3 h-3" />
-                LOCKED
               </>
             ) : item.price === 0 ? (
               <>

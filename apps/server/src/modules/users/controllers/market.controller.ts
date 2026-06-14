@@ -47,8 +47,7 @@ export class MarketController {
   ) {
     if (!body?.itemId) throw new BadRequestException('itemId is required');
     try {
-      await this.marketCommand.purchaseItem(req.user.sub, body.itemId);
-      return { success: true };
+      return await this.marketCommand.purchaseItem(req.user.sub, body.itemId);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Purchase failed';
       throw new BadRequestException(message);

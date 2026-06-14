@@ -252,11 +252,7 @@ export function RobotShowroom({ chassisId, paintColor, tracerColor, quality }: R
     return () => observer.disconnect();
   }, []);
 
-  // Preload only the active chassis GLB so we don't download models the user hasn't unlocked
-  useEffect(() => {
-    const path = CHASSIS_MODEL_PATHS[chassisId];
-    if (path) useGLTF.preload(path);
-  }, [chassisId]);
+
 
   const shouldAnimate = !prefersReducedMotion && isVisible;
 

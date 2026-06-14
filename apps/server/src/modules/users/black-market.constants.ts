@@ -13,7 +13,6 @@ export const CAMPAIGN_STAGE_REWARD_POINTS = 100;
 /** Items pre-unlocked for every new account (granted on first /black-market fetch). */
 export const DEFAULT_UNLOCKED_ITEMS: string[] = [
   'chassis-unit-01',
-  'chassis-unit-02',
   'paint-default',
   'tracer-pulse',
 ];
@@ -22,8 +21,9 @@ export const DEFAULT_UNLOCKED_ITEMS: string[] = [
 export const BLACK_MARKET_ITEMS: BlackMarketItem[] = [
   // Robot chassis
   { id: 'chassis-unit-01', category: 'chassis', price: 0 },
-  { id: 'chassis-unit-02', category: 'chassis', price: 0 },
+  { id: 'chassis-unit-02', category: 'chassis', price: 400 },
   { id: 'chassis-titan', category: 'chassis', price: 1800 },
+  { id: 'chassis-sandman', category: 'chassis', price: 2400 },
   // Neon paints
   { id: 'paint-default', category: 'paint', price: 0, color: 'DEFAULT' },
   { id: 'paint-crimson', category: 'paint', price: 300, color: '#ef4444' },

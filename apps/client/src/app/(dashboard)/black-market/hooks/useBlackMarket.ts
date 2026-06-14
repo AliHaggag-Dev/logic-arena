@@ -125,10 +125,6 @@ export function useBlackMarket() {
       try {
         if (!isGuest) {
           await apiClient.post("/users/black-market/purchase", { itemId: item.id });
-          await apiClient.post("/users/black-market/equip", {
-            itemId: item.id,
-            category: item.category,
-          });
         }
 
         setPoints((prev) => prev - item.price);

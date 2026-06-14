@@ -39,7 +39,16 @@ export function PreviewInfoCard({ actionLoading, equippedIds, isGuest, isOwned, 
     <div className="rounded-xl border p-5" style={{ background: "rgba(var(--accent-rgb),0.03)", borderColor: "rgba(var(--accent-rgb),0.12)" }}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-4 h-4 rounded-sm flex-shrink-0" style={{ background: item.color, boxShadow: `0 0 8px ${item.glowColor}80` }} />
+          <div
+            className="w-4 h-4 rounded-sm flex-shrink-0"
+            style={{
+              background:
+                item.color === "DEFAULT" || !item.color
+                  ? "var(--color-surface, #1a1a1a)"
+                  : item.color,
+              boxShadow: `0 0 8px ${item.glowColor}80`,
+            }}
+          />
           <h2 className="text-[13px] font-black tracking-[0.15em] text-accent/90">{item.name}</h2>
         </div>
         <span className={`text-[8px] font-black tracking-[0.2em] px-2 py-0.5 rounded border ${item.rarity === "LEGENDARY" ? "text-amber-400 bg-amber-500/10 border-amber-500/30" : item.rarity === "RARE" ? "text-purple-400 bg-purple-500/10 border-purple-500/30" : "text-accent/70 bg-accent/10 border-accent/20"}`}>{item.rarity}</span>
@@ -74,7 +83,7 @@ export function PreviewInfoCard({ actionLoading, equippedIds, isGuest, isOwned, 
           {actionLoading ? (
             <><Loader2 className="w-3.5 h-3.5 animate-spin" />PROCESSING…</>
           ) : isGuest ? (
-            <><Lock className="w-3.5 h-3.5" />LOCKED</>
+            <><Lock className="w-3.5 h-3.5" />LOGIN TO PURCHASE</>
           ) : isEquipped ? (
             <><CheckCircle className="w-3.5 h-3.5" />EQUIPPED</>
           ) : isOwned ? (

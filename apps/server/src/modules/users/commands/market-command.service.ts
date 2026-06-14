@@ -25,47 +25,61 @@ export class MarketCommandService {
     private readonly redis: RedisService,
   ) {}
 
-  async purchaseItem(userId: string, itemId: string): Promise<void> {
+  async purchaseItem(
+    userId: string,
+    itemId: string,
+  ): Promise<{ equippedChassis: string; equippedPaint: string; equippedTracer: string }> {
     const catalogItem = BLACK_MARKET_ITEMS.find((i) => i.id === itemId);
     if (!catalogItem) throw new BadReq('Item does not exist in the catalog');
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { points: true, unlockedItems: true },
+    const fieldMap: Record<
+      ItemCategory,
+      'equippedChassis' | 'equippedPaint' | 'equippedTracer'
+    > = {
+      chassis: 'equippedChassis',
+      paint: 'equippedPaint',
+      tracer: 'equippedTracer',
+    };
+    const categoryField = fieldMap[catalogItem.category];
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { points: true, unlockedItems: true },
+      });
+      if (!user) throw new NotFoundException('User not found');
+
+      const effectiveOwned = [...user.unlockedItems, ...DEFAULT_UNLOCKED_ITEMS];
+      if (effectiveOwned.includes(itemId)) {
+        throw new ConflictException('Item already owned');
+      }
+      if (user.points < catalogItem.price) {
+        throw new BadReq('Insufficient points');
+      }
+
+      return tx.user.update({
+        where: { id: userId },
+        data: {
+          points: { decrement: catalogItem.price },
+          unlockedItems: { push: itemId },
+          [categoryField]: itemId,
+        },
+        select: {
+          equippedChassis: true,
+          equippedPaint: true,
+          equippedTracer: true,
+        },
+      });
     });
-    if (!user) throw new NotFoundException('User not found');
-
-    const effectiveOwned = [...user.unlockedItems, ...DEFAULT_UNLOCKED_ITEMS];
-    if (effectiveOwned.includes(itemId)) {
-      throw new ConflictException('Item already owned');
-    }
-    if (user.points < catalogItem.price) {
-      throw new BadReq('Insufficient points');
-    }
-
-    const updateResult = await this.prisma.user.updateMany({
-      where: {
-        id: userId,
-        points: { gte: catalogItem.price },
-        NOT: { unlockedItems: { has: itemId } },
-      },
-      data: {
-        points: { decrement: catalogItem.price },
-        unlockedItems: { push: itemId },
-      },
-    });
-
-    if (updateResult.count === 0) {
-      throw new ConflictException(
-        'Item purchase could not be completed — retry with latest wallet state',
-      );
-    }
 
     await this.redis.del(
       profileKey(userId),
+      loadoutKey(userId),
       blackMarketKey(userId),
       combatLoadoutKey(userId),
     );
+
+    return result;
   }
 
   async equipItem(

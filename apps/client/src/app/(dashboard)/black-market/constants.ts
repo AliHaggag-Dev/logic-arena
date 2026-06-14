@@ -2,11 +2,11 @@ import type { ItemCategory, MarketItem } from "./types";
 
 export const INITIAL_POINTS = 1500;
 export const CATEGORIES: ItemCategory[] = ["chassis", "paint", "tracer"];
-export const STARTER_ITEM_IDS = ["chassis-unit-01", "paint-crimson", "tracer-pulse"] as const;
+export const STARTER_ITEM_IDS = ["chassis-unit-01", "chassis-unit-02", "paint-default", "tracer-pulse"] as const;
 
 export const DEFAULT_LOADOUT: Record<ItemCategory, string> = {
   chassis: "chassis-unit-01",
-  paint: "paint-crimson",
+  paint: "paint-default",
   tracer: "tracer-pulse",
 };
 
