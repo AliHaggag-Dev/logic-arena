@@ -101,7 +101,7 @@ export class CampaignService {
     userId: string,
     levelId: string,
     stars: number,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const current = await this.getBestStars(userId, levelId);
     console.log(
       `[DEBUG setBestStars] user=${userId} level=${levelId} stars=${stars} current=${current}`,
@@ -113,7 +113,9 @@ export class CampaignService {
         STARS_CACHE_TTL,
       );
       console.log(`[DEBUG setBestStars] SET REDIS DONE`);
+      return true;
     }
+    return false;
   }
 
   private async getRevealedHintCount(
@@ -160,13 +162,17 @@ export class CampaignService {
     level: CampaignLevel,
     completedIds: string[],
     userId: string,
+    preFetchedStars?: number,
+    preFetchedHintCount?: number,
   ): Promise<LevelResponse> {
     const unlocked = this.isLevelUnlocked(level, completedIds);
     const completed = completedIds.includes(level.id);
-    const bestStars = completed ? await this.getBestStars(userId, level.id) : 0;
-    const revealedHintCount = unlocked
-      ? await this.getRevealedHintCount(userId, level.id)
-      : 0;
+    const bestStars = preFetchedStars !== undefined
+      ? preFetchedStars
+      : (completed ? await this.getBestStars(userId, level.id) : 0);
+    const revealedHintCount = preFetchedHintCount !== undefined
+      ? preFetchedHintCount
+      : (unlocked ? await this.getRevealedHintCount(userId, level.id) : 0);
     // Strip enemyScript from the public payload
     const { enemyScript: _omit, ...rest } = level;
     void _omit;
@@ -207,17 +213,67 @@ export class CampaignService {
 
   /** Returns all tabs with per-level unlock/completion state for the user. */
   async getTabsWithLevels(userId: string): Promise<TabWithLevels[]> {
+    const version = userId !== 'guest' ? await this.getCampaignCacheVersion(userId) : 0;
+
+    if (userId !== 'guest') {
+      const cacheKey = campaignTabsKey(userId, version);
+      const cachedTabs = await this.redis.get<TabWithLevels[]>(cacheKey);
+      if (cachedTabs) {
+        return cachedTabs;
+      }
+    }
+
     const completed = await this.getCompletedLevelIds(userId);
+
+    const allLevels = CAMPAIGN_TABS.flatMap((tab) => getLevelsByTab(tab.id));
+    const starKeys = allLevels.map((level) => campaignStarsKey(userId, level.id));
+    const hintKeys = allLevels.map((level) => campaignHintsKey(userId, level.id));
+
+    let starsResults: (number | null)[] = [];
+    let hintsResults: (number[] | null)[] = [];
+
+    if (userId !== 'guest' && this.redis.healthy && allLevels.length > 0) {
+      const client = this.redis.getClient();
+      const [rawStars, rawHints] = await Promise.all([
+        client.mget(...starKeys),
+        client.mget(...hintKeys),
+      ]);
+      starsResults = rawStars.map((val: string | null) => (val ? (JSON.parse(val) as number) : null));
+      hintsResults = rawHints.map((val: string | null) => (val ? (JSON.parse(val) as number[]) : null));
+    }
+
+    const starsMap = new Map<string, number>();
+    const hintsMap = new Map<string, number>();
+
+    allLevels.forEach((level, idx) => {
+      const starVal = starsResults[idx] ?? 0;
+      const hintVal = hintsResults[idx]?.length ?? 0;
+      starsMap.set(level.id, starVal);
+      hintsMap.set(level.id, hintVal);
+    });
 
     const tabsPromises = CAMPAIGN_TABS.map(async (tab) => ({
       ...tab,
       levels: await Promise.all(
         getLevelsByTab(tab.id).map((level) =>
-          this.buildLevelResponse(level, completed, userId),
+          this.buildLevelResponse(
+            level,
+            completed,
+            userId,
+            starsMap.get(level.id) ?? 0,
+            hintsMap.get(level.id) ?? 0,
+          ),
         ),
       ),
     }));
-    return Promise.all(tabsPromises);
+    const tabs = await Promise.all(tabsPromises);
+
+    if (userId !== 'guest') {
+      const cacheKey = campaignTabsKey(userId, version);
+      await this.redis.set(cacheKey, tabs, CAMPAIGN_CACHE_TTL);
+    }
+
+    return tabs;
   }
 
   /** Returns a single level's public info (no enemy script). Throws if locked. */
@@ -311,6 +367,8 @@ export class CampaignService {
       HINTS_CACHE_TTL,
     );
 
+    await this.invalidateUserCampaignCache(userId);
+
     // Fetch updated points
     const updatedUser = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -351,7 +409,10 @@ export class CampaignService {
 
     if (alreadyClaimed) {
       // Still update best stars even on repeat visits
-      await this.setBestStars(userId, levelId, stars);
+      const updated = await this.setBestStars(userId, levelId, stars);
+      if (updated) {
+        await this.invalidateUserCampaignCache(userId);
+      }
       return { pointsAwarded: 0, alreadyClaimed: true, stars };
     }
 
@@ -377,7 +438,10 @@ export class CampaignService {
     });
 
     if (updateResult.count === 0) {
-      await this.setBestStars(userId, levelId, stars);
+      const updated = await this.setBestStars(userId, levelId, stars);
+      if (updated) {
+        await this.invalidateUserCampaignCache(userId);
+      }
       return { pointsAwarded: 0, alreadyClaimed: true, stars };
     }
 
