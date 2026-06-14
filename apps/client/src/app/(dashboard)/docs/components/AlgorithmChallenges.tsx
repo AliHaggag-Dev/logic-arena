@@ -135,7 +135,7 @@ const ChallengeCard = ({
 };
 
 export const AlgorithmChallenges = ({ onLoadScript, isMobile }: AlgorithmChallengesProps) => {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   return (
     <section className={isMobile ? 'mb-10' : 'mb-16'}>

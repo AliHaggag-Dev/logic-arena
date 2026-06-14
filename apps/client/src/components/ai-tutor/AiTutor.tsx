@@ -3,17 +3,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Trash2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useAiChat } from './use-ai-chat';
 import { ChatTrigger } from './chat-trigger';
 import { ChatMessages } from './chat-messages';
 import { ChatInput } from './chat-input';
 import { ARIA_SUPPRESSED_PREFIXES } from './constants';
 
-export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
+export function AiTutor({ isMobile = false }: { isMobile?: boolean }) {
   const pathname = usePathname() ?? '';
-  const isMobileDefault = useMediaQuery('(max-width: 768px)');
-  const isMobile = isMobileProp ?? isMobileDefault;
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -68,18 +65,6 @@ export function AiTutor({ isMobile: isMobileProp }: { isMobile?: boolean }) {
 
   return (
     <>
-      <style>{`
-        .ai-placeholder::placeholder {
-          transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-        .ai-placeholder:focus::placeholder {
-          opacity: 0.3;
-        }
-        .ai-placeholder:not(:placeholder-shown)::placeholder {
-          opacity: 0;
-          transform: translateX(6px);
-        }
-      `}</style>
 
       {!open && (
         <ChatTrigger isMobile={isMobile} onClick={() => setOpen(true)} />

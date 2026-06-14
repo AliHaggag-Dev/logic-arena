@@ -748,6 +748,18 @@ textarea::selection,
   scrollbar-width: none !important;  /* Firefox */
 }
 
+/* ── AI Tutor chat textarea — placeholder animation ── */
+.ai-placeholder::placeholder {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.ai-placeholder:focus::placeholder {
+  opacity: 0.3;
+}
+.ai-placeholder:not(:placeholder-shown)::placeholder {
+  opacity: 0;
+  transform: translateX(6px);
+}
+
 
 /* ─────────────────────────────────────────────────────────
  *  LANDING PAGE — Premium Redesign Styles
