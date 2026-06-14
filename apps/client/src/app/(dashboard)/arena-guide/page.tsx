@@ -343,6 +343,7 @@ export default function ArenaGuidePage() {
           src={item.image} 
           alt={item.title} 
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           style={{
             WebkitMaskImage: theme !== "light" ? "linear-gradient(to top, transparent, black 40%)" : "none",
@@ -431,7 +432,7 @@ export default function ArenaGuidePage() {
         </header>
 
         {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-8 border-b border-accent/10 pb-4 overflow-x-auto snap-x hide-scrollbar">
+        <div className="flex gap-2 mb-8 border-b border-accent/10 pb-4 overflow-x-auto snap-x no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab("modes")}
