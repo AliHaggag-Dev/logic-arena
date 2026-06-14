@@ -18,7 +18,7 @@ export default function CampaignPage() {
     const fetchTabs = () => {
       setLoading(true);
       apiClient
-        .get(`/campaign/tabs?_t=${Date.now()}`)
+        .get('/campaign/tabs')
         .then((r) => {
           if (!cancelled) setTabs(r.data);
         })

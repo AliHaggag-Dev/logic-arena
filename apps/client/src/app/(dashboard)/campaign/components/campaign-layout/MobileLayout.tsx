@@ -6,7 +6,6 @@ import { GitBranch, Star, Swords } from "lucide-react";
 import { TAB_ICONS, TAB_SHORT } from "./tabMeta";
 import type { CampaignViewProps } from "./types";
 import { LevelCard } from "./LevelCard";
-import { useSoundEffects } from "../../../../../hooks/useSoundEffects";
 import type { CampaignTabId } from "../../constants/campaign.constants";
 
 // ─── Constants ───────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Req,
+  Res,
   Body,
   UseGuards,
   NotFoundException,
@@ -12,6 +13,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { SkipThrottle } from '@nestjs/throttler';
 import {
   CampaignService,
@@ -45,7 +47,14 @@ export class CampaignController {
 
   /** Returns all tabs with per-level unlock/completion state for the authenticated user. */
   @Get('tabs')
-  getTabsWithLevels(@Req() req: RequestWithUser) {
+  async getTabsWithLevels(
+    @Req() req: RequestWithUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // Allow the browser to serve the cached response for 30 s without a
+    // round-trip. The server-side Redis version key handles invalidation on
+    // level completion, so the client never sees stale data for longer than 30 s.
+    res.set('Cache-Control', 'private, max-age=30');
     return this.campaignService.getTabsWithLevels(req.user.sub);
   }
 

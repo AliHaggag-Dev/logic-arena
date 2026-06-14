@@ -43,37 +43,28 @@ export type CampaignFrame = {
   tick?: number;
 };
 
+function buildWsUrl(): string {
+  return API_BASE_URL
+    .replace('https://', 'wss://')
+    .replace('http://', 'ws://')
+    .replace(/\/api$/, '');
+}
+
 export function useCampaignFight() {
   const socketRef = useRef<Socket | null>(null);
   const [status, setStatus] = useState<FightStatus>('idle');
   const [result, setResult] = useState<FightResult | null>(null);
   const latestFrameRef = useRef<CampaignFrame | null>(null);
 
-  const fight = useCallback((levelId: string, userScript: string, obstacles: unknown[], playerSpawn?: CampaignRobotSpawn, enemySpawn?: CampaignRobotSpawn) => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-    }
-
-    latestFrameRef.current = null;
-    setStatus('connecting');
-    setResult(null);
-
-    const wsUrl = API_BASE_URL
-      .replace('https://', 'wss://')
-      .replace('http://', 'ws://')
-      .replace(/\/api$/, '');
-
-    const socket = io(wsUrl, {
+  // ── Connect once on mount, reuse across fights ────────────────────────────
+  useEffect(() => {
+    const socket = io(buildWsUrl(), {
       withCredentials: true,
-      transports: ['websocket', 'polling'],
+      transports: ['websocket'],  // skip polling probe round-trip
+      autoConnect: true,
     });
 
     socketRef.current = socket;
-
-    socket.on('connect', () => {
-      setStatus('fighting');
-      socket.emit('campaignFight', { levelId, userScript, obstacles, playerSpawn, enemySpawn });
-    });
 
     socket.on('campaignFrame', (frame: CampaignFrame) => {
       latestFrameRef.current = frame;
@@ -83,24 +74,48 @@ export function useCampaignFight() {
     socket.on('campaignFightResult', (data: FightResult) => {
       setResult(data);
       setStatus('done');
-      socket.disconnect();
     });
 
     socket.on('campaignFightError', (data: { message: string }) => {
       console.error('[campaignFight] error:', data.message);
       setStatus('error');
-      socket.disconnect();
     });
 
     socket.on('connect_error', () => {
       setStatus('error');
     });
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
   }, []);
 
-  useEffect(() => {
-    return () => {
-      socketRef.current?.disconnect();
-    };
+  // ── Emit fight — reuses the existing socket, no reconnection ─────────────
+  const fight = useCallback((
+    levelId: string,
+    userScript: string,
+    obstacles: unknown[],
+    playerSpawn?: CampaignRobotSpawn,
+    enemySpawn?: CampaignRobotSpawn,
+  ) => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    latestFrameRef.current = null;
+    setResult(null);
+
+    if (!socket.connected) {
+      setStatus('connecting');
+      socket.once('connect', () => {
+        setStatus('fighting');
+        socket.emit('campaignFight', { levelId, userScript, obstacles, playerSpawn, enemySpawn });
+      });
+      socket.connect();
+    } else {
+      setStatus('fighting');
+      socket.emit('campaignFight', { levelId, userScript, obstacles, playerSpawn, enemySpawn });
+    }
   }, []);
 
   return { fight, status, result, latestFrameRef };

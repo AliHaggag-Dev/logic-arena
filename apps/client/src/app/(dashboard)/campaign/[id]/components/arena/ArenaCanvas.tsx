@@ -4,7 +4,7 @@ import { Pause, Play } from "lucide-react";
 import type { ArenaRobot, SceneDef, SceneState } from "./scenes";
 import { createEvalState } from "./miniEvaluator";
 import type { EvalState } from "./miniEvaluator";
-import { getEnemyScript } from "../levelScripts";
+
 import { ROBOT_SIZE, FOV_SWEEP_FRAMES, FLASH_DURATION, BATTLE_END_DELAY_MS } from "./constants";
 import { drawGrid, drawScanLine, drawLabel, drawGraphNet } from "./rendering/drawBackground";
 import { drawFovCone, drawRobot } from "./rendering/drawRobot";
@@ -232,7 +232,7 @@ export const ArenaCanvas = memo(function ArenaCanvas({
   }, [previewMode]);
 
   useEffect(() => {
-    const modeChanged = previewMode !== prevPreviewMode.current;
+    let cancelled = false;
     prevPreviewMode.current = previewMode;
 
     const s = scene.init();
@@ -244,25 +244,41 @@ export const ArenaCanvas = memo(function ArenaCanvas({
     battleEndedRef.current = false;
     battleEvalTickRef.current = 0;
 
-    const enemyScr = enemyScriptPropRef.current || getEnemyScript(levelId) || '';
+    const initEvals = async (): Promise<void> => {
+      // Dynamic import — levelScripts.ts (~42 KB) is only fetched on level
+      // pages, never bundled into the campaign listing page chunk.
+      const enemyScriptProp = enemyScriptPropRef.current;
+      let enemyScr = enemyScriptProp ?? '';
+      if (!enemyScr) {
+        const { getEnemyScript } = await import('../levelScripts');
+        enemyScr = getEnemyScript(levelId) ?? '';
+      }
 
-    const evals = new Map<string, EvalState | null>();
-    const errors = new Set<string>();
+      if (cancelled) return;
 
-    if (!previewMode) {
-      const playerState = createEvalState(userScriptRef.current ?? '');
-      if (!playerState) errors.add('player');
-      evals.set('player', playerState);
-    }
-    if (enemyScr) {
-      const enemyState = createEvalState(enemyScr);
-      if (!enemyState) errors.add('enemy');
-      evals.set('enemy', enemyState);
-    }
+      const evals = new Map<string, EvalState | null>();
+      const errors = new Set<string>();
 
-    void modeChanged;
-    evalRef.current = evals;
-    errRef.current = errors;
+      if (!previewMode) {
+        const playerState = createEvalState(userScriptRef.current ?? '');
+        if (!playerState) errors.add('player');
+        evals.set('player', playerState);
+      }
+      if (enemyScr) {
+        const enemyState = createEvalState(enemyScr);
+        if (!enemyState) errors.add('enemy');
+        evals.set('enemy', enemyState);
+      }
+
+      evalRef.current = evals;
+      errRef.current = errors;
+    };
+
+    void initEvals();
+
+    return () => {
+      cancelled = true;
+    };
   }, [scene, levelId, previewMode]);
 
   useEffect(() => {

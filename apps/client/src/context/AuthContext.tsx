@@ -58,7 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
+    if (!profile) {
+      setLoading(true);
+    }
 
     let cancelled = false;
     apiClient.get("/users/profile").then((res) => {

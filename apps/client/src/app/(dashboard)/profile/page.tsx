@@ -44,7 +44,9 @@ export default function ProfilePage() {
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    ctxRefresh();
+    if (!ctxLoading && !ctxIsGuest) {
+      ctxRefresh();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

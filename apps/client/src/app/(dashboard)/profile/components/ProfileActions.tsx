@@ -50,25 +50,31 @@ export function ProfileActions({
 
   const resolveRelation = useCallback(async (): Promise<void> => {
     try {
-      const friends = await friendsApi.listFriends();
+      const [friends, incoming, outgoing] = await Promise.all([
+        friendsApi.listFriends(),
+        friendsApi.listIncomingRequests(0, 50),
+        friendsApi.listOutgoingRequests(0, 50),
+      ]);
+
       if (friends.some((f) => f.id === targetUserId)) {
         setRelation('FRIEND');
         return;
       }
-      const incoming = await friendsApi.listIncomingRequests(0, 50);
+
       const incomingMatch = incoming.items.find((r) => r.sender.id === targetUserId);
       if (incomingMatch) {
         setPendingRequestId(incomingMatch.id);
         setRelation('INCOMING_PENDING');
         return;
       }
-      const outgoing = await friendsApi.listOutgoingRequests();
+
       const outgoingMatch = outgoing.find((r) => r.receiver.id === targetUserId);
       if (outgoingMatch) {
         setPendingRequestId(outgoingMatch.id);
         setRelation('OUTGOING_PENDING');
         return;
       }
+
       setRelation('NONE');
     } catch (err: unknown) {
       console.error('[ProfileActions] resolveRelation failed', err);
