@@ -40,8 +40,8 @@ const ROBOT_FILES: Record<string, string> = {
 export const ArenaModels = ({
   gameStateRef,
   obstacles = [],
-  firedTracer = null,
-  speechBubble = null,
+  firedTracer = { current: null },
+  speechBubble = { current: null },
   fogEnabled = true,
   soundFx = true,
   localRobotFile,
@@ -51,8 +51,8 @@ export const ArenaModels = ({
 }: {
   gameStateRef: MutableRefObject<GameState>;
   obstacles?: ObstacleState[];
-  firedTracer?: FiredTracer | null;
-  speechBubble?: SpeechBubbleState | null;
+  firedTracer?: MutableRefObject<FiredTracer | null>;
+  speechBubble?: MutableRefObject<SpeechBubbleState | null>;
   fogEnabled?: boolean;
   soundFx?: boolean;
   localRobotFile?: string;
@@ -248,7 +248,7 @@ export const ArenaModels = ({
                       modelFile={
                         robot.model ? (ROBOT_FILES[robot.model] ?? robot.model) : '/robots/robot.glb'
                       }
-                      speechBubble={speechBubble?.robotId === robot.id ? speechBubble.message : null}
+                      speechBubble={speechBubble?.current?.robotId === robot.id ? speechBubble.current.message : null}
                       robotId={robot.id}
                     />
                   </group>
@@ -260,16 +260,20 @@ export const ArenaModels = ({
       })}
 
       {/* Laser tracers */}
-      {firedTracer && robots.map(robot => {
-        if (robot.id !== firedTracer.robotId) return null;
-        const start: [number, number, number] = [toSceneX(robot.position.x), 0.375, toSceneZ(robot.position.y)];
-        const tracerTarget =
-          firedTracer.isPredicted && firedTracer.predictedPosition
-            ? firedTracer.predictedPosition
-            : firedTracer.targetPosition;
-        const end: [number, number, number] = [toSceneX(tracerTarget.x), 0.375, toSceneZ(tracerTarget.y)];
-        return <LaserBeam key={`tracer-${robot.id}`} start={start} end={end} color={robot.color} />;
-      })}
+      {(() => {
+        const tracer = firedTracer?.current;
+        if (!tracer) return null;
+        return robots.map(robot => {
+          if (robot.id !== tracer.robotId) return null;
+          const start: [number, number, number] = [toSceneX(robot.position.x), 0.375, toSceneZ(robot.position.y)];
+          const tracerTarget =
+            tracer.isPredicted && tracer.predictedPosition
+              ? tracer.predictedPosition
+              : tracer.targetPosition;
+          const end: [number, number, number] = [toSceneX(tracerTarget.x), 0.375, toSceneZ(tracerTarget.y)];
+          return <LaserBeam key={`tracer-${robot.id}`} start={start} end={end} color={robot.color} />;
+        });
+      })()}
 
       {/* Projectiles */}
       {projectiles.map(p => (

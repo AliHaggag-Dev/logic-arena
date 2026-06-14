@@ -131,8 +131,8 @@ export interface SpeechBubbleState {
 export interface Scene3DComponentProps {
   gameStateRef: MutableRefObject<GameState>;
   obstacles?: ObstacleState[];
-  firedTracer?: FiredTracer | null;
-  speechBubble?: SpeechBubbleState | null;
+  firedTracer?: MutableRefObject<FiredTracer | null>;
+  speechBubble?: MutableRefObject<SpeechBubbleState | null>;
   fogEnabled?: boolean;
   soundFx?: boolean;
   graphicsQuality?: string;

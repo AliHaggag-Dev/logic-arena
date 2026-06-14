@@ -30,6 +30,12 @@ export const useGameState = (
   const matchIdFromUrl = searchParams.get('matchId');
   const themeFromUrl = searchParams.get('theme') || 'CYBER';
 
+  // Capture parameters in refs on mount to prevent socket reconnection cascades
+  const themeFromUrlRef = useRef(themeFromUrl);
+  const modeRef = useRef(mode);
+  const scriptIdRef = useRef(scriptId);
+  const isSpectatorRef = useRef(isSpectator);
+
   // Generate matchId once per component lifecycle to survive socket reconnects
   const sessionMatchId = useMemo(() => matchIdFromUrl || crypto.randomUUID(), [matchIdFromUrl]);
 
@@ -40,7 +46,7 @@ export const useGameState = (
   const gameStateRef = useRef<GameState>({ robots: [], projectiles: [], obstacles: [] });
   const obstaclesRef = useRef<ObstacleState[]>([]);
   const [uiState, setUiState] = useState<GameState>({ robots: [], projectiles: [], obstacles: [] });
-  const [firedTracer, setFiredTracer] = useState<FiredTracer | null>(null);
+  const firedTracerRef = useRef<FiredTracer | null>(null);
   const [selectedRobotId, setSelectedRobotId] = useState<string>(getAuthUserId() || '');
   const [socketUserId, setSocketUserId] = useState<string | null>(null);
 
@@ -95,10 +101,16 @@ export const useGameState = (
 
     const handleConnect = () => {
       console.log('[Socket] Connected');
-      if (isSpectator) {
+      if (isSpectatorRef.current) {
         socket.emit('spectate', { matchId: sessionMatchId });
-      } else if (scriptId) {
-        socket.emit('joinMatch', { matchId: sessionMatchId, scriptId, mode: mode || 'COMBAT', matchMode: matchMode || 'HYBRID', mapTheme: themeFromUrl });
+      } else if (scriptIdRef.current) {
+        socket.emit('joinMatch', {
+          matchId: sessionMatchId,
+          scriptId: scriptIdRef.current,
+          mode: modeRef.current || 'COMBAT',
+          matchMode: matchMode || 'HYBRID',
+          mapTheme: themeFromUrlRef.current,
+        });
       }
     };
 
@@ -234,14 +246,16 @@ export const useGameState = (
         const currentState = gameStateRef.current;
         const targetRobot = currentState.robots.find(r => r.id !== data.robotId);
         if (targetRobot) {
-          setFiredTracer({
+          firedTracerRef.current = {
             robotId: data.robotId,
             targetPosition: targetRobot.position,
             isPredicted: data.isPredicted ?? false,
             predictedPosition: data.predictedPosition,
-          });
+          };
           if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
-          tracerTimeoutRef.current = window.setTimeout(() => setFiredTracer(null), 100);
+          tracerTimeoutRef.current = window.setTimeout(() => {
+            firedTracerRef.current = null;
+          }, 100);
         }
       }
 
@@ -338,10 +352,11 @@ export const useGameState = (
       socket.off('spectatorCount');
       socket.disconnect();
       if (tracerTimeoutRef.current !== null) window.clearTimeout(tracerTimeoutRef.current);
+      firedTracerRef.current = null;
       cleanupBubbles();
       interpolationBuffer.clear();
     };
-  }, [socket, scriptId, matchIdFromUrl, mode, isSpectator, themeFromUrl, setRobotBubble, cleanupBubbles]);
+  }, [socket, matchIdFromUrl, matchMode, setRobotBubble, cleanupBubbles]);
 
   const availableRobots = useMemo(() => uiState.robots.map(r => r.id), [uiState.robots]);
 
@@ -349,7 +364,7 @@ export const useGameState = (
     gameStateRef,
     obstaclesRef,
     uiState,
-    firedTracer,
+    firedTracer: firedTracerRef,
     speechBubble,
     selectedRobotId,
     setSelectedRobotId,

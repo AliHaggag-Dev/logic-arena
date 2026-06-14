@@ -22,7 +22,7 @@ export interface SceneAnimationResult {
  */
 export const useSceneAnimation = (
   robots: RobotState[],
-  firedTracer: FiredTracer | null,
+  firedTracer: MutableRefObject<FiredTracer | null> | null,
   soundFx = true,
 ): SceneAnimationResult => {
   const { playHit, playClang, playLaser } = useGameSounds({ enabled: soundFx });
@@ -57,8 +57,17 @@ export const useSceneAnimation = (
     });
   }, [robots, playHit]);
 
-  // Garbage-collect expired bursts inside the render loop (no state updates)
+  // Garbage-collect expired bursts and trigger sound effects inside the render loop (no state updates)
   useFrame(() => {
+    const tracer = firedTracer?.current;
+    if (tracer) {
+      const key = `${tracer.robotId}-${tracer.targetPosition.x}-${tracer.targetPosition.y}`;
+      if (lastLaserRef.current !== key) {
+        playLaser();
+        lastLaserRef.current = key;
+      }
+    }
+
     if (hitBurstsRef.current.length === 0) return;
     const now = performance.now() / 1000;
     const alive = hitBurstsRef.current.filter(b => now - b.createdAt < HIT_BURST_LIFETIME);
@@ -92,14 +101,7 @@ export const useSceneAnimation = (
     }
   }, [robots, playClang]);
 
-  useEffect(() => {
-    if (!firedTracer) return;
-    const key = `${firedTracer.robotId}-${firedTracer.targetPosition.x}-${firedTracer.targetPosition.y}`;
-    if (lastLaserRef.current !== key) {
-      playLaser();
-      lastLaserRef.current = key;
-    }
-  }, [firedTracer, playLaser]);
+
 
   const getClosestTarget = useCallback((robot: RobotState) => {
     const targets = robots.filter(other => other.id !== robot.id && other.health > 0);
