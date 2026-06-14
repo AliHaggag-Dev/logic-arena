@@ -12,6 +12,9 @@ const CHASSIS_MODEL_PATHS: Record<string, string> = {
   "chassis-unit-02": "/robots/robot2.glb",
   "chassis-titan": "/robots/armored-robot.glb",
   "chassis-sandman": "/robots/sandman.glb",
+  "chassis-iron-mecha": "/robots/mecha.glb",
+  "chassis-sentinel": "/robots/npc-robot.glb",
+  "chassis-crimson-titan": "/robots/red_mecha.glb",
 };
 
 // Preload is handled inside RobotShowroom per active chassisId — see below.

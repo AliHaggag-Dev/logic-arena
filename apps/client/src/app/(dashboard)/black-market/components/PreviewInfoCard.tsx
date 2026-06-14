@@ -1,6 +1,7 @@
 import { CheckCircle, Loader2, Lock, ShoppingCart, Zap } from "lucide-react";
 
 import type { ItemCategory, MarketItem } from "../types";
+import { RARITY_STYLES } from "../constants";
 
 const GUEST_LOCK_TOOLTIP = "Create an account to equip and customise your robot.";
 
@@ -51,7 +52,7 @@ export function PreviewInfoCard({ actionLoading, equippedIds, isGuest, isOwned, 
           />
           <h2 className="text-[13px] font-black tracking-[0.15em] text-accent/90">{item.name}</h2>
         </div>
-        <span className={`text-[8px] font-black tracking-[0.2em] px-2 py-0.5 rounded border ${item.rarity === "LEGENDARY" ? "text-amber-400 bg-amber-500/10 border-amber-500/30" : item.rarity === "RARE" ? "text-purple-400 bg-purple-500/10 border-purple-500/30" : "text-accent/70 bg-accent/10 border-accent/20"}`}>{item.rarity}</span>
+        <span className={`text-[8px] font-black tracking-[0.2em] px-2 py-0.5 rounded border ${RARITY_STYLES[item.rarity].badge}`}>{item.rarity}</span>
       </div>
 
       <p className="text-[10px] text-accent/40 tracking-[0.08em] leading-relaxed mb-4">{item.description}</p>
@@ -59,7 +60,10 @@ export function PreviewInfoCard({ actionLoading, equippedIds, isGuest, isOwned, 
       <div className="flex items-center justify-between">
         <div>
           <div className="text-[8px] text-accent/30 tracking-[0.25em] uppercase mb-0.5">COST</div>
-          <div className="text-[16px] font-black tracking-[0.1em]" style={{ color: item.glowColor, textShadow: `0 0 10px ${item.glowColor}80` }}>
+          <div
+            className={`text-[16px] font-black tracking-[0.1em] ${RARITY_STYLES[item.rarity].textColor}`}
+            style={{ textShadow: `0 0 10px ${RARITY_STYLES[item.rarity].glowColor}` }}
+          >
             {item.price === 0 ? "FREE" : `${item.price.toLocaleString()} PTS`}
           </div>
         </div>

@@ -10,8 +10,10 @@ import Image from "next/image";
 
 const RARITY_DOT_COLORS: Record<MarketItem["rarity"], string> = {
   COMMON: "bg-accent/60",
-  RARE: "bg-purple-400",
+  RARE: "bg-blue-400",
+  EPIC: "bg-purple-400",
   LEGENDARY: "bg-amber-400",
+  ELITE: "bg-elite-red",
 };
 
 function RarityDot({ rarity }: { rarity: MarketItem["rarity"] }) {

@@ -8,6 +8,7 @@ import {
   GUEST_LOADOUT,
   MARKET_ITEMS,
   STARTER_ITEM_IDS,
+  RARITY_ORDER,
 } from "../constants";
 import { createLoadoutFromIds } from "../lib/marketItems";
 import type { BlackMarketApiData, ItemCategory, MarketItem, ToastState } from "../types";
@@ -75,7 +76,14 @@ export function useBlackMarket() {
   }, [clearAllSafeTimeouts, setSafeTimeout]);
 
   const filteredItems = useMemo(
-    () => MARKET_ITEMS.filter((item) => item.category === activeCategory),
+    () => {
+      const items = MARKET_ITEMS.filter((item) => item.category === activeCategory);
+      return [...items].sort((a, b) => {
+        const rarityDiff = RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity];
+        if (rarityDiff !== 0) return rarityDiff;
+        return a.price - b.price;
+      });
+    },
     [activeCategory],
   );
 

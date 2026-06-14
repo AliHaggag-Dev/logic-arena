@@ -24,6 +24,9 @@ export const BLACK_MARKET_ITEMS: BlackMarketItem[] = [
   { id: 'chassis-unit-02', category: 'chassis', price: 400 },
   { id: 'chassis-titan', category: 'chassis', price: 1800 },
   { id: 'chassis-sandman', category: 'chassis', price: 2400 },
+  { id: 'chassis-iron-mecha', category: 'chassis', price: 700 },
+  { id: 'chassis-sentinel', category: 'chassis', price: 1200 },
+  { id: 'chassis-crimson-titan', category: 'chassis', price: 3000 },
   // Neon paints
   { id: 'paint-default', category: 'paint', price: 0, color: 'DEFAULT' },
   { id: 'paint-crimson', category: 'paint', price: 300, color: '#ef4444' },

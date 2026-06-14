@@ -11,6 +11,9 @@ const ROBOT_SCALES: Record<string, number> = {
   '/robots/robot2.glb': 0.8,
   '/robots/armored-robot.glb': 1.7,
   '/robots/sandman.glb': 5,
+  '/robots/mecha.glb': 2,
+  '/robots/npc-robot.glb': 2,
+  '/robots/red_mecha.glb': 2,
 };
 
 /** Maps chassis IDs to their GLB file paths. */
@@ -21,6 +24,9 @@ const CHASSIS_MODEL_PATHS: Record<string, string> = {
   'chassis-unit-02': '/robots/robot2.glb',
   'chassis-titan': '/robots/armored-robot.glb',
   'chassis-sandman': '/robots/sandman.glb',
+  'chassis-iron-mecha': '/robots/mecha.glb',
+  'chassis-sentinel': '/robots/npc-robot.glb',
+  'chassis-crimson-titan': '/robots/red_mecha.glb',
 };
 
 const BotModel = memo((props: RobotModelProps & { file: string }) => {

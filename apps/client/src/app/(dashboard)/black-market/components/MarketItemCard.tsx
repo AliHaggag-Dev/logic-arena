@@ -65,13 +65,7 @@ export const MarketItemCard = React.memo(function MarketItemCard({
             ? "bg-red-500/5 border-red-500/20 text-red-500/40 cursor-not-allowed opacity-60"
             : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/60 hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] cursor-pointer";
 
-  const getPriceColor = () => {
-    if (item.price === 0) return "#10b981";
-    if (item.price < 1000) return "#ffffff";
-    if (item.price < 2000) return "#fbbf24";
-    return "#c084fc";
-  };
-  const priceColor = getPriceColor();
+
 
   return (
     <div
@@ -156,8 +150,8 @@ export const MarketItemCard = React.memo(function MarketItemCard({
         {/* Price + Action */}
         <div className="flex items-center justify-between gap-2">
           <span
-            className="text-[10px] font-black tracking-[0.15em]"
-            style={{ color: priceColor, textShadow: `0 0 8px ${priceColor}80` }}
+            className={`text-[10px] font-black tracking-[0.15em] ${styles.textColor}`}
+            style={{ textShadow: `0 0 8px ${styles.glowColor}` }}
           >
             {item.price === 0 ? "FREE" : `${item.price.toLocaleString()} PTS`}
           </span>

@@ -8,7 +8,7 @@ export interface MarketItem {
   price: number;
   color: string;
   glowColor: string;
-  rarity: "COMMON" | "RARE" | "LEGENDARY";
+  rarity: "COMMON" | "RARE" | "EPIC" | "LEGENDARY" | "ELITE";
   description: string;
 }
 

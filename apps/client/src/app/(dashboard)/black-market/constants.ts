@@ -60,6 +60,36 @@ export const MARKET_ITEMS: MarketItem[] = [
     rarity: "LEGENDARY",
     description: "Advanced prototype mech.",
   },
+  {
+    id: "chassis-iron-mecha",
+    name: "IRON MECHA",
+    category: "chassis",
+    price: 700,
+    color: "#3b82f6",
+    glowColor: "#3b82f6",
+    rarity: "RARE",
+    description: "A rugged, iron-clad mech designed for heavy frontline skirmishes and reliability.",
+  },
+  {
+    id: "chassis-sentinel",
+    name: "SENTINEL",
+    category: "chassis",
+    price: 1200,
+    color: "#a855f7",
+    glowColor: "#a855f7",
+    rarity: "EPIC",
+    description: "An advanced security warden engineered for high-altitude scanning and defense.",
+  },
+  {
+    id: "chassis-crimson-titan",
+    name: "CRIMSON TITAN",
+    category: "chassis",
+    price: 3000,
+    color: "#8b0000",
+    glowColor: "#ff3355",
+    rarity: "ELITE",
+    description: "A devastating warmachine forged in reinforced crimson plating and high-output cores.",
+  },
 
   // ── COLORS ────────────────────────────────────────────────
   {
@@ -152,22 +182,42 @@ export const CATEGORY_LABELS: Record<ItemCategory, string> = {
   tracer: "Lasers",
 };
 
-export const RARITY_ORDER = { COMMON: 0, RARE: 1, LEGENDARY: 2 } as const;
+export const RARITY_ORDER = { COMMON: 0, RARE: 1, EPIC: 2, LEGENDARY: 3, ELITE: 4 } as const;
 
-export const RARITY_STYLES: Record<MarketItem["rarity"], { badge: string; border: string; glow: string }> = {
+export const RARITY_STYLES: Record<MarketItem["rarity"], { badge: string; border: string; glow: string; textColor: string; glowColor: string }> = {
   COMMON: {
     badge: "text-accent/70 bg-accent/10 border-accent/20",
     border: "border-accent/15 hover:border-accent/40",
     glow: "hover:shadow-[0_0_18px_rgba(var(--accent-rgb),0.12)]",
+    textColor: "text-accent/70",
+    glowColor: "rgba(var(--accent-rgb), 0.6)",
   },
   RARE: {
+    badge: "text-blue-400 bg-blue-500/10 border-blue-500/30",
+    border: "border-blue-500/20 hover:border-blue-400/60",
+    glow: "hover:shadow-[0_0_18px_rgba(59,130,246,0.18)]",
+    textColor: "text-blue-400",
+    glowColor: "rgba(59, 130, 246, 0.6)",
+  },
+  EPIC: {
     badge: "text-purple-400 bg-purple-500/10 border-purple-500/30",
     border: "border-purple-500/20 hover:border-purple-400/60",
     glow: "hover:shadow-[0_0_18px_rgba(168,85,247,0.18)]",
+    textColor: "text-purple-400",
+    glowColor: "rgba(168, 85, 247, 0.6)",
   },
   LEGENDARY: {
     badge: "text-amber-400 bg-amber-500/10 border-amber-500/30",
     border: "border-amber-500/20 hover:border-amber-400/60",
     glow: "hover:shadow-[0_0_22px_rgba(245,158,11,0.22)]",
+    textColor: "text-amber-400",
+    glowColor: "rgba(245, 158, 11, 0.6)",
+  },
+  ELITE: {
+    badge: "text-elite-red bg-elite-red/10 border-elite-red/30 shadow-[0_0_10px_rgba(var(--elite-red-rgb),0.5)] animate-pulse",
+    border: "border-elite-red/40 hover:border-elite-red/80",
+    glow: "hover:shadow-[0_0_26px_rgba(var(--elite-red-rgb),0.4)] hover:scale-[1.01] transition-transform duration-300",
+    textColor: "text-elite-red",
+    glowColor: "rgba(var(--elite-red-rgb), 0.95)",
   },
 };

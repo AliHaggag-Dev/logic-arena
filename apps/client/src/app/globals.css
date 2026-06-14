@@ -23,6 +23,9 @@
   --sem-warning-rgb: 245, 158, 11;
   --sem-info:        #38bdf8;
   --sem-info-rgb:    56, 189, 248;
+  /* Elite rarity tier tokens */
+  --elite-red:       #ff3344;
+  --elite-red-rgb:   255, 51, 68;
   /* Rank medal tokens */
   --rank-gold:   #FFD700;
   --rank-silver: #C0C0C0;
@@ -240,6 +243,7 @@
   --color-arena-racing-brand: var(--arena-racing-brand);
   --color-arena-finish: var(--arena-finish);
   --color-arena-damage: var(--arena-damage);
+  --color-elite-red: var(--elite-red);
 }
 
 html {
