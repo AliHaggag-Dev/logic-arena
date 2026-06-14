@@ -118,6 +118,15 @@ const playSatellitePing = (distance: number) => {
   osc.stop(now + 0.9);
   osc2.start(now);
   osc2.stop(now + 0.9);
+
+  setTimeout(() => {
+    osc.disconnect();
+    osc2.disconnect();
+    filter.disconnect();
+    gainNode.disconnect();
+    delay.disconnect();
+    feedback.disconnect();
+  }, 2000);
 };
 
 interface SpaceBackgroundProps {
@@ -1587,14 +1596,17 @@ const ProceduralPlanetItem = ({
     return () => {
       if (audioNodesRef.current) {
         try {
-          audioNodesRef.current.gainNode.disconnect();
           audioNodesRef.current.nodes.forEach((node) => {
             try {
               if ("stop" in node) {
                 node.stop();
               }
             } catch (e) {}
+            try {
+              node.disconnect();
+            } catch (e) {}
           });
+          audioNodesRef.current.gainNode.disconnect();
         } catch (e) {
           console.error("Error cleaning up planet sound:", e);
         }
@@ -2284,6 +2296,13 @@ const SpaceNebula = ({ position, mapTheme, graphicsQuality = "medium" }: SpaceNe
     }
     return new CanvasTexture(canvas);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      cloudTexture.dispose();
+    };
+  }, [cloudTexture]);
+
 
   const nebulaData = useMemo(() => {
     // Increased particle density slightly for the larger spread
