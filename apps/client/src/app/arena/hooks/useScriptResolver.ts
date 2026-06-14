@@ -10,6 +10,32 @@ interface RobotScript {
   content: string;
 }
 
+// Module-level cache for active promises to prevent duplicate concurrent network requests
+let scriptListPromise: Promise<any> | null = null;
+const scriptDetailPromises: Record<string, Promise<any>> = {};
+
+const fetchScriptListShared = (): Promise<any> => {
+  if (!scriptListPromise) {
+    scriptListPromise = apiClient.get('/scripts').catch((err: unknown) => {
+      // Clear on failure so next retry can try again
+      scriptListPromise = null;
+      throw err;
+    });
+  }
+  return scriptListPromise;
+};
+
+const fetchScriptDetailShared = (scriptId: string): Promise<any> => {
+  if (!scriptDetailPromises[scriptId]) {
+    scriptDetailPromises[scriptId] = apiClient.get(`/scripts/${scriptId}`).catch((err: unknown) => {
+      // Clear on failure so next retry can try again
+      delete scriptDetailPromises[scriptId];
+      throw err;
+    });
+  }
+  return scriptDetailPromises[scriptId];
+};
+
 export const useScriptResolver = (urlScriptId: string | null, isSpectator: boolean) => {
   const [resolvedScriptId, setResolvedScriptId] = useState<string | null>(urlScriptId);
   const [script, setScript] = useState<RobotScript | null>(null);
@@ -37,7 +63,7 @@ export const useScriptResolver = (urlScriptId: string | null, isSpectator: boole
           targetScriptId = stored;
         } else {
           try {
-            const res = await apiClient.get('/scripts');
+            const res = await fetchScriptListShared();
             if (res.data && res.data.length > 0) {
               targetScriptId = res.data[0].id as string;
               setSelectedScriptId(targetScriptId);
@@ -108,7 +134,7 @@ export const useScriptResolver = (urlScriptId: string | null, isSpectator: boole
           return;
         }
 
-        const response = await apiClient.get(`/scripts/${targetScriptId}`);
+        const response = await fetchScriptDetailShared(targetScriptId);
         const scriptData = response.data as RobotScript;
 
         setCachedScript(scriptData);
@@ -153,7 +179,7 @@ export const useScriptResolver = (urlScriptId: string | null, isSpectator: boole
 
         // Fallback to user's first script
         try {
-          const res = await apiClient.get('/scripts');
+          const res = await fetchScriptListShared();
           if (res.data && res.data.length > 0) {
             const fallbackId = res.data[0].id as string;
             setSelectedScriptId(fallbackId);
@@ -170,7 +196,7 @@ export const useScriptResolver = (urlScriptId: string | null, isSpectator: boole
               return;
             }
 
-            const fallbackResponse = await apiClient.get(`/scripts/${fallbackId}`);
+            const fallbackResponse = await fetchScriptDetailShared(fallbackId);
             const fallbackScriptData = fallbackResponse.data as RobotScript;
 
             try {
