@@ -7,7 +7,12 @@ import React from "react";
  * Sets up the R3F Canvas and basic scene environment.
  */
 export const SceneCanvas = ({ children, graphicsQuality = 'medium' }: { children: React.ReactNode; graphicsQuality?: string }) => {
-  const dpr: [number, number] = graphicsQuality === 'low' ? [1, 1] : [1, 2];
+  const isMobile = typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent);
+  const dpr: [number, number] = graphicsQuality === 'low'
+    ? [1, 1]
+    : isMobile
+      ? [1, 1.5]
+      : [1, 2];
 
   return (
     <Canvas dpr={dpr} gl={{ powerPreference: "high-performance", antialias: graphicsQuality !== 'low' }}>

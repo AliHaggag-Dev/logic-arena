@@ -16,6 +16,9 @@ const FILL_LIGHT_COLORS: Record<MapTheme, string> = {
  * actually produce shadows (previously no light had castShadow={true}).
  */
 export const SceneLighting = ({ mapTheme }: { mapTheme: MapTheme }) => {
+  const isMobile = typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent);
+  const shadowMapSize = isMobile ? 512 : 1024;
+
   return (
     <>
       <ambientLight intensity={0.85} />
@@ -27,8 +30,8 @@ export const SceneLighting = ({ mapTheme }: { mapTheme: MapTheme }) => {
         position={[5, 20, 10]}
         intensity={1.2}
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-mapSize-width={shadowMapSize}
+        shadow-mapSize-height={shadowMapSize}
         shadow-camera-near={0.5}
         shadow-camera-far={60}
         shadow-camera-left={-15}
