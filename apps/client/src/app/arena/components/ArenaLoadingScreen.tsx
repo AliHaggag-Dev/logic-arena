@@ -170,7 +170,7 @@ export const ArenaLoadingScreen = ({
     }
   };
 
-  // 4. Tips Rotation Loop (every 4 seconds)
+  // 4. Tips Rotation Loop (every 8 seconds)
   useEffect((): (() => void) => {
     const interval = setInterval((): void => {
       setFadeTip(false);
@@ -178,7 +178,7 @@ export const ArenaLoadingScreen = ({
         setTipIndex((prev: number): number => (prev + 1) % TIPS.length);
         setFadeTip(true);
       }, 400);
-    }, 4000);
+    }, 8000);
     return (): void => clearInterval(interval);
   }, []);
 
@@ -236,11 +236,6 @@ export const ArenaLoadingScreen = ({
           inset: 0;
           z-index: 9999;
           background-color: var(--cyber-bg);
-          background-image: 
-            linear-gradient(rgba(0, 255, 247, 0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 255, 247, 0.02) 1px, transparent 1px);
-          background-size: 40px 40px;
-          animation: cyberGrid 25s linear infinite;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -260,9 +255,22 @@ export const ArenaLoadingScreen = ({
           pointer-events: none;
         }
 
+        .cyber-grid {
+          position: absolute;
+          inset: -100px;
+          background-image: 
+            linear-gradient(rgba(0, 255, 247, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 255, 247, 0.02) 1px, transparent 1px);
+          background-size: 40px 40px;
+          transform: translate3d(0, 0, 0);
+          animation: cyberGrid 20s linear infinite;
+          pointer-events: none;
+          z-index: -1;
+        }
+
         @keyframes cyberGrid {
-          0% { background-position: 0 0; }
-          100% { background-position: 1000px 1000px; }
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(40px, 40px, 0); }
         }
 
         .header {
@@ -328,14 +336,15 @@ export const ArenaLoadingScreen = ({
           width: 100%;
           height: 4px;
           background: linear-gradient(to bottom, rgba(0, 255, 247, 0), var(--cyber-cyan), rgba(0, 255, 247, 0));
+          transform: translate3d(0, 0, 0);
           animation: scan 2s linear infinite;
           opacity: 0.7;
           pointer-events: none;
         }
 
         @keyframes scan {
-          0% { top: 0%; }
-          100% { top: 100%; }
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(0, 140px, 0); }
         }
 
         .status-panel {
@@ -385,7 +394,8 @@ export const ArenaLoadingScreen = ({
           height: 100%;
           background: linear-gradient(90deg, var(--cyber-cyan), var(--cyber-blue));
           box-shadow: 0 0 8px var(--cyber-cyan);
-          transition: width 0.3s ease-out;
+          transform-origin: left;
+          transition: transform 0.4s ease-out;
         }
 
         .stages-list {
@@ -505,6 +515,8 @@ export const ArenaLoadingScreen = ({
         }
       `}</style>
 
+      <div className="cyber-grid" />
+
       <div className="header">
         <h1 className="glitch-title">Logic Arena</h1>
         <div className="subtitle">Preparing your Arena</div>
@@ -551,7 +563,7 @@ export const ArenaLoadingScreen = ({
         </div>
 
         <div className="progress-bar-bg" aria-label="Loading Progress Bar" role="progressbar" aria-valuenow={totalProgress} aria-valuemin={0} aria-valuemax={100}>
-          <div className="progress-bar-fill" style={{ width: `${totalProgress}%` }} />
+          <div className="progress-bar-fill" style={{ transform: `scaleX(${totalProgress / 100})` }} />
         </div>
 
         <div className="stages-list">
