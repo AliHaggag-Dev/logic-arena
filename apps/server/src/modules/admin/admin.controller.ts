@@ -14,6 +14,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { AuthGuard } from '../../common/auth.guard';
 import { AdminGuard } from '../../common/admin.guard';
 import { AdminService } from './admin.service';
+import { AdminStatsService } from './admin.stats.service';
 import { AdminSortBy, UpdateUserBody } from './admin.types';
 
 const VALID_SORT_FIELDS: AdminSortBy[] = ['rank', 'points', 'createdAt'];
@@ -34,7 +35,10 @@ function parseSortBy(raw: string | undefined): AdminSortBy {
 @UseGuards(AuthGuard, AdminGuard)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly adminStatsService: AdminStatsService,
+  ) {}
 
   // ── Stats endpoints ──────────────────────────────────────────────────────────
 
@@ -45,42 +49,42 @@ export class AdminController {
 
   @Get('stats/users')
   getUserStats() {
-    return this.adminService.getUserStats();
+    return this.adminStatsService.getUserStats();
   }
 
   @Get('stats/matches')
   getMatchStats() {
-    return this.adminService.getMatchStats();
+    return this.adminStatsService.getMatchStats();
   }
 
   @Get('stats/campaign')
   getCampaignStats() {
-    return this.adminService.getCampaignStats();
+    return this.adminStatsService.getCampaignStats();
   }
 
   @Get('stats/scripts')
   getScriptStats() {
-    return this.adminService.getScriptStats();
+    return this.adminStatsService.getScriptStats();
   }
 
   @Get('stats/market')
   getMarketStats() {
-    return this.adminService.getMarketStats();
+    return this.adminStatsService.getMarketStats();
   }
 
   @Get('stats/tournaments')
   getTournamentStats() {
-    return this.adminService.getTournamentStats();
+    return this.adminStatsService.getTournamentStats();
   }
 
   @Get('stats/ai')
   getAIStats() {
-    return this.adminService.getAIStats();
+    return this.adminStatsService.getAIStats();
   }
 
   @Get('stats/engagement')
   getEngagementStats() {
-    return this.adminService.getEngagementStats();
+    return this.adminStatsService.getEngagementStats();
   }
 
   @Get('health')
