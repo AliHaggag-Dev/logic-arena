@@ -2,7 +2,7 @@
 
 import React, { useRef, useMemo, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Color, Group, Mesh, AdditiveBlending, DoubleSide, Vector3, MeshBasicMaterial, PointsMaterial, Points, CanvasTexture, MeshStandardMaterial, BackSide, LinearMipmapLinearFilter } from "three";
+import { Color, Group, Mesh, AdditiveBlending, DoubleSide, FrontSide, InstancedMesh, Object3D, Vector3, MeshBasicMaterial, PointsMaterial, Points, CanvasTexture, MeshStandardMaterial, BackSide, LinearMipmapLinearFilter } from "three";
 import { Billboard, Stars } from "@react-three/drei";
 import { MapTheme } from "../../types";
 import { getGlobalAudioContext } from "../../../../context/SoundContext";
@@ -683,7 +683,7 @@ const createProceduralPlanetTexture = (type: string, colorIn: Color, colorOut: C
   const texture = new CanvasTexture(canvas);
   texture.generateMipmaps = true;
   texture.minFilter = LinearMipmapLinearFilter;
-  texture.anisotropy = 8;
+  texture.anisotropy = IS_MOBILE ? 2 : 8;
 
   let bumpTexture: CanvasTexture | undefined = undefined;
   if (bumpCanvas && bumpCtx && bumpImgData) {
@@ -691,7 +691,7 @@ const createProceduralPlanetTexture = (type: string, colorIn: Color, colorOut: C
     bumpTexture = new CanvasTexture(bumpCanvas);
     bumpTexture.generateMipmaps = true;
     bumpTexture.minFilter = LinearMipmapLinearFilter;
-    bumpTexture.anisotropy = 8;
+    bumpTexture.anisotropy = IS_MOBILE ? 2 : 8;
   }
 
   return { map: texture, bumpMap: bumpTexture };
@@ -1100,7 +1100,7 @@ const createProceduralRingTexture = (color: Color): CanvasTexture => {
   const texture = new CanvasTexture(canvas);
   texture.generateMipmaps = true;
   texture.minFilter = LinearMipmapLinearFilter;
-  texture.anisotropy = 8;
+  texture.anisotropy = IS_MOBILE ? 2 : 8;
   return texture;
 };
 
@@ -1122,7 +1122,8 @@ interface RockConfig {
   angle: number;
   yOffset: number;
   sizeScale: number;
-  ref: React.RefObject<Mesh | null>;
+  rotX: number;
+  rotY: number;
 }
 
 interface ProceduralPlanetItemProps {
@@ -1157,6 +1158,9 @@ const ProceduralPlanetItem = ({
   const cloudRef = useRef<Mesh>(null);
   const innerStormRef1 = useRef<Mesh>(null);
   const innerStormRef2 = useRef<Mesh>(null);
+  const instancedMeshRef = useRef<InstancedMesh>(null);
+  const _dummy = useMemo(() => new Object3D(), []);
+  const sphereSegs = IS_MOBILE ? 32 : 64;
   const audioNodesRef = useRef<{
     gainNode: GainNode;
     nodes: any[];
@@ -1236,7 +1240,8 @@ const ProceduralPlanetItem = ({
         angle,
         yOffset,
         sizeScale,
-        ref: React.createRef<Mesh>(),
+        rotX: Math.random() * Math.PI * 2,
+        rotY: Math.random() * Math.PI * 2,
       });
     }
     return arr;
@@ -1653,19 +1658,24 @@ const ProceduralPlanetItem = ({
     });
 
     // Orbit rock ring particles
-    if (hasRockRings) {
-      rockRing.forEach((rock) => {
-        if (rock.ref.current) {
-          const currentAngle = time * rock.speed + rock.angle;
-          rock.ref.current.position.set(
-            Math.cos(currentAngle) * rock.radius,
-            rock.yOffset,
-            Math.sin(currentAngle) * rock.radius
-          );
-          rock.ref.current.rotation.y += 0.5 * delta;
-          rock.ref.current.rotation.x += 0.2 * delta;
-        }
+    if (hasRockRings && instancedMeshRef.current) {
+      rockRing.forEach((rock, index) => {
+        const currentAngle = time * rock.speed + rock.angle;
+        rock.rotY += 0.5 * delta;
+        rock.rotX += 0.2 * delta;
+
+        _dummy.position.set(
+          Math.cos(currentAngle) * rock.radius,
+          rock.yOffset,
+          Math.sin(currentAngle) * rock.radius
+        );
+        _dummy.rotation.set(rock.rotX, rock.rotY, 0);
+        _dummy.scale.setScalar(rock.sizeScale);
+        _dummy.updateMatrix();
+
+        instancedMeshRef.current!.setMatrixAt(index, _dummy.matrix);
       });
+      instancedMeshRef.current.instanceMatrix.needsUpdate = true;
     }
 
     // Modulate spatial audio based on distance + direction
@@ -1705,10 +1715,10 @@ const ProceduralPlanetItem = ({
       {/* Rotatable body */}
       <group ref={planetRef}>
         <mesh>
-          <sphereGeometry args={[1, 64, 64]} />
+          <sphereGeometry args={[1, sphereSegs, sphereSegs]} />
           <meshStandardMaterial
             map={textures.map}
-            side={DoubleSide}
+            side={FrontSide}
             roughness={type === "ice" ? 0.3 : 0.8}
             metalness={type === "ice" ? 0.8 : 0.1}
             emissive={type === "plasma" ? color1 : type === "lava" ? new Color("#ff3300") : new Color("#000000")}
@@ -1723,33 +1733,33 @@ const ProceduralPlanetItem = ({
         {type === "desert" && (
           <>
             <mesh scale={0.97}>
-              <sphereGeometry args={[1, 32, 32]} />
+              <sphereGeometry args={[1, sphereSegs, sphereSegs]} />
               <meshBasicMaterial
                 map={textures.map}
                 transparent
                 opacity={0.65}
-                side={DoubleSide}
+                side={FrontSide}
                 depthWrite={false}
                 blending={AdditiveBlending}
               />
             </mesh>
             <mesh scale={0.93} ref={innerStormRef1 as any}>
-              <sphereGeometry args={[1, 32, 32]} />
+              <sphereGeometry args={[1, sphereSegs, sphereSegs]} />
               <meshBasicMaterial
                 map={textures.map}
                 transparent
                 opacity={0.8}
-                side={DoubleSide}
+                side={FrontSide}
                 depthWrite={false}
               />
             </mesh>
             <mesh scale={0.85} ref={innerStormRef2 as any}>
-              <sphereGeometry args={[1, 32, 32]} />
+              <sphereGeometry args={[1, sphereSegs, sphereSegs]} />
               <meshBasicMaterial
                 map={textures.map}
                 transparent
                 opacity={0.9}
-                side={DoubleSide}
+                side={FrontSide}
                 depthWrite={false}
               />
             </mesh>
@@ -1759,12 +1769,13 @@ const ProceduralPlanetItem = ({
         {/* Habitable/Gas Clouds */}
         {hasClouds && cloudTexture && (
           <mesh scale={1.02} ref={cloudRef}>
-            <sphereGeometry args={[1, 64, 64]} />
+            <sphereGeometry args={[1, sphereSegs, sphereSegs]} />
             <meshStandardMaterial
               map={cloudTexture}
               transparent
               opacity={0.65}
               depthWrite={false}
+              side={FrontSide}
             />
           </mesh>
         )}
@@ -1772,13 +1783,14 @@ const ProceduralPlanetItem = ({
         {/* Orbiting moons meshes */}
         {moons.map((moon, index) => (
           <mesh key={index} ref={moon.ref as any} scale={moon.scale}>
-            <sphereGeometry args={[1, 32, 32]} />
+            <sphereGeometry args={[1, sphereSegs, sphereSegs]} />
             <meshStandardMaterial
               map={moonTextures[index]?.map}
               bumpMap={moonTextures[index]?.bumpMap}
               bumpScale={0.06}
               roughness={0.9}
               metalness={0.1}
+              side={FrontSide}
             />
           </mesh>
         ))}
@@ -1802,17 +1814,15 @@ const ProceduralPlanetItem = ({
       {/* Tilted Asteroid Ring Belt */}
       {hasRockRings && (
         <group rotation={[0.15, 0, 0]}>
-          {rockRing.map((rock, index) => (
-            <mesh key={`rock-${index}`} ref={rock.ref as any} scale={rock.sizeScale}>
-              <dodecahedronGeometry args={[1, 0]} />
-              <meshStandardMaterial
-                color={color1.clone().lerp(new Color("#332b3d"), 0.55)}
-                roughness={0.9}
-                metalness={0.2}
-                flatShading
-              />
-            </mesh>
-          ))}
+          <instancedMesh ref={instancedMeshRef} args={[null as any, null as any, 48]}>
+            <dodecahedronGeometry args={[1, 0]} />
+            <meshStandardMaterial
+              color={color1.clone().lerp(new Color("#332b3d"), 0.55)}
+              roughness={0.9}
+              metalness={0.2}
+              flatShading
+            />
+          </instancedMesh>
         </group>
       )}
 
