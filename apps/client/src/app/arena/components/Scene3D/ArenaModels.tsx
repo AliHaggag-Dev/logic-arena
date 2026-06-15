@@ -8,7 +8,7 @@ import {
 import { Group, Material, Mesh, Object3D } from 'three';
 import { useThree } from '@react-three/fiber';
 import { useSceneAnimation } from '../../hooks/useSceneAnimation';
-import { RobotModel, PreloadArenaModels } from './models/RobotModelLoaders';
+import { RobotModel, PreloadArenaModels, CHASSIS_MODEL_PATHS } from './models/RobotModelLoaders';
 import { RobotErrorBoundary, FallbackRobot } from './models/RobotModel';
 import { ObstaclesInstanced } from './models/ObstacleModel';
 import { LaserModel } from './models/ProjectileModel';
@@ -28,14 +28,7 @@ import { interpolationBuffer } from '../../core/interpolation-buffer';
 const toSceneX = (x: number) => (x / 40) - 10;
 const toSceneZ = (y: number) => (y / 40) - 7.5;
 
-const ROBOT_FILES: Record<string, string> = {
-  'unit-01': '/robots/robot.glb',
-  'unit-02': '/robots/robot2.glb',
-  'chassis-unit-01': '/robots/robot.glb',
-  'chassis-unit-02': '/robots/robot2.glb',
-  'chassis-titan': '/robots/armored-robot.glb',
-  'chassis-sandman': '/robots/sandman.glb',
-};
+const ROBOT_FILES: Record<string, string> = CHASSIS_MODEL_PATHS;
 
 export const ArenaModels = ({
   gameStateRef,

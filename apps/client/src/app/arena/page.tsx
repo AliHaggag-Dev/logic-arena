@@ -25,20 +25,14 @@ import { SpectatorHUD } from './components/SpectatorHUD';
 import { RoundTransitionOverlay } from './components/Tactical/RoundTransitionOverlay';
 import { PhaseBanner } from './components/Tactical/PhaseBanner';
 import { ArenaLoadingScreen } from './components/ArenaLoadingScreen';
+import { CHASSIS_MODEL_PATHS } from './components/Scene3D/models/RobotModelLoaders';
 
 const Scene3D = dynamic(
   () => import('./components/Scene3D').then(m => m.Scene3D),
   { ssr: false },
 );
 
-const ROBOT_FILES: Record<string, string> = {
-  'unit-01': '/robots/robot.glb',
-  'unit-02': '/robots/robot2.glb',
-  'chassis-unit-01': '/robots/robot.glb',
-  'chassis-unit-02': '/robots/robot2.glb',
-  'chassis-titan': '/robots/armored-robot.glb',
-  'chassis-sandman': '/robots/sandman.glb',
-};
+const ROBOT_FILES: Record<string, string> = CHASSIS_MODEL_PATHS;
 
 const CLASSIC_TOKEN_BUDGET = 10;
 

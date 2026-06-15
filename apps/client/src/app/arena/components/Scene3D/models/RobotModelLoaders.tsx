@@ -17,7 +17,7 @@ const ROBOT_SCALES: Record<string, number> = {
 };
 
 /** Maps chassis IDs to their GLB file paths. */
-const CHASSIS_MODEL_PATHS: Record<string, string> = {
+export const CHASSIS_MODEL_PATHS: Record<string, string> = {
   'unit-01': '/robots/robot.glb',
   'unit-02': '/robots/robot2.glb',
   'chassis-unit-01': '/robots/robot.glb',
