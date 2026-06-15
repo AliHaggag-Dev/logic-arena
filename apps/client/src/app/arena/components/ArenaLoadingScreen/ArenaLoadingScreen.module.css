@@ -1,0 +1,301 @@
+/* Keyframes */
+@keyframes cyberGrid {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(40px, 40px, 0); }
+}
+
+@keyframes titlePulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.02); opacity: 1; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(0, 255, 247, 0.4)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 20px rgba(0, 255, 247, 0.8)); transform: scale(1.04); }
+}
+
+@keyframes scan {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, 140px, 0); }
+}
+
+@keyframes textPulse {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Container & Grid */
+.cyberLoaderContainer {
+  --cyber-cyan: #00fff7;
+  --cyber-bg: #050510;
+  --cyber-dark-gray: #10121a;
+  --cyber-darker-gray: #06070a;
+  --cyber-green: #39ff14;
+  --cyber-pink: #ff007f;
+  --cyber-white: #ffffff;
+  --cyber-blue: #0088ff;
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: var(--cyber-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3rem 2rem;
+  color: var(--cyber-cyan);
+  font-family: 'Orbitron', 'Space Grotesk', 'Courier New', Courier, monospace;
+  transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+  opacity: 1;
+  visibility: visible;
+  overflow: hidden;
+}
+
+.cyberLoaderContainer.fadeOut {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.cyberGrid {
+  position: absolute;
+  inset: -100px;
+  background-image: 
+    linear-gradient(rgba(0, 255, 247, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 247, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  transform: translate3d(0, 0, 0);
+  animation: cyberGrid 20s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.glitchTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 0.5rem;
+  text-transform: uppercase;
+  position: relative;
+  color: var(--cyber-white);
+  text-shadow: 
+    0 0 10px var(--cyber-cyan), 
+    0 0 20px var(--cyber-cyan), 
+    -2px 0 var(--cyber-pink), 
+    2px 0 var(--cyber-blue);
+  margin-bottom: 0.5rem;
+  animation: titlePulse 2s infinite ease-in-out;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cyber-cyan);
+  opacity: 0.8;
+  text-shadow: 0 0 5px rgba(0, 255, 247, 0.5);
+}
+
+/* Graphic */
+.centerGraphic {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.robotSvgWrapper {
+  width: 140px;
+  height: 140px;
+  position: relative;
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+.scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to bottom, rgba(0, 255, 247, 0), var(--cyber-cyan), rgba(0, 255, 247, 0));
+  transform: translate3d(0, 0, 0);
+  animation: scan 2s linear infinite;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Panel & Progress */
+.statusPanel {
+  width: 100%;
+  max-width: 550px;
+  background: rgba(10, 11, 16, 0.75);
+  border: 1px solid rgba(0, 255, 247, 0.2);
+  border-radius: 4px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(0, 255, 247, 0.05);
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.overallPct {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--cyber-white);
+  text-shadow: 0 0 10px var(--cyber-cyan);
+  line-height: 1;
+}
+
+.overallLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.progressBarBg {
+  width: 100%;
+  height: 10px;
+  background-color: var(--cyber-darker-gray);
+  border: 1px solid rgba(0, 255, 247, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyber-cyan), var(--cyber-blue));
+  box-shadow: 0 0 8px var(--cyber-cyan);
+  transform-origin: left;
+  transition: transform 0.4s ease-out;
+}
+
+/* Stages */
+.stagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+.stageRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.stageName {
+  opacity: 0.85;
+  text-transform: uppercase;
+}
+
+.stageStatus {
+  font-weight: bold;
+}
+
+.statusOk {
+  color: var(--cyber-green);
+  text-shadow: 0 0 4px rgba(57, 255, 20, 0.5);
+}
+
+.statusLoading {
+  color: var(--cyber-cyan);
+  animation: textPulse 1s infinite alternate;
+}
+
+.statusPending {
+  color: var(--cyber-pink);
+  opacity: 0.7;
+}
+
+/* Audio Action */
+.audioPromptContainer {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.cyberBtn {
+  background: transparent;
+  border: 1px solid var(--cyber-pink);
+  color: var(--cyber-white);
+  padding: 0.6rem 1.5rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
+  transition: all 0.2s ease;
+  outline: none;
+  position: relative;
+}
+
+.cyberBtn:hover {
+  background-color: var(--cyber-pink);
+  color: var(--cyber-bg);
+  box-shadow: 0 0 20px var(--cyber-pink);
+  text-shadow: none;
+}
+
+/* Tips */
+.tipsContainer {
+  width: 100%;
+  max-width: 650px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(16, 18, 26, 0.45);
+  border: 1px solid rgba(0, 255, 247, 0.1);
+  border-radius: 4px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.tipsLabel {
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cyber-cyan);
+  opacity: 0.6;
+  margin-bottom: 0.5rem;
+}
+
+.tipText {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--cyber-white);
+  opacity: 0.9;
+  transition: opacity 0.4s ease-in-out;
+  font-family: inherit;
+}
+
+.tipText.fadeOut {
+  opacity: 0;
+}
+
+.tipText.fadeIn {
+  opacity: 0.9;
+}
