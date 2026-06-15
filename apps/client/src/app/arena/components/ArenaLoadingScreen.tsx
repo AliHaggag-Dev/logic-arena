@@ -113,14 +113,31 @@ export const ArenaLoadingScreen = ({
   useEffect((): (() => void) => {
     let current = 0;
     const interval = setInterval((): void => {
-      current += 0.08 + Math.random() * 0.12;
-      if (current >= 1) {
-        current = 1;
-        clearInterval(interval);
+      if (current < 0.95) {
+        current += 0.08 + Math.random() * 0.12;
+        if (current >= 0.95) {
+          current = 0.95;
+          clearInterval(interval);
+        }
+        setTexturesProgress(current);
       }
-      setTexturesProgress(current);
     }, 100);
     return (): void => clearInterval(interval);
+  }, []);
+
+  // Listen for actual WebGL scene first-frame signal
+  useEffect((): (() => void) => {
+    const handleFirstFrame = (): void => {
+      setTexturesProgress(1.0);
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scene-first-frame', handleFirstFrame);
+    }
+    return (): void => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('scene-first-frame', handleFirstFrame);
+      }
+    };
   }, []);
 
   // 3. Audio Context connection check

@@ -143,6 +143,24 @@ const ArenaPageContent = () => {
     <div className="fixed inset-0 w-full h-[100dvh] bg-black overflow-hidden font-mono select-none">
       <ArenaStyles />
 
+      {/* Render the 3D Scene immediately in the background so it can load and compile WebGL shaders */}
+      <div className="absolute inset-0 z-0">
+        <Scene3D
+          key={`scene-${searchParams.get('theme') || 'CYBER'}`}
+          gameStateRef={gameStateRef}
+          obstacles={obstacles}
+          firedTracer={firedTracer ?? null}
+          speechBubble={speechBubble ?? null}
+          fogEnabled={fogEnabled}
+          soundFx={arenaSoundsEnabled}
+          graphicsQuality={graphicsQuality}
+          localRobotFile={localRobotFile}
+          localRobotColor={localRobotColor}
+          displayMode={displayMode}
+          mapTheme={searchParams.get('theme') || uiState?.mapTheme || 'CYBER'}
+        />
+      </div>
+
       {!loadingScreenCompleted && (
         <ArenaLoadingScreen
           socket={socket}
@@ -193,28 +211,9 @@ const ArenaPageContent = () => {
         />
       )}
 
-
-
       {displayMode === 'TACTICAL' && matchPhase && (
         <RoundTransitionOverlay phase={matchPhase.phase as unknown as string} />
       )}
-
-      <div className="absolute inset-0 z-0">
-        <Scene3D
-          key={`scene-${searchParams.get('theme') || 'CYBER'}`}
-          gameStateRef={gameStateRef}
-          obstacles={obstacles}
-          firedTracer={firedTracer ?? null}
-          speechBubble={speechBubble ?? null}
-          fogEnabled={fogEnabled}
-          soundFx={arenaSoundsEnabled}
-          graphicsQuality={graphicsQuality}
-          localRobotFile={localRobotFile}
-          localRobotColor={localRobotColor}
-          displayMode={displayMode}
-          mapTheme={searchParams.get('theme') || uiState?.mapTheme || 'CYBER'}
-        />
-      </div>
 
       {/* Player-only HUD elements — hidden for spectators */}
       {!isSpectator && (
