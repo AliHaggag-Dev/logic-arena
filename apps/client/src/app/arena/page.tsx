@@ -24,6 +24,7 @@ import { SpectatorHUD } from './components/SpectatorHUD';
 
 import { RoundTransitionOverlay } from './components/Tactical/RoundTransitionOverlay';
 import { PhaseBanner } from './components/Tactical/PhaseBanner';
+import { ArenaLoadingScreen } from './components/ArenaLoadingScreen';
 
 const Scene3D = dynamic(
   () => import('./components/Scene3D').then(m => m.Scene3D),
@@ -112,7 +113,8 @@ const ArenaPageContent = () => {
     };
   }, [isMobile]);
 
-  if (loading) return <div className="min-h-dvh flex items-center justify-center bg-black text-cyan-500 font-mono tracking-widest animate-pulse">Loading Arena...</div>;
+  const [loadingScreenCompleted, setLoadingScreenCompleted] = useState<boolean>(false);
+
   if (error) return <div className="min-h-dvh flex items-center justify-center bg-black text-red-500 font-mono">ERROR 404: {error}</div>;
 
   const robots = uiState?.robots || [];
@@ -141,7 +143,19 @@ const ArenaPageContent = () => {
     <div className="fixed inset-0 w-full h-[100dvh] bg-black overflow-hidden font-mono select-none">
       <ArenaStyles />
 
-      {isMobile && isPortrait && <OrientationLock />}
+      {!loadingScreenCompleted && (
+        <ArenaLoadingScreen
+          socket={socket}
+          uiState={uiState}
+          scriptReady={!loading && (isSpectator || !!script)}
+          isSpectator={isSpectator}
+          onComplete={(): void => setLoadingScreenCompleted(true)}
+        />
+      )}
+
+      {loadingScreenCompleted && (
+        <>
+          {isMobile && isPortrait && <OrientationLock />}
 
       {/* Spectator-only overlays */}
       {isSpectator && (
@@ -287,6 +301,8 @@ const ArenaPageContent = () => {
             />
           )}
         </>
+      )}
+      </>
       )}
     </div>
   );
