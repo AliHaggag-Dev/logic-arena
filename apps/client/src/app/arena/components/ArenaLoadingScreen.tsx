@@ -490,7 +490,7 @@ export const ArenaLoadingScreen = ({
 
       <div className="header">
         <h1 className="glitch-title">Logic Arena</h1>
-        <div className="subtitle">Pre-Match Neural Loading</div>
+        <div className="subtitle">Preparing your Arena</div>
       </div>
 
       <div className="center-graphic">
@@ -525,11 +525,11 @@ export const ArenaLoadingScreen = ({
       <div className="status-panel">
         <div className="progress-header">
           <div>
-            <div className="overall-label">System Integrity</div>
+            <div className="overall-label">Loading Progress</div>
             <div className="overall-pct">{totalProgress}%</div>
           </div>
           <div className="overall-label" style={{ opacity: 0.5 }}>
-            {totalProgress === 100 ? 'LINK STABLE' : 'DOWNLOADING CHASSIS MATRIX'}
+            {totalProgress === 100 ? 'LINK STABLE' : 'LOADING ROBOT MODELS...'}
           </div>
         </div>
 
@@ -539,37 +539,37 @@ export const ArenaLoadingScreen = ({
 
         <div className="stages-list">
           <div className="stage-row">
-            <span className="stage-name">1. Core Robot GLB Chassis Matrix (35%)</span>
+            <span className="stage-name">1. Loading Robot Models (35%)</span>
             <span className={`stage-status ${glbProgress === 1 ? 'status-ok' : 'status-loading'}`}>
               {glbProgress === 1 ? '[ OK ]' : `[ ${glbPct}% ]`}
             </span>
           </div>
           <div className="stage-row">
-            <span className="stage-name">2. Procedural Map Material Compiler (15%)</span>
+            <span className="stage-name">2. Building Arena Environment (15%)</span>
             <span className={`stage-status ${texturesProgress === 1 ? 'status-ok' : 'status-loading'}`}>
               {texturesProgress === 1 ? '[ OK ]' : `[ ${texturesPct}% ]`}
             </span>
           </div>
           <div className="stage-row">
-            <span className="stage-name">3. Network Websocket Handshake (15%)</span>
+            <span className="stage-name">3. Connecting to Server (15%)</span>
             <span className={`stage-status ${isWebsocketConnected ? 'status-ok' : 'status-pending'}`}>
               {isWebsocketConnected ? '[ OK ]' : '[ PENDING ]'}
             </span>
           </div>
           <div className="stage-row">
-            <span className="stage-name">4. Match Session Synchronizer (20%)</span>
+            <span className="stage-name">4. Syncing Match Data (20%)</span>
             <span className={`stage-status ${isInitStateReceived ? 'status-ok' : 'status-pending'}`}>
               {isInitStateReceived ? '[ OK ]' : '[ PENDING ]'}
             </span>
           </div>
           <div className="stage-row">
-            <span className="stage-name">5. AliScript Source Resolver (10%)</span>
+            <span className="stage-name">5. Loading Your Script (10%)</span>
             <span className={`stage-status ${scriptReady ? 'status-ok' : 'status-pending'}`}>
               {scriptReady ? '[ OK ]' : '[ PENDING ]'}
             </span>
           </div>
           <div className="stage-row">
-            <span className="stage-name">6. Neural Audio Interface Link (5%)</span>
+            <span className="stage-name">6. Initializing Audio (5%)</span>
             <span className={`stage-status ${audioReady ? 'status-ok' : 'status-pending'}`}>
               {audioReady ? '[ OK ]' : '[ MUTED ]'}
             </span>
@@ -590,7 +590,7 @@ export const ArenaLoadingScreen = ({
       </div>
 
       <div className="tips-container">
-        <div className="tips-label">DATABASE DECRYPTED: FIELD ADVISORY</div>
+        <div className="tips-label">PRO TIP</div>
         <p className={`tip-text ${fadeTip ? 'fade-in' : 'fade-out'}`}>
           {TIPS[tipIndex]}
         </p>
