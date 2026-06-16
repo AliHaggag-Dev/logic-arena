@@ -115,6 +115,7 @@ function useStoreSnapshot(): NotificationsSnapshot {
 
 async function refresh(): Promise<void> {
   if (!store) return;
+  if (!getAuthSession().isAuthenticated) return;
   store.isLoading = true;
   notify();
   try {
@@ -123,8 +124,11 @@ async function refresh(): Promise<void> {
     store.unreadCount = res.unreadCount;
     store.hasMore = res.hasMore;
     store.fetchedOnce = true;
-  } catch (err) {
-    console.error('[useNotifications] refresh failed', err);
+  } catch (err: unknown) {
+    const status = (err as { response?: { status?: number } })?.response?.status;
+    if (status !== 401) {
+      console.error('[useNotifications] refresh failed', err);
+    }
   } finally {
     if (store) {
       store.isLoading = false;
@@ -135,6 +139,7 @@ async function refresh(): Promise<void> {
 
 async function loadMore(): Promise<void> {
   if (!store) return;
+  if (!getAuthSession().isAuthenticated) return;
   if (store.isLoadingMore || !store.hasMore) return;
   store.isLoadingMore = true;
   notify();
@@ -144,8 +149,11 @@ async function loadMore(): Promise<void> {
     store.items = next.length > MAX_NOTIFICATIONS ? next.slice(0, MAX_NOTIFICATIONS) : next;
     store.unreadCount = res.unreadCount;
     store.hasMore = res.hasMore;
-  } catch (err) {
-    console.error('[useNotifications] loadMore failed', err);
+  } catch (err: unknown) {
+    const status = (err as { response?: { status?: number } })?.response?.status;
+    if (status !== 401) {
+      console.error('[useNotifications] loadMore failed', err);
+    }
   } finally {
     if (store) {
       store.isLoadingMore = false;
@@ -307,11 +315,12 @@ async function initialUnreadFetch(): Promise<void> {
       store.fetchedOnce = true;
       notify();
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (store) {
       store.fetchedOnce = true;
     }
-    if (err?.response?.status === 401) {
+    const status = (err as { response?: { status?: number } })?.response?.status;
+    if (status === 401) {
       return; // Guest user, safely ignore
     }
     console.error('[useNotifications] initial unreadCount failed', err);

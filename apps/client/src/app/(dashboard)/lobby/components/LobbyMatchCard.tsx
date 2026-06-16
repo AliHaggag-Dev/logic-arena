@@ -1,5 +1,4 @@
 import React from "react";
-import { useMediaQuery } from "../../../../hooks/useMediaQuery";
 import { UserLink } from "../../../../components/ui/UserLink";
 import { Lock, Clock, Hash, Gamepad2, ChevronRight } from "lucide-react";
 import type { MatchMode } from "../../../../context/SocketContext";
@@ -17,10 +16,10 @@ interface Props {
   index: number;
   onJoin: (match: LobbyMatch) => void;
   isGuest?: boolean;
+  isMobile: boolean;
 }
 
-export const LobbyMatchCard = React.memo(function LobbyMatchCard({ match, index, onJoin, isGuest }: Props) {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+export const LobbyMatchCard = React.memo(function LobbyMatchCard({ match, index, onJoin, isGuest, isMobile }: Props) {
 
   const DesktopCard = (
     <div
