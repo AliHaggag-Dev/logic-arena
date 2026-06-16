@@ -37,8 +37,9 @@ export class AuthPasswordService {
     try {
       await this.emailService.sendResetCode(email, resetCode);
     } catch (emailErr: any) {
+      this.logger.error('Reset email delivery failed:', emailErr);
       throw new InternalServerErrorException(
-        `Reset code saved but email delivery failed: ${emailErr.message}`,
+        'Reset code saved but email delivery failed. Please try again later.',
       );
     }
     return { success: true };

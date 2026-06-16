@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
@@ -18,6 +19,8 @@ const verifyCodeKey = (email: string) => `auth:verify:${email.toLowerCase()}`;
 
 @Injectable()
 export class AuthRegistrationService {
+  private readonly logger = new Logger(AuthRegistrationService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
@@ -60,8 +63,9 @@ export class AuthRegistrationService {
             "This email address doesn't exist. Please check and try again.",
           );
         }
+        this.logger.error('Email delivery failed:', emailErr);
         throw new InternalServerErrorException(
-          `Account created but verification email failed: ${msg}`,
+          'Account created but verification email could not be sent. Please try again later.',
         );
       }
       return this.stripPassword(user);

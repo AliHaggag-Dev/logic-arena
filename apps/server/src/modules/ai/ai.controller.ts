@@ -5,6 +5,7 @@ import {
   Res,
   HttpCode,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { Response } from 'express';
@@ -29,6 +30,8 @@ interface GenerateScriptDto {
 @Throttle({ global: { limit: 20, ttl: 60_000 } })
 @Controller('ai')
 export class AiController {
+  private readonly logger = new Logger(AiController.name);
+
   constructor(private aiService: AiService) {}
 
   @Post('docs-chat')
@@ -88,8 +91,9 @@ export class AiController {
       // Show friendly message for Google 503 overload errors
       const isOverload = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
       const friendly = isOverload
-        ? 'ARIA is currently overloaded. Please wait a moment and try again.\nARIA حالياً مرتفعة الضغط. برجاء الانتظار قليلاً والمحاولة مرة أخرى.'
-        : msg;
+        ? 'ARIA is currently overloaded. Please wait a moment and try again.'
+        : 'An unexpected error occurred. Please try again.';
+      this.logger.error('AI stream error:', error);
       const escaped = JSON.stringify({ error: friendly });
       res.write(`data: ${escaped}\n\n`);
     } finally {
@@ -132,8 +136,9 @@ export class AiController {
       const msg = error instanceof Error ? error.message : 'Unknown error';
       const isOverload = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
       const friendly = isOverload
-        ? 'ARIA is currently overloaded. Please wait a moment and try again.\nARIA حالياً مرتفعة الضغط. برجاء الانتظار قليلاً والمحاولة مرة أخرى.'
-        : msg;
+        ? 'ARIA is currently overloaded. Please wait a moment and try again.'
+        : 'An unexpected error occurred. Please try again.';
+      this.logger.error('AI stream error:', error);
       const escaped = JSON.stringify({ error: friendly });
       res.write(`data: ${escaped}\n\n`);
     } finally {

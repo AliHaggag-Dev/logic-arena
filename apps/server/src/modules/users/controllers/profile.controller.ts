@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   NotFoundException,
   Param,
   Patch,
@@ -43,6 +44,8 @@ const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 @SkipThrottle({ auth: true })
 @Controller('users')
 export class ProfileController {
+  private readonly logger = new Logger(ProfileController.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
@@ -99,8 +102,8 @@ export class ProfileController {
       );
       return { success: true };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Update failed';
-      throw new BadRequestException(message);
+      this.logger.error('Failed to update loadout settings:', err);
+      throw new BadRequestException('Failed to update loadout settings');
     }
   }
 
@@ -122,9 +125,8 @@ export class ProfileController {
       );
       return { success: true, avatarUrl };
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Avatar upload failed';
-      throw new BadRequestException(message);
+      this.logger.error('Failed to upload avatar:', err);
+      throw new BadRequestException('Failed to upload avatar');
     }
   }
 
@@ -168,8 +170,8 @@ export class ProfileController {
       await this.profileCommand.updateIdentity(req.user.sub, body);
       return { success: true };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Update failed';
-      throw new BadRequestException(message);
+      this.logger.error('Failed to update identity:', err);
+      throw new BadRequestException('Failed to update identity');
     }
   }
 
@@ -192,8 +194,8 @@ export class ProfileController {
       );
       return { success: true };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Update failed';
-      throw new BadRequestException(message);
+      this.logger.error('Failed to update password:', err);
+      throw new BadRequestException('Failed to update password');
     }
   }
 
@@ -207,8 +209,8 @@ export class ProfileController {
       await this.preferencesCommand.updateArenaPreferences(req.user.sub, body);
       return { success: true };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Update failed';
-      throw new BadRequestException(message);
+      this.logger.error('Failed to update arena preferences:', err);
+      throw new BadRequestException('Failed to update arena preferences');
     }
   }
 
@@ -225,8 +227,8 @@ export class ProfileController {
       );
       return { success: true };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Update failed';
-      throw new BadRequestException(message);
+      this.logger.error('Failed to update notification settings:', err);
+      throw new BadRequestException('Failed to update notification settings');
     }
   }
 }

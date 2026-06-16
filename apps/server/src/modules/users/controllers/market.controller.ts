@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   NotFoundException,
   Post,
   Req,
@@ -22,6 +23,8 @@ interface AuthenticatedRequest {
 @SkipThrottle({ auth: true })
 @Controller('users')
 export class MarketController {
+  private readonly logger = new Logger(MarketController.name);
+
   constructor(
     private readonly marketQuery: MarketQueryService,
     private readonly marketCommand: MarketCommandService,
@@ -33,9 +36,8 @@ export class MarketController {
     try {
       return await this.marketQuery.getBlackMarket(req.user.sub);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to load Black Market data';
-      throw new NotFoundException(message);
+      this.logger.error('Failed to load Black Market data:', err);
+      throw new NotFoundException('Failed to load Black Market data');
     }
   }
 
@@ -49,8 +51,8 @@ export class MarketController {
     try {
       return await this.marketCommand.purchaseItem(req.user.sub, body.itemId);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Purchase failed';
-      throw new BadRequestException(message);
+      this.logger.error('Failed to complete purchase:', err);
+      throw new BadRequestException('Failed to complete purchase');
     }
   }
 
@@ -76,8 +78,8 @@ export class MarketController {
       );
       return { success: true };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Equip failed';
-      throw new BadRequestException(message);
+      this.logger.error('Failed to equip item:', err);
+      throw new BadRequestException('Failed to equip item');
     }
   }
 }

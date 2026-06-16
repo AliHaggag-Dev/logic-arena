@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 import { RedisIoAdapter } from './common/redis-io.adapter';
+import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 
 // ── Strict CORS whitelist ────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -40,6 +41,8 @@ async function bootstrap() {
       forbidUnknownValues: true,
     }),
   );
+
+  app.useGlobalFilters(new PrismaExceptionFilter());
 
   // ── Security headers ───────────────────────────────────────────────────────
   app.use(
