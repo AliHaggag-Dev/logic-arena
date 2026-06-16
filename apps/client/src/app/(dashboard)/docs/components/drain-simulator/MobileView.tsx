@@ -91,7 +91,7 @@ export function MobileView({
                 </div>
             </div>
 
-            <div className="mt-4 overflow-x-auto docs-scrollbar">
+            <div className="mt-4 overflow-x-auto scrollbar-hide">
                 <div className="flex min-w-max gap-2 pb-1">
                     {SIMULATE_CMDS.map((p, i) => (
                         <button

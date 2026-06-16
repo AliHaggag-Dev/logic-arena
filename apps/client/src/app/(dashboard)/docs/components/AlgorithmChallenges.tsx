@@ -87,9 +87,23 @@ const ChallengeCard = ({
           </p>
 
           {/* Code block */}
-          <div className="relative border border-accent/10 rounded-lg overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-accent/10 bg-black/40 z-10">
-              <span className="text-[9px] font-mono tracking-widest text-accent/50 uppercase ml-1">AliScript</span>
+          <div
+            className="relative border rounded-lg overflow-hidden flex flex-col"
+            style={{ borderColor: `color-mix(in srgb, ${challenge.color} 15%, transparent)` }}
+          >
+            <div
+              className="flex items-center justify-between px-3 py-2 border-b z-10"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${challenge.color} 10%, transparent)`,
+                borderBottomColor: `color-mix(in srgb, ${challenge.color} 15%, transparent)`,
+              }}
+            >
+              <span
+                className="text-[9px] font-mono tracking-widest uppercase ml-1"
+                style={{ color: `color-mix(in srgb, ${challenge.color} 80%, transparent)` }}
+              >
+                AliScript
+              </span>
               <CopyButton code={challenge.code} themeColor={challenge.color} className="relative" />
             </div>
             <div className="relative">
@@ -126,7 +140,7 @@ const ChallengeCard = ({
               background: `color-mix(in srgb, ${challenge.color} 5%, transparent)`,
             }}
           >
-            ▶ LOAD_TO_CORE
+            ▶ LOAD TO EDITOR
           </button>
         </div>
       )}

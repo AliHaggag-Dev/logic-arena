@@ -17,10 +17,10 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
         {/* Left: editor */}
         <div>
           <div className="flex justify-between items-center mb-2.5 px-1">
-            <span className="text-[10px] tracking-[0.22em] text-accent/30 uppercase font-bold">
+            <span className="text-[10px] tracking-[0.22em] text-accent/60 uppercase font-bold">
               SCRIPT EDITOR
             </span>
-            <span className="text-[9px] tracking-[0.15em] text-accent/20 font-bold uppercase">
+            <span className="text-[9px] tracking-[0.15em] text-accent/50 font-bold uppercase">
               {script.split("\n").filter(Boolean).length} LINES
             </span>
           </div>
@@ -45,13 +45,13 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
         {/* Right: output */}
         <div>
           <div className="mb-2.5 px-1">
-            <span className="text-[10px] tracking-[0.22em] text-accent/30 uppercase font-bold">
+            <span className="text-[10px] tracking-[0.22em] text-accent/60 uppercase font-bold">
               COMMAND LIST
             </span>
           </div>
           <div className={`docs-scrollbar overflow-y-auto bg-card/70 border border-accent/10 rounded-xl p-4 flex flex-col gap-2 ${isMobile ? "min-h-[140px] max-h-[250px]" : "min-h-[200px] max-h-[360px]"}`}>
             {parsed.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center text-accent/20 text-[10px] tracking-[0.2em] text-center p-8 uppercase font-bold">
+              <div className="flex-1 flex items-center justify-center text-accent/50 text-[10px] tracking-[0.2em] text-center p-8 uppercase font-bold">
                 Waiting for script…
               </div>
             ) : (
@@ -61,7 +61,7 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
                   className="flex items-center gap-2.5 animate-[fadeIn_0.2s_ease_both]"
                   style={{ animationDelay: `${idx * 0.04}s` }}
                 >
-                  <span className="text-[9px] text-accent/20 min-w-[20px] text-right font-bold font-mono">
+                  <span className="text-[9px] text-accent/50 min-w-[20px] text-right font-bold font-mono">
                     {String(idx + 1).padStart(2, "0")}
                   </span>
                   <span className="inline-block px-3 py-1.5 rounded-lg bg-accent/5 border border-accent/20 text-accent text-[11px] font-bold tracking-[0.05em] font-mono shadow-[0_2px_10px_rgba(0,0,0,0.2)]">
@@ -73,7 +73,7 @@ export function InteractivePlayground({ script, setScript, parsed, onParse, isMo
           </div>
 
           {parsed.length > 0 && (
-            <div className="mt-2.5 text-[9px] text-accent/20 tracking-[0.15em] text-right font-bold uppercase">
+            <div className="mt-2.5 text-[9px] text-accent/50 tracking-[0.15em] text-right font-bold uppercase">
               {parsed.length} LINE{parsed.length !== 1 ? "S" : ""} PARSED
             </div>
           )}

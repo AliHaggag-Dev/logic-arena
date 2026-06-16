@@ -114,7 +114,6 @@ export function ChatTrigger({ isMobile, onClick }: ChatTriggerProps) {
       className={triggerClass}
       style={{
         boxShadow: '0 0 20px rgba(var(--accent-rgb),0.2), 0 0 40px rgba(var(--accent-rgb),0.1)',
-        animation: 'pulse-glow 3s ease-in-out infinite',
       }}
       aria-label="Open ARIA AI Tutor"
     >

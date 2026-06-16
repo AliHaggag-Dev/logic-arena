@@ -81,24 +81,30 @@ export const AdvancedLanguageFeaturesSection = ({ isMobile }: { isMobile: boolea
               <p className="text-xs text-text-secondary/90 leading-relaxed">{item.description}</p>
 
               <div className="flex flex-col gap-1.5">
-                <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase">Returns</div>
-                <div className="text-xs font-mono text-accent/70">{item.returns}</div>
-                <div className="text-[10px] text-accent/50 italic">{item.returnDetail}</div>
-              </div>
+                <div className="text-[9px] font-black text-accent/60 tracking-[0.2em] uppercase">Returns</div>
+                <div className="text-[11px] font-bold tracking-wide" style={{ color: colorCode }}>
+                  {item.returns}
+                </div>
+                {item.returnDetail && (
+                  <div className="text-[10px] font-mono italic mb-2" style={{ color: `color-mix(in srgb, ${colorCode} 70%, transparent)` }}>
+                    {item.returnDetail}
+                  </div>
+                )}
 
-              <div className="bg-bg-primary/40 rounded-lg p-3 border border-accent/5 relative">
-                <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-2">Implementation Example</div>
-                <pre className="text-[10px] font-mono whitespace-pre-wrap leading-relaxed" style={{ color: colorCode }}>
-                  {item.example.split('\n').map((line: string, i: number) => {
-                    const isComment = line.trimStart().startsWith('//');
-                    return (
-                      <div key={i} style={{ color: isComment ? 'rgba(var(--accent-rgb), 0.4)' : undefined }}>
-                        {line}
-                      </div>
-                    );
-                  })}
-                </pre>
-                <CopyButton code={item.example} themeColor={colorCode} />
+                <div className="text-[9px] font-black text-accent/60 tracking-[0.2em] uppercase mb-2 mt-2">Implementation Example</div>
+                <div className="relative border border-accent/10 rounded-xl bg-card/40">
+                  <CopyButton code={item.example} themeColor={colorCode} className="absolute top-3 right-3" />
+                  <pre className="text-[10px] font-mono whitespace-pre-wrap leading-relaxed p-4 overflow-x-auto docs-scrollbar" style={{ color: colorCode }}>
+                    {item.example.split('\n').map((line: string, i: number) => {
+                      const isComment = line.trimStart().startsWith('//');
+                      return (
+                        <div key={i} style={{ color: isComment ? 'rgba(var(--accent-rgb), 0.4)' : undefined }}>
+                          {line}
+                        </div>
+                      );
+                    })}
+                  </pre>
+                </div>
               </div>
 
               {item.note && (

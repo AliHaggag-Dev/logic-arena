@@ -25,16 +25,16 @@ export function HeroSection({ isMobile }: { isMobile: boolean }) {
   return (
     <div className={`border-b border-accent/10 ${isMobile ? "pb-6 mb-8" : "pb-9 mb-[52px]"} text-center`}>
       <h1 className={`${isMobile ? "text-3xl" : "text-[clamp(32px,6vw,56px)]"} font-black tracking-[0.22em] text-accent drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.9)] mb-4 leading-none`}>
-        <span className="block text-[10px] tracking-[0.4em] text-accent/30 mb-3 uppercase drop-shadow-none font-normal">
+        <span className="block text-[10px] tracking-[0.4em] text-accent/50 mb-3 uppercase drop-shadow-none font-normal">
           LANGUAGE REFERENCE
         </span>
         ALISCRIPT
-        <span className="text-[0.38em] text-accent/35 tracking-[0.3em] ml-4 align-super">
+        <span className="text-[0.38em] text-accent/60 tracking-[0.3em] ml-4 align-super">
           v2.5
         </span>
       </h1>
 
-      <p className={`${isMobile ? "text-[10px] tracking-[0.15em]" : "text-[13px] tracking-[0.28em]"} text-accent/45 uppercase m-0`}>
+      <p className={`${isMobile ? "text-[10px] tracking-[0.15em]" : "text-[13px] tracking-[0.28em]"} text-accent/70 uppercase m-0`}>
         THE ROBOT PROGRAMMING LANGUAGE
       </p>
 
@@ -52,7 +52,7 @@ export function HeroSection({ isMobile }: { isMobile: boolean }) {
             key={label}
             className={`${isMobile ? "px-3 py-1 text-[9px]" : "px-4 py-1.5 text-[10px]"} border border-accent/20 rounded-lg bg-accent/5 tracking-[0.18em] text-accent/50 flex gap-2 items-center shadow-[inset_0_0_10px_rgba(var(--accent-rgb),0.02)]`}
           >
-            <span className="text-accent/30">{label}:</span>
+            <span className="text-accent/50">{label}:</span>
             <span className="text-accent font-bold">{value}</span>
           </div>
         ))}

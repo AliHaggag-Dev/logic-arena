@@ -44,7 +44,7 @@ export function MobileCommandList({
                                         {command.category}
                                     </span>
                                 </div>
-                                <span className={`text-[10px] text-accent/30 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                                <span className={`text-[10px] text-accent/60 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
                                     ▼
                                 </span>
                             </button>
@@ -53,21 +53,10 @@ export function MobileCommandList({
                                 <div className="px-4 pb-4 border-t border-accent/5 animate-in fade-in slide-in-from-top-1 duration-200">
                                     <div className="mt-3 space-y-3">
                                         <div>
-                                            <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1">Energy Cost</div>
-                                            <span className="text-[10px] font-black" style={{ color: categoryColor }}>
-                                                {command.energyCost ?? 'Free'}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1">Parameters</div>
-                                            <code className="text-[10px] text-accent/60 font-mono italic">{command.parameters || 'NONE'}</code>
-                                        </div>
-                                        <div>
-                                            <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1">Description</div>
-                                            <p className="text-[10px] text-text-primary/70 leading-relaxed font-medium">{command.description}</p>
-                                        </div>
-                                        <div className="bg-bg-primary/40 rounded-lg p-3 border border-accent/5">
-                                            <div className="text-[9px] font-black text-accent/30 tracking-[0.2em] uppercase mb-1">Example</div>
+                                            <div className="text-[9px] font-black text-accent/60 tracking-[0.2em] uppercase mb-1">Energy Cost</div>
+                                            <div className="text-[9px] font-black text-accent/60 tracking-[0.2em] uppercase mb-1">Parameters</div>
+                                            <div className="text-[9px] font-black text-accent/60 tracking-[0.2em] uppercase mb-1">Description</div>
+                                            <div className="text-[9px] font-black text-accent/60 tracking-[0.2em] uppercase mb-1">Example</div>
                                             <code className="text-[10px] text-accent font-bold">{command.example}</code>
                                         </div>
                                     </div>
@@ -78,7 +67,7 @@ export function MobileCommandList({
                 })}
             </div>
 
-            <div className="mt-4 text-[9px] text-accent/20 tracking-[0.2em] text-right font-bold">
+            <div className="mt-4 text-[9px] text-accent/50 tracking-[0.2em] text-right font-bold">
                 {commands.length} / {totalCommands} COMMANDS LISTED
             </div>
         </>

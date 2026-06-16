@@ -22,9 +22,23 @@ export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript:
             <div className="text-[10px] text-text-primary/70 mb-4 leading-relaxed tracking-wide font-medium">
               {tactic.desc}
             </div>
-            <div className="relative border border-accent/10 rounded-xl overflow-hidden flex flex-col bg-bg-primary/50 shadow-inner">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-accent/10 bg-black/40 z-10">
-                <span className="text-[9px] font-mono tracking-widest text-accent/50 uppercase ml-1">AliScript</span>
+            <div
+              className="relative border rounded-xl overflow-hidden flex flex-col bg-bg-primary/50 shadow-inner"
+              style={{ borderColor: `color-mix(in srgb, ${tactic.color} 15%, transparent)` }}
+            >
+              <div
+                className="flex items-center justify-between px-3 py-2 border-b z-10"
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${tactic.color} 10%, transparent)`,
+                  borderBottomColor: `color-mix(in srgb, ${tactic.color} 15%, transparent)`,
+                }}
+              >
+                <span
+                  className="text-[9px] font-mono tracking-widest uppercase ml-1"
+                  style={{ color: `color-mix(in srgb, ${tactic.color} 80%, transparent)` }}
+                >
+                  AliScript
+                </span>
                 <CopyButton code={tactic.code} themeColor={tactic.color} className="relative" />
               </div>
               <div className="p-4 font-mono text-[10px] text-accent leading-relaxed whitespace-pre-wrap overflow-x-auto docs-scrollbar">
@@ -40,7 +54,7 @@ export function BattleTacticsSection({ onLoadScript, isMobile }: { onLoadScript:
                 color: tactic.color,
               }}
             >
-              ▶ LOAD_TO_CORE
+              ▶ LOAD TO EDITOR
             </button>
           </div>
         ))}

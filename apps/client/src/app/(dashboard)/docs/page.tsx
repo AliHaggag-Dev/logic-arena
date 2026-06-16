@@ -59,7 +59,7 @@ export default function DocsPage() {
       <div
         className={`max-w-[1100px] mx-auto ${
           isMobile ? 'px-4 pt-[108px]' : 'px-6 pt-12'
-        } pb-[100px] relative z-10 animate-[fadeIn_0.35s_ease]`}
+        } pb-[100px] relative z-10`}
       >
         <div id="docs-intro" style={{ scrollMarginTop: '80px' }}>
           <HeroSection isMobile={isMobile} />

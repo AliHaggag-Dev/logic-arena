@@ -18,7 +18,7 @@ export function DesktopCommandTable({
                                 {TABLE_HEADERS.map((header) => (
                                     <th
                                         key={header}
-                                        className="px-[18px] py-[14px] text-left text-[9px] font-bold tracking-[0.25em] text-accent/35 uppercase whitespace-nowrap"
+                                        className="px-[18px] py-[14px] text-left text-[9px] font-bold tracking-[0.25em] text-accent/60 uppercase whitespace-nowrap"
                                     >
                                         {header}
                                     </th>
@@ -59,7 +59,7 @@ export function DesktopCommandTable({
                                                 {command.energyCost ?? 'Free'}
                                             </span>
                                         </td>
-                                        <td className="px-[18px] py-[14px] text-accent/35 text-[10px] whitespace-nowrap">
+                                        <td className="px-[18px] py-[14px] text-accent/60 text-[10px] whitespace-nowrap">
                                             {command.parameters}
                                         </td>
                                         <td className="px-[18px] py-[14px] text-accent/60 leading-relaxed min-w-[240px]">
@@ -78,7 +78,7 @@ export function DesktopCommandTable({
                 </div>
             </div>
 
-            <div className="mt-3 text-[9px] text-accent/20 tracking-[0.18em] text-right">
+            <div className="mt-3 text-[9px] text-accent/50 tracking-[0.18em] text-right">
                 {commands.length} / {totalCommands} COMMANDS DISPLAYED
             </div>
         </>

@@ -100,7 +100,7 @@ export const ExampleCard = ({
                     </div>
 
                     <div className="relative border border-accent/10 rounded-lg overflow-hidden flex flex-col">
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-accent/10 bg-black/40 z-10">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-accent/10 bg-card/40 z-10">
                             <span className="text-[9px] font-mono tracking-widest text-accent/50 uppercase ml-1">AliScript</span>
                             <CopyButton code={example.code} themeColor={color} className="relative" />
                         </div>
@@ -130,7 +130,7 @@ export const ExampleCard = ({
                             background: `color-mix(in srgb, ${color} 5%, transparent)`,
                         }}
                     >
-                        LOAD_TO_CORE
+                        LOAD TO EDITOR
                     </button>
                 </div>
             )}

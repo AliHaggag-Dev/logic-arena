@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { notificationsApi } from '@/lib/api/notifications';
 import type { NotificationEntry } from '@/lib/api/notifications.types';
 import { useGlobalSocket } from './useGlobalSocket';
+import { getAuthSession } from '@/lib/client-security';
 
 const PAGE_SIZE = 20;
 const MAX_NOTIFICATIONS = 200;
@@ -294,6 +295,11 @@ function useSocketBridge(): void {
 async function initialUnreadFetch(): Promise<void> {
   if (!store) return;
   if (store.fetchedOnce) return;
+  const session = getAuthSession();
+  if (!session.isAuthenticated) {
+    store.fetchedOnce = true;
+    return;
+  }
   try {
     const count = await notificationsApi.unreadCount();
     if (store) {
