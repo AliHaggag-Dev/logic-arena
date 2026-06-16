@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useMemo } from "react";
 import type { ScriptEditorProps } from "../../../../../../components/shared-script-editor";
 import { highlightCode } from "../../../../../../components/shared-script-editor";
 import { useParserWorker } from "../../../../../../components/shared-script-editor";
@@ -23,11 +23,26 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
         clearSuggestions();
     }, [clearSuggestions]);
 
+    const highlightedCodeHtml = useMemo(() => {
+        return sanitizeHtml(
+            highlightCode(scriptInput, {
+                keywordClass: 'text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]',
+                lineNumberColor: 'rgba(8, 145, 178, 0.5)',
+                lineNumberWidth: '32px',
+                lineHeight: LINE_HEIGHT_CAMPAIGN,
+                lineNumberPaddingRight: '8px',
+                lineNumberMarginRight: '12px',
+                borderColor: 'rgba(8, 145, 178, 0.4)',
+                fontSize: '11px'
+            })
+        );
+    }, [scriptInput]);
+
     return (
         <div className="relative flex flex-col gap-3 grow overflow-visible">
             <div className="relative grow flex flex-col border border-cyan-900/40 bg-black/50 rounded-lg overflow-visible group min-h-0">
                 <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden rounded-lg">
-                    <div ref={highlightRef} className="absolute inset-0 py-3 pointer-events-none font-mono text-[13px] leading-6 text-cyan-300 overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlightCode(scriptInput, { keywordClass: 'text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]', lineNumberColor: 'rgba(8, 145, 178, 0.5)', lineNumberWidth: '32px', lineHeight: LINE_HEIGHT_CAMPAIGN, lineNumberPaddingRight: '8px', lineNumberMarginRight: '12px', borderColor: 'rgba(8, 145, 178, 0.4)', fontSize: '11px' })) }} />
+                    <div ref={highlightRef} className="absolute inset-0 py-3 pointer-events-none font-mono text-[13px] leading-6 text-cyan-300 overflow-hidden" dangerouslySetInnerHTML={{ __html: highlightedCodeHtml }} />
                     <textarea title="script editor" ref={textareaRef} onScroll={handleScroll} className="relative flex-1 w-full py-3 font-mono text-[13px] leading-6 text-transparent caret-purple-500 bg-transparent resize-none outline-none group-focus-within:border-cyan-500/50 transition-colors custom-scrollbar" style={{ paddingLeft: "56px", paddingRight: "12px" }} spellCheck={false} value={scriptInput} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={() => setTimeout(clearSuggestions, 150)} />
                 </div>
                 <div className="absolute top-2 right-5 text-[10px] text-cyan-600/50 tracking-[0.3em] font-black pointer-events-none select-none">

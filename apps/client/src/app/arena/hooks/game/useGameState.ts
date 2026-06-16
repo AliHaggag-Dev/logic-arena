@@ -358,7 +358,8 @@ export const useGameState = (
     };
   }, [socket, matchIdFromUrl, matchMode, setRobotBubble, cleanupBubbles]);
 
-  const availableRobots = useMemo(() => uiState.robots.map(r => r.id), [uiState.robots]);
+  const robotIdsKey = JSON.stringify(uiState.robots.map(r => r.id).sort());
+  const availableRobots = useMemo(() => uiState.robots.map(r => r.id), [robotIdsKey]);
 
   return {
     gameStateRef,

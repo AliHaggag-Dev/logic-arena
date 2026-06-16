@@ -12,6 +12,8 @@ interface TacticalRadarProps {
   displayMode: string;
 }
 
+const GRID_CELLS = Array.from({ length: 64 }, (_, i) => i);
+
 export const TacticalRadar: React.FC<TacticalRadarProps> = ({
   isMobile,
   isExpanded = false,
@@ -31,7 +33,7 @@ export const TacticalRadar: React.FC<TacticalRadarProps> = ({
 
       {/* Grid */}
       <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 opacity-10 pointer-events-none">
-        {Array.from({ length: 64 }).map((_, i) => (
+        {GRID_CELLS.map((i) => (
           <div key={i} className="border-[0.5px] border-cyan-500/30" />
         ))}
       </div>

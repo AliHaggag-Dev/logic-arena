@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState } from "react";
+import React, { useRef, useCallback, useState, useMemo } from "react";
 import type { ScriptEditorProps } from "../../../../../components/shared-script-editor";
 import { highlightCode } from "../../../../../components/shared-script-editor";
 import { useParserWorker } from "../../../../../components/shared-script-editor";
@@ -33,11 +33,26 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({ scriptInput, setScri
     const warningCount = warnings.length;
     const diagCount = diagnostics.length;
 
+    const highlightedCodeHtml = useMemo(() => {
+        return sanitizeHtml(
+            highlightCode(scriptInput, {
+                keywordClass: 'text-purple-400 drop-shadow-[0_0_5px_rgba(var(--arena-purple-rgb),0.8)]',
+                lineNumberColor: 'rgba(var(--arena-cyan-rgb),0.5)',
+                lineNumberWidth: '32px',
+                lineHeight: LINE_HEIGHT_ARENA,
+                lineNumberPaddingRight: '8px',
+                lineNumberMarginRight: '12px',
+                borderColor: 'rgba(var(--arena-cyan-rgb),0.4)',
+                diagnostics
+            })
+        );
+    }, [scriptInput, diagnostics]);
+
     return (
         <div className="relative flex flex-col gap-3 grow overflow-visible">
             <div className="relative grow flex flex-col border border-cyan-900/40 bg-black/50 rounded-lg overflow-visible group min-h-0">
                 <div className="flex-1 min-h-0 relative overflow-hidden rounded-lg">
-                    <div ref={highlightRef} className="absolute inset-0 p-3 pt-4 font-mono text-[13px] leading-5 text-cyan-300 overflow-hidden" style={{ pointerEvents: 'auto' }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(highlightCode(scriptInput, { keywordClass: 'text-purple-400 drop-shadow-[0_0_5px_rgba(var(--arena-purple-rgb),0.8)]', lineNumberColor: 'rgba(var(--arena-cyan-rgb),0.5)', lineNumberWidth: '32px', lineHeight: LINE_HEIGHT_ARENA, lineNumberPaddingRight: '8px', lineNumberMarginRight: '12px', borderColor: 'rgba(var(--arena-cyan-rgb),0.4)', diagnostics })) }} />
+                    <div ref={highlightRef} className="absolute inset-0 p-3 pt-4 font-mono text-[13px] leading-5 text-cyan-300 overflow-hidden" style={{ pointerEvents: 'auto' }} dangerouslySetInnerHTML={{ __html: highlightedCodeHtml }} />
                     <textarea title="script editor" ref={textareaRef} onScroll={handleScroll} onMouseMove={onHighlightMouseMove} onMouseLeave={onHighlightMouseLeave} className="relative w-full h-full p-3 pt-4 font-mono text-[13px] leading-5 text-transparent caret-purple-500 bg-transparent resize-none outline-none group-focus-within:border-cyan-500/50 transition-colors custom-scrollbar" style={{ paddingLeft: "56px" }} spellCheck={false} value={scriptInput} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={() => setTimeout(clearSuggestions, 150)} />
                 </div>
                 {showGenerate && (

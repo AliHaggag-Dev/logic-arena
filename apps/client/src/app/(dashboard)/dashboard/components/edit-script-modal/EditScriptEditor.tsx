@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useCallback, useState } from "react";
+import React, { useRef, useCallback, useState, useMemo } from "react";
 import { highlightCode } from "../../../../../components/shared-script-editor";
 import { useParserWorker } from "../../../../../components/shared-script-editor";
 import { useAutocompleteFast } from "../../../../../components/shared-script-editor";
@@ -40,6 +40,24 @@ export function EditScriptEditor({ content, setContent }: EditScriptEditorProps)
     const warningCount = warnings.length;
     const diagCount = diagnostics.length;
 
+    const highlightedCodeHtml = useMemo(() => {
+        return sanitizeHtml(
+            highlightCode(content, {
+                commandClass: 'text-[var(--sem-info)] drop-shadow-[0_0_4px_rgba(var(--sem-info-rgb),0.5)]',
+                controlClass: 'text-[var(--sem-warning)] drop-shadow-[0_0_4px_rgba(var(--sem-warning-rgb),0.5)]',
+                functionClass: 'text-[var(--accent)] drop-shadow-[0_0_4px_rgba(var(--accent-rgb),0.65)]',
+                identifierClass: 'text-[var(--sem-success)] drop-shadow-[0_0_4px_rgba(var(--sem-success-rgb),0.5)]',
+                lineNumberColor: 'rgba(var(--accent-rgb), 0.45)',
+                lineNumberWidth: '32px',
+                lineHeight: LINE_HEIGHT_CAMPAIGN,
+                lineNumberPaddingRight: '8px',
+                lineNumberMarginRight: '12px',
+                borderColor: 'rgba(var(--accent-rgb), 0.2)',
+                diagnostics,
+            })
+        );
+    }, [content, diagnostics]);
+
     return (
         <div className="relative flex flex-col flex-1 min-h-0 overflow-visible m-3">
             <div className="relative flex-1 flex flex-col border border-accent/10 bg-bg-primary rounded-lg overflow-visible group min-h-0">
@@ -48,21 +66,7 @@ export function EditScriptEditor({ content, setContent }: EditScriptEditorProps)
                         ref={highlightRef}
                         className="absolute inset-0 p-4 font-mono text-[0.8125rem] leading-6 text-text-primary overflow-hidden"
                         style={{ pointerEvents: 'auto' }}
-                        dangerouslySetInnerHTML={{
-                            __html: sanitizeHtml(highlightCode(content, {
-                                commandClass: 'text-[var(--sem-info)] drop-shadow-[0_0_4px_rgba(var(--sem-info-rgb),0.5)]',
-                                controlClass: 'text-[var(--sem-warning)] drop-shadow-[0_0_4px_rgba(var(--sem-warning-rgb),0.5)]',
-                                functionClass: 'text-[var(--accent)] drop-shadow-[0_0_4px_rgba(var(--accent-rgb),0.65)]',
-                                identifierClass: 'text-[var(--sem-success)] drop-shadow-[0_0_4px_rgba(var(--sem-success-rgb),0.5)]',
-                                lineNumberColor: 'rgba(var(--accent-rgb), 0.45)',
-                                lineNumberWidth: '32px',
-                                lineHeight: LINE_HEIGHT_CAMPAIGN,
-                                lineNumberPaddingRight: '8px',
-                                lineNumberMarginRight: '12px',
-                                borderColor: 'rgba(var(--accent-rgb), 0.2)',
-                                diagnostics,
-                            }))
-                        }}
+                        dangerouslySetInnerHTML={{ __html: highlightedCodeHtml }}
                     />
                     <textarea
                         ref={textareaRef}
