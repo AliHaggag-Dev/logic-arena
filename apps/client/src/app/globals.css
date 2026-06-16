@@ -126,9 +126,9 @@
   --sem-warning-rgb: 234, 88, 12;
   --sem-info:        #4f46e5;
   --sem-info-rgb:    79, 70, 229;
-  /* Rank medal tokens — same universally, override if needed */
-  --rank-gold:   #FFD700;
-  --rank-silver: #C0C0C0;
+  /* Rank medal tokens — darkened for contrast on light backgrounds */
+  --rank-gold:   #b8960f;
+  --rank-silver: #808080;
   --rank-bronze: #CD7F32;
   /* Efficiency tier tokens */
   --eff-optimal:  var(--accent);

@@ -28,19 +28,19 @@ export function DesktopTable({
         <table className="w-full text-left border-collapse table-fixed">
           <thead>
             <tr className="border-b border-accent/10 bg-accent/5">
-              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[8%]">
+              <th className="px-4 py-4 text-text-secondary uppercase tracking-widest text-xs font-bold w-[8%]">
                 Rank
               </th>
-              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[22%]">
+              <th className="px-4 py-4 text-text-secondary uppercase tracking-widest text-xs font-bold w-[22%]">
                 Player
               </th>
-              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[20%]">
+              <th className="px-4 py-4 text-text-secondary uppercase tracking-widest text-xs font-bold w-[20%]">
                 Points
               </th>
-              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%]">
+              <th className="px-4 py-4 text-text-secondary uppercase tracking-widest text-xs font-bold w-[15%]">
                 Victories
               </th>
-              <th className="px-4 py-4 text-accent/80 uppercase tracking-widest text-xs font-bold w-[15%] text-right">
+              <th className="px-4 py-4 text-text-secondary uppercase tracking-widest text-xs font-bold w-[15%] text-right">
                 Efficiency
               </th>
               <th className="px-4 py-4 w-[20%] pr-8">
@@ -120,7 +120,7 @@ export function DesktopTable({
                                   showTooltip={false}
                                 />
                                 {remainingCount > 0 && (
-                                  <span className="text-[9px] font-black font-mono px-1 py-0.5 rounded bg-accent/10 border border-accent/20 text-accent/80 transition-colors duration-200 group-hover/badges-stack:bg-accent/20 group-hover/badges-stack:text-accent">
+                                  <span className="text-[11px] font-black font-mono px-1 py-0.5 rounded bg-accent/25 border border-accent/20 text-accent transition-colors duration-200 group-hover/badges-stack:bg-accent/30">
                                     +{remainingCount}
                                   </span>
                                 )}

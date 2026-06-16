@@ -78,7 +78,7 @@ export function MobileList({
                               showTooltip={false}
                             />
                             {remainingCount > 0 && (
-                              <span className="text-[9px] font-black font-mono px-1 py-0.5 rounded bg-accent/10 border border-accent/20 text-accent/80 transition-colors duration-200 group-hover/badges-stack:bg-accent/20 group-hover/badges-stack:text-accent">
+                              <span className="text-[11px] font-black font-mono px-1 py-0.5 rounded bg-accent/25 border border-accent/20 text-accent transition-colors duration-200 group-hover/badges-stack:bg-accent/30">
                                 +{remainingCount}
                               </span>
                             )}
