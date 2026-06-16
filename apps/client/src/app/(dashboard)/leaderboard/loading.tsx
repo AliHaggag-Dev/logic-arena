@@ -34,6 +34,7 @@ export default function LeaderboardLoading() {
             <div
               key={i}
               className="flex items-center gap-4 px-4 py-4 rounded-xl border border-accent/10 bg-card/30"
+              style={{ willChange: "transform" }}
             >
               {/* Rank */}
               <div className="h-5 w-6 rounded bg-accent/10 animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />

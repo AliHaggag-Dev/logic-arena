@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: path.join(__dirname, "../../"),
   transpilePackages: ["@logic-arena/engine", "@logic-arena/logic-parser"],
+  compress: true,
+  experimental: {
+    optimizeCss: true,
+  },
   images: {
     remotePatterns: [
       {

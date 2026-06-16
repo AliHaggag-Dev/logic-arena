@@ -23,6 +23,7 @@ export const LeaderboardSkeleton = ({
           <div
             key={i}
             className="bg-card border border-accent/10 rounded-xl p-4 flex flex-col gap-4 animate-pulse"
+            style={{ willChange: "transform" }}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -43,7 +44,7 @@ export const LeaderboardSkeleton = ({
   return (
     <>
       {rows.map((i) => (
-        <tr key={i} className="border-b border-accent/10 animate-pulse">
+        <tr key={i} className="border-b border-accent/10 animate-pulse" style={{ willChange: "transform" }}>
           {/* Rank */}
           <td className="px-6 py-4">
             <div className="h-5 w-8 bg-accent/10 rounded" />

@@ -12,6 +12,7 @@ const publicPages = [
   { url: '/bug-report', priority: 0.5, freq: 'monthly' as const },
   { url: '/login', priority: 0.8, freq: 'monthly' as const },
   { url: '/register', priority: 0.8, freq: 'monthly' as const },
+  { url: '/leaderboard', priority: 0.8, freq: 'hourly' as const },
 ];
 
 const campaignTabs = ['cond', 'loop', 'arr', 'ds', 'rec', 'gfx'];

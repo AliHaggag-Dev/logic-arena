@@ -200,7 +200,7 @@ export function DesktopTable({
                             type="button"
                             aria-label="Log in to challenge this player"
                             disabled
-                            className="text-[10px] tracking-[0.15em] px-3 py-1 rounded border border-accent/10 bg-transparent text-accent/20 cursor-not-allowed whitespace-nowrap"
+                            className="text-[10px] tracking-[0.15em] px-3 py-1 rounded border border-accent/10 bg-transparent text-accent/50 cursor-not-allowed whitespace-nowrap"
                           >
                             LOGIN TO CHALLENGE
                           </button>
@@ -223,9 +223,14 @@ export function DesktopTable({
                             CHALLENGE
                           </button>
                         ) : (
-                          <span className="text-[10px] tracking-[0.15em] px-3 py-1 text-accent/25 whitespace-nowrap">
+                          <button
+                            type="button"
+                            aria-label="Player is offline"
+                            disabled
+                            className="text-[10px] tracking-[0.15em] px-3 py-1 text-accent/50 whitespace-nowrap cursor-not-allowed"
+                          >
                             OFFLINE
-                          </span>
+                          </button>
                         )}
                       </div>
                     </td>
