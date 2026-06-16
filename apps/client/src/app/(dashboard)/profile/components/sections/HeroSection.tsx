@@ -47,7 +47,7 @@ export function HeroSection({ loading, profile, isMobile, profileColor, dominant
         />
       )}
 
-      <div className={`flex flex-col ${isMobile ? "items-center" : "items-start"} gap-3 flex-1 min-w-0`}>
+      <div className={`flex flex-col ${isMobile ? "items-center" : "items-start"} gap-3 flex-1 min-w-0 min-h-[160px]`}>
         <h1
           className="m-0 font-black tracking-[0.18em] leading-none break-words"
           style={{
@@ -96,11 +96,11 @@ export function HeroSection({ loading, profile, isMobile, profileColor, dominant
 
         {profile && (
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-[10px] text-accent/40 tracking-[0.12em] font-mono">
+            <span className="text-[10px] text-accent/60 tracking-[0.12em] font-mono">
               RANK #{profile.rank}
             </span>
             <span className="text-accent/20 text-[10px]">•</span>
-            <span className="text-[10px] text-accent/40 tracking-[0.12em] font-mono">
+            <span className="text-[10px] text-accent/60 tracking-[0.12em] font-mono">
               SINCE {fmtDate(profile.memberSince).toUpperCase()}
             </span>
           </div>

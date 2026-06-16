@@ -25,7 +25,7 @@ export const AchievementBadge = ({
   showTooltip = true,
 }: AchievementBadgeProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const ref = React.useRef<HTMLDivElement>(null);
+  const ref = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -49,12 +49,13 @@ export const AchievementBadge = ({
   const tooltipText = `${id.replace('_', ' ').toUpperCase()}: ${label} TIER`;
 
   return (
-    <div
+    <button
       ref={ref}
+      type="button"
       onClick={() => setIsOpen(!isOpen)}
       onMouseLeave={() => setIsOpen(false)}
       className="relative flex items-center justify-center group shrink-0"
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, background: 'none', border: 'none', padding: 0 }}
     >
       <div
         className={`absolute inset-0 rounded-xl transition-all duration-300 ${
@@ -81,6 +82,6 @@ export const AchievementBadge = ({
           {tooltipText}
         </div>
       )}
-    </div>
+    </button>
   );
 };

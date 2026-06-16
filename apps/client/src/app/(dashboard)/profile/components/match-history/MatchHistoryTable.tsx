@@ -66,7 +66,7 @@ export function MatchHistoryTable({ userId, profileLoading, isMobile, isGuest }:
           <button
             onClick={handlePrev}
             disabled={currentPage === 1 || loading}
-            className="p-1.5 rounded bg-accent/5 hover:bg-accent/10 disabled:opacity-30 disabled:hover:bg-accent/5 transition-colors border border-accent/10 text-accent"
+            className="p-1.5 rounded bg-accent/5 hover:bg-accent/10 disabled:opacity-30 disabled:hover:bg-accent/5 transition-colors border border-accent/10 text-accent cursor-pointer disabled:cursor-not-allowed"
             aria-label="Previous page"
             type="button"
           >
@@ -75,7 +75,7 @@ export function MatchHistoryTable({ userId, profileLoading, isMobile, isGuest }:
           <button
             onClick={handleNext}
             disabled={currentPage === totalPages || loading}
-            className="p-1.5 rounded bg-accent/5 hover:bg-accent/10 disabled:opacity-30 disabled:hover:bg-accent/5 transition-colors border border-accent/10 text-accent"
+            className="p-1.5 rounded bg-accent/5 hover:bg-accent/10 disabled:opacity-30 disabled:hover:bg-accent/5 transition-colors border border-accent/10 text-accent cursor-pointer disabled:cursor-not-allowed"
             aria-label="Next page"
             type="button"
           >

@@ -93,7 +93,7 @@ export function ProfileActions({
       return;
     }
     setRelation('LOADING');
-    void resolveRelation();
+    setTimeout(() => { void resolveRelation(); }, 0);
   }, [profile, isAuthLoading, targetUserId, resolveRelation]);
 
   const handleSendRequest = useCallback(async () => {

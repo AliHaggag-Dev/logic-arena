@@ -61,6 +61,8 @@ export function HexAvatar({ username, avatarUrl, color, size }: Props) {
             height="76"
             preserveAspectRatio="xMidYMid slice"
             clipPath={`url(#${clipId})`}
+            // @ts-ignore -- loading is valid SVG 2 attribute for <image> in HTML context
+            loading="eager"
             aria-label={`Profile picture for ${username}`}
           />
         ) : (

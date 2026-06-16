@@ -61,7 +61,7 @@ export function AnalyticsSection({ loading, profile, isMobile, profileColor, sta
             {/* Radar chart */}
             <div className="flex flex-col items-center gap-2">
               <RadarChart stats={stats} size={isMobile ? 260 : 280} />
-              <p className="text-[8px] text-accent/30 tracking-[0.18em] font-mono m-0">
+              <p className="text-[8px] text-accent/50 tracking-[0.18em] font-mono m-0">
                 PERFORMANCE METRICS
               </p>
             </div>

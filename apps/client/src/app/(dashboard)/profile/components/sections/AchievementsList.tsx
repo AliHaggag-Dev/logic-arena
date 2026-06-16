@@ -123,7 +123,7 @@ export const AchievementsList = ({
   if (loading) {
     return (
       <div className="mb-8">
-        <div className="text-[10px] tracking-[0.25em] font-black uppercase text-accent/40 mb-4 pb-2 border-b border-accent/15">
+        <div className="text-[10px] tracking-[0.25em] font-black uppercase text-accent/60 mb-4 pb-2 border-b border-accent/15">
           ACHIEVEMENTS
         </div>
         <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
@@ -137,7 +137,7 @@ export const AchievementsList = ({
 
   return (
     <div className="mb-8">
-      <div className="text-[10px] tracking-[0.25em] font-black uppercase text-accent/40 mb-4 pb-2 border-b border-accent/15">
+      <div className="text-[10px] tracking-[0.25em] font-black uppercase text-accent/60 mb-4 pb-2 border-b border-accent/15">
         ACHIEVEMENTS
       </div>
 
@@ -196,7 +196,7 @@ export const AchievementsList = ({
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-text-secondary/70 mt-1 leading-relaxed">
+                  <p className="text-[10px] text-text-secondary mt-1 leading-relaxed">
                     {ach.description}
                   </p>
                 </div>
@@ -204,7 +204,7 @@ export const AchievementsList = ({
                 {/* Progress bar */}
                 <div className="mt-3">
                   <div className="flex justify-between items-center text-[9px] font-mono mb-1 font-bold">
-                    <span className="text-text-secondary/50">
+                    <span className="text-text-secondary">
                       {isMaxed ? 'MAX LEVEL' : `NEXT: ${nextStage?.label}`}
                     </span>
                     <span style={{ color: isMaxed ? 'var(--docs-yellow)' : 'var(--text-secondary)' }}>
@@ -225,7 +225,7 @@ export const AchievementsList = ({
 
                   {/* Rewards preview */}
                   {!isMaxed && nextStage && (
-                    <div className="mt-1.5 text-[8px] text-accent/40 font-mono tracking-wide font-bold">
+                    <div className="mt-1.5 text-[8px] text-accent/60 font-mono tracking-wide font-bold">
                       REWARD: +{nextStage.reward} SHOP POINTS ON UNLOCK
                     </div>
                   )}

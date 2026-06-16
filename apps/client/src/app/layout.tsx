@@ -19,17 +19,20 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const alexandria = Alexandria({
   variable: "--font-alexandria",
   subsets: ["arabic", "latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 const baseUrl = process.env.CLIENT_URL || "https://logicarena.dev";
