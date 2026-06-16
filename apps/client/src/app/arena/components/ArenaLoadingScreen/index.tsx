@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import * as THREE from 'three';
+import { DefaultLoadingManager } from 'three';
 import { useGLTF } from '@react-three/drei';
 import { getGlobalAudioContext } from '../../../../context/SoundContext';
 import styles from './ArenaLoadingScreen.module.css';
@@ -50,7 +50,7 @@ export const ArenaLoadingScreen = ({
 
   // 1. Preload GLB models to trigger DefaultLoadingManager
   useEffect((): (() => void) => {
-    const manager = THREE.DefaultLoadingManager;
+    const manager = DefaultLoadingManager;
     const prevOnProgress = manager.onProgress;
     const prevOnLoad = manager.onLoad;
 
