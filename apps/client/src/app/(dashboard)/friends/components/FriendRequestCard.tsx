@@ -120,7 +120,7 @@ export function FriendRequestCard({ request, variant, onAccept, onDecline }: Fri
             type="button"
             onClick={() => onDecline(request.id)}
             aria-label={`Decline friend request from ${user.username}`}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-text-secondary/5 hover:bg-sem-danger/10 text-text-secondary hover:text-sem-danger active:scale-90 transition-all duration-200 cursor-pointer"
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-text-secondary/5 hover:bg-sem-danger/20 border border-transparent hover:border-sem-danger/50 text-text-secondary hover:text-sem-danger active:scale-95 transition-all duration-150 cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -128,7 +128,7 @@ export function FriendRequestCard({ request, variant, onAccept, onDecline }: Fri
             type="button"
             onClick={() => onAccept(request.id)}
             aria-label={`Accept friend request from ${user.username}`}
-            className="px-4 h-8 flex items-center justify-center rounded-full bg-[color:var(--sem-success)] hover:opacity-90 active:scale-95 text-bg-primary font-semibold text-[12px] transition-all duration-200 cursor-pointer shadow-sm hover:shadow"
+            className="px-5 min-h-[44px] flex items-center justify-center rounded-full bg-[color:var(--sem-success)] hover:brightness-110 active:scale-95 text-bg-primary font-semibold text-[12px] transition-all duration-150 cursor-pointer shadow-sm hover:shadow"
           >
             Accept
           </button>

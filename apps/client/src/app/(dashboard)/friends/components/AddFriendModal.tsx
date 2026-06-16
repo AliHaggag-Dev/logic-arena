@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, X, UserPlus, Send, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { friendsApi } from '@/lib/api/friends';
 import type { FriendRequestEntry, UserSearchResult } from '@/lib/api/friends.types';
 import type { AxiosError } from 'axios';
@@ -189,6 +190,20 @@ export function AddFriendModal({ isOpen, onClose, onRequestSent, outgoingRequest
                     key={user.id}
                     className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-accent/5 border border-transparent hover:border-accent/15 transition-colors"
                   >
+                    {user.avatarUrl ? (
+                      <Image
+                        src={user.avatarUrl}
+                        alt={`${user.username}'s avatar`}
+                        width={36}
+                        height={36}
+                        sizes="36px"
+                        className="rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-accent/20 text-accent flex items-center justify-center text-sm font-bold flex-shrink-0">
+                        {user.username.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <button
                         type="button"

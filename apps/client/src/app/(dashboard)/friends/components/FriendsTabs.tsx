@@ -48,7 +48,7 @@ export function FriendsTabs(props: FriendsTabsProps) {
 
   const counts = {
     friends: props.friends.length,
-    incoming: props.incomingRequests.length,
+    incoming: props.incomingRequests.length + props.outgoingRequests.length,
     suggestions: props.suggestions.length,
   };
 
