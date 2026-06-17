@@ -84,7 +84,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
         <div className="flex items-start justify-between p-6 pb-4">
           <div className="flex-1 min-w-0 pr-4">
             {/* Breadcrumb */}
-            <p className="text-[9px] tracking-[0.3em] text-accent/50 uppercase mb-2 font-bold">
+            <p className="text-[9px] tracking-[0.3em] text-accent/70 uppercase mb-2 font-bold">
               {level.tabId.replace('-', ' ')} · LEVEL {String(level.order).padStart(2, '0')}
             </p>
 
@@ -104,7 +104,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
               <span className="inline-flex items-center gap-1 text-[10px] tracking-[0.15em]">
                 <Zap className="w-3 h-3 text-yellow-500" />
                 <span className="text-yellow-500 font-black">+{level.pointsReward}</span>
-                <span className="text-accent/50 font-bold">PTS</span>
+                <span className="text-accent/70 font-bold">PTS</span>
               </span>
               {level.completed && (
                 <span className="inline-flex items-center gap-1 text-[9px] text-emerald-500 tracking-[0.15em] font-bold">
@@ -139,7 +139,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
         <div className="p-6 pb-4">
           <div className="flex items-center gap-2 mb-3">
             <Cpu className="w-3.5 h-3.5 text-accent/60" />
-            <span className="text-[9px] tracking-[0.3em] text-accent/50 uppercase font-bold">Mission Details</span>
+            <span className="text-[9px] tracking-[0.3em] text-accent/70 uppercase font-bold">Mission Details</span>
           </div>
           <p className="text-[12px] leading-[1.85] text-accent/80 tracking-[0.04em]">
             {level.description}
@@ -166,8 +166,8 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
               SHOW HINT
             </span>
             {hintOpen
-              ? <ChevronUp className="w-3.5 h-3.5 text-accent/50" />
-              : <ChevronDown className="w-3.5 h-3.5 text-accent/50" />
+              ? <ChevronUp className="w-3.5 h-3.5 text-accent/70" />
+              : <ChevronDown className="w-3.5 h-3.5 text-accent/70" />
             }
           </button>
 
@@ -221,7 +221,7 @@ export function LevelDetailModal({ level, onClose }: LevelDetailModalProps) {
             </button>
           ) : (
             <div
-              className="w-full py-3.5 rounded-xl border border-accent/15 flex items-center justify-center gap-2 text-accent/40 text-[10px] tracking-[0.3em] font-black uppercase"
+              className="w-full py-3.5 rounded-xl border border-accent/15 flex items-center justify-center gap-2 text-accent/70 text-[10px] tracking-[0.3em] font-black uppercase"
               style={{ background: 'rgba(var(--accent-rgb),0.03)' }}
             >
               <Lock className="w-3.5 h-3.5" />

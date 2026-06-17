@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { ArrowLeft } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LevelDetail, ModalState } from "../../types";
@@ -11,7 +12,11 @@ import { HintPanel } from "../HintPanel";
 import { apiClient } from "../../../../../../lib/api-client";
 import { cacheCampaignLevel } from "../../../hooks/useCampaignPrefetch";
 import { Sparkles } from "lucide-react";
-import { AiGeneratePanel } from "../../../../../../app/arena/components/CommandConsole/AiGeneratePanel";
+
+const AiGeneratePanel = dynamic(
+  () => import("../../../../../../app/arena/components/CommandConsole/AiGeneratePanel").then((module) => module.AiGeneratePanel),
+  { ssr: false },
+);
 
 interface RevealHintResponse {
   hint: string;
@@ -104,7 +109,7 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
       <div className="flex flex-col gap-4 shrink-0 mb-4">
         {/* Mission brief */}
         <div className="border border-accent/15 rounded-xl p-4 bg-accent/[0.02]">
-          <p className="text-[9px] tracking-[0.3em] text-accent/30 mb-2 uppercase">{'// '}MISSION_BRIEF</p>
+          <p className="text-[9px] tracking-[0.3em] text-accent/70 mb-2 uppercase">{'// '}MISSION_BRIEF</p>
           <p className="text-[10px] text-accent/70 tracking-[0.08em] leading-relaxed">{level.description}</p>
         </div>
 
@@ -159,7 +164,7 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
       <div className="flex flex-col flex-1 gap-3 pb-8 mt-2">
         <div className="flex justify-between items-center px-1">
           <div className="flex items-center gap-3">
-            <p className="text-[9px] tracking-[0.3em] text-accent/35 uppercase m-0">{'// '}YOUR_ALISCRIPT</p>
+            <p className="text-[9px] tracking-[0.3em] text-accent/70 uppercase m-0">{'// '}YOUR_ALISCRIPT</p>
             <button
               type="button"
               onClick={() => setShowAi(!showAi)}
@@ -174,7 +179,7 @@ export function LevelMobileLayout({ level, script, setScript, modal, handleFight
               AI GENERATOR
             </button>
           </div>
-          <span className="text-[9px] text-accent/20 tracking-[0.12em]">
+          <span className="text-[9px] text-accent/70 tracking-[0.12em]">
             {script.split("\n").filter(Boolean).length} LINES
           </span>
         </div>

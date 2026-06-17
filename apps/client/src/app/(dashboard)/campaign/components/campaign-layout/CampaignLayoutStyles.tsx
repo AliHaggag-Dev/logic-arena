@@ -95,7 +95,7 @@ export function CampaignLayoutStyles() {
         font-weight: 900;
         letter-spacing: 0.3em;
         text-transform: uppercase;
-        color: rgba(var(--accent-rgb), 0.5);
+        color: rgba(var(--accent-rgb), 0.7);
         margin-bottom: 6px;
       }
       .desktop-layout__stat-value {
@@ -169,7 +169,7 @@ export function CampaignLayoutStyles() {
       .desktop-layout__tab-icon {
         width: 15px;
         height: 15px;
-        color: rgba(var(--accent-rgb), 0.45);
+        color: rgba(var(--accent-rgb), 0.72);
         transition: color 0.2s;
         flex-shrink: 0;
       }
@@ -182,7 +182,7 @@ export function CampaignLayoutStyles() {
         font-weight: 900;
         letter-spacing: 0.2em;
         text-transform: uppercase;
-        color: rgba(var(--accent-rgb), 0.45);
+        color: rgba(var(--accent-rgb), 0.72);
         transition: color 0.2s;
         white-space: nowrap;
         overflow: hidden;
@@ -196,7 +196,7 @@ export function CampaignLayoutStyles() {
         font-size: 7.5px;
         font-weight: 900;
         letter-spacing: 0.15em;
-        color: rgba(var(--accent-rgb), 0.3);
+        color: rgba(var(--accent-rgb), 0.7);
         transition: color 0.2s;
       }
       .desktop-layout__tab-progress--active {
@@ -266,7 +266,7 @@ export function CampaignLayoutStyles() {
         font-size: 10px;
         font-weight: 900;
         letter-spacing: 0.15em;
-        color: rgba(var(--accent-rgb), 0.55);
+        color: rgba(var(--accent-rgb), 0.75);
         text-transform: uppercase;
       }
 
@@ -304,7 +304,7 @@ export function CampaignLayoutStyles() {
       .mobile-layout__tab-icon {
         width: 12px;
         height: 12px;
-        color: rgba(var(--accent-rgb), 0.4);
+        color: rgba(var(--accent-rgb), 0.72);
         flex-shrink: 0;
         transition: color 0.2s;
       }
@@ -317,7 +317,7 @@ export function CampaignLayoutStyles() {
         letter-spacing: 0.2em;
         text-transform: uppercase;
         white-space: nowrap;
-        color: rgba(var(--accent-rgb), 0.4);
+        color: rgba(var(--accent-rgb), 0.72);
         transition: color 0.2s;
       }
       .mobile-layout__tab-btn--active .mobile-layout__tab-label {
@@ -326,7 +326,7 @@ export function CampaignLayoutStyles() {
       .mobile-layout__tab-progress {
         font-size: 8px;
         font-weight: 900;
-        color: rgba(var(--accent-rgb), 0.3);
+        color: rgba(var(--accent-rgb), 0.7);
         transition: color 0.2s;
       }
       .mobile-layout__tab-progress--active {
@@ -360,7 +360,7 @@ export function CampaignLayoutStyles() {
         font-weight: 900;
         letter-spacing: 0.15em;
         text-transform: uppercase;
-        color: rgba(var(--accent-rgb), 0.4);
+        color: rgba(var(--accent-rgb), 0.72);
         white-space: nowrap;
         flex-shrink: 0;
       }
@@ -486,12 +486,12 @@ export function CampaignLayoutStyles() {
         font-weight: 900;
         letter-spacing: 0.3em;
         text-transform: uppercase;
-        color: rgba(var(--accent-rgb), 0.45);
+        color: rgba(var(--accent-rgb), 0.72);
       }
       .level-card__lock-icon {
         width: 14px;
         height: 14px;
-        color: rgba(var(--accent-rgb), 0.25);
+        color: rgba(var(--accent-rgb), 0.7);
         flex-shrink: 0;
       }
       .level-card__badges-row {
@@ -523,7 +523,7 @@ export function CampaignLayoutStyles() {
         min-height: 48px;
         border-radius: 6px;
         border: 1px solid rgba(var(--accent-rgb), 0.18);
-        color: rgba(var(--accent-rgb), 0.45);
+        color: rgba(var(--accent-rgb), 0.72);
         background: transparent;
         cursor: pointer;
         transition: all 0.15s ease;
@@ -555,16 +555,16 @@ export function CampaignLayoutStyles() {
         font-size: 13px;
       }
       .level-card__title--locked {
-        color: rgba(var(--accent-rgb), 0.3);
+        color: rgba(var(--accent-rgb), 0.7);
       }
       .level-card__title--completed {
-        color: rgba(var(--accent-rgb), 0.5);
+        color: rgba(var(--accent-rgb), 0.72);
       }
 
       /* ── Description (mobile only) ────────────────────────────────────── */
       .level-card__description {
         font-size: 10px;
-        color: rgba(var(--accent-rgb), 0.35);
+        color: rgba(var(--accent-rgb), 0.72);
         line-height: 1.6;
         letter-spacing: 0.03em;
         display: -webkit-box;
@@ -607,11 +607,11 @@ export function CampaignLayoutStyles() {
         gap: 3px;
         font-size: 9px;
         font-weight: 900;
-        color: rgba(var(--accent-rgb), 0.5);
+        color: rgba(var(--accent-rgb), 0.72);
         letter-spacing: 0.06em;
       }
       .level-card__points--locked {
-        color: rgba(var(--accent-rgb), 0.2);
+        color: rgba(var(--accent-rgb), 0.7);
       }
       .level-card__points-icon {
         width: 10px;

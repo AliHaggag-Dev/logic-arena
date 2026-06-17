@@ -132,7 +132,7 @@ export function CampaignScriptEditor({
         
         {/* Top Right Status Area */}
         <div className="absolute top-2 right-4 z-30 flex items-center gap-2 text-[10px] tracking-[0.3em] font-black pointer-events-none select-none">
-          <span className="text-accent/30 hidden md:inline">[ALISCRIPT_V2]</span>
+          <span className="text-accent/70 hidden md:inline">[ALISCRIPT_V2]</span>
           {syntaxValid === false && <span className="text-red-500 drop-shadow-[0_0_5px_rgba(var(--sem-danger-rgb),0.8)] animate-pulse">SYNTAX_ERR</span>}
           {diagCount > 0 && (
             <span className="text-red-400/70 text-[9px] tracking-[0.15em]">
@@ -178,7 +178,7 @@ export function CampaignScriptEditor({
           }}
         />
 
-        <div className="flex items-center justify-between border-t border-accent/10 bg-accent/[0.025] px-3 py-2 text-[9px] font-black uppercase tracking-[0.18em] text-accent/40 rounded-b-xl">
+        <div className="flex items-center justify-between border-t border-accent/10 bg-accent/[0.025] px-3 py-2 text-[9px] font-black uppercase tracking-[0.18em] text-accent/70 rounded-b-xl">
           <span>{Math.max(value.split("\n").length, 1)} Lines</span>
           <span>{value.length} Chars</span>
         </div>
@@ -186,4 +186,3 @@ export function CampaignScriptEditor({
     </div>
   );
 }
-

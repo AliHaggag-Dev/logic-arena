@@ -160,15 +160,15 @@ export const LevelArenaPreview = memo(function LevelArenaPreview({
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "#27c93f" }} />
         </div>
         <div
-          className={`text-[8px] font-mono font-bold tracking-[0.18em] uppercase px-3 py-0.5 rounded-full border ${isBossLevel ? "border-[var(--sem-danger)] text-[var(--sem-danger)]" : "border-accent/10 text-accent/50"}`}
+          className={`text-[8px] font-mono font-bold tracking-[0.18em] uppercase px-3 py-0.5 rounded-full border ${isBossLevel ? "border-[var(--sem-danger)] text-[var(--sem-danger)]" : "border-accent/10 text-accent/70"}`}
           style={{ background: isBossLevel ? 'rgba(var(--sem-danger-rgb),0.08)' : 'rgba(var(--accent-rgb),0.04)' }}
         >
           {isBossLevel ? "BOSS SIGNAL LOCKED" : mode === "loading" ? "COMBAT IN PROGRESS" : "ARENA SIMULATION"}
         </div>
         <div className="hidden md:flex items-center gap-2 text-[8px] font-mono font-bold tracking-widest">
           <span className="text-accent/70">ALLY</span>
-          <span className="text-accent/20">vs</span>
-          <span className="text-accent/45">ENEMY</span>
+          <span className="text-accent/70">vs</span>
+          <span className="text-accent/70">ENEMY</span>
         </div>
       </div>
 
@@ -206,10 +206,10 @@ export const LevelArenaPreview = memo(function LevelArenaPreview({
         className="flex items-center justify-between px-3 py-1 border-t border-accent/10"
         style={{ background: 'rgba(var(--accent-rgb),0.02)' }}
       >
-        <span className="text-[7px] font-mono text-accent/30 tracking-[0.2em] uppercase">
+        <span className="text-[7px] font-mono text-accent/70 tracking-[0.2em] uppercase">
           {category}
         </span>
-        <span className="text-[7px] font-mono text-accent/30 tracking-[0.2em] uppercase">
+        <span className="text-[7px] font-mono text-accent/70 tracking-[0.2em] uppercase">
           TACTICAL PREVIEW
         </span>
       </div>

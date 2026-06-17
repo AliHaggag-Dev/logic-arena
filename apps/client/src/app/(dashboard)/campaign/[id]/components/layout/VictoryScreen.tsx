@@ -74,7 +74,7 @@ export function VictoryScreen({ reward, stars, levelTitle, isMobile, onNextLevel
       <h2 className="mb-5 text-[18px] font-black tracking-[0.24em] text-[var(--sem-success)] drop-shadow-[0_0_12px_rgba(var(--sem-success-rgb),0.85)] uppercase">
         LEVEL COMPLETED
       </h2>
-      <div className="mb-6 flex justify-center gap-3" aria-label={`${stars} stars earned`}>
+      <div className="mb-6 flex justify-center gap-3" role="img" aria-label={`${stars} stars earned`}>
         {Array.from({ length: STAR_COUNT }, (_, index) => {
           const starNumber = index + 1;
           const isEarned = starNumber <= stars;

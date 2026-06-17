@@ -74,7 +74,7 @@ export const DesktopLayout = memo(function DesktopLayout({
           </div>
 
           {/* Star counter */}
-          <div className="desktop-layout__star-counter" aria-label={`${totalStars} of ${TOTAL_STARS} stars earned`}>
+          <div className="desktop-layout__star-counter">
             <Star className="desktop-layout__star-icon" aria-hidden="true" />
             <span className="desktop-layout__star-text">
               {totalStars} / {TOTAL_STARS} STARS
@@ -113,7 +113,7 @@ export const DesktopLayout = memo(function DesktopLayout({
 
       {/* ── Level Grid (2 rows × 5 columns) ─────────────────────────────── */}
       <main>
-        <div className="desktop-layout__grid" aria-label={`${activeTab.label} levels`}>
+        <div className="desktop-layout__grid">
           {activeTab.levels.map((level) => (
             <LevelCard
               key={level.id}

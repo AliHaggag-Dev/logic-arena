@@ -142,7 +142,7 @@ export function BattleHUD({ playerHealth, enemyHealth, playerEnergy, tick, maxTi
           )}
         </div>
         <div className="mt-2 flex items-center gap-2">
-          <span className="text-[8px] font-black tracking-[0.18em] text-accent/45 uppercase">TIME</span>
+          <span className="text-[8px] font-black tracking-[0.18em] text-accent/70 uppercase">TIME</span>
           <div className="h-1.5 flex-1 rounded-full border border-accent/10 bg-bg-primary/80 overflow-hidden">
             <div className="h-full w-full origin-left bg-accent/70 transition-transform duration-300 ease-out" style={{ transform: `scaleX(${progressPercent / PERCENT_SCALE})` }} />
           </div>
@@ -162,7 +162,7 @@ export function BattleHUD({ playerHealth, enemyHealth, playerEnergy, tick, maxTi
       <div className="flex flex-col items-center justify-center">
         {isBossLevel && <div className="mb-2 w-full max-w-[200px]"><BossWarning compact /></div>}
         <div className="w-full max-w-[220px] flex items-center gap-3">
-          <span className="text-[8px] font-black tracking-[0.2em] text-accent/45 uppercase">TIME</span>
+          <span className="text-[8px] font-black tracking-[0.2em] text-accent/70 uppercase">TIME</span>
           <div className="h-1.5 flex-1 rounded-full border border-accent/10 bg-bg-primary/80 overflow-hidden">
             <div className="h-full w-full origin-left bg-accent/70 transition-transform duration-300 ease-out" style={{ transform: `scaleX(${progressPercent / PERCENT_SCALE})` }} />
           </div>

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { apiClient } from "../lib/api-client";
-import { setAuthSession, clearAuthSession, getAuthSession } from "../lib/client-security";
+import { setAuthSession, clearAuthSession, getAuthSession, getAuthUsername } from "../lib/client-security";
 
 export interface ProfileResponse {
   id: string;
@@ -58,6 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const session = getAuthSession();
+    if (!session.isAuthenticated && !getAuthUsername()) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
+
     if (!profile) {
       setLoading(true);
     }

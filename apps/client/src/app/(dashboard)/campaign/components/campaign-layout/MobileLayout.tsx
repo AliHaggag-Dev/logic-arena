@@ -48,7 +48,6 @@ export const MobileLayout = memo(function MobileLayout({
           </h1>
           <span
             className="mobile-layout__summary-stats flex items-center gap-1"
-            aria-label={`${completedCount} of ${TOTAL_LEVELS} missions, ${totalStars} of ${TOTAL_STARS} stars`}
           >
             {completedCount}/{TOTAL_LEVELS} · <Star size={12} className="ml-1 text-accent" fill="currentColor" /> {totalStars}
           </span>

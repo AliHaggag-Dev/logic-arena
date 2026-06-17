@@ -98,8 +98,9 @@ function LockedHintSlot({ index, onReveal, isGloballyRevealing }: LockedHintSlot
     setErrMsg(null);
     try {
       await onReveal(index);
-    } catch (e: any) {
-      if (e.response?.status === 402) {
+    } catch (e: unknown) {
+      const status = (e as { response?: { status?: number } }).response?.status;
+      if (status === 402) {
         setErrMsg("INSUFFICIENT POINTS");
       } else {
         setErrMsg("ERROR PURCHASING HINT");
@@ -226,7 +227,7 @@ export function HintPanel({
         .hint-panel__label {
           font-size: 9px;
           letter-spacing: 0.3em;
-          color: rgba(var(--accent-rgb), 0.35);
+          color: rgba(var(--accent-rgb), 0.72);
           text-transform: uppercase;
         }
 
@@ -260,7 +261,7 @@ export function HintPanel({
           font-size: 8px;
           letter-spacing: 0.25em;
           font-weight: 900;
-          color: rgba(var(--accent-rgb), 0.5);
+          color: rgba(var(--accent-rgb), 0.72);
           text-transform: uppercase;
           margin-bottom: 6px;
         }
@@ -272,7 +273,7 @@ export function HintPanel({
           background: rgba(var(--accent-rgb), 0.08);
           border: 1px solid rgba(var(--accent-rgb), 0.15);
           letter-spacing: 0.1em;
-          color: rgba(var(--accent-rgb), 0.4);
+          color: rgba(var(--accent-rgb), 0.72);
         }
 
         .hint-card__text {
@@ -315,7 +316,7 @@ export function HintPanel({
         .hint-slot__label {
           font-size: 9px;
           letter-spacing: 0.25em;
-          color: rgba(var(--accent-rgb), 0.4);
+          color: rgba(var(--accent-rgb), 0.72);
           text-transform: uppercase;
           flex: 1;
         }
@@ -324,7 +325,7 @@ export function HintPanel({
           font-size: 8px;
           letter-spacing: 0.15em;
           font-weight: 900;
-          color: rgba(var(--accent-rgb), 0.5);
+          color: rgba(var(--accent-rgb), 0.72);
           text-transform: uppercase;
           border: 1px solid rgba(var(--accent-rgb), 0.2);
           border-radius: 4px;
@@ -388,12 +389,12 @@ export function HintPanel({
         .hint-slot__confirm-btn--no {
           background: transparent;
           border: 1px solid rgba(var(--accent-rgb), 0.15);
-          color: rgba(var(--accent-rgb), 0.4);
+          color: rgba(var(--accent-rgb), 0.72);
         }
 
         .hint-slot__confirm-btn--no:hover {
           border-color: rgba(var(--accent-rgb), 0.3);
-          color: rgba(var(--accent-rgb), 0.6);
+          color: rgba(var(--accent-rgb), 0.72);
         }
 
         .hint-slot--loading {
@@ -416,8 +417,8 @@ export function HintPanel({
         }
 
         .hint-slot--error {
-          border-color: rgba(239, 68, 68, 0.4);
-          background: rgba(239, 68, 68, 0.08);
+          border-color: color-mix(in srgb, var(--sem-danger) 40%, transparent);
+          background: color-mix(in srgb, var(--sem-danger) 8%, transparent);
           cursor: default;
           justify-content: center;
           animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
@@ -425,14 +426,14 @@ export function HintPanel({
 
         .hint-slot__error-icon {
           font-size: 11px;
-          color: #ef4444;
+          color: var(--sem-danger);
         }
 
         .hint-slot__error-text {
           font-size: 9px;
           letter-spacing: 0.2em;
           font-weight: 900;
-          color: #ef4444;
+          color: var(--sem-danger);
           text-transform: uppercase;
         }
 

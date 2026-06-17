@@ -16,7 +16,7 @@ const ORDER_PAD   = 2;
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function StarDisplay({ count }: { count: number }) {
   return (
-    <span className="inline-flex gap-[2px]" aria-label={`${count} of ${MAX_STARS} stars`}>
+    <span className="inline-flex gap-[2px]" role="img" aria-label={`${count} of ${MAX_STARS} stars`}>
       {Array.from({ length: MAX_STARS }).map((_, i) => (
         <Star
           key={i}

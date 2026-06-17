@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import dynamic from "next/dynamic";
+import { ArrowLeft } from 'lucide-react';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { LevelDetail, ModalState } from "../../types";
 import type { CampaignFrame, FightResult } from "../../../hooks/useCampaignFight";
@@ -11,7 +12,11 @@ import { HintPanel } from "../HintPanel";
 import { apiClient } from "../../../../../../lib/api-client";
 import { Loader2, Sparkles } from "lucide-react";
 import { cacheCampaignLevel } from "../../../hooks/useCampaignPrefetch";
-import { AiGeneratePanel } from "../../../../../../app/arena/components/CommandConsole/AiGeneratePanel";
+
+const AiGeneratePanel = dynamic(
+  () => import("../../../../../../app/arena/components/CommandConsole/AiGeneratePanel").then((module) => module.AiGeneratePanel),
+  { ssr: false },
+);
 
 interface RevealHintResponse {
   hint: string;
@@ -135,7 +140,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
           </div>
 
           <div className="border border-accent/15 rounded-xl p-5 bg-accent/[0.02]">
-            <p className="text-[9px] tracking-[0.3em] text-accent/30 mb-2.5 uppercase">
+            <p className="text-[9px] tracking-[0.3em] text-accent/70 mb-2.5 uppercase">
               {'// '}MISSION_BRIEF
             </p>
             <p className="text-[11px] text-accent/70 tracking-[0.08em] leading-relaxed">
@@ -144,7 +149,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
           </div>
 
           <div className="border border-accent/15 rounded-xl p-5 bg-accent/[0.025]">
-            <p className="text-[9px] tracking-[0.3em] text-accent/45 mb-3 uppercase">
+            <p className="text-[9px] tracking-[0.3em] text-accent/70 mb-3 uppercase">
               {'// '}ENEMY DETAILS
             </p>
             <div className="flex flex-col gap-2.5">
@@ -181,7 +186,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <p className="text-[9px] tracking-[0.3em] text-accent/35 uppercase m-0">
+              <p className="text-[9px] tracking-[0.3em] text-accent/70 uppercase m-0">
                 {'// '}YOUR_ALISCRIPT
               </p>
               <button
@@ -198,7 +203,7 @@ export function LevelDesktopLayout({ level, script, setScript, modal, handleFigh
                 AI GENERATOR
               </button>
             </div>
-            <span className="text-[9px] text-accent/20 tracking-[0.12em]">
+            <span className="text-[9px] text-accent/70 tracking-[0.12em]">
               {script.split("\n").filter(Boolean).length} LINES
             </span>
           </div>
