@@ -200,8 +200,10 @@ export interface FovConeProps {
   color: string;
   fov: { angle: number; range: number };
   fovDirection: number;
+  robotId?: string;
 }
 
 export interface StasisEffectProps {
   position: [number, number, number];
+  robotId?: string;
 }

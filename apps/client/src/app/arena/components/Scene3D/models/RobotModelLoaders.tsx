@@ -1,20 +1,10 @@
 'use client';
 import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { Group } from 'three';
+import { Box3, Group, Vector3 } from 'three';
 import { useGLTF } from '@react-three/drei';
 import { RobotModelProps } from '../../../types';
 import { RobotModelInner } from './RobotModel';
 import { createPrimitiveChassis } from './PrimitiveChassis';
-
-const ROBOT_SCALES: Record<string, number> = {
-  '/robots/robot.glb': 2,
-  '/robots/robot2.glb': 0.8,
-  '/robots/armored-robot.glb': 1.7,
-  '/robots/sandman.glb': 5,
-  '/robots/mecha.glb': 2,
-  '/robots/npc-robot.glb': 2,
-  '/robots/red_mecha.glb': 2,
-};
 
 /** Maps chassis IDs to their GLB file paths. */
 export const CHASSIS_MODEL_PATHS: Record<string, string> = {
@@ -29,9 +19,25 @@ export const CHASSIS_MODEL_PATHS: Record<string, string> = {
   'chassis-crimson-titan': '/robots/red_mecha.glb',
 };
 
+const TARGET_ROBOT_SIZE = 1.6;
+
 const BotModel = memo((props: RobotModelProps & { file: string }) => {
   const { scene, animations } = useGLTF(props.file);
-  const scale = ROBOT_SCALES[props.file] ?? 2;
+  
+  const scale = useMemo(() => {
+    try {
+      const box = new Box3().setFromObject(scene as unknown as Group);
+      const size = new Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z);
+      if (maxDim > 0) {
+        return TARGET_ROBOT_SIZE / maxDim;
+      }
+    } catch (e) {
+      console.error('[RobotModelLoaders] Error calculating scale:', e);
+    }
+    return 2; // fallback
+  }, [scene]);
   
   return (
     <RobotModelInner
@@ -51,7 +57,23 @@ const PrimitiveBotModel = memo((props: RobotModelProps & { chassisId: string }) 
     () => createPrimitiveChassis(props.chassisId),
     [props.chassisId],
   );
-  return <RobotModelInner {...props} scene={primitiveGroup} scale={2} />;
+
+  const scale = useMemo(() => {
+    try {
+      const box = new Box3().setFromObject(primitiveGroup);
+      const size = new Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z);
+      if (maxDim > 0) {
+        return TARGET_ROBOT_SIZE / maxDim;
+      }
+    } catch (e) {
+      console.error('[RobotModelLoaders] Error scaling primitive:', e);
+    }
+    return 2; // fallback
+  }, [primitiveGroup]);
+
+  return <RobotModelInner {...props} scene={primitiveGroup} scale={scale} />;
 });
 PrimitiveBotModel.displayName = 'PrimitiveBotModel';
 

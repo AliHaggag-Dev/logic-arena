@@ -64,19 +64,9 @@ export const ArenaModels = ({
       robotMeshesRef.current.forEach(mesh => {
         if (mesh) {
           scene.remove(mesh);
-          mesh.traverse((child: Object3D) => {
-            if ((child as Mesh).isMesh) {
-              const m = child as Mesh;
-              m.geometry?.dispose();
-              if (Array.isArray(m.material)) m.material.forEach((mat: Material) => mat.dispose());
-              else (m.material as Material)?.dispose();
-            }
-          });
         }
       });
       robotMeshesRef.current = [];
-
-
     };
   }, [scene]);
 
@@ -208,12 +198,13 @@ export const ArenaModels = ({
                     color={robot.color}
                     fov={robot.fov}
                     fovDirection={robot.fovDirection ?? robot.rotation ?? 0}
+                    robotId={robot.id}
                   />
                 )}
 
                 {/* Stasis electric aura */}
                 {robot.inStasis && (
-                  <StasisEffect position={robotPosition} />
+                  <StasisEffect position={robotPosition} robotId={robot.id} />
                 )}
 
                 <RobotErrorBoundary

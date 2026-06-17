@@ -1,8 +1,9 @@
 'use client';
 import React, { useMemo, useRef, useEffect } from 'react';
-import { AdditiveBlending, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, Group, ShaderMaterial } from 'three';
+import { AdditiveBlending, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, Group, ShaderMaterial, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
 import { FovConeProps } from '../../../types';
+import { interpolationBuffer } from '../../../core/interpolation-buffer';
 
 const DEG_TO_RAD   = Math.PI / 180;
 const ARENA_SCALE  = 40; // engine units → 3D units
@@ -14,9 +15,15 @@ const ARENA_SCALE  = 40; // engine units → 3D units
  * Color: matches robot team color at ~15% opacity.
  * Rotates to track fovDirection each frame via ref mutation (zero re-renders).
  */
-export const FovCone = ({ position, color, fov, fovDirection }: FovConeProps) => {
+export const FovCone = ({ position, color, fov, fovDirection, robotId }: FovConeProps) => {
   const groupRef    = useRef<Group>(null);
   const dirRef      = useRef(fovDirection);
+  const targetPosition = useRef(new Vector3(...position));
+  const basePosition = useRef(new Vector3(...position));
+
+  const SNAP_DISTANCE = 3;
+  const POSITION_LERP_DECAY = 0.01;
+  const POSITION_LERP_SPEED = 10;
 
   // Keep dirRef in sync when prop changes (R3F doesn't re-render every frame)
   dirRef.current = fovDirection;
@@ -119,8 +126,33 @@ export const FovCone = ({ position, color, fov, fovDirection }: FovConeProps) =>
   }, [geometry, material]);
 
   // Update rotation and inject time each frame via ref mutations
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     if (!groupRef.current) return;
+
+    const interp = robotId ? interpolationBuffer.getInterpolatedRobot(robotId) : null;
+    
+    if (interp) {
+      targetPosition.current.set(
+        (interp.position.x / ARENA_SCALE) - 10,
+        0.15,
+        (interp.position.y / ARENA_SCALE) - 7.5,
+      );
+      dirRef.current = interp.fovDirection ?? interp.rotation ?? 0;
+    } else {
+      targetPosition.current.set(...position);
+      dirRef.current = fovDirection;
+    }
+
+    // Smooth position lerping to sync with robot model
+    const lerpFactor = 1 - Math.pow(POSITION_LERP_DECAY, delta * POSITION_LERP_SPEED);
+    if (basePosition.current.distanceTo(targetPosition.current) > SNAP_DISTANCE) {
+      basePosition.current.copy(targetPosition.current);
+    } else {
+      basePosition.current.lerp(targetPosition.current, lerpFactor);
+    }
+    
+    groupRef.current.position.copy(basePosition.current);
+
     // fovDirection is in standard 2D radians (CCW from +X).
     // The robot body (GLTF) uses rotation.y = Math.PI/2 - fovDirection to map that to Three.js XZ plane,
     // so the cone must use the exact same formula to stay visually attached to the robot face.
@@ -133,7 +165,7 @@ export const FovCone = ({ position, color, fov, fovDirection }: FovConeProps) =>
   });
 
   return (
-    <group ref={groupRef} position={position}>
+    <group ref={groupRef}>
       <mesh geometry={geometry} material={material} />
     </group>
   );

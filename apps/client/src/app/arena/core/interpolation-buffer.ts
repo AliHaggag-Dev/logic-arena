@@ -40,6 +40,7 @@ interface InterpolatedEntity {
   position: Vec2;
   rotation: number;
   velocity: Vec2;
+  fovDirection?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +121,7 @@ class InterpolationBuffer {
       },
       rotation: this.lerpAngle(robotA.rotation ?? 0, robotB.rotation ?? 0, t),
       velocity: robotB.velocity ?? { x: 0, y: 0 },
+      fovDirection: this.lerpAngle(robotA.fovDirection ?? robotA.rotation ?? 0, robotB.fovDirection ?? robotB.rotation ?? 0, t),
     };
   }
 
@@ -201,6 +203,7 @@ class InterpolationBuffer {
       position: { ...robot.position },
       rotation: robot.rotation ?? 0,
       velocity: robot.velocity ?? { x: 0, y: 0 },
+      fovDirection: robot.fovDirection ?? robot.rotation ?? 0,
     };
   }
 

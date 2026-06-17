@@ -1,19 +1,51 @@
 'use client';
 import React, { useRef } from 'react';
-import { BackSide, Mesh, MeshBasicMaterial, PointLight } from 'three';
+import { BackSide, Mesh, MeshBasicMaterial, PointLight, Group, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
 import { StasisEffectProps } from '../../../types';
+import { interpolationBuffer } from '../../../core/interpolation-buffer';
 
 /**
  * StasisEffect — pulsing blue-white electric aura around a stasis-locked robot.
  * Renders a point light + ring mesh that animate in/out via sine wave.
  */
-export const StasisEffect = ({ position }: StasisEffectProps) => {
+export const StasisEffect = ({ position, robotId }: StasisEffectProps) => {
+  const groupRef    = useRef<Group>(null);
   const lightRef    = useRef<PointLight>(null);
   const ringRef     = useRef<Mesh>(null);
   const phaseRef    = useRef(0);
+  const targetPosition = useRef(new Vector3(...position));
+  const basePosition = useRef(new Vector3(...position));
+
+  const ARENA_SCALE = 40;
+  const SNAP_DISTANCE = 3;
+  const POSITION_LERP_DECAY = 0.01;
+  const POSITION_LERP_SPEED = 10;
 
   useFrame((_, delta) => {
+    // 1. Position interpolation
+    if (groupRef.current) {
+      const interp = robotId ? interpolationBuffer.getInterpolatedRobot(robotId) : null;
+      if (interp) {
+        targetPosition.current.set(
+          (interp.position.x / ARENA_SCALE) - 10,
+          0.15,
+          (interp.position.y / ARENA_SCALE) - 7.5,
+        );
+      } else {
+        targetPosition.current.set(...position);
+      }
+
+      const lerpFactor = 1 - Math.pow(POSITION_LERP_DECAY, delta * POSITION_LERP_SPEED);
+      if (basePosition.current.distanceTo(targetPosition.current) > SNAP_DISTANCE) {
+        basePosition.current.copy(targetPosition.current);
+      } else {
+        basePosition.current.lerp(targetPosition.current, lerpFactor);
+      }
+      groupRef.current.position.copy(basePosition.current);
+    }
+
+    // 2. Pulse animations
     phaseRef.current += delta * 3;
     const t = Math.sin(phaseRef.current);
     // Oscillate light intensity 0.5 → 4
@@ -30,7 +62,7 @@ export const StasisEffect = ({ position }: StasisEffectProps) => {
   });
 
   return (
-    <group position={position}>
+    <group ref={groupRef}>
       {/* Pulsing blue-white point light */}
       <pointLight
         ref={lightRef}
