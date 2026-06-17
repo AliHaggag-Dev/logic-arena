@@ -1,15 +1,20 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import type { CampaignTabId } from "../../constants/campaign.constants";
 import type { ApiLevelInfo } from "../../types/campaign.types";
-import { LevelDetailModal } from "../LevelDetailModal";
 import { CampaignLayoutStyles } from "./CampaignLayoutStyles";
 import { DesktopLayout } from "./DesktopLayout";
 import { MobileLayout } from "./MobileLayout";
 import { GuestState, LoadingState } from "./states";
 import type { CampaignLayoutProps } from "./types";
+
+const LevelDetailModal = dynamic(
+  () => import("../LevelDetailModal").then((module) => module.LevelDetailModal),
+  { ssr: false },
+);
 
 export function CampaignLayout({ tabs, loading, isGuest, isMobile }: CampaignLayoutProps) {
   const [activeTabId, setActiveTabId] = useState<CampaignTabId>("conditionals");
@@ -29,7 +34,9 @@ export function CampaignLayout({ tabs, loading, isGuest, isMobile }: CampaignLay
         setSelectedLevel={setSelectedLevel}
       />
 
-      <LevelDetailModal level={selectedLevel} onClose={() => setSelectedLevel(null)} />
+      {selectedLevel && (
+        <LevelDetailModal level={selectedLevel} onClose={() => setSelectedLevel(null)} />
+      )}
       <CampaignLayoutStyles />
     </>
   );
