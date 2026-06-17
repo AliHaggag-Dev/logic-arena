@@ -2,6 +2,7 @@
 
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { SocketContext } from "../../context/SocketContext";
 import { useDashboardAuth } from "./components/layout/hooks/useDashboardAuth";
 import { useChallengeSystem } from "./components/layout/hooks/useChallengeSystem";
@@ -9,14 +10,27 @@ import { useFriendsSystem } from "../../hooks/useFriendsSystem";
 import { useNotifications } from "../../hooks/useNotifications";
 import { DashboardSidebar } from "./components/layout/components/DashboardSidebar";
 import { DashboardHeader } from "./components/layout/components/DashboardHeader";
-import { ChallengeModal } from "./components/layout/components/ChallengeModal";
-import { ToastNotification } from "./components/layout/components/ToastNotification";
-import { NotificationToasts } from "./components/layout/components/NotificationToasts";
-import { FriendRequestModal } from "./friends/components/FriendRequestModal";
 
 import { _test_navigateFromNotification } from "./components/layout/components/NotificationDropdown";
 import type { NotificationEntry } from "@/lib/api/notifications.types";
 import type { ChallengeSource, MatchMode } from "@/context/SocketContext";
+
+const ChallengeModal = dynamic(
+  () => import("./components/layout/components/ChallengeModal").then((mod) => mod.ChallengeModal),
+  { ssr: false },
+);
+const ToastNotification = dynamic(
+  () => import("./components/layout/components/ToastNotification").then((mod) => mod.ToastNotification),
+  { ssr: false },
+);
+const NotificationToasts = dynamic(
+  () => import("./components/layout/components/NotificationToasts").then((mod) => mod.NotificationToasts),
+  { ssr: false },
+);
+const FriendRequestModal = dynamic(
+  () => import("./friends/components/FriendRequestModal").then((mod) => mod.FriendRequestModal),
+  { ssr: false },
+);
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
@@ -78,13 +92,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
 
-        <ToastNotification toast={combinedToast} isMobile={false} />
+        {combinedToast && <ToastNotification toast={combinedToast} isMobile={false} />}
 
-        <NotificationToasts
-          toasts={toasts}
-          onDismiss={dismissToast}
-          onClick={handleNotificationToastClick}
-        />
+        {toasts.length > 0 && (
+          <NotificationToasts
+            toasts={toasts}
+            onDismiss={dismissToast}
+            onClick={handleNotificationToastClick}
+          />
+        )}
 
 
 

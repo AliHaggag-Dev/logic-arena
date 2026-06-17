@@ -10,6 +10,7 @@ import type {
 import { useGlobalSocket } from '../hooks/useGlobalSocket';
 import { useAuth } from '../context/AuthContext';
 import type { AxiosError } from 'axios';
+import { getAuthSession } from '../lib/client-security';
 
 interface ToastState {
   message: string;
@@ -82,19 +83,29 @@ function showToast(message: string, type: ToastState['type'] = 'info') {
   updateStore({ toast: { message, type }, toastTimer: timer });
 }
 
+function getErrorStatus(err: unknown): number | undefined {
+  return (err as { response?: { status?: number } }).response?.status;
+}
+
 export async function fetchFriends() {
   if (storeState.isLoadingFriends) return;
+  if (!getAuthSession().isAuthenticated) return;
   try {
     updateStore({ isLoadingFriends: true });
     const data = await friendsApi.listFriends();
     updateStore({ friends: data, isLoadingFriends: false });
-  } catch {
+  } catch (err: unknown) {
+    if (getErrorStatus(err) === 401) {
+      updateStore({ isLoadingFriends: false });
+      return;
+    }
     updateStore({ isLoadingFriends: false });
   }
 }
 
 export async function fetchRequests() {
   if (storeState.isLoadingRequests) return;
+  if (!getAuthSession().isAuthenticated) return;
   try {
     updateStore({ isLoadingRequests: true });
     const [incoming, outgoing] = await Promise.all([
@@ -106,18 +117,27 @@ export async function fetchRequests() {
       outgoingRequests: outgoing,
       isLoadingRequests: false 
     });
-  } catch {
+  } catch (err: unknown) {
+    if (getErrorStatus(err) === 401) {
+      updateStore({ isLoadingRequests: false });
+      return;
+    }
     updateStore({ isLoadingRequests: false });
   }
 }
 
 export async function fetchSuggestions() {
   if (storeState.isLoadingSuggestions) return;
+  if (!getAuthSession().isAuthenticated) return;
   try {
     updateStore({ isLoadingSuggestions: true });
     const data = await friendsApi.getSuggestions();
     updateStore({ suggestions: data, isLoadingSuggestions: false });
-  } catch {
+  } catch (err: unknown) {
+    if (getErrorStatus(err) === 401) {
+      updateStore({ isLoadingSuggestions: false });
+      return;
+    }
     updateStore({ isLoadingSuggestions: false });
   }
 }

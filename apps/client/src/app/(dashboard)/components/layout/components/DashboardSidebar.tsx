@@ -65,7 +65,7 @@ export function DashboardSidebar({ username, avatarUrl, onLogout }: DashboardSid
         >
           {/* Animated scanning beam */}
           <div
-            className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-accent/60 to-transparent pointer-events-none"
+            className="absolute inset-x-0 top-0 h-full bg-[linear-gradient(90deg,transparent,rgba(var(--accent-rgb),0.6),transparent)] bg-[length:100%_1px] bg-no-repeat pointer-events-none"
             style={{ animation: 'uplink-scan 2.8s linear infinite' }}
           />
 
