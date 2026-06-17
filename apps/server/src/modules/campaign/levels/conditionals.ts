@@ -63,7 +63,7 @@ END`,
   SET init = 1
 END
 SET tick = tick + 1
-IF tick > 5 THEN
+IF tick > 50 THEN
   SET tick = 0
   IF state == 0 THEN
     SET state = 1
@@ -326,7 +326,7 @@ END`,
   SET init = 1
 END
 IF VISIBLE_ENEMY_COUNT > 0 THEN
-  IF threat < 5 THEN
+  IF threat < 50 THEN
     SET threat = threat + 1
   END
   SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
@@ -335,7 +335,7 @@ ELSE
     SET threat = threat - 1
   END
 END
-IF threat >= 5 THEN
+IF threat >= 50 THEN
   SET _SYS_ORBIT_X = NEAREST_VISIBLE_X
   SET _SYS_ORBIT_Y = NEAREST_VISIBLE_Y
   SET _SYS_ORBIT_R = -80
@@ -344,11 +344,11 @@ IF threat >= 5 THEN
   BURST_FIRE
   MOVE
 ELSE
-  IF threat >= 3 THEN
+  IF threat >= 30 THEN
     FIRE
     MOVE
   ELSE
-    IF threat >= 1 THEN
+    IF threat >= 10 THEN
       SCAN
       MOVE
     ELSE
@@ -439,10 +439,10 @@ END`,
   SET init = 1
 END
 SET phase = phase + 1
-IF phase > 9 THEN
+IF phase > 99 THEN
   SET phase = 0
   END
-IF phase < 3 THEN
+IF phase < 30 THEN
   SET _SYS_SPEED_MULT = 1.3
   IF VISIBLE_ENEMY_COUNT > 0 THEN
     SET _SYS_FACE_X = NEAREST_VISIBLE_X

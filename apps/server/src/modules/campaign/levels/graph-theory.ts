@@ -157,8 +157,8 @@ END`,
       'Camp near the middle of its route. It will pass by you twice: once going forward, and once coming back.',
     ],
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 600]
-  SET nodes_y = [300, 180, 330, 120]
+  SET nodes_x = [60, 740]
+  SET nodes_y = [100, 100]
   SET i = 0
   SET dir = 1
   SET init = 1
@@ -173,9 +173,9 @@ IF _SYS_AT_TARGET == 1 THEN
     SCAN
   END
   SET i = i + dir
-  IF i > 3 THEN
+  IF i > 1 THEN
     SET dir = -1
-    SET i = 2
+    SET i = 0
   END
   IF i < 0 THEN
     SET dir = 1
@@ -205,8 +205,8 @@ END`,
       'Every time it completes a loop, it returns to the center. Attack from a safe distance when it arrives.',
     ],
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440]
-  SET nodes_y = [300, 180, 330, 450, 480]
+  SET nodes_x = [500, 600, 400, 500, 400, 600]
+  SET nodes_y = [300, 180, 180, 300, 420, 420]
   SET i = 0
   SET init = 1
 END
@@ -214,7 +214,7 @@ SET _SYS_TARGET_X = nodes_x[i]
 SET _SYS_TARGET_Y = nodes_y[i]
 IF _SYS_AT_TARGET == 1 THEN
   SET i = i + 1
-  IF i > 4 THEN
+  IF i > 5 THEN
     SET i = 0
   END
   SET _SYS_AT_TARGET = 0
@@ -225,7 +225,11 @@ IF _SYS_AT_TARGET == 1 THEN
     SCAN
   END
 ELSE
-  SET _SYS_SPEED_MULT = 1.5
+  IF i == 0 OR i == 3 THEN
+    SET _SYS_SPEED_MULT = 0.6
+  ELSE
+    SET _SYS_SPEED_MULT = 1.5
+  END
   IF VISIBLE_ENEMY_COUNT > 0 THEN
     SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
     FIRE
@@ -303,8 +307,8 @@ MOVE`,
       'Stay far away and move parallel to it. Avoid the center of the arena completely.',
     ],
     enemyScript: `IF NOT init THEN
-  SET nodes_x = [400, 520, 640, 560, 440, 600]
-  SET nodes_y = [300, 180, 330, 450, 480, 120]
+  SET nodes_x = [735, 668, 533, 465, 533, 668]
+  SET nodes_y = [300, 417, 417, 300, 183, 183]
   SET i = 0
   SET dir = 1
   SET init = 1
@@ -460,33 +464,49 @@ MOVE`,
       'Deception strategy: stay in the top-left for 3 seconds, then immediately run to the bottom-right. It will attack the empty top-left zone!',
     ],
     enemyScript: `IF NOT init THEN
-  SET grid = [0,0,0,0,0,0,0,0,0]
+  SET prevX = 400
+  SET prevY = 300
+  SET lastX = 400
+  SET lastY = 300
+  SET hasLast = 0
+  SET hasPrev = 0
   SET cx = 400
   SET cy = 300
   SET init = 1
 END
 IF VISIBLE_ENEMY_COUNT > 0 THEN
-  SET gx = FLOOR(NEAREST_VISIBLE_X / 266)
-  SET gy = FLOOR(NEAREST_VISIBLE_Y / 200)
-  SET idx = gy * 3 + gx
-  IF idx >= 0 AND idx < 9 THEN
-    SET grid[idx] = grid[idx] + 1
+  IF hasLast == 1 THEN
+    SET prevX = lastX
+    SET prevY = lastY
+    SET hasPrev = 1
   END
-  
-  SET max = -1
-  SET best = 4
-  SET i = 0
-  WHILE i < 9 DO
-    IF grid[i] > max THEN
-      SET max = grid[i]
-      SET best = i
-    END
-    SET i = i + 1
+  SET lastX = NEAREST_VISIBLE_X
+  SET lastY = NEAREST_VISIBLE_Y
+  SET hasLast = 1
+
+  IF hasPrev == 1 THEN
+    SET dx = lastX - prevX
+    SET dy = lastY - prevY
+    SET cx = lastX + dx
+    SET cy = lastY + dy
+  ELSE
+    SET cx = lastX
+    SET cy = lastY
   END
-  
-  SET cx = (best % 3) * 266 + 133
-  SET cy = FLOOR(best / 3) * 200 + 100
-  
+
+  IF cx < 60 THEN
+    SET cx = 60
+  END
+  IF cx > 740 THEN
+    SET cx = 740
+  END
+  IF cy < 60 THEN
+    SET cy = 60
+  END
+  IF cy > 540 THEN
+    SET cy = 540
+  END
+
   SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
   BURST_FIRE
 ELSE

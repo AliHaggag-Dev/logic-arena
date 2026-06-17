@@ -416,14 +416,14 @@ IF q.task == "NONE" THEN
   IF VISIBLE_ENEMY_COUNT > 0 THEN
     IF distance < 200 THEN
       SET q.task = "BURST"
-      SET q.arg = 3
+      SET q.arg = 30
     ELSE
       SET q.task = "STRAFE"
-      SET q.arg = 5
+      SET q.arg = 50
     END
   ELSE
     SET q.task = "PATROL"
-    SET q.arg = 4
+    SET q.arg = 40
   END
 END
 

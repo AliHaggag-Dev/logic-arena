@@ -24,7 +24,7 @@ export const RECURSION_LEVELS: CampaignLevel[] = [
   SET init = 1
 END
 IF depth == 1 THEN
-  MOVE RIGHT
+  MOVE
 END
 IF depth == 2 THEN
   IF VISIBLE_ENEMY_COUNT > 0 THEN
@@ -71,6 +71,7 @@ IF depth == 3 THEN
   IF VISIBLE_ENEMY_COUNT > 0 THEN
     SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
     FIRE
+    FIRE
   ELSE
     SCAN
   END
@@ -110,12 +111,12 @@ END`,
       'Wait for the longest charge phase. After it fires, rush in and deal maximum damage during the long safe window.',
     ],
     enemyScript: `IF NOT init THEN
-  SET depth = 1
-  SET maxD = 2
+  SET depth = 0
+  SET maxD = 20
   SET ddir = 1
   SET init = 1
 END
-IF depth == maxD THEN
+IF depth >= maxD THEN
   IF VISIBLE_ENEMY_COUNT > 0 THEN
     SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
     BURST_FIRE
@@ -126,17 +127,13 @@ ELSE
   SET _SYS_STRAFE = ddir
   MOVE
 END
-SET depth = depth + ddir
+SET depth = depth + 1
 IF depth > maxD THEN
-  SET depth = maxD - 1
-  SET ddir = -1
-END
-IF depth < 1 THEN
-  SET depth = 2
-  SET ddir = 1
-  SET maxD = maxD + 1
-  IF maxD > 5 THEN
-    SET maxD = 2
+  SET depth = 0
+  SET ddir = ddir * -1
+  SET maxD = maxD + 10
+  IF maxD > 50 THEN
+    SET maxD = 20
   END
 END`,
     maxTicks: 900,
@@ -163,7 +160,7 @@ END`,
   SET ddir = 1
   SET init = 1
 END
-IF depth < 4 THEN
+IF depth < 31 OR depth > 40 THEN
   IF VISIBLE_ENEMY_COUNT > 0 THEN
     SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
     FIRE
@@ -177,13 +174,8 @@ ELSE
   MOVE
 END
 SET depth = depth + ddir
-IF depth > 4 THEN
-  SET depth = 3
-  SET ddir = -1
-END
-IF depth < 1 THEN
+IF depth > 70 THEN
   SET depth = 1
-  SET ddir = 1
 END`,
     maxTicks: 900,
     enemyHealth: 100,
@@ -207,7 +199,7 @@ END`,
     enemyScript: `IF NOT init THEN
   SET n = 1
   SET a = 0
-  SET b = 1
+  SET b = 10
   SET step = 0
   SET init = 1
 END
@@ -230,7 +222,7 @@ ELSE
   IF n > 5 THEN
     SET n = 1
     SET a = 0
-    SET b = 1
+    SET b = 10
   END
 END`,
     maxTicks: 900,
@@ -305,8 +297,9 @@ END`,
       'Counter-tactic: mirror its movement. When it moves left, you move left. This makes you a harder target to hit.',
     ],
     enemyScript: `IF NOT init THEN
-  SET stack = [1, 2, 1, 2]
+  SET stack = [1, 2]
   SET sp = 0
+  SET hold = 0
   SET init = 1
 END
 SET branch = stack[sp]
@@ -322,9 +315,13 @@ ELSE
   SCAN
 END
 MOVE
-SET sp = sp + 1
-IF sp >= 4 THEN
-  SET sp = 0
+SET hold = hold + 1
+IF hold >= 20 THEN
+  SET hold = 0
+  SET sp = sp + 1
+  IF sp >= 2 THEN
+    SET sp = 0
+  END
 END`,
     maxTicks: 1200,
     enemyHealth: 120,
@@ -347,18 +344,20 @@ END`,
     ],
     enemyScript: `IF NOT init THEN
   SET step = 0
+  SET orbitX = 400
+  SET orbitY = 300
   SET init = 1
 END
-IF step < 3 THEN
+IF step < 30 THEN
   SET _SYS_ORBIT_R = 120
   SET _SYS_SPEED_MULT = 1.5
 ELSE
   SET _SYS_ORBIT_R = -80
   SET _SYS_SPEED_MULT = 1.0
 END
-SET _SYS_ORBIT_X = 400
-SET _SYS_ORBIT_Y = 300
 IF VISIBLE_ENEMY_COUNT > 0 THEN
+  SET orbitX = NEAREST_VISIBLE_X
+  SET orbitY = NEAREST_VISIBLE_Y
   SET _SYS_FACE_X = NEAREST_VISIBLE_X
   SET _SYS_FACE_Y = NEAREST_VISIBLE_Y
   SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
@@ -366,9 +365,11 @@ IF VISIBLE_ENEMY_COUNT > 0 THEN
 ELSE
   SCAN
 END
+SET _SYS_ORBIT_X = orbitX
+SET _SYS_ORBIT_Y = orbitY
 MOVE
 SET step = step + 1
-IF step > 3 THEN
+IF step > 39 THEN
   SET step = 0
 END`,
     maxTicks: 1200,
@@ -391,8 +392,8 @@ END`,
       'Strategy: run in one direction for 5 seconds. When it stops to shoot, dodge away from your trail and attack it.',
     ],
     enemyScript: `IF NOT init THEN
-  SET histX = [0,0,0,0,0]
-  SET histY = [0,0,0,0,0]
+  SET histX = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+  SET histY = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
   SET depth = 0
   SET phase = "PUSH"
   SET init = 1
@@ -405,9 +406,9 @@ IF phase == "PUSH" THEN
   SET depth = depth + 1
   SET _SYS_STRAFE = 1
   MOVE
-  IF depth >= 5 THEN
+  IF depth >= 50 THEN
     SET phase = "POP"
-    SET depth = 4
+    SET depth = 49
   END
 ELSE
   SET tx = histX[depth]
@@ -448,7 +449,7 @@ END`,
   SET n = 0
   SET init = 1
 END
-SET _SYS_SPEED_MULT = 1 + (n * 0.5)
+SET _SYS_SPEED_MULT = 1 + (m * 0.5)
 IF m == 2 THEN
   IF VISIBLE_ENEMY_COUNT > 0 THEN
     SET _SYS_FACE_X = NEAREST_VISIBLE_X
@@ -470,7 +471,7 @@ SET _SYS_ORBIT_R = 100 + (m * 20)
 MOVE
 
 SET n = n + 1
-IF n > 3 THEN
+IF n > 39 THEN
   SET n = 0
   SET m = m + 1
   IF m > 2 THEN

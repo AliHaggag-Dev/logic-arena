@@ -23,7 +23,7 @@ export const ARRAYS_LEVELS: CampaignLevel[] = [
   SET i = 0
   SET init = 1
 END
-SET cmd = cmds[i]
+SET cmd = cmds[FLOOR(i / 10)]
 IF cmd == 1 THEN
   MOVE
 ELSE
@@ -38,7 +38,7 @@ ELSE
   END
 END
 SET i = i + 1
-IF i > 3 THEN
+IF i > 39 THEN
   SET i = 0
 END`,
     maxTicks: 900,
@@ -295,7 +295,7 @@ ELSE
 END
 MOVE
 SET tick = tick + 1
-IF tick > 5 THEN
+IF tick > 50 THEN
   SET tick = 0
   SET idx = idx + 1
   IF idx > 3 THEN
@@ -370,7 +370,7 @@ END`,
       'After 5 seconds: maintain a constant distance so it doesn\'t chase or run. Hold a steady 200 range.',
     ],
     enemyScript: `IF NOT init THEN
-  SET buf = [0, 0, 0, 0, 0]
+  SET buf = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   SET head = 0
   SET filled = 0
   SET prev_avg = 0
@@ -379,18 +379,23 @@ END
 IF VISIBLE_ENEMY_COUNT > 0 THEN
   SET buf[head] = distance
   SET head = head + 1
-  IF head > 4 THEN
+  IF head > 49 THEN
     SET head = 0
   END
-  IF filled < 5 THEN
+  IF filled < 50 THEN
     SET filled = filled + 1
   END
 
-  SET sum = buf[0] + buf[1] + buf[2] + buf[3] + buf[4]
-  SET avg = sum / 5
+  SET sum = 0
+  SET scanI = 0
+  WHILE scanI < 50 DO
+    SET sum = sum + buf[scanI]
+    SET scanI = scanI + 1
+  END
+  SET avg = sum / 50
 
   SET rotation = ATAN2(NEAREST_VISIBLE_Y - POSITION_Y, NEAREST_VISIBLE_X - POSITION_X)
-  IF filled == 5 THEN
+  IF filled == 50 THEN
     IF avg < prev_avg THEN
       SET _SYS_ORBIT_X = NEAREST_VISIBLE_X
       SET _SYS_ORBIT_Y = NEAREST_VISIBLE_Y

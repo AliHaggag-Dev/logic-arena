@@ -31,7 +31,7 @@ IF i < 5 THEN
   END
   SET i = i + 1
 ELSE
-  IF i < 8 THEN
+  IF i < 35 THEN
     MOVE RIGHT
     SET i = i + 1
   ELSE
@@ -113,7 +113,7 @@ END`,
   SET init = 1
 END
 SET tick = tick + 1
-IF tick > 8 THEN
+IF tick > 80 THEN
   SET tick = 0
   SET orbitDir = orbitDir * -1
 END
@@ -284,7 +284,7 @@ IF outer < 3 THEN
     ELSE
       SET inner = 0
       SET outer = outer + 1
-      SET repos = 2
+      SET repos = 20
     END
   END
 ELSE
@@ -416,7 +416,7 @@ SET tick = tick + 1`,
     ],
     enemyScript: `IF NOT init THEN
   SET a = 0
-  SET b = 6
+  SET b = 60
   SET frenzy = 0
   SET init = 1
 END
@@ -434,7 +434,7 @@ IF frenzy > 0 THEN
   IF frenzy == 0 THEN
     SET _SYS_SPEED_MULT = 1
     SET a = 0
-    SET b = 6
+    SET b = 60
   END
 ELSE
   IF a < b THEN
@@ -449,7 +449,7 @@ ELSE
       MOVE RIGHT
     END
   ELSE
-    SET frenzy = 3
+    SET frenzy = 30
   END
 END`,
     maxTicks: 1500,
