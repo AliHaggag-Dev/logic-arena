@@ -14,7 +14,7 @@ RUN pnpm install --frozen-lockfile --shamefully-hoist
 # ─── Stage 3: Build shared packages + server ──────────────────────────────────
 FROM base AS builder
 
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml tsconfig.json ./
 COPY apps/server/package.json ./apps/server/
 COPY packages/engine/package.json ./packages/engine/
 COPY packages/logic-parser/package.json ./packages/logic-parser/
@@ -31,6 +31,8 @@ COPY apps/server/tsconfig.json ./apps/server/
 COPY apps/server/tsconfig.build.json ./apps/server/
 
 RUN cd apps/server && /app/node_modules/.bin/prisma generate
+RUN pnpm --filter @logic-arena/logic-parser run build
+RUN pnpm --filter @logic-arena/engine run build
 RUN pnpm --filter server run build
 
 # ─── Stage 4: Production runner ───────────────────────────────────────────────
@@ -51,6 +53,8 @@ COPY --from=builder /app/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/
 
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
 COPY --from=builder /app/apps/server/prisma ./apps/server/prisma
+COPY --from=builder /app/packages/engine/dist ./packages/engine/dist
+COPY --from=builder /app/packages/logic-parser/dist ./packages/logic-parser/dist
 
 ENV NODE_ENV=production
 EXPOSE 3001

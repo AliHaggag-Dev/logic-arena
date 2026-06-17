@@ -24,8 +24,14 @@
       "@logic-arena/engine": [
         "../../packages/engine/src"
       ],
+      "@logic-arena/engine/*": [
+        "../../packages/engine/src/*"
+      ],
       "@logic-arena/logic-parser": [
         "../../packages/logic-parser/src"
+      ],
+      "@logic-arena/logic-parser/*": [
+        "../../packages/logic-parser/src/*"
       ]
     }
   },
