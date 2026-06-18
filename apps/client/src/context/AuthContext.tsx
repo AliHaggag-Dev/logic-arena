@@ -52,6 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const profileRef = React.useRef<ProfileResponse | null>(null);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
 
   const refresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
@@ -103,7 +108,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const session = getAuthSession();
       if (!session.userId) {
         setProfile(null);
+        setLoading(false);
+        return;
       }
+      if (profileRef.current?.id === session.userId) {
+        return;
+      }
+      if (session.username) {
+        setProfile({
+          id: session.userId,
+          username: session.username,
+          avatarUrl: session.avatarUrl ?? null,
+        });
+      }
+      setLoading(true);
+      refresh();
     };
 
     window.addEventListener("auth:expired", onExpired);
@@ -112,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("auth:expired", onExpired);
       window.removeEventListener("auth:changed", onChanged);
     };
-  }, []);
+  }, [refresh]);
 
   const value: AuthContextValue = {
     isGuest: loading ? false : !profile,
