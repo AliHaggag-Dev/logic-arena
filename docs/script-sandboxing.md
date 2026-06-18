@@ -23,6 +23,8 @@ To solve this, AliScript is fully **deterministic** and relies on an Operations 
 AliScript robots do not hold state in the global server memory between ticks.
 All variables defined via `SET` are stored in an isolated `Map<string, any>` specific to that robot's instance inside the match. When the match concludes or the robot dies, the Map is garbage collected by V8.
 
+STASIS is an execution boundary. When a robot is in STASIS, the evaluator does not walk its AST, including nested `WHILE` loop bodies. When energy recovers to the exit threshold, runtime memory and action cooldowns are reset so the robot resumes from a clean script state instead of continuing stale loop or wait state.
+
 ## 4. Deep Copying & Swarm Security
 With the introduction of Swarm Intelligence (`BROADCAST` and `RECEIVE`), robots can send data payloads to their teammates.
 To prevent cross-robot memory aliasing (e.g., mutating an array in one robot's memory altering it in another's), all payloads are strictly **deep-copied** during transit using `structuredClone` (or equivalent parsing).

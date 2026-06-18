@@ -38,8 +38,8 @@ logic-arena/
 │   │   │   │   ├── campaign/    # LeetCode-style level orchestration
 │   │   │   │   ├── scripts/     # CRUD for AliScript payloads
 │   │   │   │   └── matches/
-│   │   │   │       ├── gateway/ # Socket.io orchestration, Spectator mode, Delta diffing
-│   │   │   │       └── engine/  # Mode orchestration (Racing, Combat, Capture)
+│   │   │   │       ├── gateway/ # Socket.io orchestration, CampaignSession runner, Spectator mode, Delta diffing
+│   │   │   │       └── engine/  # Mode orchestration (Racing, Combat, Capture), hazards, mode managers
 │   │   │   └── main.ts
 │   │   └── Dockerfile
 │   │
@@ -48,6 +48,7 @@ logic-arena/
 ├── packages/
 │   ├── engine/                  # Headless 2D Physics Engine
 │   │   └── src/
+│   │       ├── constants.ts     # Shared arena, obstacle, and campaign timing constants
 │   │       ├── core/            # Robot updater, bounding boxes, GameLoop
 │   │       ├── physics/         # Spatial vectors, collision detection, Raycasting
 │   │       ├── abilities/       # Tactical super powers (Cloak, Teleport, Mine, etc.)
@@ -57,11 +58,14 @@ logic-arena/
 │
 ├── docs/                        # Project documentation
 │   ├── aliscript-language.md
+│   ├── arena-environments-modes.md
 │   ├── erd-diagram.md
 │   ├── folder-structure.md
 │   ├── game-rules.md
+│   ├── rotation-system-guide.md
 │   ├── script-sandboxing.md
-│   └── system-architecture.md
+│   ├── system-architecture.md
+│   └── website-guide.md
 │
 ├── docker-compose.yml           # Production orchestration (DB, Server, Client, Redis)
 └── package.json
@@ -82,5 +86,12 @@ Inside the backend `modules/`, complex domains like `users` and `tournaments` fo
 The `apps/server/src/modules/matches/gateway/` uniquely separates the massive Socket.io responsibilities into focused domains:
 - `match.state.ts`: Tracks all active sockets, matches, and spectator viewers in memory.
 - `match.loop.ts`: The central interval loop driving the `engine`.
+- `match.campaign.ts`: Dedicated server-side campaign fight runner with `CampaignSession`, pause/resume, fixed-step streaming, and completion-token emission.
 - `match.delta-diff.ts`: Compresses state payloads by only broadcasting values that changed since the last tick (Delta compression).
 - `match.persistence.ts`: Flushes completed match telemetry and replay snapshots to PostgreSQL.
+
+### 5. Shared Subpath Exports
+Shared engine constants are imported through `@logic-arena/engine/constants`, including `CAMPAIGN_MATCH_MAX_STEPS`. Keep constants in `packages/engine/src/constants.ts` and update package subpath exports when adding new shared runtime values.
+
+### 6. Match Engine Domain Modules
+The server-side `MatchEngine` delegates environment hazards to `MatchHazards` and game-mode variant setup to `MatchModeManager`. This keeps KOTH, CTF, Survival, Racing, lava, ice, and cyber EMP behavior out of the core tick orchestration.

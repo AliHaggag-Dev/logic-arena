@@ -70,7 +70,9 @@ Two tabs: Combat Protocols (game modes) and Arena Maps (environments).
 Each level has: title, description, 3 progressive hints (1st free, 2nd costs 10 points, 3rd costs 25 points), concept taught, difficulty (EASY=50pts, MEDIUM=120pts, HARD=300pts, EXTREME=500pts), 3-star rating system with star thresholds from server, unlock/completion status. Boss levels at order 10 have a cinematic shake intro (560ms). Completing a level posts to /campaign/levels/{id}/complete.
 
 ## Campaign Level Detail (/campaign/[id])
-Full battle experience: write AliScript in a textarea editor, click "FIGHT" button with haptic feedback (50ms vibration). 60 FPS simulation with 3D arena rendering. Obstacles from getSceneForLevel(). Victory/defeat/draw modal with star ratings and points reward. Prefetches next level for instant loading. Desktop: side-by-side editor + 3D canvas. Mobile: stacked with scroll.
+Full battle experience: write AliScript in a textarea editor, click "FIGHT" button with haptic feedback (50ms vibration). The fight streams authoritative `campaignFrame` payloads from the server while the engine advances fixed 60 FPS simulation steps. Obstacles come from `getSceneForLevel()`. Victory/defeat/draw modal counts points and stars immediately, preserves best-star tracking, and prefetches the next level for instant loading. Desktop: side-by-side editor + 3D canvas. Mobile: stacked with scroll.
+
+Campaign level fights support server-side pause/resume through `campaign:pause`, `campaign:resume`, and `campaign:pause-state`. Pausing freezes the authoritative `CampaignSession`; resuming shifts wall-clock combat timestamps forward so wall-hit feedback, shield-hit feedback, and mine arming remain correct. Finished fights expose temporary in-memory replay controls over the canvas: play/pause, scrub, reset, and speed cycling.
 
 ## Tournaments (/tournaments)
 List of tournaments with create/join functionality. Each tournament has: name, status (WAITING=yellow/QUEUE, IN_PROGRESS=cyan/LIVE, COMPLETED=green/DONE), participant progress bar (up to 8 players), creator link. Supports 2/4/8 player brackets with SVG-based bracket tree visualization. Round-based match system with matchIndex. Creator can start the tournament. Stats bar shows TOTAL, LIVE, QUEUE counts. Polls every 5 seconds with visibility pause.
@@ -139,7 +141,7 @@ Full-screen 3D battle canvas (Three.js via Scene3D). Supports query params: scri
 60 FPS game loop, FPS counter, graphics quality setting (low/medium/high), fog of war toggle, sound effects, tracer fire and speech bubble effects, spectator count overlay, automatic fullscreen on mobile, WebSocket real-time state sync. 4 robot chassis: unit-01, unit-02, titan, sandman. 3 map themes: CYBER, MAGMA, GLACIAL.
 
 ## Replay (/replay/[matchId])
-Frame-by-frame playback of recorded matches. ReplayCanvas renders 2D match state. ReplayControls: play/pause, scrub, speed control, reset. Snapshot-based: fetches from GET /users/matches/{matchId}/replay. Shows legend (robot circle, projectile dot), speed display (frames/s), duration, date, match ID.
+Frame-by-frame playback of persisted multiplayer matches. ReplayCanvas renders 2D match state. ReplayControls: play/pause, scrub, speed control, reset. Snapshot-based: fetches from GET /users/matches/{matchId}/replay and reads `Match.replayData`. Shows legend (robot circle, projectile dot), speed display (frames/s), duration, date, match ID. Campaign level replay controls are separate and temporary to the active level session.
 
 ## Lobby (/lobby)
 Multiplayer match lobby with MatchModeSelector (CLASSIC, TACTICAL, HYBRID, TRAINING, RACING). Live match list from WebSocket. LobbyMatchCard per active match. ConnectionStatusBar (connecting/connected/error). Create match button (deploys to arena). Join match button (redirects to /arena with match params). NoScriptModal warns if no script selected. Guest: "LOGIN TO DEPLOY" / "LOGIN TO CREATE".
@@ -149,6 +151,20 @@ Multiplayer match lobby with MatchModeSelector (CLASSIC, TACTICAL, HYBRID, TRAIN
 
 ## Docs (/docs)
 Comprehensive AliScript language reference with sticky sidebar navigation. 12 sections: docs-intro (HeroSection), docs-quick-ref (QuickReferenceSection), docs-commands (CommandReferenceSection), docs-super-powers (SuperPowersSection for 9 tactical abilities), docs-queries (QueryFunctionsSection), docs-identifiers (IdentifierReferenceSection), docs-advanced (AdvancedLanguageFeaturesSection), docs-energy (EnergyCostSection), docs-rotation (RotationSystemSection with load-to-playground), docs-challenges (AlgorithmChallenges), docs-tactics (BattleTacticsSection), docs-playground (InteractivePlayground with live script editor + parse). Includes the AiTutor component for AI assistance.
+
+## Performance Notes
+Recent Lighthouse and runtime work focused on keeping campaign/public pages fast without weakening the arena:
+- Public and campaign pages use canonical URLs and metadata consistency for SEO.
+- GTM/analytics work is deferred so page interactivity is not blocked by third-party scripts.
+- Heavy editors, modals, replay controls, and visual sections are dynamically imported where useful.
+- Campaign level constants moved to `levels.constants.ts` for static generation and leaner pages.
+- Arena movement uses interpolation buffers and direct Three.js mesh mutation instead of React state churn.
+- Dynamic environments avoid per-frame allocations, consolidate frame loops, and use instanced meshes for repeated objects.
+
+## Known Limitations
+- Campaign replay controls are in-memory and scoped to the current level attempt; leaving the page discards the review buffer.
+- Persisted replay data exists for multiplayer matches played after replay capture was introduced.
+- Any new engine feature that stores absolute `Date.now()` timestamps must be included in the campaign resume timestamp-shift path.
 
 ## Insights (/insights)
 ARIA Insights — AI-generated post-match analysis. Paginated insight list. Mark as read, mark all read. Delete single, delete all. Unread count banner. Empty state: "No insights yet".

@@ -3,7 +3,7 @@
 <img src="./apps/client/public/og-image.jpg" alt="Logic Arena Hero Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
 
 # ⚔️ LOGIC ARENA ⚔️
-**v3.4.0 | Program your robot. Outsmart your opponent. Dominate the arena.**
+**v3.6.0 | Program your robot. Outsmart your opponent. Dominate the arena.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-99.6%25-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
@@ -14,7 +14,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=flat-square&logo=docker)](https://github.com/Ali-Haggag7/logic-arena/packages)
 [![Live](https://img.shields.io/badge/Live-logicarena.dev-22d3ee?style=flat-square&logo=vercel)](https://logicarena.dev)
 
-[**Live Demo (v3.4.0)**](https://logicarena.dev) · [**Documentation**](#project-documentation) · [**Report Bug**](https://github.com/Ali-Haggag7/logic-arena/issues)
+[**Live Demo (v3.6.0)**](https://logicarena.dev) · [**Documentation**](#project-documentation) · [**Report Bug**](https://github.com/Ali-Haggag7/logic-arena/issues)
 
 </div>
 
@@ -30,13 +30,14 @@ Unlike traditional games, **you don't play Logic Arena with a keyboard or a game
 
 ---
 
-## 🌟 The Fair Fight Update (v3.4.0)
+## 🌟 The Battle-Hardened Engine Update (v3.6.0)
 
-The latest major release brings unparalleled stability and strategic depth to the arena:
-* **Tactical vs Classic Modes:** Choose between carefully balanced Token Budget matches or pure chaotic deathmatch.
-* **Token Budget System:** Resource management is now fully integrated. Every action has a cost.
-* **Admin Dashboard Hardening:** Elite production stability, memory leak protections, and enhanced live analytics.
-* **Revamped Spectator Physics:** Zero-payload overhead architecture for buttery smooth live streaming of top-tier matches.
+The latest release hardens campaign battles, replay review, performance, and workspace builds:
+* **Server-side campaign pause/resume:** `campaign:pause` and `campaign:resume` freeze authoritative simulation state and shift `Date.now()`-backed combat timestamps forward on resume.
+* **Campaign replay review:** completed campaign fights keep temporary in-memory frames for instant play/pause, scrubbing, and speed review without shrinking the arena canvas.
+* **Synchronized campaign timer:** client and server both use `CAMPAIGN_MATCH_MAX_STEPS` from `@logic-arena/engine/constants`.
+* **Production workspace parity:** shared engine constants are available through the `@logic-arena/engine/constants` subpath export and Docker builds compile shared packages before the server.
+* **Performance hardening:** Lighthouse-oriented page work includes canonical URLs, deferred analytics, dynamic imports, reduced layout shift, and 120 FPS arena interpolation cleanup.
 
 ---
 
@@ -80,7 +81,10 @@ Unlock and equip unique custom robot chassis models in the **Black Market (Vault
 Write robot behavior scripts using Logic Arena's custom language. Supports **Dictionaries, State Machines, Dot Notation**, advanced sensory arrays, and **Swarm Intelligence** via a secure broadcast protocol. Strict server-side execution sandboxing limits script size, logic timeouts (TLE quotas), whitelisted commands, and applies execution rate limiting. Mobile players can use the intuitive **Block Editor** to drag and drop logic instead of typing code.
 
 ### ⚡ Real-Time Physics, FOV, and Super Powers
-Features vector-based physics, collision detection, and projectile simulations running at 60 FPS (20 server ticks/second). Equip **Tactical Super Powers** like SHIELD, CLOAK, DASH, TELEPORT, MINE, or TAUNT to turn the tide. All tactical choices consume points through a robust Energy & STASIS system.
+Features vector-based physics, collision detection, and projectile simulations with fixed-step simulation and real-time WebSocket frame streaming. Equip **Tactical Super Powers** like SHIELD, CLOAK, DASH, TELEPORT, MINE, or TAUNT to turn the tide. All tactical choices consume points through a robust Energy & STASIS system.
+
+### 🎮 Campaign Battles, Pause, and Replay
+The 60-level campaign streams authoritative server frames directly to the client. Campaign fights can be paused and resumed through server-owned session state, and finished fights expose a temporary replay scrubber for reviewing the exact frames that led to victory, defeat, or draw. Victory modals count points and stars immediately while preserving the user's best-star record.
 
 ### 💼 Economy & Black Market
 Earn progression through battles and campaigns, and spend your currency in the **Black Market (Vault)** to unlock custom paints, premium tracer rounds, and elite chassis models. Equip items using a high-fidelity 3D interactive viewer.
@@ -128,6 +132,8 @@ logic-arena/
         ↓
 [Snapshot saved to database / Redis every tick]
 ```
+
+Campaign fights use a specialized server-side `CampaignSession` map. Each session owns its interval reference, `MatchEngine`, step count, logic counter, pause state, and replay frame stream. While paused, the session loop returns without advancing. On resume, wall-clock timestamps such as `Robot.hitWallTimestamp`, `Robot.shieldHitTimestamp`, and active mine `Obstacle.createdAt` are shifted by the paused duration so cooldowns and arming windows remain consistent.
 
 ### Tech Stack
 
@@ -226,9 +232,11 @@ END
 | [Script Sandboxing](./docs/script-sandboxing.md) | Server-side AST script isolation & TLE quotas |
 | [ERD Diagram](./docs/erd-diagram.md) | Full PostgreSQL database schema |
 | [Game Rules](./docs/game-rules.md) | Physics, combat, abilities, modes, Energy system |
+| [Arena Environments & Modes](./docs/arena-environments-modes.md) | Arena themes, game modes, and play styles |
 | [Folder Structure](./docs/folder-structure.md) | Monorepo layout and architectural conventions |
 | [AliScript Language](./docs/aliscript-language.md) | Complete language syntax and reference guide |
 | [Rotation System Guide](./docs/rotation-system-guide.md) | Deep dive into robot FOV and scanner mechanics |
+| [Website Guide](./docs/website-guide.md) | Current page inventory and user-facing feature map |
 
 ---
 

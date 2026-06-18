@@ -81,7 +81,7 @@ RETURN    // return from function (optionally with a value)
 | `MOVE_FAST` | 4/tick | ✅ | 2× speed, 2× energy cost |
 | `BACKUP` | 2/tick | ✅ | Reverse thrust |
 | `PATHFIND` | 3/tick | ✅ | A\* pathfinding toward nearest visible enemy |
-| `STOP` | Free | ❌ | Halt all movement |
+| `STOP` | Free | ✅ | Halt all movement. Blocked while the robot is in STASIS |
 | `FIRE` | 8/shot | ✅ | Single precision shot (25 HP damage) |
 | `BURST_FIRE` | 18/burst | ✅ | 3-shot burst at −8°, 0°, +8° (up to 24 HP) |
 | `SCAN` | 3/call | ✅ | Rotate FOV cone +15°, populates scan memory |
@@ -102,8 +102,8 @@ RETURN    // return from function (optionally with a value)
 > // BURST_FIRE enemy      ← invalid
 > // SCAN 90               ← invalid
 > ```
-| `WAIT N` | Free | ❌ | Suspend execution for N ticks (60 ticks ≈ 1s) |
-| `SET var = expr` | Free | ❌ | Assign a variable. Executes even in STASIS |
+| `WAIT N` | Free | ✅ | Suspend execution for N ticks (60 ticks ≈ 1s). Blocked while the robot is in STASIS |
+| `SET var = expr` | Free | ✅ | Assign a variable. Blocked while the robot is in STASIS |
 
 ---
 
@@ -316,7 +316,7 @@ SET state["target_id"] = 12
 
 ## Advanced Tactics: Game Loop Architecture
 
-AliScript runs from top to bottom **every single tick** (10 times a second). This means variables initialized at the top of your script will reset every fraction of a second.
+AliScript runs from top to bottom on each logic tick. This means variables initialized at the top of your script will reset every fraction of a second.
 
 To build an advanced state machine that persists across ticks, you don't need a `WHILE TRUE DO` loop. Instead, use an initialization flag (`IF NOT initialized THEN`) to preserve your State Dictionary.
 
@@ -603,7 +603,7 @@ These functions **print** their result to the in-game log panel. They do **not**
 
 ## Energy System
 
-Robots have a shared energy pool that powers all actions. STASIS (energy depleted) blocks movement and combat but not logic.
+Robots have a shared energy pool that powers all actions. STASIS (energy depleted) blocks the robot's AliScript execution completely until recovery.
 
 ### Energy Costs
 
@@ -621,11 +621,11 @@ Robots have a shared energy pool that powers all actions. STASIS (energy deplete
 | `CLOAK` | 50 | ✅ |
 | `MINE` | 40 | ✅ |
 | `DASH` | 30 | ✅ |
-| `STOP` | Free | ❌ |
-| `WAIT` | Free | ❌ |
-| `SET` / Logic | Free | ❌ |
+| `STOP` | Free | ✅ |
+| `WAIT` | Free | ✅ |
+| `SET` / Logic | Free | ✅ |
 
-> **Regen rate:** +3 energy/tick (60 energy/sec at 20 tps). STASIS exits at ≥ 20 energy (~0.33s recovery from 0).
+> **Regen rate:** +3 energy/tick while in STASIS. STASIS exits at ≥ 20 energy. Runtime memory and action cooldowns are reset when the robot wakes from STASIS.
 
 ---
 
