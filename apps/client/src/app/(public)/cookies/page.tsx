@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const SECTIONS: PublicSection[] = [
   { id: "what-are-cookies", title: "What Are Cookies?", label: "What Are Cookies?" },
   { id: "essential-cookies", title: "Essential Cookies", label: "Essential" },
-  { id: "analytics-cookies", title: "Zero Analytics & Tracking", label: "No Analytics" },
+  { id: "analytics-cookies", title: "Analytics Cookies", label: "Analytics" },
   { id: "local-storage", title: "Local Storage", label: "Local Storage" },
   { id: "third-party-cookies", title: "Third-Party Cookies", label: "Third-Party" },
   { id: "managing-preferences", title: "Managing Preferences", label: "Manage Prefs" },
@@ -44,12 +44,12 @@ function CookieTable({ cookies }: { cookies: CookieEntry[] }) {
 
 export default function CookiesPage() {
   return (
-    <PublicPageLayout badge="Legal Document" title="Cookie Policy" subtitle="A precise, jargon-free breakdown of every cookie Logic Arena sets — what it does, why it exists, and exactly how long it lives in your browser." lastUpdated="May 2026" sections={SECTIONS}>
+    <PublicPageLayout badge="Legal Document" title="Cookie Policy" subtitle="A precise, jargon-free breakdown of cookies and browser storage Logic Arena may use, why they exist, and how they support the platform." lastUpdated="June 2026" sections={SECTIONS}>
 
       <PublicSectionCard id="what-are-cookies" index={1} title="What Are Cookies?" icon={<Cookie size={16} />}>
         <div className="flex flex-col gap-4">
           <PublicBody>Cookies are small text files a website stores in your browser when you visit. They act as short-term memory — letting a site remember that you are logged in, what theme you prefer, and how you interact with its features.</PublicBody>
-          <PublicBody>Not all cookies are equal. Logic Arena draws a strict line between technically necessary cookies and optional ones. We never activate optional cookies without your explicit consent.</PublicBody>
+          <PublicBody>Not all cookies are equal. Logic Arena draws a strict line between technically necessary cookies and optional analytics or third-party cookies.</PublicBody>
         </div>
       </PublicSectionCard>
 
@@ -65,16 +65,20 @@ export default function CookiesPage() {
         </div>
       </PublicSectionCard>
 
-      <PublicSectionCard id="analytics-cookies" index={3} title="Zero Analytics & Tracking" icon={<FlaskConical size={16} />}>
+      <PublicSectionCard id="analytics-cookies" index={3} title="Analytics Cookies" icon={<FlaskConical size={16} />}>
         <div className="flex flex-col gap-4">
-          <PublicBody>We believe in absolute privacy. Logic Arena <strong>does not use any analytics, telemetry, or tracking cookies</strong>. We do not track your session duration, page views, or click behavior.</PublicBody>
-          <PublicBody>Because we have zero tracking cookies, we do not require a cookie consent banner. You will never be asked to &quot;Accept All&quot; because there is nothing to accept.</PublicBody>
+          <PublicBody>Logic Arena loads Google Analytics using a lazy loading strategy so page rendering and gameplay are not blocked. Google Analytics may set cookies or use similar browser identifiers to measure page views, device/browser information, and aggregate usage patterns.</PublicBody>
+          <PublicBody>We use analytics to understand product usage and performance. We do not use analytics cookies to sell advertising profiles.</PublicBody>
+          <CookieTable cookies={[
+            { name: "_ga", purpose: "Google Analytics identifier used to distinguish aggregate visits and usage patterns.", lifespan: "Up to 2 years" },
+            { name: "_ga_*", purpose: "Google Analytics property-specific session and engagement measurement.", lifespan: "Up to 2 years" },
+          ]} />
         </div>
       </PublicSectionCard>
 
       <PublicSectionCard id="local-storage" index={4} title="Local Storage (Not Cookies)" icon={<Info size={16} />}>
         <div className="flex flex-col gap-4">
-          <PublicBody>Instead of cookies, we use your browser&apos;s native `localStorage` for non-sensitive UI preferences. This data never leaves your device and is never sent to our servers.</PublicBody>
+          <PublicBody>We use your browser&apos;s native `localStorage` for non-sensitive UI preferences. Theme values stay local. Auth uses the secure `la_session` cookie, not localStorage.</PublicBody>
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(var(--accent-rgb),0.12)" }}>
             <PublicDefinition term="theme">Stores your chosen display theme (Cyberpunk, Light, Obsidian Ember) so it persists when you close the browser.</PublicDefinition>
           </div>
@@ -83,8 +87,8 @@ export default function CookiesPage() {
 
       <PublicSectionCard id="third-party-cookies" index={5} title="Third-Party Cookies" icon={<Info size={16} />}>
         <div className="flex flex-col gap-4">
-          <PublicBody>Logic Arena does not embed third-party advertising, social widgets, or tracking pixels. We do not use Google Analytics, Facebook Pixel, or any similar external tracking service.</PublicBody>
-          <PublicBody>The only third-party context where cookies may be set is during the OAuth 2.0 sign-in flow via Google or GitHub. When you authenticate through those providers, they may set their own cookies according to their own policies — which we do not control.</PublicBody>
+          <PublicBody>Logic Arena does not embed third-party advertising or social widgets. Third-party cookies may appear from Google Analytics and during OAuth 2.0 sign-in via Google or GitHub.</PublicBody>
+          <PublicBody>When you authenticate through OAuth providers, they may set their own cookies according to their own policies, which we do not control.</PublicBody>
           <PublicBody>We recommend reviewing the cookie policies of <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="border-b transition-all" style={{ color: "var(--accent)", borderColor: "rgba(var(--accent-rgb),0.3)" }}>Google</a> and <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener noreferrer" className="border-b transition-all" style={{ color: "var(--accent)", borderColor: "rgba(var(--accent-rgb),0.3)" }}>GitHub</a> if you use OAuth sign-in.</PublicBody>
         </div>
       </PublicSectionCard>

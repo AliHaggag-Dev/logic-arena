@@ -10,7 +10,7 @@ import PublicPageLayout, {
 
 export const metadata = {
   title: "How It Works | Logic Arena",
-  description: "Learn how Logic Arena works — write AliScript, deploy your robot, and battle in real-time. No account required to explore.",
+  description: "Learn how Logic Arena works: write AliScript, deploy your robot, clear campaign fights, and battle in the real-time Arena.",
 };
 
 const SECTIONS: PublicSection[] = [
@@ -25,17 +25,18 @@ const SECTIONS: PublicSection[] = [
 const ALISCRIPT_FEATURES = [
   { icon: <Code2 size={15} />, label: "Imperative Syntax", desc: "Familiar control flow: IF / ELSE / WHILE — zero learning curve." },
   { icon: <Zap size={15} />, label: "Robot API Built-In", desc: "Native uppercase commands like MOVE, FIRE, and SCAN." },
-  { icon: <RefreshCw size={15} />, label: "Deterministic Execution", desc: "Runs at 20 ticks/second with a fixed instruction quota." },
+  { icon: <RefreshCw size={15} />, label: "Deterministic Execution", desc: "Runs under a fixed instruction quota, not hardware-dependent timers." },
   { icon: <Shield size={15} />, label: "Sandboxed & Safe", desc: "Pure battle logic. No external network or filesystem access." },
-  { icon: <Layers size={15} />, label: "Version History", desc: "Every script is versioned. Roll back from your Garage at any time." },
-  { icon: <Trophy size={15} />, label: "Instant Replay", desc: "Matches are recorded and replayable frame-by-frame." },
+  { icon: <Layers size={15} />, label: "Persistent Loadouts", desc: "Scripts, match mode preference, chassis, paint, and tracer choices are saved to your profile." },
+  { icon: <Trophy size={15} />, label: "Replay Review", desc: "Arena matches persist replay data; campaign fights use temporary review frames." },
 ];
 
 const ENGINE_FACTS = [
-  ["Deterministic Bytecode", "AliScript programs are compiled to a deterministic bytecode that produces identical outcomes regardless of server hardware or load."],
-  ["Instruction Quota System", "Each robot is allocated a fixed ops budget per tick. Scripts that exceed the budget receive a TLE (Time Limit Exceeded) result — not an unfair hardware advantage."],
-  ["WebSocket Real-Time Sync", "Live matches stream compressed state deltas over WSS to all connected clients and spectators at 20 ticks/sec. The 3D renderer smoothly interpolates intermediate frames for 60+ FPS visuals."],
-  ["Replay Ledger", "Every match outcome is committed to an append-only ledger on the server. Replays are lossless — they re-execute the original bytecode against the recorded input, not a saved video."],
+  ["AST Sandbox", "AliScript is tokenized, parsed, and interpreted through a whitelisted AST evaluator. It has no access to browser storage, Node APIs, the filesystem, or external networks."],
+  ["Instruction Quota System", "Each robot is allocated a fixed operations budget per logic tick. Scripts that exceed the budget receive a TLE result, so hardware speed never decides a match."],
+  ["WebSocket Real-Time Sync", "Arena matches stream compressed state deltas over WSS to players and spectators. The 3D renderer interpolates between server snapshots for smooth high-refresh visuals."],
+  ["Campaign Fixed-Step Runner", "Campaign fights use a server-side CampaignSession that advances fixed 60 FPS simulation steps and shares the same CAMPAIGN_MATCH_MAX_STEPS timer with the client."],
+  ["Replay Model", "Arena match replays are persisted as snapshots for later viewing. Campaign replay controls are temporary in-memory review tools for the active level attempt."],
 ];
 
 export default function HowItWorksPage() {
@@ -46,31 +47,31 @@ export default function HowItWorksPage() {
       title: "Write Your Script",
       icon: <Code2 size={16} />,
       body: "Write your robot's logic using AliScript. The editor checks syntax and tracks instruction limits in real-time.",
-      detail: "AliScript runs in a sandboxed environment. Your code is fully isolated from external networks and filesystems.",
+      detail: "AliScript supports conditionals, loops, dictionaries, arrays, sensors, math helpers, and Swarm communication while staying inside the AST sandbox.",
     },
     {
       id: "deploy-your-robot",
       number: "02",
       title: "Deploy Your Robot",
       icon: <Layers size={16} />,
-      body: "Deploy your script with a single click. Our engine compiles it to deterministic bytecode and verifies it for safety and quota limits.",
-      detail: "Deployments create a new version in your Garage. You can maintain multiple loadouts and switch between them freely.",
+      body: "Deploy your script with a single click. The server parses it, validates it against sandbox limits, and binds it to your selected robot loadout.",
+      detail: "Your profile stores scripts, match mode preference, chassis, paint, tracer, arena preferences, and notification settings.",
     },
     {
       id: "enter-the-arena",
       number: "03",
       title: "Enter the Arena",
       icon: <Swords size={16} />,
-      body: "Queue for ranked matches, play with friends, or battle bosses in the Campaign. Matches stream live to the 3D Arena viewer.",
-      detail: "Matches are fully observable in real-time. Spectator Mode lets anyone watch top players battle live.",
+      body: "Choose PvP Arena matches, friend challenges, tournaments, practice modes, or PvE Campaign levels. Matches stream live to the 3D Arena viewer.",
+      detail: "Campaign fights support server-side pause/resume and temporary replay controls. Multiplayer arena matches do not pause; they run as live competitive sessions.",
     },
     {
       id: "climb-the-ranks",
       number: "04",
       title: "Climb the Ranks",
       icon: <Crown size={16} />,
-      body: "Earn rating points (ELO) by winning matches. Study your replays, improve your logic, and climb the global leaderboard.",
-      detail: "The leaderboard updates instantly. Rise to the top and become an elite Logic Arena operator.",
+      body: "Earn rating points by winning arena matches and campaign points by clearing levels. Study replays, improve your logic, and climb the global leaderboard.",
+      detail: "Victory modals count campaign points and stars immediately while preserving your best-star record for each level.",
     },
   ];
 
@@ -79,7 +80,7 @@ export default function HowItWorksPage() {
       badge="Platform Guide"
       title="How It Works"
       subtitle="Logic Arena transforms your code into a living, fighting robot. Four steps stand between you and combat glory. Master each one to rise through the ranks."
-      lastUpdated="May 2026"
+      lastUpdated="June 2026"
       sections={SECTIONS}
     >
 
@@ -130,7 +131,7 @@ export default function HowItWorksPage() {
       <PublicSectionCard id="aliscript-language" index={5} title="The AliScript Language" icon={<BookOpen size={16} />}>
         <div className="flex flex-col gap-6">
           <PublicBody>
-            AliScript is a purpose-built combat scripting language designed from the ground up for the Logic Arena engine. It executes inside each robot&apos;s sandboxed runtime at 20 ticks per second, with a deterministic Time Limit Exceeded (TLE) instruction quota that guarantees fair outcomes on any server hardware.
+            AliScript is a purpose-built combat scripting language designed from the ground up for the Logic Arena engine. It executes inside each robot&apos;s sandboxed runtime with a deterministic Time Limit Exceeded (TLE) instruction quota that guarantees fair outcomes on any server hardware.
           </PublicBody>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {ALISCRIPT_FEATURES.map(f => (
@@ -165,7 +166,7 @@ export default function HowItWorksPage() {
       <PublicSectionCard id="competitive-engine" index={6} title="The Competitive Engine" icon={<Zap size={16} />}>
         <div className="flex flex-col gap-4">
           <PublicBody>
-            The Logic Arena combat engine is built on four non-negotiable principles: determinism, fairness, transparency, and integrity. Here is exactly how it works under the hood.
+            The Logic Arena combat engine is built on determinism, fairness, transparency, and integrity. Arena PvP, campaign PvE, replay review, and spectator views all derive from server-owned state rather than client-side trust.
           </PublicBody>
           {ENGINE_FACTS.map(([heading, body]) => (
             <div key={heading} className="flex gap-4 items-start py-3 border-b last:border-0" style={{ borderColor: "rgba(var(--accent-rgb),0.08)" }}>

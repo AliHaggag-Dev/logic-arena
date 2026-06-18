@@ -35,7 +35,11 @@ export function NetworkRetention() {
         <div className="flex flex-col gap-4">
           <PublicBody>We do not sell, rent, or trade your personal data. Full stop. The following are the only circumstances under which your data may leave our direct control:</PublicBody>
           {[
-            ["Infrastructure Providers", "We host on cloud infrastructure providers (such as a managed Kubernetes or VPS provider). These providers process data on our behalf under strict Data Processing Agreements (DPAs) and may not use your data for any other purpose."],
+            ["Infrastructure Providers", "We host application data in PostgreSQL through Prisma ORM, use Redis for sessions, rate limits, presence, replay cache, and short-lived campaign tokens, and run the application on managed cloud infrastructure. These providers process data on our behalf and may not use it for unrelated purposes."],
+            ["Avatar & Email Providers", "Cloudinary processes uploaded avatar images. Email infrastructure is used for verification, password reset, and service notifications."],
+            ["OAuth Providers", "Google and GitHub process sign-in flows when you choose OAuth. We receive only the profile fields needed to create or authenticate your account."],
+            ["Analytics Provider", "Google Analytics may receive page-view and device/browser telemetry from public and application pages. We use this to understand aggregate product usage and performance, not to sell advertising profiles."],
+            ["AI Assistance", "ARIA documentation and tutor features may use Google's Gemini API for retrieval, embeddings, or answer generation. Do not submit secrets, credentials, or sensitive personal data into AI prompts or uploaded analysis inputs."],
             ["Legal Obligations", "We may disclose data when compelled by a valid legal order from a competent authority (e.g., court order, government subpoena). We will notify affected users to the extent legally permitted."],
             ["Safety Emergencies", "In rare circumstances where there is a credible, immediate threat to the safety of a person, we may disclose the minimum necessary data to the appropriate authorities."],
             ["Business Transfers", "In the event of a merger, acquisition, or sale of assets, your data may be transferred to the successor entity. We will notify you via email and provide a 30-day window to request deletion before any transfer is completed."],
@@ -57,7 +61,9 @@ export function NetworkRetention() {
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(var(--accent-rgb), 0.12)" }}>
             <PublicDefinition term="Active Account">All account data and platform data is retained for the lifetime of your account.</PublicDefinition>
             <PublicDefinition term="Deleted Account">Upon account deletion, all personally identifiable information (name, email, OAuth identifiers) is purged within 30 days. This is irreversible.</PublicDefinition>
-            <PublicDefinition term="Match Records">Anonymised match records and aggregate statistics (e.g., total matches played, ELO distribution) may be retained indefinitely for platform integrity and historical leaderboard purposes. These records cannot be linked back to you after account deletion.</PublicDefinition>
+            <PublicDefinition term="Match Records">Anonymised match records, persisted arena replay snapshots, and aggregate statistics (e.g., total matches played, ELO distribution) may be retained indefinitely for platform integrity, replay learning, and historical leaderboard purposes. These records cannot be linked back to you after account deletion.</PublicDefinition>
+            <PublicDefinition term="Campaign Replay Buffers">Campaign replay controls use temporary in-memory frames for the active level attempt. These buffers are discarded when the session ends or the page is left and are not stored as persistent replay records.</PublicDefinition>
+            <PublicDefinition term="Feedback Records">Contact messages, bug reports, and feature requests are retained while they remain useful for support, moderation, product planning, or security investigation.</PublicDefinition>
             <PublicDefinition term="Connection Logs">Raw server logs containing IP addresses are purged after 30 days. Aggregated abuse-detection signals may be retained longer in anonymised form.</PublicDefinition>
           </div>
         </div>

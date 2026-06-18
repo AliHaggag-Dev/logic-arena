@@ -46,7 +46,7 @@ export default function TermsPage() {
       badge="Legal Document"
       title="Terms of Service"
       subtitle="These are the rules of the Arena. By accessing or using Logic Arena, you agree to be bound by these Terms. Read them. Know them. They exist to protect everyone — including you."
-      lastUpdated="May 2026"
+      lastUpdated="June 2026"
       sections={SECTIONS}
     >
       <LegalBasics />

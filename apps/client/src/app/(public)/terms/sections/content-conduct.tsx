@@ -9,7 +9,7 @@ export function ContentConduct() {
           <PublicBody>Logic Arena is a creation platform at its core. Everything you build here — your programs, your strategies — belongs to you. These terms clarify how that works in practice.</PublicBody>
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(var(--accent-rgb), 0.12)" }}>
             <PublicBody><strong>Your Ownership:</strong> All AliScript programs, scripts, and strategies you create and submit to Logic Arena remain your intellectual property. We make no claim of ownership over your creative work.</PublicBody>
-            <PublicBody><strong>Platform Licence:</strong> By submitting content to the platform, you grant Logic Arena a non-exclusive, worldwide, royalty-free licence to host, store, process, display, and transmit that content for the sole purpose of operating and delivering the Service. This licence terminates when you delete the content or your account.</PublicBody>
+            <PublicBody><strong>Platform Licence:</strong> By submitting content to the platform, you grant Logic Arena a non-exclusive, worldwide, royalty-free licence to host, store, process, display, and transmit that content for the sole purpose of operating and delivering the Service, including match execution, persisted arena replay playback, rankings, and learning features. This licence terminates when you delete the content or your account, except for anonymised records retained for platform integrity.</PublicBody>
             <PublicBody><strong>Your Responsibility:</strong> You represent and warrant that any content you submit does not infringe on the intellectual property rights of any third party and does not contain malicious code, exploits, or anything designed to harm the platform or other users.</PublicBody>
           </div>
         </div>
@@ -23,6 +23,7 @@ export function ContentConduct() {
             ["Economy Manipulation", "Exploiting bugs to generate infinite Black Market points, duplicate items, or manipulate Garage cosmetic loadouts."],
             ["Platform Sabotage", "Submitting code intentionally designed to cause server crashes or memory exhaustion."],
             ["Vulnerability Exploitation", "Exploiting bugs, security vulnerabilities, or unintended mechanics for competitive advantage without first reporting them through our responsible disclosure process."],
+            ["Pause & Replay Abuse", "Attempting to use campaign-only pause/resume, replay controls, or client-side timing manipulation to alter multiplayer outcomes, farm rewards, or falsify match state."],
             ["Harassment & Toxicity", "Engaging in harassment, hate speech, threats, or any abusive behaviour toward other users in any platform communication channel."],
             ["Multi-Accounting", "Creating or using multiple accounts to exploit matchmaking, manipulate rankings, or circumvent suspensions."],
             ["Automation & Botting", "Using scripts, bots, or automated tools to interact with the platform outside of the AliScript engine in ways not sanctioned by the API."],
@@ -45,7 +46,7 @@ export function ContentConduct() {
             <Crown size={14} className="shrink-0 mt-0.5" style={{ color: "var(--accent)" }} />
             <p className="text-[12px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb), 0.8)", fontFamily: "var(--font-mono)" }}>Competitive integrity is non-negotiable at Logic Arena. Every ranked match result is final once committed to the ledger by our deterministic battle engine.</p>
           </div>
-          <PublicBody>Logic Arena operates a deterministic, sandboxed combat engine. Match outcomes are computed server-side and are immutable once recorded. There is no mechanism to appeal or reverse a legitimate match result.</PublicBody>
+          <PublicBody>Logic Arena operates a deterministic, sandboxed combat engine. Match outcomes are computed server-side and are immutable once recorded. Campaign pause/resume is available only for campaign fights; it is not a multiplayer pause feature and does not alter arena match results. Replay controls are review tools, not appeal tools.</PublicBody>
           <PublicBody>Any attempt to manipulate match outcomes through external means — including collusion with opponents, coordinated ranking farming, exploitation of engine bugs, or interference with server processes — constitutes a severe violation of these Terms. Confirmed violations will result in:</PublicBody>
           {[
             "Immediate suspension of the offending account(s).",

@@ -82,6 +82,9 @@ export default function BugReportPage() {
             <p className="text-[13px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb),0.65)", fontFamily: "var(--font-mono)" }}>
               Found a bug? Describe it clearly with reproduction steps so we can fix it fast.
             </p>
+            <p className="mt-3 text-[11px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb),0.5)", fontFamily: "var(--font-mono)" }}>
+              Bug reports are stored for engineering triage and may be reviewed alongside logs or replay data when needed. Do not include exploit payloads, credentials, or private account data.
+            </p>
           </div>
         </header>
 

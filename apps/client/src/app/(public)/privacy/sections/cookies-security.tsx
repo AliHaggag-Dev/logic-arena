@@ -7,7 +7,7 @@ export function CookiesSecurity() {
     <>
       <PublicSectionCard id="cookies-tracking" index={7} title="Cookies & Tracking" icon={<Cookie size={16} />}>
         <div className="flex flex-col gap-4">
-          <PublicBody>We use exactly one essential cookie required to securely operate the platform (your session). We strictly do not use tracking, telemetry, or analytics cookies.</PublicBody>
+          <PublicBody>We use an essential secure session cookie to operate authenticated features. We also load Google Analytics lazily to understand aggregate usage and performance; analytics cookies or similar browser identifiers may be set by Google when that script runs.</PublicBody>
           <PublicBody>See our full{" "}
             <Link href="/cookies" className="inline-block border-b transition-all duration-200 hover:-translate-y-[1px] hover:border-accent hover:text-accent/90" style={{ color: "var(--accent)", borderColor: "rgba(var(--accent-rgb), 0.3)" }}>Cookie Policy</Link>{" "}
             for a complete breakdown.

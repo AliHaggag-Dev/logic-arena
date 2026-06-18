@@ -36,9 +36,10 @@ export function LegalBasics() {
           {[
             "Write, test, and submit AliScript programs to control virtual robots in competitive and campaign modes.",
             "Participate in ranked matches, Campaigns, or Tournaments against other users.",
+            "Use campaign-only pause/resume and temporary campaign replay controls for learning and review.",
             "Watch live matches via Spectator Mode and interact with the Black Market economy.",
             "Access and read platform documentation, patch notes, and community resources.",
-            "Share match replays and your AliScript programs with other users for educational or community purposes.",
+            "Share persisted arena match replays and your AliScript programs with other users for educational or community purposes.",
             "Report bugs and submit feature requests through official channels.",
           ].map((item) => (
             <div key={item} className="flex gap-3 items-start py-2.5 border-b last:border-0" style={{ borderColor: "rgba(var(--accent-rgb), 0.08)" }}>

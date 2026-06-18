@@ -43,7 +43,7 @@ export default function PrivacyPage() {
       badge="Legal Document"
       title="Privacy Policy"
       subtitle="We believe transparency is not optional — it is a competitive advantage. This document explains exactly what data we collect, why we collect it, and how we keep it secure."
-      lastUpdated="May 2026"
+      lastUpdated="June 2026"
       sections={SECTIONS}
     >
       <DataUsage />

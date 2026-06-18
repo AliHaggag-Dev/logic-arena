@@ -84,6 +84,9 @@ export default function ContactPage() {
             <p className="text-[13px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb),0.65)", fontFamily: "var(--font-mono)" }}>
               Have a question or proposal? Send us a message and we'll reply within 48 hours.
             </p>
+            <p className="mt-3 text-[11px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb),0.5)", fontFamily: "var(--font-mono)" }}>
+              Contact submissions are stored for support follow-up and admin triage. Do not include passwords, private keys, or sensitive personal data.
+            </p>
           </div>
         </header>
 

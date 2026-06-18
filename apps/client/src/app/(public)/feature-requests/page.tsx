@@ -82,6 +82,9 @@ export default function FeatureRequestsPage() {
             <p className="text-[13px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb),0.65)", fontFamily: "var(--font-mono)" }}>
               Got an idea? Describe your feature and how it improves the arena.
             </p>
+            <p className="mt-3 text-[11px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb),0.5)", fontFamily: "var(--font-mono)" }}>
+              Feature requests are stored for product planning and admin review. Please keep examples focused on gameplay, workflow, or accessibility needs.
+            </p>
           </div>
         </header>
 

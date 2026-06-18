@@ -27,7 +27,7 @@ export function ServiceTerms() {
           {[
             "Your access to the platform and all its features will be revoked immediately.",
             "Your personally identifiable information will be deleted within 30 days (see our Privacy Policy).",
-            "Your AliScript programs, match history, and ELO data will be anonymised and may be retained in aggregate form.",
+            "Your AliScript programs, match history, ELO data, and persisted arena replay records will be deleted or anonymised where required, and may be retained in aggregate or anonymised form for integrity and historical replay purposes.",
             "The usage licence you granted to Logic Arena for your submitted content will terminate.",
           ].map((item, i) => (
             <div key={i} className="flex gap-3 items-start py-2.5 border-b last:border-0" style={{ borderColor: "rgba(var(--accent-rgb), 0.08)" }}>

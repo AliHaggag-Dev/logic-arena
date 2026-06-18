@@ -11,7 +11,7 @@ export function RightsUpdates() {
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(var(--accent-rgb), 0.12)" }}>
             <PublicDefinition term="Right of Access">You may request a copy of all personal data we hold about you.</PublicDefinition>
             <PublicDefinition term="Right to Rectification">You may request correction of inaccurate or incomplete data. Many fields (username, avatar) can be updated directly in your account settings.</PublicDefinition>
-            <PublicDefinition term="Right to Erasure">You may request deletion of your account and associated personal data. Match records will be anonymised, not deleted, to preserve platform integrity.</PublicDefinition>
+            <PublicDefinition term="Right to Erasure">You may request deletion of your account and associated personal data. Match records and persisted arena replays may be anonymised, not deleted, to preserve platform integrity and replay history.</PublicDefinition>
             <PublicDefinition term="Right to Restriction">You may request that we restrict processing of your data while a dispute is being resolved.</PublicDefinition>
             <PublicDefinition term="Right to Portability">You may request an export of your account and match data in a structured, machine-readable format (JSON).</PublicDefinition>
             <PublicDefinition term="Right to Object">You may object to processing based on our legitimate interests, including analytics and communications not covered by your consent.</PublicDefinition>
