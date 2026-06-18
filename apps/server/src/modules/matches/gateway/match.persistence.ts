@@ -41,6 +41,26 @@ export async function persistMatchResults(
   const durationMs = Date.now() - startTime;
   const durationSecs = Math.max(1, Math.floor(durationMs / 1000));
 
+  // Pre-calculate playerStats for all human/guest players
+  const playerStats: Record<string, any> = {};
+  for (const robot of state.robots) {
+    if (robot.id.startsWith('dummy-') || robot.id.startsWith('bot-')) {
+      continue;
+    }
+    const newStats = computeCombatStats(
+      robot,
+      efficiencyScores[robot.id] ?? 0,
+      durationSecs,
+    );
+    const eloDelta = winner?.id === robot.id ? 10 : winner ? -10 : 0;
+    playerStats[robot.id] = {
+      eloDelta,
+      newStats,
+      durationSecs,
+      rank: 'GUEST',
+    };
+  }
+
   const persistenceResult = await prisma.$transaction(async (tx) => {
     // Keep only real persisted users. This avoids trying to connect guest/dummy IDs.
     const users = await tx.user.findMany({
@@ -134,6 +154,7 @@ export async function persistMatchResults(
 
         const eloDelta =
           persistedWinnerId === robot.id ? 10 : persistedWinnerId ? -10 : 0;
+        // Update the pre-computed playerStats entry with the DB Rank and merged stats
         playerStats[robot.id] = {
           eloDelta,
           newStats,
@@ -191,34 +212,40 @@ export async function persistMatchResults(
     };
   });
 
-  if (!persistenceResult) return;
-
-  if (persistenceResult.updatedWinner && redis?.healthy) {
-    await redis
-      .getClient()
-      .zadd(
-        LEADERBOARD_ZSET_KEY,
-        String(persistenceResult.updatedWinner.rank),
-        persistenceResult.updatedWinner.id,
-      );
+  if (!persistenceResult) {
+    return {
+      playerStats,
+    };
   }
 
-  if (redis) {
-    await redis.del(
-      LEADERBOARD_CACHE_KEY,
-      ...persistenceResult.playerIds.map((id) => profileKey(id)),
-    );
-    await redis.set(
-      replayKey(matchId),
-      {
-        id: persistenceResult.createdMatch.id,
-        replayData: persistenceResult.replayDataPayload,
-        winnerId: persistenceResult.createdMatch.winnerId,
-        duration: persistenceResult.createdMatch.duration,
-        createdAt: persistenceResult.createdMatch.createdAt,
-      },
-      REPLAY_TTL,
-    );
+  if (persistenceResult.createdMatch) {
+    if (persistenceResult.updatedWinner && redis?.healthy) {
+      await redis
+        .getClient()
+        .zadd(
+          LEADERBOARD_ZSET_KEY,
+          String(persistenceResult.updatedWinner.rank),
+          persistenceResult.updatedWinner.id,
+        );
+    }
+
+    if (redis) {
+      await redis.del(
+        LEADERBOARD_CACHE_KEY,
+        ...persistenceResult.playerIds.map((id) => profileKey(id)),
+      );
+      await redis.set(
+        replayKey(matchId),
+        {
+          id: persistenceResult.createdMatch.id,
+          replayData: persistenceResult.replayDataPayload,
+          winnerId: persistenceResult.createdMatch.winnerId,
+          duration: persistenceResult.createdMatch.duration,
+          createdAt: persistenceResult.createdMatch.createdAt,
+        },
+        REPLAY_TTL,
+      );
+    }
   }
   return persistenceResult;
 }

@@ -63,7 +63,17 @@ export const useGameState = (
     winner: { id: string; color: string } | null;
     draw: boolean;
     efficiencyScores: Record<string, number>;
-    playerStats?: Record<string, { eloDelta: number; newStats: any; durationSecs: number; rank: number }>;
+    playerStats?: Record<string, {
+      eloDelta: number;
+      newStats: {
+        precision: number;
+        defense: number;
+        aggression: number;
+        speed?: number;
+      };
+      durationSecs: number;
+      rank: string | number;
+    }>;
     aiPoints?: { pointsAwarded: number; breakdown: { base: number; difficultyMultiplier: number; performance: number; performanceLabel: string } };
   } | null>(null);
   const [serverConfirmedMode, setServerConfirmedMode] = useState<string>(mode || 'COMBAT');
