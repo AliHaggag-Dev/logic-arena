@@ -1,16 +1,31 @@
 "use client";
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { GameMode } from '../hooks/useScripts';
+import type { GameMode, MatchVariant } from '../hooks/useScripts';
 import type { AIDifficulty } from "@logic-arena/engine";
-import { ChevronLeft, ChevronRight, Swords, Sparkles, X, BrainCircuit } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Swords, Sparkles, X, BrainCircuit, ScrollText, Layers3 } from 'lucide-react';
 import Image from 'next/image';
+import type { RobotScript } from './script-card/types';
 
 interface ArenaSelectorProps {
     selectedMode: GameMode;
     setSelectedMode: (mode: GameMode) => void;
     selectedTheme: string;
     setSelectedTheme: (theme: string) => void;
+    scripts: RobotScript[];
+    selectedScriptId: string | null;
+    onSelectScript: (scriptId: string) => void;
+    selectedMatchVariant: MatchVariant;
+    setSelectedMatchVariant: (variant: MatchVariant) => void;
+    onStartSolo: (scriptId: string, mode: GameMode) => void;
     onStartAIMatch: (mode: GameMode, difficulty: AIDifficulty) => void;
+}
+
+interface DifficultyOption {
+    value: AIDifficulty;
+    label: string;
+    multiplier: string;
+    badge: string;
+    toneClass: string;
 }
 
 const MODES: { value: GameMode; label: string; description: string; image: string }[] = [
@@ -52,30 +67,64 @@ const THEMES: { value: string; label: string; colorClass: string; borderClass: s
     },
 ];
 
+const AI_DIFFICULTIES: DifficultyOption[] = [
+    {
+        value: 'easy',
+        label: 'EASY',
+        multiplier: '1x Score',
+        badge: 'E',
+        toneClass: '[--difficulty:var(--sem-success)] [--difficulty-rgb:var(--sem-success-rgb)]',
+    },
+    {
+        value: 'medium',
+        label: 'MEDIUM',
+        multiplier: '2x Score',
+        badge: 'M',
+        toneClass: '[--difficulty:var(--sem-info)] [--difficulty-rgb:var(--sem-info-rgb)]',
+    },
+    {
+        value: 'hard',
+        label: 'HARD',
+        multiplier: '3x Score',
+        badge: 'H',
+        toneClass: '[--difficulty:var(--sem-danger)] [--difficulty-rgb:var(--sem-danger-rgb)]',
+    },
+];
+
+const MATCH_VARIANTS: MatchVariant[] = ['HYBRID', 'CLASSIC', 'TACTICAL'];
+
 export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
     selectedMode,
     setSelectedMode,
     selectedTheme,
     setSelectedTheme,
+    scripts,
+    selectedScriptId,
+    onSelectScript,
+    selectedMatchVariant,
+    setSelectedMatchVariant,
+    onStartSolo,
     onStartAIMatch
 }) => {
     const modesRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
     const [pendingMode, setPendingMode] = useState<GameMode | null>(null);
-    const [showAIDifficulty, setShowAIDifficulty] = useState(false);
+    const [isScriptMenuOpen, setIsScriptMenuOpen] = useState(false);
 
     const closeModal = useCallback(() => {
         setPendingMode(null);
-        setShowAIDifficulty(false);
     }, []);
 
-    const handlePlaySolo = useCallback(() => {
-        if (pendingMode) {
-            setSelectedMode(pendingMode);
-            closeModal();
+    const handleLaunchSelectedSolo = useCallback(() => {
+        if (selectedScriptId) {
+            onStartSolo(selectedScriptId, selectedMode);
         }
-    }, [pendingMode, setSelectedMode, closeModal]);
+    }, [selectedScriptId, selectedMode, onStartSolo]);
+
+    const handleOpenSelectedAIMatch = useCallback(() => {
+        setPendingMode(selectedMode);
+    }, [selectedMode]);
 
     const handleAIDifficulty = useCallback((difficulty: AIDifficulty) => {
         if (pendingMode) {
@@ -83,6 +132,11 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
             closeModal();
         }
     }, [pendingMode, onStartAIMatch, closeModal]);
+
+    const handleSelectScript = useCallback((scriptId: string) => {
+        onSelectScript(scriptId);
+        setIsScriptMenuOpen(false);
+    }, [onSelectScript]);
 
     const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -117,6 +171,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
 
     const currentMode = MODES.find(m => m.value === selectedMode) || MODES[0];
     const currentTheme = THEMES.find(t => t.value === selectedTheme) || THEMES[0];
+    const selectedScript = scripts.find((script) => script.id === selectedScriptId) ?? scripts[0] ?? null;
 
     return (
         <section className="flex flex-col gap-6 p-1 relative w-full">
@@ -204,8 +259,7 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                                     key={mode.value}
                                     type="button"
                                     onClick={() => {
-                                        setPendingMode(mode.value);
-                                        setShowAIDifficulty(false);
+                                        setSelectedMode(mode.value);
                                     }}
                                     className={`relative flex-shrink-0 w-[160px] md:w-[200px] aspect-[16/10] rounded-[20px] overflow-hidden snap-start transition-all duration-300 group border text-left cursor-pointer ${
                                         isSelected 
@@ -267,10 +321,179 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                         })}
                     </div>
                 </div>
+
+                <div className="flex flex-col gap-4 rounded-2xl border border-accent/15 bg-card/35 p-4 shadow-[var(--card-shadow)]">
+                    <div className="flex items-center justify-between gap-3">
+                        <h4 className="text-[10px] font-black text-accent tracking-[0.2em] uppercase flex items-center gap-3">
+                            <span className="grid h-8 w-8 place-items-center rounded-lg border border-accent/20 bg-accent/10">
+                                <Layers3 size={15} />
+                            </span>
+                            Match Loadout
+                        </h4>
+                        <span className="hidden sm:inline text-[9px] font-black uppercase tracking-[0.16em] text-text-secondary">
+                            Confirm before deploy
+                        </span>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-[1.15fr_0.85fr]">
+                        <label className="flex flex-col gap-2">
+                            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-text-secondary">Entry Script</span>
+                            <div
+                                className="relative"
+                                onBlur={(event) => {
+                                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                                        setIsScriptMenuOpen(false);
+                                    }
+                                }}
+                            >
+                                <button
+                                    type="button"
+                                    aria-label="Entry script"
+                                    aria-haspopup="listbox"
+                                    aria-expanded={isScriptMenuOpen}
+                                    onClick={() => setIsScriptMenuOpen((isOpen) => !isOpen)}
+                                    disabled={scripts.length === 0}
+                                    className={`group/script-select flex min-h-11 w-full items-center gap-3 rounded-xl border bg-bg-secondary/70 px-3 py-3 text-left outline-none transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
+                                        isScriptMenuOpen
+                                            ? 'border-accent shadow-[0_0_18px_rgba(var(--accent-rgb),0.14)]'
+                                            : 'border-accent/20 hover:border-accent/40'
+                                    }`}
+                                >
+                                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-accent/20 bg-accent/10 text-accent">
+                                        <ScrollText size={14} />
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block truncate text-xs font-black uppercase tracking-[0.12em] text-text-primary">
+                                            {selectedScript?.title ?? 'NO SCRIPTS'}
+                                        </span>
+                                        <span className="mt-0.5 block truncate text-[8px] font-black uppercase tracking-[0.14em] text-text-secondary">
+                                            {selectedScript ? `V.${selectedScript.version} | ${selectedScript.matchMode ?? 'HYBRID'}` : 'Create a script first'}
+                                        </span>
+                                    </span>
+                                    <ChevronRight size={14} className={`shrink-0 text-text-secondary transition-transform ${isScriptMenuOpen ? '-rotate-90 text-accent' : 'rotate-90 group-hover/script-select:text-accent'}`} />
+                                </button>
+
+                                {isScriptMenuOpen && scripts.length > 0 && (
+                                    <div role="listbox" className="absolute left-0 right-0 top-full z-40 mt-2 overflow-hidden rounded-xl border border-accent/25 bg-bg-primary/95 shadow-[0_18px_40px_rgba(0,0,0,0.42),0_0_24px_rgba(var(--accent-rgb),0.12)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+                                        <div className="max-h-56 overflow-y-auto p-1.5 no-scrollbar">
+                                            {scripts.map((script) => {
+                                                const isSelectedScript = script.id === selectedScript?.id;
+                                                return (
+                                                    <button
+                                                        key={script.id}
+                                                        type="button"
+                                                        role="option"
+                                                        aria-selected={isSelectedScript}
+                                                        onClick={() => handleSelectScript(script.id)}
+                                                        className={`flex min-h-12 w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all cursor-pointer ${
+                                                            isSelectedScript
+                                                                ? 'bg-[rgba(var(--accent-rgb),0.14)] text-accent'
+                                                                : 'text-text-secondary hover:bg-[rgba(var(--accent-rgb),0.08)] hover:text-text-primary'
+                                                        }`}
+                                                    >
+                                                        <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg border ${
+                                                            isSelectedScript
+                                                                ? 'border-accent/40 bg-accent/15'
+                                                                : 'border-accent/10 bg-bg-secondary/55'
+                                                        }`}>
+                                                            {isSelectedScript ? <Check size={14} /> : <ScrollText size={13} />}
+                                                        </span>
+                                                        <span className="min-w-0 flex-1">
+                                                            <span className="block truncate text-xs font-black uppercase tracking-[0.12em]">
+                                                                {script.title}
+                                                            </span>
+                                                            <span className="mt-0.5 block text-[8px] font-black uppercase tracking-[0.14em] opacity-70">
+                                                                V.{script.version} | {script.matchMode ?? 'HYBRID'}
+                                                            </span>
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </label>
+
+                        <div className="flex flex-col gap-2">
+                            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-text-secondary">Match Type</span>
+                            <div className="grid grid-cols-3 gap-1 rounded-xl border border-accent/15 bg-bg-secondary/50 p-1">
+                                {MATCH_VARIANTS.map((variant) => {
+                                    const isActive = selectedMatchVariant === variant;
+                                    return (
+                                        <button
+                                            key={variant}
+                                            type="button"
+                                            onClick={() => setSelectedMatchVariant(variant)}
+                                            className={`min-h-9 rounded-lg px-2 text-[9px] font-black uppercase tracking-[0.12em] transition-all cursor-pointer ${
+                                                isActive
+                                                    ? 'bg-[rgba(var(--accent-rgb),0.18)] text-accent shadow-[0_0_14px_rgba(var(--accent-rgb),0.16)]'
+                                                    : 'text-text-secondary hover:bg-[rgba(var(--accent-rgb),0.08)] hover:text-text-primary'
+                                            }`}
+                                        >
+                                            {variant}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-2 rounded-xl border border-accent/10 bg-bg-primary/35 p-3 sm:grid-cols-4">
+                        {[
+                            ['Mode', currentMode.label],
+                            ['Map', currentTheme.label],
+                            ['Script', selectedScript?.title ?? 'None'],
+                            ['Type', selectedMatchVariant],
+                        ].map(([label, value]) => (
+                            <div key={label} className="min-w-0">
+                                <span className="block text-[8px] font-black uppercase tracking-[0.16em] text-text-secondary">{label}</span>
+                                <span className="block truncate text-[10px] font-black uppercase tracking-[0.12em] text-text-primary">{value}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="grid gap-2 sm:grid-cols-2">
+                        <button
+                            type="button"
+                            onClick={handleLaunchSelectedSolo}
+                            disabled={!selectedScript}
+                            className="group/deploy flex min-h-12 items-center gap-3 rounded-xl border border-accent/25 bg-accent/10 px-4 py-3 text-left transition-all hover:border-accent/60 hover:bg-accent/15 hover:shadow-[0_0_18px_rgba(var(--accent-rgb),0.16)] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-accent/25 bg-bg-primary/45 text-accent group-hover/deploy:shadow-[0_0_12px_rgba(var(--accent-rgb),0.22)]">
+                                <Swords size={16} />
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block text-xs font-black uppercase tracking-[0.14em] text-accent">Launch Solo</span>
+                                <span className="block truncate text-[8px] font-black uppercase tracking-[0.14em] text-text-secondary">
+                                    Enter with current loadout
+                                </span>
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleOpenSelectedAIMatch}
+                            disabled={!selectedScript}
+                            className="group/deploy flex min-h-12 items-center gap-3 rounded-xl border border-accent/15 bg-bg-secondary/45 px-4 py-3 text-left transition-all hover:border-accent/45 hover:bg-accent/8 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-accent/20 bg-accent/8 text-accent">
+                                <BrainCircuit size={16} />
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block text-xs font-black uppercase tracking-[0.14em] text-text-primary">Practice vs AI</span>
+                                <span className="block truncate text-[8px] font-black uppercase tracking-[0.14em] text-text-secondary">
+                                    Pick difficulty next
+                                </span>
+                            </span>
+                            <Sparkles size={14} className="ml-auto shrink-0 text-text-secondary group-hover/deploy:text-accent" />
+                        </button>
+                    </div>
+                </div>
                 
             </div>
 
-            {/* Mode Selection Modal */}
+            {/* AI Difficulty Modal */}
             {pendingMode && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg-primary/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={closeModal}>
                     <div className="relative w-full max-w-sm bg-bg-secondary border border-accent/20 rounded-[24px] shadow-[0_0_60px_rgba(var(--accent-rgb),0.12)] overflow-hidden animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
@@ -286,60 +509,33 @@ export const ArenaSelector: React.FC<ArenaSelectorProps> = ({
                             {/* Mode Info */}
                             <div className="flex flex-col gap-1 text-center">
                                 <h3 className="text-accent font-black text-lg tracking-[0.15em] uppercase">
-                                    {MODES.find(m => m.value === pendingMode)?.label}
+                                    AI Difficulty
                                 </h3>
                                 <p className="text-text-secondary text-[10px] font-black tracking-widest uppercase">
-                                    {MODES.find(m => m.value === pendingMode)?.description}
+                                    {MODES.find(m => m.value === pendingMode)?.label} | {selectedScript?.title ?? 'No script'} | {selectedMatchVariant}
                                 </p>
                             </div>
 
-                            {/* Play Solo */}
-                            <button type="button" onClick={handlePlaySolo} className="group relative flex items-center gap-3 w-full p-4 rounded-xl bg-accent/5 border border-accent/20 hover:border-accent/50 hover:bg-accent/10 transition-all text-left cursor-pointer">
-                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent/25 bg-accent/5 text-accent group-hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] transition-shadow">
-                                    <Swords size={18} />
-                                </span>
-                                <span className="flex flex-col min-w-0">
-                                    <span className="text-sm font-black tracking-[0.15em] text-text-primary uppercase">Play Solo</span>
-                                    <span className="text-[9px] text-text-secondary font-black tracking-wider uppercase">Select this game mode</span>
-                                </span>
-                            </button>
-
-                            {/* Practice vs AI */}
-                            <div className="flex flex-col gap-2">
-                                <button type="button" onClick={() => setShowAIDifficulty(v => !v)} className="group relative flex items-center gap-3 w-full p-4 rounded-xl bg-accent/5 border border-accent/20 hover:border-accent/50 hover:bg-accent/10 transition-all text-left cursor-pointer">
-                                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent/25 bg-accent/5 text-accent group-hover:shadow-[0_0_12px_rgba(var(--accent-rgb),0.2)] transition-shadow">
-                                        <BrainCircuit size={18} />
-                                    </span>
-                                    <span className="flex flex-col min-w-0">
-                                        <span className="text-sm font-black tracking-[0.15em] text-text-primary uppercase">Practice vs AI</span>
-                                        <span className="text-[9px] text-text-secondary font-black tracking-wider uppercase">Earn points by difficulty</span>
-                                    </span>
-                                    <Sparkles size={14} className={`ml-auto shrink-0 transition-all duration-200 ${showAIDifficulty ? 'text-accent' : 'text-text-secondary'}`} />
-                                </button>
-
-                                {/* Difficulty Picker */}
-                                {showAIDifficulty && (
-                                    <div className="flex flex-col gap-1.5 pl-2 animate-in slide-in-from-top-2 duration-150">
-                                        {([['easy', 'EASY', '1× Score'], ['medium', 'MEDIUM', '2× Score'], ['hard', 'HARD', '3× Score']] as [AIDifficulty, string, string][]).map(([value, label, multiplier]) => (
-                                            <button
-                                                key={value}
-                                                type="button"
-                                                onClick={() => handleAIDifficulty(value)}
-                                                className="flex items-center gap-3 w-full p-3 rounded-xl border border-accent/10 hover:border-accent/40 bg-transparent hover:bg-accent/5 transition-all text-left cursor-pointer"
-                                            >
-                                                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-accent/20 bg-accent/5 text-[9px] font-black text-accent uppercase tracking-widest">
-                                                    {value === 'easy' ? 'E' : value === 'medium' ? 'M' : 'H'}
-                                                </span>
-                                                <span className="flex flex-col min-w-0">
-                                                    <span className="text-xs font-black tracking-[0.15em] text-text-primary uppercase">
-                                                        {label}
-                                                    </span>
-                                                    <span className="text-[8px] text-text-secondary font-black tracking-wider">{multiplier}</span>
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
+                            <div className="flex flex-col gap-1.5 animate-in slide-in-from-top-2 duration-150">
+                                {AI_DIFFICULTIES.map(({ value, label, multiplier, badge, toneClass }) => (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        onClick={() => handleAIDifficulty(value)}
+                                        className={`group/difficulty relative flex items-center gap-3 w-full p-3 rounded-xl border border-[rgba(var(--difficulty-rgb),0.22)] bg-[rgba(var(--difficulty-rgb),0.045)] hover:border-[rgba(var(--difficulty-rgb),0.65)] hover:bg-[rgba(var(--difficulty-rgb),0.1)] hover:shadow-[0_0_18px_rgba(var(--difficulty-rgb),0.18)] transition-all text-left cursor-pointer overflow-hidden ${toneClass}`}
+                                    >
+                                        <span className="absolute inset-y-2 left-0 w-0.5 rounded-r-full bg-[var(--difficulty)] opacity-80 shadow-[0_0_10px_var(--difficulty)]" />
+                                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[rgba(var(--difficulty-rgb),0.42)] bg-[rgba(var(--difficulty-rgb),0.1)] text-[9px] font-black text-[var(--difficulty)] uppercase tracking-widest group-hover/difficulty:shadow-[0_0_12px_rgba(var(--difficulty-rgb),0.25)] transition-shadow">
+                                            {badge}
+                                        </span>
+                                        <span className="flex flex-col min-w-0">
+                                            <span className="text-xs font-black tracking-[0.15em] text-[var(--difficulty)] uppercase">
+                                                {label}
+                                            </span>
+                                            <span className="text-[8px] text-text-secondary font-black tracking-wider uppercase">{multiplier}</span>
+                                        </span>
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>

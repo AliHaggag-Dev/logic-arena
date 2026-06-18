@@ -8,6 +8,7 @@ import type { AIDifficulty } from "@logic-arena/engine";
 import { useSafeTimeout } from "../../../../hooks/useSafeTimeout";
 
 export type GameMode = "COMBAT" | "SURVIVAL" | "CAPTURE_THE_FLAG" | "KING_OF_THE_HILL" | "RACING" | "TRAINING_SOLO";
+export type MatchVariant = "CLASSIC" | "TACTICAL" | "HYBRID";
 
 export const GUEST_SCRIPT: RobotScript = {
     id: "guest-script",
@@ -26,6 +27,8 @@ export function useScripts() {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedMode, setSelectedMode] = useState<GameMode>("COMBAT");
     const [selectedTheme, setSelectedTheme] = useState<string>("CYBER");
+    const [selectedScriptIdState, setSelectedScriptIdState] = useState<string | null>(null);
+    const [selectedMatchVariant, setSelectedMatchVariant] = useState<MatchVariant>("HYBRID");
     const [editingScript, setEditingScript] = useState<RobotScript | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const router = useRouter();
@@ -39,6 +42,9 @@ export function useScripts() {
         // This eliminates the noisy 401 "Authorization header not found" on first mount.
         if (isGuest) {
             setScripts([GUEST_SCRIPT]);
+            setSelectedScriptId(GUEST_SCRIPT.id);
+            setSelectedScriptIdState(GUEST_SCRIPT.id);
+            setSelectedMatchVariant(GUEST_SCRIPT.matchMode ?? "HYBRID");
             setInitialLoad(false);
             return;
         }
@@ -52,9 +58,16 @@ export function useScripts() {
                 setScripts(response.data);
                 if (response.data && response.data.length > 0) {
                     const currentSelected = getSelectedScriptId();
-                    if (!currentSelected || !response.data.some((s: RobotScript) => s.id === currentSelected)) {
-                        setSelectedScriptId(response.data[0].id);
+                    const selectedScript = response.data.find((s: RobotScript) => s.id === currentSelected) ?? response.data[0];
+                    if (!currentSelected || selectedScript.id !== currentSelected) {
+                        setSelectedScriptId(selectedScript.id);
                     }
+                    setSelectedScriptIdState(selectedScript.id);
+                    setSelectedMatchVariant(selectedScript.matchMode ?? "HYBRID");
+                } else {
+                    setSelectedScriptId(null);
+                    setSelectedScriptIdState(null);
+                    setSelectedMatchVariant("HYBRID");
                 }
             } catch (error: unknown) {
                 if (cancelled) return;
@@ -120,28 +133,36 @@ export function useScripts() {
         }
     }, [isGuest, newScriptTitle, newScriptMode, clearStatusAfter]);
 
-    const handleGoToArena = useCallback((scriptId: string) => {
+    const handleSelectScript = useCallback((scriptId: string) => {
         const script = scripts.find((s) => s.id === scriptId);
-        const matchMode = script?.matchMode || "HYBRID";
-        router.push(`/arena?scriptId=${scriptId}&mode=${selectedMode}&theme=${selectedTheme}&matchMode=${matchMode}`);
-    }, [router, selectedMode, selectedTheme, scripts]);
+        setSelectedScriptId(scriptId);
+        setSelectedScriptIdState(scriptId);
+        setSelectedMatchVariant(script?.matchMode ?? "HYBRID");
+    }, [scripts]);
+
+    const handleGoToArena = useCallback((scriptId: string, modeOverride?: GameMode) => {
+        const script = scripts.find((s) => s.id === scriptId);
+        const matchMode = scriptId === selectedScriptIdState ? selectedMatchVariant : script?.matchMode || "HYBRID";
+        setSelectedScriptId(scriptId);
+        setSelectedScriptIdState(scriptId);
+        router.push(`/arena?scriptId=${scriptId}&mode=${modeOverride ?? selectedMode}&theme=${selectedTheme}&matchMode=${matchMode}`);
+    }, [router, selectedMode, selectedTheme, scripts, selectedMatchVariant, selectedScriptIdState]);
 
     const handleGoToArenaAI = useCallback((mode: GameMode, difficulty: AIDifficulty) => {
-        let scriptId = getSelectedScriptId();
+        let scriptId = selectedScriptIdState || getSelectedScriptId();
         if (!scriptId && scripts.length > 0) {
             scriptId = scripts[0].id;
             setSelectedScriptId(scriptId);
+            setSelectedScriptIdState(scriptId);
         }
         if (!scriptId) {
             setStatus({ message: "[ERR] No script selected. Create or select a script first.", type: "error" });
             clearStatusAfter(3000);
             return;
         }
-        const script = scripts.find((s) => s.id === scriptId);
-        const matchMode = script?.matchMode || "HYBRID";
         const matchId = crypto.randomUUID();
-        router.push(`/arena?scriptId=${scriptId}&matchId=${matchId}&mode=${mode}&theme=${selectedTheme}&matchMode=${matchMode}&aiDifficulty=${difficulty}`);
-    }, [router, selectedTheme, scripts, clearStatusAfter]);
+        router.push(`/arena?scriptId=${scriptId}&matchId=${matchId}&mode=${mode}&theme=${selectedTheme}&matchMode=${selectedMatchVariant}&aiDifficulty=${difficulty}`);
+    }, [router, selectedTheme, scripts, clearStatusAfter, selectedMatchVariant, selectedScriptIdState]);
 
     const handleGoToLobby = useCallback((scriptId: string) => {
         setSelectedScriptId(scriptId);
@@ -168,6 +189,9 @@ export function useScripts() {
         // Optimistic update
         const optimisticUpdated = { ...target, matchMode: newMode };
         handleOptimisticUpdate(optimisticUpdated);
+        if (id === selectedScriptIdState) {
+            setSelectedMatchVariant(newMode);
+        }
 
         if (isGuest) return;
 
@@ -184,7 +208,7 @@ export function useScripts() {
             setStatus({ message: "[ERR] MODE UPDATE FAILED", type: "error" });
             setTimeout(() => setStatus({ message: "", type: null }), 3000);
         }
-    }, [scripts, handleOptimisticUpdate, isGuest]);
+    }, [scripts, handleOptimisticUpdate, isGuest, selectedScriptIdState]);
 
     const handleRevert = useCallback((original: RobotScript) => {
         setScripts((prev) => prev.map((s) => (s.id === original.id ? original : s)));
@@ -234,12 +258,16 @@ export function useScripts() {
         setSelectedMode,
         selectedTheme,
         setSelectedTheme,
+        selectedScriptId: selectedScriptIdState,
+        selectedMatchVariant,
+        setSelectedMatchVariant,
         editingScript,
         setEditingScript,
         isGuest,
         showAuthModal,
         setShowAuthModal,
         handleCreateScript,
+        handleSelectScript,
         handleGoToArena,
         handleGoToArenaAI,
         handleGoToLobby,

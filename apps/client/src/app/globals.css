@@ -261,6 +261,16 @@ html, body {
   font-family: var(--font-sans), 'Space Grotesk', system-ui, sans-serif;
 }
 
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* ─────────────────────────────────────────────────────────
  *  NATIVE APP FEEL — no browser-like interactions
  *
