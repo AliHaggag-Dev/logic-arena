@@ -55,8 +55,11 @@ export const ArenaModels = ({
 }) => {
   const { scene } = useThree();
   const robotMeshesRef = useRef<Group[]>([]);
-  const renderTickRef = useRef(0);
   const lastUpdateRef = useRef(0);
+  // Local render-tick counter: incremented inside useFrame every 100ms to force
+  // ArenaModels to re-read gameStateRef.current and the interpolation buffer.
+  // Using useState (not useRef) so that React actually re-renders the component.
+  const [, setRenderTick] = useState(0);
 
   // BUG FIX: Clear existing static meshes on unmount to prevent 3+ robot duplication on reconnect
   useEffect(() => {
@@ -70,28 +73,43 @@ export const ArenaModels = ({
     };
   }, [scene]);
 
-  // Throttled update of local tick counter (no React re-render)
+  // Drive React re-renders from the R3F frame loop — every 100ms is enough for
+  // health bars and projectile list updates (position smoothing uses useFrame directly).
   useFrame(() => {
     const now = performance.now();
-    if (now - lastUpdateRef.current < 50) return;
+    if (now - lastUpdateRef.current < 100) return;
     lastUpdateRef.current = now;
-    renderTickRef.current += 1;
+    setRenderTick(t => t + 1);
   });
+
 
   // Read interpolated state from the buffer for smooth rendering.
   // Falls back to raw gameStateRef if the buffer has no data yet (first 100ms).
   const interpolatedState = interpolationBuffer.getDelayedSnapshot();
   const liveRobots = gameStateRef.current?.robots ?? [];
   const liveProjectiles = gameStateRef.current?.projectiles ?? [];
-  // Merge: use delayed state for known robots (100ms-old position = smooth interpolation),
-  // but include live robots/projectiles that don't exist in the delayed snapshot yet
-  // (e.g. newly spawned in survival mode) so they never vanish from the visual.
+
+  // Robots: use the LIVE state as the base (health, energy, inStasis, etc. are always
+  // current), but overlay position/rotation from the delayed snapshot for smooth motion.
+  // This ensures the health bar updates immediately while movement stays interpolated.
   const robots = interpolatedState?.robots
-    ? liveRobots.map(live => interpolatedState.robots.find(d => d.id === live.id) ?? live)
+    ? liveRobots.map(live => {
+        const delayed = interpolatedState.robots.find(d => d.id === live.id);
+        if (!delayed) return live;
+        return {
+          ...live,                    // live health, energy, inStasis, flags
+          position: delayed.position, // delayed position for smooth interpolation
+          rotation: delayed.rotation, // delayed rotation for smooth interpolation
+          velocity: delayed.velocity, // delayed velocity (used for animations)
+          fovDirection: delayed.fovDirection ?? live.fovDirection,
+        };
+      })
     : liveRobots;
-  const projectiles = interpolatedState?.projectiles
-    ? liveProjectiles.map(live => interpolatedState.projectiles.find(d => d.id === live.id) ?? live)
-    : liveProjectiles;
+
+  // Projectiles: always prefer the live state — projectiles are fast-moving and
+  // the per-instance useFrame interpolation in LaserModel handles sub-frame smoothing.
+  // The delayed snapshot risks hiding newly fired projectiles or keeping dead ones alive.
+  const projectiles = liveProjectiles;
 
   const { hitBurstsRef, hitFlashMapRef, isSpotted } = useSceneAnimation(robots, firedTracer, soundFx);
 

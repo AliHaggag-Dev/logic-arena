@@ -94,6 +94,32 @@ export const useGameState = (
 
   const lastUiUpdateRef = useRef(0);
   const tracerTimeoutRef = useRef<number | null>(null);
+  // Tracks whether joinMatch was already emitted for the current connection
+  // to avoid double-joining when both handleConnect and handleAuthenticated
+  // attempt to send it in rapid succession.
+  const joinMatchSentRef = useRef(false);
+
+  // Keep scriptIdRef in sync with the resolved scriptId prop.
+  // For guests the resolution is async: scriptId starts as null and changes to
+  // 'guest-script' after useScriptResolver finishes. When that happens and the
+  // socket is already connected and authenticated but joinMatch was not yet sent,
+  // we need to send joinMatch ourselves.
+  useEffect(() => {
+    const wasNull = scriptIdRef.current === null;
+    scriptIdRef.current = scriptId;
+
+    if (!isSpectator && scriptId && wasNull && socket.connected && !joinMatchSentRef.current) {
+      joinMatchSentRef.current = true;
+      socket.emit('joinMatch', {
+        matchId: sessionMatchId,
+        scriptId,
+        mode: modeRef.current || 'COMBAT',
+        matchMode: matchMode || 'HYBRID',
+        mapTheme: themeFromUrlRef.current,
+        aiDifficulty: aiDifficultyRef.current,
+      });
+    }
+  }, [scriptId, isSpectator, socket, sessionMatchId, matchMode]);
 
   useEffect(() => {
     // ── Full state reset between arena mounts ──────────────────────────
@@ -114,20 +140,31 @@ export const useGameState = (
     // Socket event handlers
     // -----------------------------------------------------------------------
 
+    // Reset join-guard on every new socket effect run (new connection)
+    joinMatchSentRef.current = false;
+
+    const emitJoinMatch = () => {
+      if (joinMatchSentRef.current) return;
+      joinMatchSentRef.current = true;
+      socket.emit('joinMatch', {
+        matchId: sessionMatchId,
+        scriptId: scriptIdRef.current,
+        mode: modeRef.current || 'COMBAT',
+        matchMode: matchMode || 'HYBRID',
+        mapTheme: themeFromUrlRef.current,
+        aiDifficulty: aiDifficultyRef.current,
+      });
+    };
+
     const handleConnect = () => {
       console.log('[Socket] Connected');
       if (isSpectatorRef.current) {
         socket.emit('spectate', { matchId: sessionMatchId });
       } else if (scriptIdRef.current) {
-        socket.emit('joinMatch', {
-          matchId: sessionMatchId,
-          scriptId: scriptIdRef.current,
-          mode: modeRef.current || 'COMBAT',
-          matchMode: matchMode || 'HYBRID',
-          mapTheme: themeFromUrlRef.current,
-          aiDifficulty: aiDifficultyRef.current,
-        });
+        emitJoinMatch();
       }
+      // If scriptId is not yet resolved (e.g. guest async resolve), joinMatch
+      // will be sent from handleAuthenticated once the server confirms identity.
     };
 
     const handleMatchJoinedInfo = (data: { mode: string; phase?: MatchPhaseState['phase']; roundNumber?: number; timeLeft?: number; phaseEndsAt?: number }) => {
@@ -150,6 +187,13 @@ export const useGameState = (
         // Force-set selectedRobotId to the new userId. Using prev || id
         // would keep a stale guest ID from the previous socket connection.
         setSelectedRobotId(data.userId);
+
+        // Guest case: scriptId may not have been resolved yet when handleConnect
+        // fired. Now that the server has confirmed our identity and we have a
+        // userId, send joinMatch if scriptId is ready and we are not spectating.
+        if (!isSpectatorRef.current && scriptIdRef.current) {
+          emitJoinMatch();
+        }
       }
     };
 
