@@ -49,6 +49,7 @@ logic-arena/
 │   ├── engine/                  # Headless 2D Physics Engine
 │   │   └── src/
 │   │       ├── constants.ts     # Shared arena, obstacle, and campaign timing constants
+│   │       ├── ai-scripts.ts    # Practice vs AI bot scripts for all modes and difficulty tiers
 │   │       ├── core/            # Robot updater, bounding boxes, GameLoop
 │   │       ├── physics/         # Spatial vectors, collision detection, Raycasting
 │   │       ├── abilities/       # Tactical super powers (Cloak, Teleport, Mine, etc.)
@@ -89,9 +90,13 @@ The `apps/server/src/modules/matches/gateway/` uniquely separates the massive So
 - `match.campaign.ts`: Dedicated server-side campaign fight runner with `CampaignSession`, pause/resume, fixed-step streaming, and completion-token emission.
 - `match.delta-diff.ts`: Compresses state payloads by only broadcasting values that changed since the last tick (Delta compression).
 - `match.persistence.ts`: Flushes completed match telemetry and replay snapshots to PostgreSQL.
+- `../ai-points.ts`: Calculates server-authoritative Practice vs AI rewards from mode objectives, difficulty multipliers, and final performance data.
 
 ### 5. Shared Subpath Exports
 Shared engine constants are imported through `@logic-arena/engine/constants`, including `CAMPAIGN_MATCH_MAX_STEPS`. Keep constants in `packages/engine/src/constants.ts` and update package subpath exports when adding new shared runtime values.
 
 ### 6. Match Engine Domain Modules
 The server-side `MatchEngine` delegates environment hazards to `MatchHazards` and game-mode variant setup to `MatchModeManager`. This keeps KOTH, CTF, Survival, Racing, lava, ice, and cyber EMP behavior out of the core tick orchestration.
+
+### 7. Practice vs AI Modules
+Practice vs AI uses normal match orchestration with first-party bot scripts from `packages/engine/src/ai-scripts.ts`. Reward calculation is kept server-side in `apps/server/src/modules/matches/ai-points.ts` so client query params can select difficulty but cannot decide earned points.

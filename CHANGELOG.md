@@ -2631,3 +2631,46 @@ A major structural and performance hardening release focused on workspace parity
 
 * Logic Arena's build and runtime pipelines are structurally hardened. The server-authoritative campaign pause-and-resume engine cleanly recalculates entity time vectors on the fly, and the absolute canvas overlay layout completely removes display footprint regressions during review. WebGL cache destruction loops and layout contamination parameters have been neutralized, solidifying a stable 120 FPS lifecycle over consecutive room switching. Production container compiling achieves complete parity with local workspace layouts through structured Docker building sequence modifications and rigid tsconfig subpath routing.
 * **Ready for:** Fog of War layer development, multiplayer stress testing, and official University Competition initialization.
+
+## [3.6.5] - The Intelligent Arena — Practice vs AI Pipelines & Guest Experience Remediations — 2026-06-19
+
+A focused production stability and tactical enrichment update expanding match optionality and reinforcing rendering architecture boundaries. This release launches a comprehensive standalone **Practice vs AI system** equipped with mode-specific adaptive scripts and scaled difficulty point multipliers. Alongside it, this update implements fundamental synchronization layers for guest mechanics—permanently resolving timing race conditions in initial canvas socket updates, establishing runtime memory garbage collection insulation during quick soft reloads, and transforming static guest match termination screens into temporary real-time dynamic dashboard counters.
+
+---
+
+### New Features
+
+* **Practice vs AI Match Pipeline & Bot Core Scripts:**
+  Introduced a comprehensive single-player training framework allowing users to battle automated bots across all 5 game variants[cite: 9]. The engine now ships with 15 specialized, flat-format script combinations (`packages/engine/src/ai-scripts.ts`) configured for 3 distinct performance tiers [Easy, Medium, Hard](cite: 9). Lower difficulties focus on basic trajectories and straight firing bursts, whereas Hard-tier routines deploy advanced predictive targeting, automated shielding matrices, directional strafe behaviors, and body-locked camera vector tracking (`lockVision`)[cite: 9]. The lobby dashboard leverages this framework by adding difficulty selection parameters, immediately converting match requests into AI combat tokens on click[cite: 9].
+
+* **Authoritative AI Performance Points Matrix:**
+  Developed an algorithmic server-side rewards evaluation pipeline (`ai-points.ts`) that scales based on real-time execution limits[cite: 9]. Users receive base tokens heavily dependent on the active battle mode rules—calculating remaining hit points on Combat maps, successful captures on Capture The Flag grids, threshold metrics on King of the Hill locations, wave survival counts on continuous operations, and elapsed duration parameters on Racing tracks[cite: 9]. This value is subsequently modified by structural tier coefficients (Easy = 1×, Medium = 2×, Hard = 3×) and pushed dynamically to the user's relational profile table[cite: 9]. Solo testing runs without difficulty flags trigger zero points accumulation, fully protecting the leaderboard economy[cite: 9].
+
+* **Transient Dynamic Statistics for Guest Sessions:**
+  Eradicated static placeholder representations on guest victory and defeat overlays, replacing them with live engine evaluation data streams[cite: 9]. The server calculates true user performance variables (accuracy percentiles, projectile impacts, movement speeds, match durations) inside the loop and broadcasts the resulting structures directly to the client at the terminal boundary[cite: 9]. These temporary stats occupy viewport memories temporarily and are completely cleared on loop exit (such as returning to the dashboard) without initiating expensive database writes or corrupting persistence caches[cite: 9, 11]. Normal authenticated user workflows remain untouched, safely tracking progression states across relational database transactions[cite: 11].
+
+---
+
+### Technical Scars and Resolutions
+
+* **Issue — "The Hidden Contender" (Guest Initial Script Resolution Socket Race Condition):**
+  When attempting to enter match viewports as an unauthenticated guest user, the 3D scene canvas would frequently freeze with empty grids, completely failing to render either robot model[cite: 11]. The underlying bottleneck stemmed from an asynchronous race condition between the background `useScriptResolver` sequence and the main socket socket connection wrapper[cite: 11]. The core connection listener evaluated available credentials once on connection start, but because the async guest script provider had not yet populated the tracking reference layout with `'guest-script'`, the execution loop short-circuited and completely skipped emitting the `joinMatch` event, leaving the server without an entry signal[cite: 11].
+
+  **Resolution:** Implemented a thread-safe connection state-guard reference (`joinMatchSentRef`) to entirely suppress duplicate or double socket transmissions[cite: 11]. Extended the connection handling hooks to trigger the authoritative `emitJoinMatch` procedure across three separate checkpoints: during primary socket connection checks, upon successful server authentication handshakes, and via an active `useEffect` watch hook that captures when the async payload resolves from `null` into a valid guest script handle[cite: 11]. This guarantees full synchronization between client hydration and server-side room population[cite: 11].
+
+* **Issue — "The Static Frame Frozen Buffer" (React Memoization Strangling Rendering Updates):**
+  During intense combat sequences, robot health bars and bullet indicators failed to visually refresh in real time, causing entities to suddenly jump or vanish when terminal end-game frames dropped[cite: 11]. This happened because the main `Scene3D` layout wrapper was explicitly wrapped inside `React.memo` while passing down stable reference indicators[cite: 11]. Because the wrapper saw identical prop descriptors, it repeatedly skipped component updates[cite: 11]. This forced `ArenaModels` to read from a single stale coordinate block, completely blocking projectile animations and sub-frame execution ticks[cite: 11].
+
+  **Resolution:** Completely restructured how variables flow through the render pipeline inside [`ArenaModels.tsx`][file:///c:\projects/logic-arena/apps/client/src/app/arena/components/Scene3D/ArenaModels.tsx](cite: 11). Discretized data responsibilities by passing live, raw server vectors directly down to the viewport root for volatile data components (such as real-time health and system stasis indicators), while using the 100ms interpolation cache strictly to smoothly translate horizontal positions and rotations[cite: 11]. Added a local loop tracker hook (`useState`) directly inside the canvas `useFrame` frame sequencer that forces updates at 100ms intervals, completely bypassing parent component tracking and restoring fluid rendering[cite: 11].
+
+* **Issue — "The WebGL Context Demolition" (Array Churn Forcing Canvas Destruction Recalcs):**
+  Refreshing the main match page frequently resulted in the entire viewport crashing into a flat white screen[cite: 11]. System logs reported a severe WebGL Context Loss failure accompanied by Turbopack compilation exceptions during asset collection loops[cite: 11]. This crash was caused by passing inline array wrappers and un-memoized object literals—such as `dpr={[1, 2]}` and dynamic `gl` performance arguments—straight into the primary `<Canvas>` component[cite: 11]. On every micro-render trigger, the component interpreted these array copies as distinct settings modifications, repeatedly re-instantiating the WebGL renderer until the device's graphics memory crashed[cite: 11].
+
+  **Resolution:** Wrapped all structural configuration variables—including device pixel ratio thresholds, canvas antialiasing options, and high-performance power preference tags—inside dedicated `useMemo` hooks on the main canvas layer[cite: 11]. This stabilizes object references across all tree recalculations and completely blocks redundant WebGL context re-creations[cite: 11]. Terminated broken background Node processes using forceful PowerShell routines and cleared the `.next/dev/cache` workspace directory to fully stabilize local Turbopack compilation tracks[cite: 11].
+
+---
+
+### Current Status
+
+* Logic Arena now hosts an authoritative, multi-tier Practice vs AI game pipeline complete with mode-specific scoring algorithms and pre-written bot behavioral scripts[cite: 9]. Async race conditions hindering guest loading states have been corrected via strict state-guard wrappers, and canvas object allocations are fully memoized to eliminate WebGL memory leaks during soft refreshes[cite: 11]. Guest user victory flows stream verified, dynamic match statistics while shielding the permanent ranking tables from data pollution[cite: 9, 11].
+* **Ready for:** Fog of War visualization layers, cross-workspace multiplayer pressure evaluations, and University Competition tournament deployments.

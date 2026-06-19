@@ -10,7 +10,7 @@ import PublicPageLayout, {
 
 export const metadata = {
   title: "How It Works | Logic Arena",
-  description: "Learn how Logic Arena works: write AliScript, deploy your robot, clear campaign fights, and battle in the real-time Arena.",
+  description: "Learn how Logic Arena works: write AliScript, deploy your robot, practice against AI, clear campaign fights, and battle in the real-time Arena.",
 };
 
 const SECTIONS: PublicSection[] = [
@@ -37,6 +37,7 @@ const ENGINE_FACTS = [
   ["WebSocket Real-Time Sync", "Arena matches stream compressed state deltas over WSS to players and spectators. The 3D renderer interpolates between server snapshots for smooth high-refresh visuals."],
   ["Campaign Fixed-Step Runner", "Campaign fights use a server-side CampaignSession that advances fixed 60 FPS simulation steps and shares the same CAMPAIGN_MATCH_MAX_STEPS timer with the client."],
   ["Replay Model", "Arena match replays are persisted as snapshots for later viewing. Campaign replay controls are temporary in-memory review tools for the active level attempt."],
+  ["Practice vs AI Scoring", "AI matches use first-party bot scripts across Easy, Medium, and Hard tiers. Authenticated rewards are calculated server-side from the selected mode, final performance, and difficulty multiplier."],
 ];
 
 export default function HowItWorksPage() {
@@ -62,16 +63,16 @@ export default function HowItWorksPage() {
       number: "03",
       title: "Enter the Arena",
       icon: <Swords size={16} />,
-      body: "Choose PvP Arena matches, friend challenges, tournaments, practice modes, or PvE Campaign levels. Matches stream live to the 3D Arena viewer.",
-      detail: "Campaign fights support server-side pause/resume and temporary replay controls. Multiplayer arena matches do not pause; they run as live competitive sessions.",
+      body: "Choose PvP Arena matches, Practice vs AI, friend challenges, tournaments, sandbox modes, or PvE Campaign levels. Matches stream live to the 3D Arena viewer.",
+      detail: "Practice vs AI supports Easy, Medium, and Hard bots across all five game variants. Campaign fights support server-side pause/resume and temporary replay controls. Multiplayer arena matches do not pause; they run as live competitive sessions.",
     },
     {
       id: "climb-the-ranks",
       number: "04",
       title: "Climb the Ranks",
       icon: <Crown size={16} />,
-      body: "Earn rating points by winning arena matches and campaign points by clearing levels. Study replays, improve your logic, and climb the global leaderboard.",
-      detail: "Victory modals count campaign points and stars immediately while preserving your best-star record for each level.",
+      body: "Earn rating points by winning arena matches, campaign points by clearing levels, and AI practice bonuses from authenticated difficulty-tagged matches. Study replays, improve your logic, and climb the global leaderboard.",
+      detail: "Victory modals count campaign points and stars immediately while preserving your best-star record for each level. Guest match summaries show live stats temporarily without writing profile or leaderboard records.",
     },
   ];
 

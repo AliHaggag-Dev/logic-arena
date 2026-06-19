@@ -40,6 +40,17 @@ The timestamp shift updates `Robot.hitWallTimestamp`, `Robot.shieldHitTimestamp`
 ## Replay Architecture
 Multiplayer matches persist snapshot replay data in `Match.replayData` and expose it through `GET /users/matches/:matchId/replay`. Campaign level fights keep a temporary in-memory frame buffer on the client during the current level session. The campaign replay overlay is positioned over the canvas and provides play/pause, scrub, reset, and speed controls without changing the canvas aspect ratio.
 
+## Practice vs AI Pipeline
+Practice vs AI is a server-authoritative single-player arena path layered on top of the normal match engine.
+
+1. The lobby sends the selected script and `aiDifficulty` (`easy`, `medium`, or `hard`) when creating an AI match.
+2. The engine loads the matching bot routine from `packages/engine/src/ai-scripts.ts`. The file contains mode-specific scripts for Combat, Capture the Flag, King of the Hill, Survival, and Racing across all three difficulty tiers.
+3. The match runs through the same authoritative server loop as arena matches, so AI behavior, projectiles, movement, and win conditions are not trusted to the client.
+4. On completion, `apps/server/src/modules/matches/ai-points.ts` calculates rewards from the active mode objective, the selected difficulty multiplier, and performance data from the final engine state.
+5. Solo/testing runs without an explicit difficulty flag award zero points. Guest sessions can receive dynamic end-screen stats but do not write AI rewards or leaderboard records.
+
+AI bot scripts intentionally remain flat AliScript payloads rather than privileged engine code. Easy bots use basic movement and firing, Medium bots add tactical reactions, and Hard bots use predictive targeting, shields, strafing, and `lockVision` behavior.
+
 ## Workspace Exports and Build Order
 Shared constants live in `packages/engine/src/constants.ts` and are consumed through subpath imports such as `@logic-arena/engine/constants`. Production Docker builds compile `@logic-arena/logic-parser` and `@logic-arena/engine` before compiling `apps/server`, then copy their `dist/` outputs into runtime space. The server `tsconfig` includes wildcard aliases for shared package subpaths so local pnpm links and clean container builds resolve the same way.
 
@@ -50,6 +61,8 @@ Recent performance work focused on both Lighthouse page scores and arena runtime
 * React Three Fiber motion is decoupled from React state through an `InterpolationBuffer`, direct mesh mutation in `useFrame`, and UI snapshots throttled to 10 FPS.
 * Environment rendering avoids per-frame object allocations, consolidates frame loops, uses instancing for repeated debris/asteroids, and avoids manual GLTF texture disposal so shared caches remain valid.
 * Arena state cleanup clears interpolation snapshots, selected robot ids, socket user ids, training stats, and stale map themes on mount/unmount to avoid ghost state after soft navigation.
+* Guest join timing is guarded by `joinMatchSentRef` and multiple `emitJoinMatch` checkpoints so async guest script resolution cannot leave the canvas in an empty, unjoined state.
+* `ArenaModels.tsx` keeps volatile raw vectors separate from interpolation cache data, while Canvas structural options such as DPR, antialiasing, and power preference are memoized to avoid unnecessary WebGL context recreation.
 
 ## Admin Command Center & Analytics
 The architecture includes a comprehensive Admin subsystem located at `/admin`.
@@ -63,6 +76,8 @@ Logic Arena heavily utilizes Next.js Route Groups and responsive designs.
 
 ## Known Runtime Constraints
 * Campaign replay frames are temporary for the active level session; persisted replay review remains the `/replay/[matchId]` path for completed multiplayer matches.
+* Guest victory and defeat statistics are temporary runtime values. They are cleared when the loop exits or the user returns to the dashboard, and they are not persisted to PostgreSQL.
+* Practice vs AI rewards are only granted for authenticated, difficulty-tagged AI matches. Generic solo testing and guest practice runs are excluded from the permanent economy.
 * Campaign pause currently shifts known wall-clock fields (`hitWallTimestamp`, `shieldHitTimestamp`, active mine `createdAt`). New `Date.now()`-backed engine fields must be added to `MatchEngine.shiftTimestamps()` when introduced.
 * STASIS blocks AliScript execution for the affected robot until energy recovers; scripts must be written so they can restart cleanly after a STASIS reset.
 

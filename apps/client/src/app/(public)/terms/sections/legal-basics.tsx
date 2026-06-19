@@ -35,7 +35,7 @@ export function LegalBasics() {
           <PublicBody>Within this licence, you are permitted to:</PublicBody>
           {[
             "Write, test, and submit AliScript programs to control virtual robots in competitive and campaign modes.",
-            "Participate in ranked matches, Campaigns, or Tournaments against other users.",
+            "Participate in ranked matches, Campaigns, Practice vs AI runs, or Tournaments.",
             "Use campaign-only pause/resume and temporary campaign replay controls for learning and review.",
             "Watch live matches via Spectator Mode and interact with the Black Market economy.",
             "Access and read platform documentation, patch notes, and community resources.",

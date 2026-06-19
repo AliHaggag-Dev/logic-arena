@@ -119,7 +119,7 @@ My Profile page showing: HeroSection (avatar, username, rank, member since, domi
 Same layout as My Profile but read-only. Fetches from GET /users/{username}/public. Has back button navigation and error states (NOT_FOUND, NETWORK, UNKNOWN).
 
 ## Arena (/arena)
-Full-screen 3D battle canvas (Three.js via Scene3D). Supports query params: scriptId, matchId, mode, matchMode, spectate, theme.
+Full-screen 3D battle canvas (Three.js via Scene3D). Supports query params: scriptId, matchId, mode, matchMode, spectate, theme, and aiDifficulty for Practice vs AI launches.
 
 ### Game Modes in Arena
 - CLASSIC — Token-based editing (10 token budget), live script editing during match
@@ -133,18 +133,18 @@ Full-screen 3D battle canvas (Three.js via Scene3D). Supports query params: scri
 - MobileTopRightHUD — compact stats (FPS, fog, connection, mode data)
 - MobileControls — touch controls, robot selection, classic mode editor
 - SpectatorHUD — spectator controls
-- WinnerScreen — match result overlay with rematch
+- WinnerScreen — match result overlay with rematch, AI bonus breakdowns, and transient guest performance stats
 - OrientationLock — portrait mode warning on mobile
 - PhaseBanner — shows combat round or tactical break timer (TACTICAL/HYBRID modes)
 
 ### Arena Features
-60 FPS game loop, FPS counter, graphics quality setting (low/medium/high), fog of war toggle, sound effects, tracer fire and speech bubble effects, spectator count overlay, automatic fullscreen on mobile, WebSocket real-time state sync. 4 robot chassis: unit-01, unit-02, titan, sandman. 3 map themes: CYBER, MAGMA, GLACIAL.
+60 FPS game loop, FPS counter, graphics quality setting (low/medium/high), fog of war toggle, sound effects, tracer fire and speech bubble effects, spectator count overlay, automatic fullscreen on mobile, WebSocket real-time state sync. 4 robot chassis: unit-01, unit-02, titan, sandman. 3 map themes: CYBER, MAGMA, GLACIAL. Guest sessions resolve scripts asynchronously and use guarded join emission so the 3D canvas does not freeze in an empty state.
 
 ## Replay (/replay/[matchId])
 Frame-by-frame playback of persisted multiplayer matches. ReplayCanvas renders 2D match state. ReplayControls: play/pause, scrub, speed control, reset. Snapshot-based: fetches from GET /users/matches/{matchId}/replay and reads `Match.replayData`. Shows legend (robot circle, projectile dot), speed display (frames/s), duration, date, match ID. Campaign level replay controls are separate and temporary to the active level session.
 
 ## Lobby (/lobby)
-Multiplayer match lobby with MatchModeSelector (CLASSIC, TACTICAL, HYBRID, TRAINING, RACING). Live match list from WebSocket. LobbyMatchCard per active match. ConnectionStatusBar (connecting/connected/error). Create match button (deploys to arena). Join match button (redirects to /arena with match params). NoScriptModal warns if no script selected. Guest: "LOGIN TO DEPLOY" / "LOGIN TO CREATE".
+Multiplayer match lobby with MatchModeSelector (CLASSIC, TACTICAL, HYBRID, TRAINING, RACING). Live match list from WebSocket. LobbyMatchCard per active match. ConnectionStatusBar (connecting/connected/error). Create match button (deploys to arena). Join match button (redirects to /arena with match params). Practice vs AI adds Easy, Medium, and Hard difficulty selection and routes to /arena with aiDifficulty so the server can attach the matching bot script and reward rules. NoScriptModal warns if no script selected. Guest: "LOGIN TO DEPLOY" / "LOGIN TO CREATE".
 
 ## Friends (/friends)
 "ALLIANCE NETWORK" with tabs: Friends list, Incoming requests, Outgoing requests, Suggestions. Challenge friend to a match. Spectate friend's active match. Unfriend, accept/decline requests. User suggestions with "Add Friend". Toast notifications. Guest users redirect to /login.
@@ -160,10 +160,13 @@ Recent Lighthouse and runtime work focused on keeping campaign/public pages fast
 - Campaign level constants moved to `levels.constants.ts` for static generation and leaner pages.
 - Arena movement uses interpolation buffers and direct Three.js mesh mutation instead of React state churn.
 - Dynamic environments avoid per-frame allocations, consolidate frame loops, and use instanced meshes for repeated objects.
+- Arena robot rendering keeps volatile raw vectors separate from interpolation caches, and Canvas structural options are memoized so graphics-quality changes do not repeatedly recreate WebGL context state.
 
 ## Known Limitations
 - Campaign replay controls are in-memory and scoped to the current level attempt; leaving the page discards the review buffer.
 - Persisted replay data exists for multiplayer matches played after replay capture was introduced.
+- Guest match statistics are runtime-only and are cleared after leaving the arena; they do not populate permanent profile, replay, or leaderboard records.
+- Practice vs AI rewards require an authenticated difficulty-tagged AI match. Generic solo testing and guest sessions intentionally award zero persistent points.
 - Any new engine feature that stores absolute `Date.now()` timestamps must be included in the campaign resume timestamp-shift path.
 
 ## Insights (/insights)
@@ -194,7 +197,7 @@ Three themes implemented via next-themes with data-theme attribute:
 Switch on mobile: ThemeSwitcher icon in MobileHeader (top-right). Switch on desktop: ThemeSwitcher dropdown in sidebar. Switch in settings: Appearance section with 3 theme cards. ThemeMetaSync updates meta name="theme-color". All colors are CSS variables.
 
 ## Points & Economy
-Points are earned from campaign levels (EASY=50, MEDIUM=120, HARD=300, EXTREME=500) and from matches. Spent in the Black Market on chassis, paints, and tracer rounds. Starter items are free. Rarities: COMMON, RARE, LEGENDARY.
+Points are earned from campaign levels (EASY=50, MEDIUM=120, HARD=300, EXTREME=500), ranked matches, and authenticated Practice vs AI runs. AI practice points are calculated server-side from the active mode objective, final performance, and difficulty multiplier (Easy=1x, Medium=2x, Hard=3x). Spent in the Black Market on chassis, paints, and tracer rounds. Starter items are free. Rarities: COMMON, RARE, LEGENDARY.
 
 ## Friend & Challenge System
 Send friend requests, accept/decline/receive. Challenge friends to matches. Spectate friends' active matches. Real-time online status via WebSocket. Toast notifications for friend events. Suggestions from platform.

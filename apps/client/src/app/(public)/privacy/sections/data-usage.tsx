@@ -9,8 +9,9 @@ export function DataUsage() {
           <PublicBody>When you create a Logic Arena account, we collect the minimum data required to operate a competitive coding and multiplayer platform. This includes account data, gameplay data, replay data, preference data, and feedback data.</PublicBody>
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(var(--accent-rgb), 0.12)" }}>
             <PublicDefinition term="Account Data">Your username, email address, custom uploaded avatars (processed securely via Cloudinary), and — when you authenticate via Google or GitHub — your public OAuth profile name. We do not collect passwords when you use OAuth. If you register with an email and password directly, your password is stored as a one-way bcrypt hash and is never readable by our team.</PublicDefinition>
-            <PublicDefinition term="Platform Data">Match results, ELO rating history, AliScript program versions you submit, campaign progress, Black Market points, Garage cosmetic selections, and session metadata. This data is the engine of Logic Arena — it powers rankings, matchmaking, and replay systems.</PublicDefinition>
+            <PublicDefinition term="Platform Data">Match results, ELO rating history, AliScript program versions you submit, campaign progress, Practice vs AI difficulty and reward outcomes, Black Market points, Garage cosmetic selections, and session metadata. This data is the engine of Logic Arena — it powers rankings, matchmaking, and replay systems.</PublicDefinition>
             <PublicDefinition term="Replay Data">Arena multiplayer matches may store replay snapshots and final scripts in PostgreSQL so you can review completed matches. Campaign fight replay frames are temporary in-memory review buffers for the current level attempt and are not persisted as database replay records.</PublicDefinition>
+            <PublicDefinition term="Guest Match Data">Guest arena sessions may calculate temporary end-screen statistics such as accuracy, projectile impacts, movement speed, and match duration. These values live only for the active viewport/session flow and are not written to your account, replay records, or permanent leaderboard tables.</PublicDefinition>
             <PublicDefinition term="Preferences & Social Data">We store arena preferences, notification settings, achievements, friend relationships, challenge state, and profile customization so those features work across devices.</PublicDefinition>
             <PublicDefinition term="Feedback Data">If you submit a contact message, bug report, or feature request, we store the form fields you provide so the admin team can triage, respond, and track status.</PublicDefinition>
           </div>
@@ -22,9 +23,9 @@ export function DataUsage() {
         <div className="flex flex-col gap-4">
           <PublicBody>Every piece of data we collect serves a defined operational purpose. We do not monetise your data, and we do not sell it to advertisers. Your data is used exclusively for the following:</PublicBody>
           {[
-            ["Platform Operation", "Running real-time multiplayer and campaign matches, maintaining persistent rankings, saving loadouts and settings, and delivering your campaign progress across sessions."],
+            ["Platform Operation", "Running real-time multiplayer, campaign, and Practice vs AI matches, maintaining persistent rankings, saving loadouts and settings, and delivering your campaign progress across sessions."],
             ["Skill-Based Matchmaking", "Calculating ELO deltas and pairing you against opponents of comparable ability. Without this data, competitive integrity is impossible."],
-            ["Replay & Learning Tools", "Providing replay playback, post-match learning tools, achievements, and ARIA assistance based on platform documentation or selected match context."],
+            ["Replay & Learning Tools", "Providing replay playback, AI practice summaries, post-match learning tools, achievements, and ARIA assistance based on platform documentation or selected match context."],
             ["Service Notifications", "Sending transactional emails such as email verification, security alerts, and critical service updates. Marketing emails are opt-in only."],
             ["Legal Compliance", "Meeting any obligations required by applicable law, such as responding to a valid legal request from a competent authority."],
           ].map(([heading, body]) => (

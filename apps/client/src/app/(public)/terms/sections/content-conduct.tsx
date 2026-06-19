@@ -20,10 +20,10 @@ export function ContentConduct() {
           <PublicBody>The Arena is built on fair competition and mutual respect. The following conduct is strictly prohibited and will result in disciplinary action up to and including permanent account termination:</PublicBody>
           {[
             ["Sandbox & Quota Exploitation", "Attempting to circumvent the AliScript execution sandbox or maliciously evade Time Limit Exceeded (TLE) quotas to degrade server performance."],
-            ["Economy Manipulation", "Exploiting bugs to generate infinite Black Market points, duplicate items, or manipulate Garage cosmetic loadouts."],
+            ["Economy Manipulation", "Exploiting bugs to generate infinite Black Market points, duplicate items, manipulate Garage cosmetic loadouts, or falsify Practice vs AI reward conditions."],
             ["Platform Sabotage", "Submitting code intentionally designed to cause server crashes or memory exhaustion."],
             ["Vulnerability Exploitation", "Exploiting bugs, security vulnerabilities, or unintended mechanics for competitive advantage without first reporting them through our responsible disclosure process."],
-            ["Pause & Replay Abuse", "Attempting to use campaign-only pause/resume, replay controls, or client-side timing manipulation to alter multiplayer outcomes, farm rewards, or falsify match state."],
+            ["Pause, Replay & AI Reward Abuse", "Attempting to use campaign-only pause/resume, replay controls, AI difficulty parameters, guest-only statistics, or client-side timing manipulation to alter multiplayer outcomes, farm rewards, or falsify match state."],
             ["Harassment & Toxicity", "Engaging in harassment, hate speech, threats, or any abusive behaviour toward other users in any platform communication channel."],
             ["Multi-Accounting", "Creating or using multiple accounts to exploit matchmaking, manipulate rankings, or circumvent suspensions."],
             ["Automation & Botting", "Using scripts, bots, or automated tools to interact with the platform outside of the AliScript engine in ways not sanctioned by the API."],
@@ -46,7 +46,7 @@ export function ContentConduct() {
             <Crown size={14} className="shrink-0 mt-0.5" style={{ color: "var(--accent)" }} />
             <p className="text-[12px] leading-[1.8]" style={{ color: "rgba(var(--accent-rgb), 0.8)", fontFamily: "var(--font-mono)" }}>Competitive integrity is non-negotiable at Logic Arena. Every ranked match result is final once committed to the ledger by our deterministic battle engine.</p>
           </div>
-          <PublicBody>Logic Arena operates a deterministic, sandboxed combat engine. Match outcomes are computed server-side and are immutable once recorded. Campaign pause/resume is available only for campaign fights; it is not a multiplayer pause feature and does not alter arena match results. Replay controls are review tools, not appeal tools.</PublicBody>
+          <PublicBody>Logic Arena operates a deterministic, sandboxed combat engine. Match outcomes are computed server-side and are immutable once recorded. Campaign pause/resume is available only for campaign fights; it is not a multiplayer pause feature and does not alter arena match results. Replay controls are review tools, not appeal tools. Practice vs AI rewards are server-authoritative, require an authenticated difficulty-tagged AI match, and are not granted for guest sessions or generic solo tests.</PublicBody>
           <PublicBody>Any attempt to manipulate match outcomes through external means — including collusion with opponents, coordinated ranking farming, exploitation of engine bugs, or interference with server processes — constitutes a severe violation of these Terms. Confirmed violations will result in:</PublicBody>
           {[
             "Immediate suspension of the offending account(s).",

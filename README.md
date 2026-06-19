@@ -3,7 +3,7 @@
 <img src="./apps/client/public/og-image.jpg" alt="Logic Arena Hero Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
 
 # ⚔️ LOGIC ARENA ⚔️
-**v3.6.0 | Program your robot. Outsmart your opponent. Dominate the arena.**
+**v3.6.5 | Program your robot. Outsmart your opponent. Dominate the arena.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-99.6%25-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
@@ -14,7 +14,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=flat-square&logo=docker)](https://github.com/Ali-Haggag7/logic-arena/packages)
 [![Live](https://img.shields.io/badge/Live-logicarena.dev-22d3ee?style=flat-square&logo=vercel)](https://logicarena.dev)
 
-[**Live Demo (v3.6.0)**](https://logicarena.dev) · [**Documentation**](#project-documentation) · [**Report Bug**](https://github.com/Ali-Haggag7/logic-arena/issues)
+[**Live Demo (v3.6.5)**](https://logicarena.dev) · [**Documentation**](#project-documentation) · [**Report Bug**](https://github.com/Ali-Haggag7/logic-arena/issues)
 
 </div>
 
@@ -30,14 +30,15 @@ Unlike traditional games, **you don't play Logic Arena with a keyboard or a game
 
 ---
 
-## 🌟 The Battle-Hardened Engine Update (v3.6.0)
+## 🌟 The Intelligent Arena Update (v3.6.5)
 
-The latest release hardens campaign battles, replay review, performance, and workspace builds:
-* **Server-side campaign pause/resume:** `campaign:pause` and `campaign:resume` freeze authoritative simulation state and shift `Date.now()`-backed combat timestamps forward on resume.
-* **Campaign replay review:** completed campaign fights keep temporary in-memory frames for instant play/pause, scrubbing, and speed review without shrinking the arena canvas.
-* **Synchronized campaign timer:** client and server both use `CAMPAIGN_MATCH_MAX_STEPS` from `@logic-arena/engine/constants`.
-* **Production workspace parity:** shared engine constants are available through the `@logic-arena/engine/constants` subpath export and Docker builds compile shared packages before the server.
-* **Performance hardening:** Lighthouse-oriented page work includes canonical URLs, deferred analytics, dynamic imports, reduced layout shift, and 120 FPS arena interpolation cleanup.
+The latest release expands solo training and stabilizes guest arena sessions:
+* **Practice vs AI:** authenticated players can battle automated bots across Combat, Capture the Flag, King of the Hill, Survival, and Racing with Easy, Medium, and Hard difficulty tiers.
+* **Bot script library:** `packages/engine/src/ai-scripts.ts` ships 15 flat-format AI scripts. Easy bots use basic movement and firing; Hard bots add predictive targeting, shields, strafing, and `lockVision`.
+* **Authoritative AI rewards:** `apps/server/src/modules/matches/ai-points.ts` calculates mode-specific rewards, then applies difficulty multipliers (Easy = 1x, Medium = 2x, Hard = 3x). Solo testing without a difficulty flag earns zero points.
+* **Guest match stats:** guest victory and defeat overlays now use live engine stats such as accuracy, impacts, movement speed, and duration, but keep them temporary in viewport memory with no database writes.
+* **Arena stability:** guest join timing now uses guarded `joinMatch` emission checkpoints, while the 3D renderer separates live raw vectors from interpolation caches and memoizes Canvas configuration to prevent WebGL context churn.
+* **Campaign continuity:** v3.6 also keeps server-side campaign pause/resume, temporary campaign replay controls, synchronized `CAMPAIGN_MATCH_MAX_STEPS`, and the shared `@logic-arena/engine/constants` export.
 
 ---
 
@@ -85,6 +86,9 @@ Features vector-based physics, collision detection, and projectile simulations w
 
 ### 🎮 Campaign Battles, Pause, and Replay
 The 60-level campaign streams authoritative server frames directly to the client. Campaign fights can be paused and resumed through server-owned session state, and finished fights expose a temporary replay scrubber for reviewing the exact frames that led to victory, defeat, or draw. Victory modals count points and stars immediately while preserving the user's best-star record.
+
+### 🤖 Practice vs AI
+Practice against first-party AI bots before entering ranked matches. Each game variant supports Easy, Medium, and Hard bot scripts, and authenticated AI wins can award server-calculated points based on the mode objective, final performance, and selected difficulty. Guest practice shows live match stats without writing leaderboard or progression records.
 
 ### 💼 Economy & Black Market
 Earn progression through battles and campaigns, and spend your currency in the **Black Market (Vault)** to unlock custom paints, premium tracer rounds, and elite chassis models. Equip items using a high-fidelity 3D interactive viewer.

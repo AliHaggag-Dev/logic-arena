@@ -42,6 +42,19 @@ const TAG_ICONS: Record<Tag, React.ReactNode> = {
 
 const RELEASES: Release[] = [
   {
+    version: "v3.6.5",
+    date: "2026-06-19",
+    headline: "The Intelligent Arena — Practice vs AI Pipelines & Guest Experience Remediations",
+    summary: "A production stability and tactical enrichment release introducing full Practice vs AI coverage across all five game variants, server-authoritative AI reward scoring, dynamic guest match summaries, and stronger arena rendering boundaries for guest and rapid-navigation sessions.",
+    changes: [
+      { tag: "COMBAT", text: "Practice vs AI Match Pipeline: Added first-party AI battles for Combat, Capture the Flag, King of the Hill, Survival, and Racing. The engine ships 15 mode-specific bot scripts across Easy, Medium, and Hard tiers, ranging from simple movement and firing to predictive targeting, shields, strafing, and lockVision behavior." },
+      { tag: "BALANCE", text: "Authoritative AI Performance Points Matrix: AI practice rewards are now calculated server-side from the active game mode, final performance, and selected difficulty multiplier (Easy=1x, Medium=2x, Hard=3x). Solo tests without a difficulty flag award zero points to protect the economy." },
+      { tag: "QOL", text: "Transient Guest Match Statistics: Guest victory and defeat screens now use live engine data such as accuracy, projectile impacts, movement speeds, and match duration while keeping those values temporary and out of persistent profile, replay, and leaderboard storage." },
+      { tag: "BUG FIX", text: "Guest Join Race Fix: Added guarded joinMatch emission checkpoints so async guest script resolution cannot leave the arena canvas connected but unjoined." },
+      { tag: "ENGINE", text: "Arena Render Stability: ArenaModels now separates volatile raw vectors from interpolation cache data, and Canvas structural options are memoized to prevent unnecessary WebGL context recreation during soft refreshes and quality changes." },
+    ],
+  },
+  {
     version: "v3.6.0",
     date: "2026-06-18",
     headline: "The Battle-Hardened Engine — Workspace Resolution, Scale Unification & Memory Stabilization",

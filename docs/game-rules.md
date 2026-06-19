@@ -65,8 +65,19 @@ Robots can deploy advanced abilities to gain tactical advantages.
 * **CAPTURE:** Control specific map zones for a duration to earn points.
 * **SURVIVAL:** Outlast endless waves of increasingly difficult NPC enemies or environmental hazards.
 * **RACING:** Specific waypoint completion algorithms dynamically resolved. The first robot to touch all checkpoints wins.
+* **PRACTICE VS AI:** Single-player arena matches against first-party bots. Practice vs AI supports Combat, Capture the Flag, King of the Hill, Survival, and Racing with Easy, Medium, and Hard bot scripts.
 * **CAMPAIGN:** Single-player LeetCode-style algorithmic challenges. You must defeat pre-programmed boss robots or navigate puzzle maps within strict memory or TLE constraints.
 * **TOURNAMENTS:** 4 or 8 player structured brackets. Matches run concurrently, and winners automatically advance to the semi-finals and finals. Spectators can watch these matches live.
+
+## Practice vs AI Flow
+Practice vs AI uses the normal server-owned arena loop with an automated opponent loaded from `packages/engine/src/ai-scripts.ts`.
+
+1. The lobby creates a match with the chosen game variant and `aiDifficulty`.
+2. The server injects the matching bot script for Easy, Medium, or Hard.
+3. Easy bots use direct movement and firing patterns. Medium bots add stronger reactions and objective awareness. Hard bots use predictive targeting, shields, strafing, and `lockVision` camera-vector tracking.
+4. The match result is evaluated by `ai-points.ts` when the match ends.
+
+Authenticated Practice vs AI rewards use a base value from the active game mode, a performance score from the final match state, and a difficulty multiplier: Easy = 1x, Medium = 2x, Hard = 3x. Solo testing without a difficulty flag awards zero points, and guest practice does not write persistent progression or leaderboard data.
 
 ## Campaign Match Flow
 Campaign levels run as live server-streamed fights rather than client-side reconstructions.
@@ -85,3 +96,5 @@ Campaign levels run as live server-streamed fights rather than client-side recon
 
 ## Victory, Stars, and Rewards
 Campaign victory modals count points and stars immediately after `campaignFightResult`. Best-star tracking preserves the user's highest historical star result for a level; replaying a level can improve the star record without downgrading it.
+
+Practice vs AI result screens may show an AI bonus breakdown for authenticated users. Guest victory and defeat screens use live engine statistics such as accuracy, projectile impacts, movement speed, and duration, but those values are temporary and are cleared when the session exits.
