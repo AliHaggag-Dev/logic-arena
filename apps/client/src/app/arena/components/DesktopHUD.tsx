@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { CommandConsole } from './CommandConsole';
 import { TacticalRadar } from './TacticalRadar';
-import { RefreshCw, Eye, EyeOff, Lock, Unlock, ChevronLeft } from 'lucide-react';
+import { RefreshCw, Eye, EyeOff, Lock, Unlock, ChevronLeft, Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { RobotState, ProjectileState, ModeData } from '../types';
 
@@ -61,8 +61,31 @@ export function DesktopHUD({
 }: DesktopHUDProps) {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [lockVision, setLockVision] = useState(false);
+  const [cameraViewMode, setCameraViewMode] = useState<'free' | 'robot'>('free');
   const [isZenMode, setIsZenMode] = useState(false);
   const router = useRouter();
+
+  // Listen for external syncs of camera mode (e.g. from camera reset)
+  useEffect(() => {
+    const handleSync = (e: Event) => {
+      const customEvent = e as CustomEvent<{ mode: 'free' | 'robot' }>;
+      if (customEvent.detail && customEvent.detail.mode) {
+        setCameraViewMode(customEvent.detail.mode);
+      }
+    };
+    window.addEventListener('camera-view-mode-synced', handleSync);
+    return () => window.removeEventListener('camera-view-mode-synced', handleSync);
+  }, []);
+
+  const handleToggleCameraMode = useCallback(() => {
+    const nextMode = cameraViewMode === 'free' ? 'robot' : 'free';
+    setCameraViewMode(nextMode);
+    window.dispatchEvent(new CustomEvent('camera-view-mode-change', { detail: { mode: nextMode } }));
+  }, [cameraViewMode]);
+
+  const handleCameraReset = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('camera-reset'));
+  }, []);
 
   // Explicit cleanup before navigation — emit leaveMatch so the server
   // tears down the match before Next.js unmounts the arena components.
@@ -195,6 +218,35 @@ export function DesktopHUD({
                 )}
               </button>
             )}
+
+            <div className="h-6 w-px bg-cyan-500/20 mx-1" />
+
+            <button
+              type="button"
+              onClick={handleCameraReset}
+              className="group relative flex items-center gap-2 border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 text-[10px] font-black px-4 py-2 rounded-lg transition-all hover:bg-cyan-500/20 hover:border-cyan-500 hover:text-cyan-300 tracking-[0.15em] overflow-hidden cursor-pointer"
+              title="Reset camera view to default position"
+            >
+              <RefreshCw size={13} className="group-hover:-rotate-180 transition-transform duration-500" />
+              <span className="relative z-10 mt-[1px]">CAM RESET</span>
+              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-cyan-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleToggleCameraMode}
+              className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden cursor-pointer ${cameraViewMode === 'robot'
+                ? 'border-fuchsia-500/50 bg-fuchsia-900/40 text-fuchsia-300 hover:bg-fuchsia-500/30 hover:border-fuchsia-400 hover:text-fuchsia-200 shadow-[inset_0_0_10px_rgba(240,76,231,0.2)] hover:shadow-[0_0_15px_rgba(240,76,231,0.4)]'
+                : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
+                }`}
+              title="Toggle Camera View Mode (Free Orbit vs. Locked to Robot)"
+            >
+              <Camera size={13} className="group-hover:scale-110 transition-transform" />
+              <span className="relative z-10 mt-[1px]">VIEW: {cameraViewMode === 'robot' ? 'ROBOT' : 'FREE'}</span>
+              {cameraViewMode === 'robot' && (
+                <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-fuchsia-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+              )}
+            </button>
           </div>
 
           {modeData && (

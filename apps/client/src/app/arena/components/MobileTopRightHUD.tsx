@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { TacticalRadar } from './TacticalRadar';
 import { RobotState, ProjectileState, ModeData } from '../types';
-import { Users, ShieldAlert, Target } from 'lucide-react';
+import { Users, ShieldAlert, Target, Camera, RefreshCw } from 'lucide-react';
 import { useFPS } from '../hooks/useFPS';
 
 interface MobileHUDProps {
@@ -26,6 +26,28 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
   const fps = useFPS();
   const fpsColor = fps >= 50 ? 'var(--arena-fps-good)' : fps >= 30 ? 'var(--arena-fps-warn)' : 'var(--arena-fps-bad)';
   const [lockVision, setLockVision] = useState(false);
+  const [cameraViewMode, setCameraViewMode] = useState<'free' | 'robot'>('free');
+
+  useEffect(() => {
+    const handleSync = (e: Event) => {
+      const customEvent = e as CustomEvent<{ mode: 'free' | 'robot' }>;
+      if (customEvent.detail && customEvent.detail.mode) {
+        setCameraViewMode(customEvent.detail.mode);
+      }
+    };
+    window.addEventListener('camera-view-mode-synced', handleSync);
+    return () => window.removeEventListener('camera-view-mode-synced', handleSync);
+  }, []);
+
+  const handleToggleCameraMode = useCallback(() => {
+    const nextMode = cameraViewMode === 'free' ? 'robot' : 'free';
+    setCameraViewMode(nextMode);
+    window.dispatchEvent(new CustomEvent('camera-view-mode-change', { detail: { mode: nextMode } }));
+  }, [cameraViewMode]);
+
+  const handleCameraReset = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('camera-reset'));
+  }, []);
 
   const dummies = robots.filter(r => r.id.startsWith('dummy-'));
   const aliveDummies = dummies.filter(d => d.health > 0).length;
@@ -161,6 +183,38 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
               </span>
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={handleCameraReset}
+            className="group flex items-center gap-1.5 px-2 py-1.5 bg-black/50 backdrop-blur-md border border-cyan-500/30 rounded-lg hover:border-cyan-400/60 active:scale-95 transition-all shadow-[0_0_8px_rgba(var(--arena-cyan-rgb),0.1)]"
+          >
+            <span className="relative flex items-center justify-center w-2 h-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_4px_rgba(var(--arena-cyan-rgb),0.8)]" />
+            </span>
+            <span className="text-[7px] text-cyan-400/70 font-black tracking-widest uppercase">Cam Reset</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleToggleCameraMode}
+            className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${cameraViewMode === 'robot'
+              ? 'bg-fuchsia-950/40 border-fuchsia-500/40 hover:border-fuchsia-400/70 hover:bg-fuchsia-900/30 shadow-[0_0_8px_rgba(240,76,231,0.15)] hover:shadow-[0_0_12px_rgba(240,76,231,0.35)]'
+              : 'bg-black/50 border-white/10 hover:border-white/25 hover:bg-white/5'
+              }`}
+          >
+            <span className="relative flex items-center justify-center w-2 h-2">
+              {cameraViewMode === 'robot' && <span className="absolute w-2 h-2 rounded-full bg-fuchsia-500/30 animate-ping" />}
+              <span className={`w-1.5 h-1.5 rounded-full transition-all ${cameraViewMode === 'robot'
+                ? 'bg-fuchsia-400 shadow-[0_0_4px_rgba(240,76,231,0.8)]'
+                : 'bg-white/25'
+                }`} />
+            </span>
+            <span className={`text-[7px] font-black tracking-widest uppercase transition-colors ${cameraViewMode === 'robot' ? 'text-fuchsia-400/70' : 'text-white/25'
+              }`}>
+              {cameraViewMode === 'robot' ? 'View: Robot' : 'View: Free'}
+            </span>
+          </button>
         </div>
 
         {/* Compact Mode Indicator */}

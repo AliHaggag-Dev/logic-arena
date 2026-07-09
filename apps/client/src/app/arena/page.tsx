@@ -157,6 +157,7 @@ const ArenaPageContent = () => {
           localRobotColor={localRobotColor}
           displayMode={displayMode}
           mapTheme={searchParams.get('theme') || uiState?.mapTheme || 'CYBER'}
+          selectedRobotId={selectedRobotId}
         />
       </div>
 

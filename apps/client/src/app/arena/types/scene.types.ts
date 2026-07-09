@@ -142,6 +142,7 @@ export interface Scene3DComponentProps {
   localRobotColor?: string;
   displayMode?: string;
   mapTheme?: string;
+  selectedRobotId?: string;
 }
 
 export interface HealthBarSpriteProps {
