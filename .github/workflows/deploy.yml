@@ -13,6 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set lowercase owner env
+        run: |
+          echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -34,7 +38,7 @@ jobs:
           push: true
           tags: |
             alihaggag7/logic-arena-server:latest
-            ghcr.io/${{ github.repository_owner }}/logic-arena-server:latest
+            ghcr.io/${{ env.OWNER }}/logic-arena-server:latest
 
       - name: Build & Push Client
         uses: docker/build-push-action@v5
@@ -44,7 +48,7 @@ jobs:
           push: true
           tags: |
             alihaggag7/logic-arena-client:latest
-            ghcr.io/${{ github.repository_owner }}/logic-arena-client:latest
+            ghcr.io/${{ env.OWNER }}/logic-arena-client:latest
           build-args: |
             NEXT_PUBLIC_API_URL=https://logicarena.dev/api
             NEXT_PUBLIC_WS_URL=https://logicarena.dev
