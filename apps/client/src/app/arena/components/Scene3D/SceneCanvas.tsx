@@ -40,11 +40,11 @@ const CameraController = ({
   controlsRef,
 }: CameraControllerProps) => {
   const { camera } = useThree();
-  const [cameraMode, setCameraMode] = useState<'free' | 'robot'>('free');
+  const [cameraMode, setCameraMode] = useState<'free' | 'chase' | 'fp'>('free');
 
   useEffect(() => {
     const handleModeChange = (e: Event) => {
-      const customEvent = e as CustomEvent<{ mode: 'free' | 'robot' }>;
+      const customEvent = e as CustomEvent<{ mode: 'free' | 'chase' | 'fp' }>;
       if (customEvent?.detail && customEvent.detail.mode) {
         setCameraMode(customEvent.detail.mode);
       }
@@ -72,7 +72,7 @@ const CameraController = ({
   }, [camera, controlsRef]);
 
   useFrame((state, delta) => {
-    if (cameraMode === 'robot' && selectedRobotId) {
+    if (cameraMode !== 'free' && selectedRobotId) {
       if (controlsRef.current) {
         controlsRef.current.enabled = false;
       }
@@ -91,13 +91,33 @@ const CameraController = ({
         const forwardX = Math.sin(angleY);
         const forwardZ = Math.cos(angleY);
 
-        const targetCamX = sx - forwardX * 3.5;
-        const targetCamZ = sz - forwardZ * 3.5;
-        const targetCamY = 2.2;
+        let targetCamX = 0;
+        let targetCamY = 0;
+        let targetCamZ = 0;
+        let targetLookX = 0;
+        let targetLookY = 0;
+        let targetLookZ = 0;
 
-        const targetLookX = sx + forwardX * 1.5;
-        const targetLookZ = sz + forwardZ * 1.5;
-        const targetLookY = 0.3;
+        if (cameraMode === 'chase') {
+          // Chase camera offset (behind and above robot)
+          targetCamX = sx - forwardX * 3.5;
+          targetCamZ = sz - forwardZ * 3.5;
+          targetCamY = 2.2;
+
+          targetLookX = sx + forwardX * 1.5;
+          targetLookZ = sz + forwardZ * 1.5;
+          targetLookY = 0.3;
+        } else if (cameraMode === 'fp') {
+          // First-person eye camera (inside robot head looking forward)
+          // Pushed forward to avoid body clipping during movement tilts
+          targetCamX = sx + forwardX * 0.55;
+          targetCamZ = sz + forwardZ * 0.55;
+          targetCamY = 1.25; // Raised to head/eye level height
+
+          targetLookX = sx + forwardX * 5.0;
+          targetLookZ = sz + forwardZ * 5.0;
+          targetLookY = 1.25; // Looking straight ahead at eye level
+        }
 
         const lerpFactor = 1 - Math.pow(0.001, delta);
 

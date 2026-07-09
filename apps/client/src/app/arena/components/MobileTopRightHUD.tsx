@@ -26,11 +26,11 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
   const fps = useFPS();
   const fpsColor = fps >= 50 ? 'var(--arena-fps-good)' : fps >= 30 ? 'var(--arena-fps-warn)' : 'var(--arena-fps-bad)';
   const [lockVision, setLockVision] = useState(false);
-  const [cameraViewMode, setCameraViewMode] = useState<'free' | 'robot'>('free');
+  const [cameraViewMode, setCameraViewMode] = useState<'free' | 'chase' | 'fp'>('free');
 
   useEffect(() => {
     const handleSync = (e: Event) => {
-      const customEvent = e as CustomEvent<{ mode: 'free' | 'robot' }>;
+      const customEvent = e as CustomEvent<{ mode: 'free' | 'chase' | 'fp' }>;
       if (customEvent.detail && customEvent.detail.mode) {
         setCameraViewMode(customEvent.detail.mode);
       }
@@ -40,7 +40,11 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
   }, []);
 
   const handleToggleCameraMode = useCallback(() => {
-    const nextMode = cameraViewMode === 'free' ? 'robot' : 'free';
+    let nextMode: 'free' | 'chase' | 'fp';
+    if (cameraViewMode === 'free') nextMode = 'chase';
+    else if (cameraViewMode === 'chase') nextMode = 'fp';
+    else nextMode = 'free';
+
     setCameraViewMode(nextMode);
     window.dispatchEvent(new CustomEvent('camera-view-mode-change', { detail: { mode: nextMode } }));
   }, [cameraViewMode]);
@@ -186,33 +190,22 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
 
           <button
             type="button"
-            onClick={handleCameraReset}
-            className="group flex items-center gap-1.5 px-2 py-1.5 bg-black/50 backdrop-blur-md border border-cyan-500/30 rounded-lg hover:border-cyan-400/60 active:scale-95 transition-all shadow-[0_0_8px_rgba(var(--arena-cyan-rgb),0.1)]"
-          >
-            <span className="relative flex items-center justify-center w-2 h-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_4px_rgba(var(--arena-cyan-rgb),0.8)]" />
-            </span>
-            <span className="text-[7px] text-cyan-400/70 font-black tracking-widest uppercase">Cam Reset</span>
-          </button>
-
-          <button
-            type="button"
             onClick={handleToggleCameraMode}
-            className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${cameraViewMode === 'robot'
+            className={`group flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-md border rounded-lg active:scale-95 transition-all ${cameraViewMode !== 'free'
               ? 'bg-fuchsia-950/40 border-fuchsia-500/40 hover:border-fuchsia-400/70 hover:bg-fuchsia-900/30 shadow-[0_0_8px_rgba(240,76,231,0.15)] hover:shadow-[0_0_12px_rgba(240,76,231,0.35)]'
               : 'bg-black/50 border-white/10 hover:border-white/25 hover:bg-white/5'
               }`}
           >
             <span className="relative flex items-center justify-center w-2 h-2">
-              {cameraViewMode === 'robot' && <span className="absolute w-2 h-2 rounded-full bg-fuchsia-500/30 animate-ping" />}
-              <span className={`w-1.5 h-1.5 rounded-full transition-all ${cameraViewMode === 'robot'
+              {cameraViewMode !== 'free' && <span className="absolute w-2 h-2 rounded-full bg-fuchsia-500/30 animate-ping" />}
+              <span className={`w-1.5 h-1.5 rounded-full transition-all ${cameraViewMode !== 'free'
                 ? 'bg-fuchsia-400 shadow-[0_0_4px_rgba(240,76,231,0.8)]'
                 : 'bg-white/25'
                 }`} />
             </span>
-            <span className={`text-[7px] font-black tracking-widest uppercase transition-colors ${cameraViewMode === 'robot' ? 'text-fuchsia-400/70' : 'text-white/25'
+            <span className={`text-[7px] font-black tracking-widest uppercase transition-colors ${cameraViewMode !== 'free' ? 'text-fuchsia-400/70' : 'text-white/25'
               }`}>
-              {cameraViewMode === 'robot' ? 'View: Robot' : 'View: Free'}
+              {cameraViewMode === 'free' ? 'View: Free' : cameraViewMode === 'chase' ? 'View: Chase' : 'View: Robot'}
             </span>
           </button>
         </div>
@@ -253,6 +246,14 @@ export const MobileTopRightHUD: React.FC<MobileHUDProps> = ({
       </div>
 
       <div className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-1">
+        <button
+          type="button"
+          onClick={handleCameraReset}
+          className="flex items-center justify-center w-7 h-7 bg-cyan-950/40 backdrop-blur-md border border-cyan-500/30 rounded-full active:scale-95 transition-all text-cyan-400 hover:text-cyan-300 shadow-md hover:border-cyan-400 hover:bg-cyan-900/20 mb-0.5"
+          title="Reset camera view"
+        >
+          <RefreshCw size={11} />
+        </button>
         <div className="flex items-center gap-1.5 px-2 py-0.5 bg-black/30 backdrop-blur-sm border border-white/5 rounded-full">
           <span className="text-[7px] text-white/20 font-mono uppercase tracking-widest">fps</span>
           <span

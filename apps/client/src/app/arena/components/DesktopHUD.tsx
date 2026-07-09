@@ -61,14 +61,14 @@ export function DesktopHUD({
 }: DesktopHUDProps) {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [lockVision, setLockVision] = useState(false);
-  const [cameraViewMode, setCameraViewMode] = useState<'free' | 'robot'>('free');
+  const [cameraViewMode, setCameraViewMode] = useState<'free' | 'chase' | 'fp'>('free');
   const [isZenMode, setIsZenMode] = useState(false);
   const router = useRouter();
 
   // Listen for external syncs of camera mode (e.g. from camera reset)
   useEffect(() => {
     const handleSync = (e: Event) => {
-      const customEvent = e as CustomEvent<{ mode: 'free' | 'robot' }>;
+      const customEvent = e as CustomEvent<{ mode: 'free' | 'chase' | 'fp' }>;
       if (customEvent.detail && customEvent.detail.mode) {
         setCameraViewMode(customEvent.detail.mode);
       }
@@ -78,7 +78,11 @@ export function DesktopHUD({
   }, []);
 
   const handleToggleCameraMode = useCallback(() => {
-    const nextMode = cameraViewMode === 'free' ? 'robot' : 'free';
+    let nextMode: 'free' | 'chase' | 'fp';
+    if (cameraViewMode === 'free') nextMode = 'chase';
+    else if (cameraViewMode === 'chase') nextMode = 'fp';
+    else nextMode = 'free';
+
     setCameraViewMode(nextMode);
     window.dispatchEvent(new CustomEvent('camera-view-mode-change', { detail: { mode: nextMode } }));
   }, [cameraViewMode]);
@@ -169,8 +173,9 @@ export function DesktopHUD({
           </div>
         </div>
 
-        <div className="absolute top-28 left-8 pointer-events-auto flex flex-col gap-4">
-          <div className="flex items-center gap-2 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 p-2 rounded-xl shadow-[0_8px_32px_rgba(var(--arena-black-rgb),0.8),inset_0_0_15px_rgba(var(--arena-cyan-rgb),0.05)]">
+        <div className="absolute top-28 left-8 pointer-events-auto flex flex-col gap-2">
+          {/* Row 1: Match controls */}
+          <div className="flex items-center gap-2 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 p-2 rounded-xl shadow-[0_8px_32px_rgba(var(--arena-black-rgb),0.8),inset_0_0_15px_rgba(var(--arena-cyan-rgb),0.05)] w-fit">
             {!isPvP && displayMode !== 'TRAINING_SOLO' && (
               <>
                 <button
@@ -218,35 +223,6 @@ export function DesktopHUD({
                 )}
               </button>
             )}
-
-            <div className="h-6 w-px bg-cyan-500/20 mx-1" />
-
-            <button
-              type="button"
-              onClick={handleCameraReset}
-              className="group relative flex items-center gap-2 border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 text-[10px] font-black px-4 py-2 rounded-lg transition-all hover:bg-cyan-500/20 hover:border-cyan-500 hover:text-cyan-300 tracking-[0.15em] overflow-hidden cursor-pointer"
-              title="Reset camera view to default position"
-            >
-              <RefreshCw size={13} className="group-hover:-rotate-180 transition-transform duration-500" />
-              <span className="relative z-10 mt-[1px]">CAM RESET</span>
-              <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-cyan-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleToggleCameraMode}
-              className={`group relative flex items-center gap-2 border text-[10px] font-black px-4 py-2 rounded-lg transition-all tracking-[0.15em] overflow-hidden cursor-pointer ${cameraViewMode === 'robot'
-                ? 'border-fuchsia-500/50 bg-fuchsia-900/40 text-fuchsia-300 hover:bg-fuchsia-500/30 hover:border-fuchsia-400 hover:text-fuchsia-200 shadow-[inset_0_0_10px_rgba(240,76,231,0.2)] hover:shadow-[0_0_15px_rgba(240,76,231,0.4)]'
-                : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
-                }`}
-              title="Toggle Camera View Mode (Free Orbit vs. Locked to Robot)"
-            >
-              <Camera size={13} className="group-hover:scale-110 transition-transform" />
-              <span className="relative z-10 mt-[1px]">VIEW: {cameraViewMode === 'robot' ? 'ROBOT' : 'FREE'}</span>
-              {cameraViewMode === 'robot' && (
-                <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-fuchsia-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
-              )}
-            </button>
           </div>
 
           {modeData && (
@@ -418,6 +394,38 @@ export function DesktopHUD({
           </div>
         </div>
       )}
+
+      {/* Compact Camera Controls floating above status row */}
+      <div className="absolute bottom-20 right-8 z-20 flex items-center gap-2 bg-cyan-950/20 backdrop-blur-xl border border-cyan-500/20 p-1.5 rounded-xl shadow-[0_8px_32px_rgba(var(--arena-black-rgb),0.8),inset_0_0_15px_rgba(var(--arena-cyan-rgb),0.05)] w-fit">
+        <button
+          type="button"
+          onClick={handleCameraReset}
+          className="group relative flex items-center gap-2 border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 text-[10px] font-black px-3.5 py-1.5 rounded-lg transition-all hover:bg-cyan-500/20 hover:border-cyan-500 hover:text-cyan-300 tracking-[0.15em] overflow-hidden cursor-pointer"
+          title="Reset camera view to default position"
+        >
+          <RefreshCw size={11} className="group-hover:-rotate-180 transition-transform duration-500" />
+          <span className="relative z-10 mt-[1px]">CAM RESET</span>
+          <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-cyan-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleToggleCameraMode}
+          className={`group relative flex items-center gap-2 border text-[10px] font-black px-3.5 py-1.5 rounded-lg transition-all tracking-[0.15em] overflow-hidden cursor-pointer ${cameraViewMode !== 'free'
+            ? 'border-fuchsia-500/50 bg-fuchsia-900/40 text-fuchsia-300 hover:bg-fuchsia-500/30 hover:border-fuchsia-400 hover:text-fuchsia-200 shadow-[inset_0_0_10px_rgba(240,76,231,0.15)] hover:shadow-[0_0_15px_rgba(240,76,231,0.35)]'
+            : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10 hover:border-white/30 hover:text-white/70'
+            }`}
+          title="Toggle Camera View Mode (Free Orbit vs. Chase Follow vs. First Person)"
+        >
+          <Camera size={11} className="group-hover:scale-110 transition-transform" />
+          <span className="relative z-10 mt-[1px]">
+            VIEW: {cameraViewMode === 'free' ? 'FREE' : cameraViewMode === 'chase' ? 'CHASE' : 'ROBOT'}
+          </span>
+          {cameraViewMode !== 'free' && (
+            <div className="absolute top-0 -left-full w-[50%] h-full bg-linear-to-r from-transparent via-fuchsia-500/20 to-transparent group-hover:animate-[sweep_2s_ease-in-out_infinite]" />
+          )}
+        </button>
+      </div>
 
       <div className="absolute bottom-8 right-8 z-20 flex items-center gap-6">
         <div className="flex flex-col items-end">
