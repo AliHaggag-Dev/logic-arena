@@ -460,9 +460,7 @@ export const RobotModelInner = memo(({
           <group ref={modelMotionRef}>
             <primitive key={clonedScene.uuid} object={clonedScene} scale={scale} position={[0, 0, 0]} />
           </group>
-          {inStasis && (
-            <pointLight position={[0, 0.4, 0]} intensity={1.0} distance={5} color="#4488ff" />
-          )}
+          <pointLight position={[0, 0.4, 0]} intensity={inStasis ? 1.0 : 0} distance={5} color="#4488ff" />
           {isShielded && (
             <mesh>
               <sphereGeometry args={[0.5, 32, 32]} />

@@ -221,9 +221,11 @@ export const ArenaModels = ({
                 )}
 
                 {/* Stasis electric aura */}
-                {robot.inStasis && (
-                  <StasisEffect position={robotPosition} robotId={robot.id} />
-                )}
+                <StasisEffect
+                  position={robotPosition}
+                  robotId={robot.id}
+                  inStasis={robot.inStasis ?? false}
+                />
 
                 <RobotErrorBoundary
                   fallback={<FallbackRobot position={robotPosition} color={robot.color} />}

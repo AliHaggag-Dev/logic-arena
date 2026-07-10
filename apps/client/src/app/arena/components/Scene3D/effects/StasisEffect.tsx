@@ -9,7 +9,7 @@ import { interpolationBuffer } from '../../../core/interpolation-buffer';
  * StasisEffect — pulsing blue-white electric aura around a stasis-locked robot.
  * Renders a point light + ring mesh that animate in/out via sine wave.
  */
-export const StasisEffect = ({ position, robotId }: StasisEffectProps) => {
+export const StasisEffect = ({ position, robotId, inStasis }: StasisEffectProps) => {
   const groupRef    = useRef<Group>(null);
   const lightRef    = useRef<PointLight>(null);
   const ringRef     = useRef<Mesh>(null);
@@ -48,16 +48,17 @@ export const StasisEffect = ({ position, robotId }: StasisEffectProps) => {
     // 2. Pulse animations
     phaseRef.current += delta * 3;
     const t = Math.sin(phaseRef.current);
-    // Oscillate light intensity 0.5 → 4
+    // Oscillate light intensity 0.5 → 4 (only if inStasis is active)
     if (lightRef.current) {
-      lightRef.current.intensity = 0.5 + (t * 0.5 + 0.5) * 3.5;
+      lightRef.current.intensity = inStasis ? (0.5 + (t * 0.5 + 0.5) * 3.5) : 0;
     }
     // Oscillate ring scale 0.8 → 1.3
     if (ringRef.current) {
       const s = 0.8 + (t * 0.5 + 0.5) * 0.5;
       ringRef.current.scale.setScalar(s);
-      (ringRef.current.material as MeshBasicMaterial).opacity =
-        0.15 + (t * 0.5 + 0.5) * 0.35;
+      (ringRef.current.material as MeshBasicMaterial).opacity = inStasis
+        ? (0.15 + (t * 0.5 + 0.5) * 0.35)
+        : 0;
     }
   });
 
@@ -67,27 +68,27 @@ export const StasisEffect = ({ position, robotId }: StasisEffectProps) => {
       <pointLight
         ref={lightRef}
         color="#88ccff"
-        intensity={2}
+        intensity={inStasis ? 2 : 0}
         distance={4}
         decay={2}
       />
       {/* Electric ring mesh */}
-      <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]} visible={inStasis}>
         <torusGeometry args={[0.55, 0.04, 8, 32]} />
         <meshBasicMaterial
           color="#aaddff"
           transparent
-          opacity={0.4}
+          opacity={inStasis ? 0.4 : 0}
           depthWrite={false}
         />
       </mesh>
       {/* Inner glow sphere */}
-      <mesh>
+      <mesh visible={inStasis}>
         <sphereGeometry args={[0.42, 16, 16]} />
         <meshBasicMaterial
           color="#4488ff"
           transparent
-          opacity={0.08}
+          opacity={inStasis ? 0.08 : 0}
           depthWrite={false}
           side={BackSide}
         />

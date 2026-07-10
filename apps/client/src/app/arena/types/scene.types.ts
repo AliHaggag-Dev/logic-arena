@@ -207,4 +207,5 @@ export interface FovConeProps {
 export interface StasisEffectProps {
   position: [number, number, number];
   robotId?: string;
+  inStasis: boolean;
 }
