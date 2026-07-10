@@ -76,6 +76,23 @@ export class MatchLoopManager {
 
           const efficiencyScores = match.getEfficiencyScores();
 
+          // Broadcast final game state tick so clients register the death (health = 0) and play animations
+          const prevState = this.state.lastStateMap.get(matchId) as Parameters<
+            typeof computeDeltaDiff
+          >[1];
+          const delta = computeDeltaDiff(state, prevState);
+          const hasChanges =
+            delta.type === 'full' ||
+            delta.diff.robots.length > 0 ||
+            delta.diff.projectiles.upsert.length > 0 ||
+            delta.diff.projectiles.remove.length > 0;
+
+          if (hasChanges) {
+            const safeSnapshot = generateSafeSnapshot(state);
+            this.state.lastStateMap.set(matchId, safeSnapshot);
+            this.server.to(matchId).emit('gameState', delta);
+          }
+
           const persistenceResult = await persistMatchResults(
             matchId,
             state,

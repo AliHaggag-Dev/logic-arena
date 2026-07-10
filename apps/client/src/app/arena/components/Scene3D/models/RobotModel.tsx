@@ -12,6 +12,7 @@ import { HIT_FLASH_DURATION } from '../sceneConstants';
 import { EnergyBarSprite } from './EnergyBar';
 import { SpeechBubble } from './SpeechBubble';
 import { interpolationBuffer } from '../../../core/interpolation-buffer';
+import { RobotShatterEffect } from '../effects/RobotShatterEffect';
 
 const EMPTY_ANIMATION_CLIPS: AnimationClip[] = [];
 const MOVEMENT_THRESHOLD = 0.01;
@@ -274,13 +275,35 @@ export const RobotModelInner = memo(({
     const group = groupRef.current;
     if (!group) return;
 
+    const SCENE_SCALE = 40;
+    const SCENE_OFFSET_X = 10;
+    const SCENE_OFFSET_Z = 7.5;
+
+    if (health <= 0) {
+      const interp = robotId ? interpolationBuffer.getInterpolatedRobot(robotId) : null;
+      if (interp) {
+        targetPosition.current.set(
+          (interp.position.x / SCENE_SCALE) - SCENE_OFFSET_X,
+          0.15,
+          (interp.position.y / SCENE_SCALE) - SCENE_OFFSET_Z,
+        );
+      }
+      const lerpFactor = 1 - Math.pow(POSITION_LERP_DECAY, delta * POSITION_LERP_SPEED);
+      if (basePosition.current.distanceTo(targetPosition.current) > SNAP_DISTANCE) {
+        basePosition.current.copy(targetPosition.current);
+      } else {
+        basePosition.current.lerp(targetPosition.current, lerpFactor);
+      }
+      group.position.x = basePosition.current.x;
+      group.position.y = 0.15;
+      group.position.z = basePosition.current.z;
+      return;
+    }
+
     // --- INTERPOLATION BUFFER: sub-frame smooth positioning ---
     // Query the buffer ONCE per frame at native refresh rate (60/120fps)
     // for a perfectly interpolated position + rotation between two
     // confirmed server snapshots. Falls back to React props if unavailable.
-    const SCENE_SCALE = 40;
-    const SCENE_OFFSET_X = 10;
-    const SCENE_OFFSET_Z = 7.5;
     const interp = robotId ? interpolationBuffer.getInterpolatedRobot(robotId) : null;
 
     if (interp) {
@@ -428,48 +451,56 @@ export const RobotModelInner = memo(({
     }
   });
 
+  const isAlive = health > 0;
+
   return (
     <group ref={groupRef}>
-      <group ref={modelMotionRef}>
-        <primitive key={clonedScene.uuid} object={clonedScene} scale={scale} position={[0, 0, 0]} />
-      </group>
-      {inStasis && (
-        <pointLight position={[0, 0.4, 0]} intensity={1.0} distance={5} color="#4488ff" />
-      )}
-      {isShielded && (
-        <mesh>
-          <sphereGeometry args={[0.5, 32, 32]} />
-          <meshPhysicalMaterial
-            color="#66f7ff"
-            emissive="#ffd166"
-            emissiveIntensity={0.55}
-            clearcoat={1}
-            transmission={0.9}
-            transparent
-            opacity={0.28}
-            roughness={0.05}
-            depthWrite={false}
-          />
-        </mesh>
-      )}
+      {isAlive ? (
+        <>
+          <group ref={modelMotionRef}>
+            <primitive key={clonedScene.uuid} object={clonedScene} scale={scale} position={[0, 0, 0]} />
+          </group>
+          {inStasis && (
+            <pointLight position={[0, 0.4, 0]} intensity={1.0} distance={5} color="#4488ff" />
+          )}
+          {isShielded && (
+            <mesh>
+              <sphereGeometry args={[0.5, 32, 32]} />
+              <meshPhysicalMaterial
+                color="#66f7ff"
+                emissive="#ffd166"
+                emissiveIntensity={0.55}
+                clearcoat={1}
+                transmission={0.9}
+                transparent
+                opacity={0.28}
+                roughness={0.05}
+                depthWrite={false}
+              />
+            </mesh>
+          )}
 
-      {/* Spotted indicator */}
-      {spotted && (
-        <Html distanceFactor={10} position={[0, 1.25, 0]} center>
-          <div style={{ fontSize: '14px', color: '#FF3B3B', fontWeight: 700, textShadow: '0 0 6px rgba(255,59,59,0.8)' }}>!</div>
-        </Html>
-      )}
+          {/* Spotted indicator */}
+          {spotted && (
+            <Html distanceFactor={10} position={[0, 1.25, 0]} center>
+              <div style={{ fontSize: '14px', color: '#FF3B3B', fontWeight: 700, textShadow: '0 0 6px rgba(255,59,59,0.8)' }}>!</div>
+            </Html>
+          )}
 
-      {/* Dynamic Speech Bubble tracking the robot */}
-      {speechBubble && (
-        <SpeechBubble position={[0, 1.25, 0]} message={speechBubble} />
-      )}
+          {/* Dynamic Speech Bubble tracking the robot */}
+          {speechBubble && (
+            <SpeechBubble position={[0, 1.25, 0]} message={speechBubble} />
+          )}
 
-      {/* HUD billboard: health + energy bars */}
-      <group position={[0, 2.1, 0]}>
-        {!hideHealthBar && <HealthBarSprite health={health} displayMode={displayMode} />}
-        <EnergyBarSprite energy={energy} maxEnergy={maxEnergy} inStasis={inStasis} />
-      </group>
+          {/* HUD billboard: health + energy bars */}
+          <group position={[0, 2.1, 0]}>
+            {!hideHealthBar && <HealthBarSprite health={health} displayMode={displayMode} />}
+            <EnergyBarSprite energy={energy} maxEnergy={maxEnergy} inStasis={inStasis} />
+          </group>
+        </>
+      ) : (
+        <RobotShatterEffect color={color} />
+      )}
     </group>
   );
 }, (prev, next) => {
