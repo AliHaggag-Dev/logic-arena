@@ -1,6 +1,6 @@
 "use client";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, Preload } from "@react-three/drei";
 import React, { useMemo, useRef, useEffect, useState, MutableRefObject } from "react";
 import { GameState } from "../../types";
 import { interpolationBuffer } from "../../core/interpolation-buffer";
@@ -187,6 +187,7 @@ export const SceneCanvas = ({
       />
       <FrameSignaler />
       {children}
+      <Preload all />
     </Canvas>
   );
 };
