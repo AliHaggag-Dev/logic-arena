@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, useLayoutEffect } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Billboard } from "@react-three/drei";
 import {
   Group,
@@ -116,6 +116,11 @@ const GlowingDisk = ({
   );
 };
 
+interface OrbitControlsLike {
+  target: Vector3;
+  update: () => void;
+}
+
 interface BlackHoleProps {
   position: [number, number, number];
   scale?: number;
@@ -126,6 +131,8 @@ export const BlackHole = ({ position, scale = 1 }: BlackHoleProps) => {
   const count = 60;
   const debrisMeshRef = useRef<InstancedMesh>(null);
   const _dummy = useMemo(() => new Object3D(), []);
+  
+  const bhPosition = useMemo(() => new Vector3(...position), [position]);
 
   const debrisData = useMemo(() => [...Array(count)].map(() => {
     const rand = Math.random();
@@ -156,9 +163,40 @@ export const BlackHole = ({ position, scale = 1 }: BlackHoleProps) => {
     debrisMeshRef.current.instanceColor!.needsUpdate = true;
   }, [debrisData]);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (ringsRef.current) {
       ringsRef.current.rotation.z -= delta * 0.2;
+    }
+
+    // Camera gravitational pull — slow, majestic creep
+    const cam = state.camera;
+    const distToCam = cam.position.distanceTo(bhPosition);
+    const INFLUENCE_RADIUS = 220;
+
+    if (distToCam < INFLUENCE_RADIUS) {
+      const forceFactor = Math.pow(1 - distToCam / INFLUENCE_RADIUS, 2.0);
+      const pullSpeed = 3.5 * forceFactor * delta; // Slower, majestic pull speed
+
+      // Lerp camera position closer to the singularity
+      cam.position.lerp(bhPosition, pullSpeed * 0.45);
+
+      // Traverses the scene graph to find and update OrbitControls target
+      let foundControls: OrbitControlsLike | null = null;
+      state.scene.traverse((child) => {
+        const c = child as unknown as Record<string, unknown>;
+        if (
+          c.isOrbitControls === true ||
+          (c.target instanceof Vector3 && typeof c.update === "function")
+        ) {
+          foundControls = child as unknown as OrbitControlsLike;
+        }
+      });
+
+      if (foundControls) {
+        const activeControls = foundControls as OrbitControlsLike;
+        activeControls.target.lerp(bhPosition, pullSpeed);
+        activeControls.update();
+      }
     }
     
     if (debrisMeshRef.current) {
