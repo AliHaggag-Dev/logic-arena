@@ -60,6 +60,7 @@ jobs:
           username: azureuser
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            set -e
             cd ~/logic-arena
             git fetch origin main
             git reset --hard origin/main

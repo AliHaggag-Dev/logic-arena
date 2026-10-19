@@ -44,9 +44,9 @@ services:
     build:
       context: .
       dockerfile: apps/client/Dockerfile
-    args:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
     ports:
       - "3000:3000"
     depends_on:
