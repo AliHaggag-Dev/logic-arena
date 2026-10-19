@@ -2,7 +2,7 @@ name: Deploy to Production
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
@@ -61,6 +61,8 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             cd ~/logic-arena
+            git fetch origin main
+            git reset --hard origin/main
             docker compose pull
             docker compose up -d --force-recreate
             docker image prune -f
