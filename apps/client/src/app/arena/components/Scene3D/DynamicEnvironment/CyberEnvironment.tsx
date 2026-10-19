@@ -1,22 +1,31 @@
-import React, { useRef, useMemo, useCallback, useLayoutEffect } from "react";
+import React, { useRef, useMemo, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Sparkles, Clouds, Cloud } from "@react-three/drei";
 import {
   Group,
   Mesh,
-  InstancedMesh,
-  Object3D,
   Vector3,
-  Color,
-  Euler,
-  IcosahedronGeometry,
-  Float32BufferAttribute,
   MeshBasicMaterial,
-  Material
 } from "three";
 import { IS_MOBILE, CYBER_SHIPS, getRandomPos } from "./constants";
 import { AmbientSynthesizer } from "./AmbientSynthesizer";
 import { BlackHole } from "./BlackHole";
+import { AsteroidField } from "./asteroids/AsteroidField";
+import type { AsteroidPlacement, Vec3Tuple } from "./asteroids/types";
+
+/* ------------------------------- Sightline -------------------------------- */
+const BLACK_HOLE_COORDINATES: Vec3Tuple = [200, 80, -250];
+const DEFAULT_CAM_COORDINATES: Vec3Tuple = [0, 22, 14];
+const SIGHTLINE_CLEARANCE_RADIUS = 220;
+const SIGHTLINE_CONE_COS = 0.82;
+const SIGHTLINE_CYLINDER_RADIUS_SQ = 120 * 120;
+const SIGHTLINE_CYLINDER_EXTEND = 150;
+
+/* --------------------------- Asteroid population -------------------------- */
+const ASTEROID_COUNT = 25;
+const ASTEROID_MIN_SIZE = 2;
+const ASTEROID_SIZE_SPREAD = 8;
+const MAX_PLACEMENT_ATTEMPTS = ASTEROID_COUNT * 15;
 
 interface CyberShipProps {
   startPos: [number, number, number];
@@ -25,7 +34,7 @@ interface CyberShipProps {
   axis?: 'x' | 'z';
 }
 
-const CyberShip = ({ startPos, speed, color, axis = 'x' }: CyberShipProps) => {
+const CyberShip = ({ startPos, speed, color, axis = 'x' }: CyberShipProps): React.JSX.Element => {
   const groupRef = useRef<Group>(null);
   useFrame((_, delta) => {
     if (groupRef.current) {
@@ -56,21 +65,15 @@ interface CyberEnvironmentProps {
   isHighQuality: boolean;
 }
 
-export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
+export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps): React.JSX.Element => {
   const planet2Ref = useRef<Mesh>(null);
   const planet3Ref = useRef<Mesh>(null);
-  const cubesRef = useRef<Group>(null);
   const shipsRef = useRef<(Group | null)[]>([]);
-  const localCamRef = useRef(new Vector3());
   const tempPosRef = useRef(new Vector3());
   
   useFrame((_, delta) => {
     if (planet2Ref.current) planet2Ref.current.rotation.x += delta * 0.02;
     if (planet3Ref.current) planet3Ref.current.rotation.z -= delta * 0.03;
-    if (cubesRef.current) {
-      cubesRef.current.rotation.x += delta * 0.005;
-      cubesRef.current.rotation.z += delta * 0.003;
-    }
     
     CYBER_SHIPS.forEach((config, i) => {
       const ship = shipsRef.current[i];
@@ -86,63 +89,8 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
     });
   });
 
-  const cubeCount = 25;
-  const cubeMeshRef = useRef<InstancedMesh>(null);
-  const _cubeDummy = useMemo(() => new Object3D(), []);
-
-  // Programmatically generate a jagged, detailed space rock geometry with vertex colors
-  const asteroidGeometry = useMemo(() => {
-    const geom = new IcosahedronGeometry(1.2, 2); // 2 subdivisions for detail
-    const posAttr = geom.getAttribute("position");
-    const count = posAttr.count;
-    const tempV = new Vector3();
-    
-    // Perturb vertices along their normal direction to create jagged rock facets
-    for (let i = 0; i < count; i++) {
-      tempV.fromBufferAttribute(posAttr, i);
-      const dir = tempV.clone().normalize();
-      
-      const noiseVal = 
-        Math.sin(tempV.x * 6.0) * Math.cos(tempV.y * 6.0) * 0.15 +
-        Math.cos(tempV.z * 5.0) * Math.sin(tempV.x * 3.0) * 0.10;
-        
-      tempV.addScaledVector(dir, noiseVal);
-      posAttr.setXYZ(i, tempV.x, tempV.y, tempV.z);
-    }
-    
-    geom.computeVertexNormals();
-    
-    // Build mineral vein shading colors (vertex colors)
-    const colors: number[] = [];
-    for (let i = 0; i < count; i++) {
-      tempV.fromBufferAttribute(posAttr, i);
-      
-      // Vein wave pattern
-      const veinVal = Math.sin(tempV.x * 5.0) * Math.cos(tempV.y * 5.0) * Math.sin(tempV.z * 5.0);
-      let r = 0.12, g = 0.14, b = 0.18; // dark slate gray rock base
-      
-      if (veinVal > 0.3) {
-        // Glowing cyan veins
-        r = 0.1; g = 0.9; b = 1.0;
-      } else if (veinVal < -0.3) {
-        // Glowing magenta veins
-        r = 1.0; g = 0.1; b = 0.9;
-      } else {
-        // Height shading variation
-        const height = (tempV.length() - 0.9) / 0.55;
-        r += height * 0.08;
-        g += height * 0.08;
-        b += height * 0.12;
-      }
-      colors.push(r, g, b);
-    }
-    
-    geom.setAttribute("color", new Float32BufferAttribute(colors, 3));
-    return geom;
-  }, []);
-
-  const DEFAULT_CAM_POS = useMemo(() => new Vector3(0, 22, 14), []);
-  const BLACK_HOLE_POS = useMemo(() => new Vector3(200, 80, -250), []);
+  const DEFAULT_CAM_POS = useMemo(() => new Vector3(...DEFAULT_CAM_COORDINATES), []);
+  const BLACK_HOLE_POS = useMemo(() => new Vector3(...BLACK_HOLE_COORDINATES), []);
   const SIGHTLINE_DIR = useMemo(
     () => new Vector3().subVectors(BLACK_HOLE_POS, DEFAULT_CAM_POS).normalize(),
     [BLACK_HOLE_POS, DEFAULT_CAM_POS]
@@ -160,7 +108,7 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
         pos[1] - BLACK_HOLE_POS.y,
         pos[2] - BLACK_HOLE_POS.z
       );
-      if (distToHole < 220) return true;
+      if (distToHole < SIGHTLINE_CLEARANCE_RADIUS) return true;
 
       // 2. Line of sight corridor from default arena camera to the black hole
       const toPointX = pos[0] - DEFAULT_CAM_POS.x;
@@ -173,14 +121,14 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
         const cosAngle =
           (toPointX * SIGHTLINE_DIR.x + toPointY * SIGHTLINE_DIR.y + toPointZ * SIGHTLINE_DIR.z) /
           toPointDist;
-        if (cosAngle > 0.82) return true;
+        if (cosAngle > SIGHTLINE_CONE_COS) return true;
 
         // Cylinder corridor around the ray from camera to black hole (clears foreground corridor)
         const proj =
           toPointX * SIGHTLINE_DIR.x + toPointY * SIGHTLINE_DIR.y + toPointZ * SIGHTLINE_DIR.z;
-        if (proj > 10 && proj < SIGHTLINE_LEN + 150) {
+        if (proj > 10 && proj < SIGHTLINE_LEN + SIGHTLINE_CYLINDER_EXTEND) {
           const perpDistSq = toPointDist * toPointDist - proj * proj;
-          if (perpDistSq < 120 * 120) return true;
+          if (perpDistSq < SIGHTLINE_CYLINDER_RADIUS_SQ) return true;
         }
       }
 
@@ -189,55 +137,35 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
     [BLACK_HOLE_POS, DEFAULT_CAM_POS, SIGHTLINE_DIR, SIGHTLINE_LEN]
   );
 
-  const cubeData = useMemo(() => {
-    const cubes = [];
+  const cubeData = useMemo<AsteroidPlacement[]>(() => {
+    const cubes: AsteroidPlacement[] = [];
     let attempts = 0;
-    const maxAttempts = cubeCount * 15;
-    while (cubes.length < cubeCount && attempts < maxAttempts) {
+    while (cubes.length < ASTEROID_COUNT && attempts < MAX_PLACEMENT_ATTEMPTS) {
       attempts++;
       const pos = getRandomPos(100, 300, -20, 150);
       if (!isNearBlackHoleOrSightline(pos)) {
         cubes.push({
-          size: Math.random() * 8 + 2,
+          size: Math.random() * ASTEROID_SIZE_SPREAD + ASTEROID_MIN_SIZE,
           pos,
-          color: Math.random() > 0.5 ? "#00ffff" : "#ff00ff",
-          rot: new Euler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI)
         });
       }
     }
     return cubes;
-  }, [cubeCount, isNearBlackHoleOrSightline]);
+  }, [isNearBlackHoleOrSightline]);
 
-  useLayoutEffect(() => {
-    if (!cubeMeshRef.current) return;
-    const colorA = new Color("#00ffff");
-    const colorB = new Color("#ff00ff");
-    cubeData.forEach((d, i) => {
-      _cubeDummy.position.set(d.pos[0], d.pos[1], d.pos[2]);
-      _cubeDummy.rotation.copy(d.rot);
-      _cubeDummy.scale.setScalar(d.size);
-      _cubeDummy.updateMatrix();
-      cubeMeshRef.current!.setMatrixAt(i, _cubeDummy.matrix);
-      // The instance color multiplies the vertex colors to tint the veins/rock
-      cubeMeshRef.current!.setColorAt(i, d.color === "#00ffff" ? colorA : colorB);
-    });
-    cubeMeshRef.current.instanceMatrix.needsUpdate = true;
-    cubeMeshRef.current.instanceColor!.needsUpdate = true;
-  }, [cubeData, _cubeDummy]);
-
-  const getCubeDist = useCallback((camPos: Vector3) => {
-    if (!cubesRef.current) return Infinity;
-    const localCam = localCamRef.current.copy(camPos);
-    cubesRef.current.worldToLocal(localCam);
-    let minD = Infinity;
-    for (let i = 0; i < cubeData.length; i++) {
-      const p = cubeData[i].pos;
-      const target = tempPosRef.current.set(p[0], p[1], p[2]);
-      const d = localCam.distanceTo(target);
-      if (d < minD) minD = d;
-    }
-    return minD;
-  }, [cubeData]);
+  const getCubeDist = useCallback(
+    (camPos: Vector3): number => {
+      let minD = Infinity;
+      for (let i = 0; i < cubeData.length; i++) {
+        const p = cubeData[i].pos;
+        const target = tempPosRef.current.set(p[0], p[1], p[2]);
+        const d = camPos.distanceTo(target);
+        if (d < minD) minD = d;
+      }
+      return minD;
+    },
+    [cubeData]
+  );
 
   const cloudData = useMemo(() => {
     const clouds = [];
@@ -262,9 +190,9 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
 
       {isHighQuality && (
         <group>
-          <AmbientSynthesizer type="blackhole" position={[200, 80, -250]} maxDistance={480} maxVol={1.2} />
+          <AmbientSynthesizer type="blackhole" position={BLACK_HOLE_COORDINATES} maxDistance={480} maxVol={1.2} />
           {/* Massive Interstellar Black Hole */}
-          <BlackHole position={[200, 80, -250]} scale={2.5} />
+          <BlackHole position={BLACK_HOLE_COORDINATES} scale={2.5} />
 
           {/* Planet 2: Small dense data-sphere on the opposite side */}
           <mesh ref={planet2Ref} position={[-150, 40, 180]}>
@@ -297,18 +225,14 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
             );
           })}
 
-          {/* Random floating space asteroids around the entire map */}
-          <group ref={cubesRef}>
+          {/* Photorealistic floating space asteroids with black-hole accretion disk lighting */}
+          <group>
             <AmbientSynthesizer type="datacube" distanceFunc={getCubeDist} maxDistance={80} />
-            <instancedMesh ref={cubeMeshRef} args={[asteroidGeometry, undefined as unknown as Material, cubeCount]}>
-              <meshStandardMaterial
-                vertexColors={true}
-                roughness={0.85}
-                metalness={0.3}
-                flatShading={true}
-                emissive="#060612"
-              />
-            </instancedMesh>
+            <AsteroidField
+              placements={cubeData}
+              diskPosition={BLACK_HOLE_COORDINATES}
+              isMobile={IS_MOBILE}
+            />
           </group>
 
           {/* 360 Dark Clouds */}
