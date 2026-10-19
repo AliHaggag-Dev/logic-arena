@@ -28,7 +28,7 @@ const BackgroundProceduralPlanets = ({ mapTheme }: BackgroundProceduralPlanetsPr
     // 3 static backdrop planets
     return [
       {
-        pos: [0, 240, -1150] as [number, number, number],
+        pos: [-1400, 320, -400] as [number, number, number],
         scale: 75,
         type: "gas" as const,
         color1: new Color("#a855f7"),
@@ -85,7 +85,7 @@ const ActiveProceduralPlanets = ({ mapTheme }: ActiveProceduralPlanetsProps) => 
     return [
       // --- Mid-ground ---
       {
-        pos: [550, 180, -600] as [number, number, number],
+        pos: [-850, 260, 550] as [number, number, number],
         scale: 45,
         type: "desert" as const,
         color1: new Color("#eab308"),
@@ -94,7 +94,7 @@ const ActiveProceduralPlanets = ({ mapTheme }: ActiveProceduralPlanetsProps) => 
         audioName: "desert" as const,
       },
       {
-        pos: [700, -180, -450] as [number, number, number],
+        pos: [950, -120, 800] as [number, number, number],
         scale: 40,
         type: "terrestrial" as const,
         color1: new Color("#10b981"),
@@ -309,11 +309,11 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
     return graphicsQuality === "high" ? 5000 : graphicsQuality === "low" ? 400 : 1500;
   }, [graphicsQuality]);
 
-  // Position of galaxy: far away and tilted
+  // Position of galaxy: far away in opposite quadrant and tilted
   const galaxyTransform = useMemo(() => {
     return {
-      position: [1600, -500, -1600] as [number, number, number],
-      rotation: [0.6, 0.4, -0.5] as [number, number, number],
+      position: [-2400, -450, 1600] as [number, number, number],
+      rotation: [0.5, 0.6, -0.3] as [number, number, number],
     };
   }, []);
 

@@ -1,276 +1,172 @@
-import React, { useRef, useMemo, useLayoutEffect } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Billboard } from "@react-three/drei";
+import { BackSide, Matrix3, Matrix4, NormalBlending, Vector3, type Group } from "three";
+import { IS_MOBILE } from "./constants";
 import {
-  Group,
-  InstancedMesh,
-  Object3D,
-  Vector3,
-  Color,
-  AdditiveBlending,
-  DoubleSide,
-  BufferGeometry,
-  Material
-} from "three";
-import { AmbientSynthesizer } from "./AmbientSynthesizer";
+  CAMERA_INFLUENCE_RADIUS,
+  CAMERA_MIN_RADIUS,
+  CAMERA_PULL_GAIN,
+  CAMERA_TARGET_PULL_RATE,
+  DISK_INNER_RADIUS,
+  DISK_OUTER_RADIUS,
+  DISK_VIEW_ANCHOR,
+  DISK_VIEW_ELEVATION_RAD,
+  HORIZON_EPSILON,
+  LENSING_BOUND_RADIUS,
+  LENSING_FADE_START,
+  LOCAL_UNITS_PER_M,
+  MAX_FRAME_DELTA,
+  QUALITY_DESKTOP,
+  QUALITY_MOBILE,
+  RENDER_PROFILES,
+  SCHWARZSCHILD_RADIUS,
+  TIME_SCALE,
+  computeDiskQuaternion,
+  computeTemperatureNormalization,
+} from "./blackhole/physics";
+import { LENSING_FRAGMENT_SHADER, LENSING_VERTEX_SHADER } from "./blackhole/shaders";
+import { TidalDebris } from "./blackhole/TidalDebris";
+import { useLensingEnvironment } from "./blackhole/useLensingEnvironment";
+import type { BlackHoleRenderMode, BlackHoleUniforms, OrbitControlsLike } from "./blackhole/types";
 
-const DISK_VERT = `
-  varying vec2 vPos;
-  void main() {
-    vPos = position.xy;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
+const SPHERE_WIDTH_SEGMENTS = 48;
+const SPHERE_HEIGHT_SEGMENTS = 32;
+const QUALITY = IS_MOBILE ? QUALITY_MOBILE : QUALITY_DESKTOP;
+const SHADER_DEFINES = { MAX_STEPS: QUALITY.maxSteps, FBM_OCTAVES: QUALITY.fbmOctaves } as const;
 
-const DISK_FRAG = `
-  uniform vec3 colorIn;
-  uniform vec3 colorOut;
-  uniform float minR;
-  uniform float maxR;
-  uniform float mult;
-  uniform float uLensing;
-  varying vec2 vPos;
-
-  void main() {
-    float dist = length(vPos);
-    float theta = atan(vPos.y, vPos.x);
-
-    if (dist < minR || dist > maxR) {
-      discard;
-    }
-    
-    float t = (dist - minR) / (maxR - minR);
-    
-    // Smooth exponential decay for a soft, smoky blending zone
-    float alpha = pow(1.0 - t, 2.5) * mult;
-    
-    // Apply brightness distribution for the lensing halo
-    if (uLensing > 0.5) {
-      float verticalGlow = sin(theta);
-      float brightness = 1.0;
-      if (vPos.y > 0.0) {
-        brightness = mix(0.7, 1.4, verticalGlow); // Luminous upper arc
-      } else {
-        brightness = mix(0.7, 0.35, -verticalGlow); // Dimmer mirrored lower arc
-      }
-      alpha *= brightness;
-    }
-
-    // Smooth blending from hot white-gold to soft cream-gold
-    vec3 color = mix(colorIn, colorOut, t);
-    
-    gl_FragColor = vec4(color, alpha);
-  }
-`;
-
-interface GlowingDiskProps {
-  minRadius: number;
-  maxRadius: number;
-  opacityMultiplier?: number;
-  rot?: [number, number, number];
-  colorIn?: Vector3;
-  colorOut?: Vector3;
-  isLensing?: boolean;
-}
-
-const GlowingDisk = ({
-  minRadius,
-  maxRadius,
-  opacityMultiplier = 1,
-  rot = [0, 0, 0],
-  colorIn = new Vector3(1.0, 0.99, 0.94),
-  colorOut = new Vector3(0.95, 0.70, 0.35),
-  isLensing = false
-}: GlowingDiskProps) => {
-  const uniforms = useRef({
-    colorIn: { value: colorIn },
-    colorOut: { value: colorOut },
-    minR: { value: minRadius },
-    maxR: { value: maxRadius },
-    mult: { value: opacityMultiplier },
-    uLensing: { value: isLensing ? 1.0 : 0.0 }
-  });
-
-  useLayoutEffect(() => {
-    uniforms.current.colorIn.value = colorIn;
-    uniforms.current.colorOut.value = colorOut;
-    uniforms.current.minR.value = minRadius;
-    uniforms.current.maxR.value = maxRadius;
-    uniforms.current.mult.value = opacityMultiplier;
-    uniforms.current.uLensing.value = isLensing ? 1.0 : 0.0;
-  }, [colorIn, colorOut, minRadius, maxRadius, opacityMultiplier, isLensing]);
-
-  return (
-    <mesh rotation={rot}>
-      <ringGeometry args={[minRadius, maxRadius, 64]} />
-      <shaderMaterial
-        transparent
-        depthWrite={false}
-        blending={AdditiveBlending}
-        side={DoubleSide}
-        uniforms={uniforms.current}
-        vertexShader={DISK_VERT}
-        fragmentShader={DISK_FRAG}
-      />
-    </mesh>
-  );
+const isOrbitControlsLike = (candidate: unknown): candidate is OrbitControlsLike => {
+  if (typeof candidate !== "object" || candidate === null) return false;
+  const record = candidate as { target?: unknown; update?: unknown };
+  return record.target instanceof Vector3 && typeof record.update === "function";
 };
 
-interface OrbitControlsLike {
-  target: Vector3;
-  update: () => void;
-}
+const createUniforms = (): BlackHoleUniforms => ({
+  uCamPos: { value: new Vector3(0, 0, LENSING_BOUND_RADIUS * 2) },
+  uCamRedshift: { value: 1 },
+  uObserverBoost: { value: 1 },
+  uTime: { value: 0 },
+  uEnvMap: { value: null },
+  uEnvReady: { value: 0 },
+  uEnvRotation: { value: new Matrix3() },
+  uBeaming: { value: 0 },
+  uZeroTorque: { value: 0 },
+  uPeakTemperature: { value: 0 },
+  uTempNorm: { value: 1 },
+  uExposure: { value: 1 },
+  uDiskInner: { value: DISK_INNER_RADIUS },
+  uDiskOuter: { value: DISK_OUTER_RADIUS },
+  uBoundRadius: { value: LENSING_BOUND_RADIUS },
+  uFadeStart: { value: LENSING_FADE_START },
+  uStepScale: { value: QUALITY.stepScale },
+});
 
 interface BlackHoleProps {
   position: [number, number, number];
   scale?: number;
+  /** `interstellar` (film look, default) or `physical` (full Doppler + redshift). */
+  renderMode?: BlackHoleRenderMode;
 }
 
-export const BlackHole = ({ position, scale = 1 }: BlackHoleProps) => {
-  const ringsRef = useRef<Group>(null);
-  const count = 60;
-  const debrisMeshRef = useRef<InstancedMesh>(null);
-  const _dummy = useMemo(() => new Object3D(), []);
-  
-  const bhPosition = useMemo(() => new Vector3(...position), [position]);
+/**
+ * Schwarzschild black hole: GPU null-geodesic ray tracing (shadow, photon
+ * ring, lensed disk & sky), CPU timelike geodesics for infalling matter
+ * (tidal spaghettification, horizon freeze) and a pseudo-Newtonian pull on
+ * the camera. All per-frame state lives in refs/uniforms — zero re-renders.
+ */
+const BlackHoleComponent = ({ position, scale = 1, renderMode = "interstellar" }: BlackHoleProps): React.JSX.Element => {
+  const [px, py, pz] = position;
+  const groupRef = useRef<Group>(null);
+  const cameraLocalRef = useRef<Vector3>(new Vector3());
+  const cameraWorldRef = useRef<Vector3>(new Vector3());
+  const controls = useThree((state) => state.controls);
 
-  const debrisData = useMemo(() => [...Array(count)].map(() => {
-    const rand = Math.random();
-    const colorVal = rand > 0.6 
-      ? "#ffffff" // white hot
-      : rand > 0.3 
-        ? "#ffd488" // soft cream-gold
-        : "#442205"; // dark warm dust
-    return {
-      pos: new Vector3(
-        (Math.random() - 0.5) * 150,
-        (Math.random() - 0.5) * 40,
-        (Math.random() - 0.5) * 150
-      ),
-      resetPos: new Vector3(
-        (Math.random() - 0.5) * 150,
-        (Math.random() - 0.5) * 40,
-        (Math.random() - 0.5) * 150
-      ),
-      color: new Color(colorVal),
-      scale: 0.25 + Math.random() * 0.8
-    };
-  }), []);
+  const worldPerM = scale * LOCAL_UNITS_PER_M;
+  const blackHoleWorld = useMemo(() => new Vector3(px, py, pz), [px, py, pz]);
+  const diskQuaternion = useMemo(
+    () => computeDiskQuaternion(blackHoleWorld, DISK_VIEW_ANCHOR, DISK_VIEW_ELEVATION_RAD),
+    [blackHoleWorld],
+  );
+  const uniforms = useMemo<BlackHoleUniforms>(createUniforms, []);
 
   useLayoutEffect(() => {
-    if (!debrisMeshRef.current) return;
-    debrisData.forEach((d, i) => debrisMeshRef.current!.setColorAt(i, d.color));
-    debrisMeshRef.current.instanceColor!.needsUpdate = true;
-  }, [debrisData]);
+    uniforms.uEnvRotation.value.setFromMatrix4(new Matrix4().makeRotationFromQuaternion(diskQuaternion));
+    groupRef.current?.updateMatrixWorld(true);
+  }, [diskQuaternion, uniforms, worldPerM]);
+
+  useEffect(() => {
+    const profile = RENDER_PROFILES[renderMode];
+    uniforms.uBeaming.value = profile.beaming;
+    uniforms.uZeroTorque.value = profile.zeroTorque;
+    uniforms.uPeakTemperature.value = profile.peakTemperatureK;
+    uniforms.uExposure.value = profile.exposure;
+    uniforms.uTempNorm.value = computeTemperatureNormalization(profile.zeroTorque);
+  }, [renderMode, uniforms]);
+
+  useLensingEnvironment(groupRef, uniforms, LENSING_BOUND_RADIUS * worldPerM, QUALITY.envResolution);
 
   useFrame((state, delta) => {
-    if (ringsRef.current) {
-      ringsRef.current.rotation.z -= delta * 0.2;
-    }
+    const group = groupRef.current;
+    if (!group) return;
 
-    // Camera gravitational pull — slow, majestic creep
-    const cam = state.camera;
-    const distToCam = cam.position.distanceTo(bhPosition);
-    const INFLUENCE_RADIUS = 220;
+    const dt = Math.min(delta, MAX_FRAME_DELTA);
+    uniforms.uTime.value += dt * TIME_SCALE;
 
-    if (distToCam < INFLUENCE_RADIUS) {
-      const forceFactor = Math.pow(1 - distToCam / INFLUENCE_RADIUS, 2.0);
-      const pullSpeed = 3.5 * forceFactor * delta; // Slower, majestic pull speed
+    const camera = state.camera;
+    const local = group.worldToLocal(cameraLocalRef.current.copy(camera.position));
+    let radius = local.length();
 
-      // Lerp camera position closer to the singularity
-      cam.position.lerp(bhPosition, pullSpeed * 0.45);
+    if (radius < CAMERA_INFLUENCE_RADIUS) {
+      // Paczyński–Wiita profile (r_s/(r − r_s))² diverges at the horizon like GR.
+      const proximity = SCHWARZSCHILD_RADIUS / Math.max(radius - SCHWARZSCHILD_RADIUS, HORIZON_EPSILON);
+      const strength = proximity * proximity;
+      const travel = Math.min(CAMERA_PULL_GAIN * strength * dt, radius - CAMERA_MIN_RADIUS);
 
-      // Traverses the scene graph to find and update OrbitControls target
-      let foundControls: OrbitControlsLike | null = null;
-      state.scene.traverse((child) => {
-        const c = child as unknown as Record<string, unknown>;
-        if (
-          c.isOrbitControls === true ||
-          (c.target instanceof Vector3 && typeof c.update === "function")
-        ) {
-          foundControls = child as unknown as OrbitControlsLike;
-        }
-      });
+      if (travel !== 0) {
+        local.multiplyScalar((radius - travel) / radius);
+        radius -= travel;
+        camera.position.copy(group.localToWorld(cameraWorldRef.current.copy(local)));
+      }
 
-      if (foundControls) {
-        const activeControls = foundControls as OrbitControlsLike;
-        activeControls.target.lerp(bhPosition, pullSpeed);
-        activeControls.update();
+      if (isOrbitControlsLike(controls)) {
+        controls.target.lerp(blackHoleWorld, 1 - Math.exp(-CAMERA_TARGET_PULL_RATE * strength * dt));
+        controls.update();
       }
     }
-    
-    if (debrisMeshRef.current) {
-      debrisMeshRef.current.rotation.y -= delta * 0.2;
-      
-      debrisData.forEach((d, i) => {
-        const distSq = d.pos.lengthSq();
-        if (distSq < 225) {
-          d.pos.copy(d.resetPos);
-        } else {
-          const dist = Math.sqrt(distSq);
-          const speed = 250 / (dist + 1);
-          d.pos.multiplyScalar(1 - delta * speed * 0.01);
-          
-          const s = Math.max(0.01, dist / 150) * d.scale;
-          _dummy.position.copy(d.pos);
-          _dummy.scale.setScalar(s);
-          _dummy.updateMatrix();
-          debrisMeshRef.current!.setMatrixAt(i, _dummy.matrix);
-        }
-      });
-      debrisMeshRef.current.instanceMatrix.needsUpdate = true;
-    }
+
+    const lapse = Math.max(1 - SCHWARZSCHILD_RADIUS / radius, HORIZON_EPSILON);
+    uniforms.uCamPos.value.copy(local);
+    uniforms.uCamRedshift.value = Math.sqrt(lapse);
+    uniforms.uObserverBoost.value = Math.pow(lapse, -2 * uniforms.uBeaming.value);
   });
 
   return (
-    <group position={position} scale={scale}>
-      {/* Event Horizon (Pure Black Sphere) */}
+    <group ref={groupRef} position={blackHoleWorld} quaternion={diskQuaternion} scale={worldPerM}>
       <mesh renderOrder={0}>
-        <sphereGeometry args={[15, 64, 64]} />
-        <meshBasicMaterial color="#000000" />
+        <sphereGeometry args={[LENSING_BOUND_RADIUS, SPHERE_WIDTH_SEGMENTS, SPHERE_HEIGHT_SEGMENTS]} />
+        <shaderMaterial
+          uniforms={uniforms}
+          defines={SHADER_DEFINES}
+          vertexShader={LENSING_VERTEX_SHADER}
+          fragmentShader={LENSING_FRAGMENT_SHADER}
+          side={BackSide}
+          transparent
+          premultipliedAlpha
+          depthWrite={false}
+          blending={NormalBlending}
+        />
       </mesh>
-      
-      {/* Gravitational Lensing Halo (Billboarded to frame the black hole from any camera angle) */}
-      <Billboard>
-        {/* Inner Lensing Ring (Photon Ring with primary/secondary Gravitational Lensing warp) */}
-        <GlowingDisk
-          minRadius={15}
-          maxRadius={32}
-          opacityMultiplier={0.85}
-          colorIn={new Vector3(1.0, 1.0, 0.98)}
-          colorOut={new Vector3(0.85, 0.55, 0.18)}
-          isLensing={true}
-        />
-      </Billboard>
-
-      {/* Main Equatorial Accretion Disk (Slightly tilted) */}
-      <group ref={ringsRef} rotation={[0.2, 0, -0.1]}>
-        {/* Inner Bright White-Gold Ring (Photon Ring - thick & saturated across the center) */}
-        <GlowingDisk
-          minRadius={15.0}
-          maxRadius={32.0}
-          opacityMultiplier={0.95}
-          rot={[-Math.PI / 2, 0, 0]}
-          colorIn={new Vector3(1.0, 1.0, 1.0)}
-          colorOut={new Vector3(1.0, 0.88, 0.55)}
-        />
-        {/* Wide Soft Accretion Disk */}
-        <GlowingDisk
-          minRadius={15.5}
-          maxRadius={50.0}
-          opacityMultiplier={0.8}
-          rot={[-Math.PI / 2, 0, 0]}
-          colorIn={new Vector3(1.0, 0.92, 0.70)}
-          colorOut={new Vector3(0.40, 0.15, 0.01)}
-        />
-      </group>
-
-      {/* Matter/Debris getting sucked in */}
-      <instancedMesh ref={debrisMeshRef} args={[undefined as unknown as BufferGeometry, undefined as unknown as Material, count]}>
-        <boxGeometry args={[0.4, 0.4, 0.4]} />
-        <meshBasicMaterial transparent opacity={0.5} blending={AdditiveBlending} depthWrite={false} />
-      </instancedMesh>
+      <TidalDebris count={QUALITY.debrisCount} />
     </group>
   );
 };
+
+const arePropsEqual = (prev: BlackHoleProps, next: BlackHoleProps): boolean =>
+  prev.scale === next.scale &&
+  prev.renderMode === next.renderMode &&
+  prev.position[0] === next.position[0] &&
+  prev.position[1] === next.position[1] &&
+  prev.position[2] === next.position[2];
+
+export const BlackHole = React.memo(BlackHoleComponent, arePropsEqual);
+BlackHole.displayName = "BlackHole";
 export default BlackHole;

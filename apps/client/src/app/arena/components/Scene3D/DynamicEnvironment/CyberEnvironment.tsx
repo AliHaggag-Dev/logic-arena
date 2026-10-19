@@ -141,12 +141,28 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
     return geom;
   }, []);
 
-  const cubeData = useMemo(() => [...Array(cubeCount)].map(() => ({
-    size: Math.random() * 8 + 2,
-    pos: getRandomPos(100, 300, -20, 150),
-    color: Math.random() > 0.5 ? "#00ffff" : "#ff00ff",
-    rot: new Euler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI)
-  })), []);
+  const BLACK_HOLE_POS = useMemo(() => new Vector3(200, 80, -250), []);
+  const BLACK_HOLE_CLEARANCE_RADIUS = 180;
+
+  const cubeData = useMemo(() => {
+    const cubes = [];
+    let attempts = 0;
+    const maxAttempts = cubeCount * 10;
+    while (cubes.length < cubeCount && attempts < maxAttempts) {
+      attempts++;
+      const pos = getRandomPos(100, 300, -20, 150);
+      const distToHole = Math.hypot(pos[0] - BLACK_HOLE_POS.x, pos[1] - BLACK_HOLE_POS.y, pos[2] - BLACK_HOLE_POS.z);
+      if (distToHole >= BLACK_HOLE_CLEARANCE_RADIUS) {
+        cubes.push({
+          size: Math.random() * 8 + 2,
+          pos,
+          color: Math.random() > 0.5 ? "#00ffff" : "#ff00ff",
+          rot: new Euler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI)
+        });
+      }
+    }
+    return cubes;
+  }, [cubeCount, BLACK_HOLE_POS]);
 
   useLayoutEffect(() => {
     if (!cubeMeshRef.current) return;
@@ -179,11 +195,23 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
     return minD;
   }, [cubeData]);
 
-  const cloudData = useMemo(() => [...Array(12)].map((_, i) => ({
-    pos: getRandomPos(120, 250, 20, 80),
-    color: i % 2 === 0 ? "#05051a" : "#00ffff",
-    seed: i
-  })), []);
+  const cloudData = useMemo(() => {
+    const clouds = [];
+    let attempts = 0;
+    while (clouds.length < 12 && attempts < 120) {
+      attempts++;
+      const pos = getRandomPos(120, 250, 20, 80);
+      const distToHole = Math.hypot(pos[0] - BLACK_HOLE_POS.x, pos[1] - BLACK_HOLE_POS.y, pos[2] - BLACK_HOLE_POS.z);
+      if (distToHole >= BLACK_HOLE_CLEARANCE_RADIUS) {
+        clouds.push({
+          pos,
+          color: clouds.length % 2 === 0 ? "#05051a" : "#00ffff",
+          seed: clouds.length
+        });
+      }
+    }
+    return clouds;
+  }, [BLACK_HOLE_POS]);
 
   return (
     <>
