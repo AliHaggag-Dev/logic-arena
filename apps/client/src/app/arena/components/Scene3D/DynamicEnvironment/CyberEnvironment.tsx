@@ -6,6 +6,9 @@ import {
   Mesh,
   Vector3,
   MeshBasicMaterial,
+  AdditiveBlending,
+  FrontSide,
+  DoubleSide
 } from "three";
 import { IS_MOBILE, CYBER_SHIPS, getRandomPos } from "./constants";
 import { AmbientSynthesizer } from "./AmbientSynthesizer";
@@ -27,39 +30,11 @@ const ASTEROID_MIN_SIZE = 2;
 const ASTEROID_SIZE_SPREAD = 8;
 const MAX_PLACEMENT_ATTEMPTS = ASTEROID_COUNT * 15;
 
-interface CyberShipProps {
-  startPos: [number, number, number];
-  speed: number;
-  color: string;
-  axis?: 'x' | 'z';
-}
-
-const CyberShip = ({ startPos, speed, color, axis = 'x' }: CyberShipProps): React.JSX.Element => {
-  const groupRef = useRef<Group>(null);
-  useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.position[axis] += speed * delta;
-      if (groupRef.current.position[axis] > 400) groupRef.current.position[axis] = -400;
-      if (groupRef.current.position[axis] < -400) groupRef.current.position[axis] = 400;
-    }
-  });
-  
-  const rotY = axis === 'x' ? (speed > 0 ? -Math.PI / 2 : Math.PI / 2) : (speed > 0 ? 0 : Math.PI);
-
-  return (
-    <group ref={groupRef} position={startPos} rotation={[0, rotY, 0]}>
-      <AmbientSynthesizer type="cybership" maxDistance={400} maxVol={0.4} />
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <coneGeometry args={[2, 10, 4]} />
-        <meshStandardMaterial color="#111" emissive={color} emissiveIntensity={0.8} wireframe />
-      </mesh>
-      <mesh position={[0, 0, -4]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[1, 2, 4, 8]} />
-        <meshStandardMaterial color="#0a0a2a" emissive="#000" />
-      </mesh>
-    </group>
-  );
-};
+/* ─────────── Ship geometry constants ─────────── */
+const COCKPIT_EMISSIVE_INTENSITY = 1.8;
+const HULL_ROUGHNESS = 0.35;
+const HULL_METALNESS = 0.92;
+const ENGINE_GLOW_INTENSITY = 4.0;
 
 interface CyberEnvironmentProps {
   isHighQuality: boolean;
@@ -194,32 +169,270 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps): Reac
           {/* Massive Interstellar Black Hole */}
           <BlackHole position={BLACK_HOLE_COORDINATES} scale={2.5} />
 
-          {/* Planet 2: Small dense data-sphere on the opposite side */}
-          <mesh ref={planet2Ref} position={[-150, 40, 180]}>
+          {/* Planet 2: Holographic Data-Sphere — rotating nested shells with energy aura */}
+          <group position={[-150, 40, 180]}>
             <AmbientSynthesizer type="moon" position={[-150, 40, 180]} maxDistance={200} />
-            <sphereGeometry args={[30, 16, 16]} />
-            <meshBasicMaterial color="#ff00ff" wireframe transparent opacity={0.2} />
-          </mesh>
+            {/* Outer translucent crystalline shell */}
+            <mesh ref={planet2Ref}>
+              <sphereGeometry args={[30, 32, 32]} />
+              <meshStandardMaterial
+                color="#1a0030"
+                roughness={0.1}
+                metalness={0.95}
+                transparent
+                opacity={0.35}
+                emissive="#8800aa"
+                emissiveIntensity={0.4}
+                side={FrontSide}
+              />
+            </mesh>
+            {/* Inner rotating energy core */}
+            <mesh scale={0.72}>
+              <icosahedronGeometry args={[30, 2]} />
+              <meshStandardMaterial
+                color="#200040"
+                roughness={0.05}
+                metalness={1.0}
+                emissive="#cc00ff"
+                emissiveIntensity={1.2}
+              />
+            </mesh>
+            {/* Orbiting data-ring */}
+            <mesh rotation={[Math.PI / 3, 0.4, 0]}>
+              <torusGeometry args={[38, 0.6, 8, 64]} />
+              <meshStandardMaterial
+                color="#220044"
+                emissive="#dd44ff"
+                emissiveIntensity={1.5}
+                roughness={0.2}
+                metalness={0.9}
+              />
+            </mesh>
+            {/* Second tilted ring */}
+            <mesh rotation={[0.8, Math.PI / 2.5, 0.3]}>
+              <torusGeometry args={[42, 0.4, 8, 64]} />
+              <meshStandardMaterial
+                color="#330055"
+                emissive="#aa22dd"
+                emissiveIntensity={1.0}
+                roughness={0.3}
+                metalness={0.85}
+                transparent
+                opacity={0.7}
+              />
+            </mesh>
+            {/* Soft volumetric glow aura */}
+            <mesh>
+              <sphereGeometry args={[36, 24, 24]} />
+              <meshBasicMaterial
+                color="#cc00ff"
+                transparent
+                opacity={0.06}
+                blending={AdditiveBlending}
+                depthWrite={false}
+                side={DoubleSide}
+              />
+            </mesh>
+          </group>
 
-          {/* Planet 3: High altitude geometric moon */}
-          <mesh ref={planet3Ref} position={[-100, 180, -100]}>
+          {/* Planet 3: Crystalline Energy Satellite — faceted alien construct */}
+          <group position={[-100, 180, -100]}>
             <AmbientSynthesizer type="moon" position={[-100, 180, -100]} maxDistance={200} />
-            <octahedronGeometry args={[40, 1]} />
-            <meshBasicMaterial color="#00ffcc" wireframe transparent opacity={0.1} />
-          </mesh>
+            {/* Primary crystalline body */}
+            <mesh ref={planet3Ref}>
+              <octahedronGeometry args={[40, 2]} />
+              <meshStandardMaterial
+                color="#0a1a2a"
+                roughness={0.08}
+                metalness={0.98}
+                emissive="#004455"
+                emissiveIntensity={0.5}
+                flatShading
+              />
+            </mesh>
+            {/* Inner glowing core */}
+            <mesh scale={0.55}>
+              <icosahedronGeometry args={[40, 1]} />
+              <meshStandardMaterial
+                color="#001a20"
+                emissive="#00eedd"
+                emissiveIntensity={2.0}
+                roughness={0.0}
+                metalness={0.5}
+              />
+            </mesh>
+            {/* Equatorial energy ring */}
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[52, 0.8, 8, 48]} />
+              <meshStandardMaterial
+                color="#002030"
+                emissive="#00ddcc"
+                emissiveIntensity={1.8}
+                roughness={0.15}
+                metalness={0.9}
+              />
+            </mesh>
+            {/* Orbiting sentinel fragments */}
+            {[0, 1, 2, 3].map((i) => {
+              const angle = (i / 4) * Math.PI * 2;
+              const orbitR = 56;
+              return (
+                <mesh
+                  key={`sentinel-${i}`}
+                  position={[
+                    Math.cos(angle) * orbitR,
+                    Math.sin(angle) * 8,
+                    Math.sin(angle) * orbitR
+                  ]}
+                >
+                  <octahedronGeometry args={[4, 0]} />
+                  <meshStandardMaterial
+                    color="#0a2020"
+                    emissive="#00ffcc"
+                    emissiveIntensity={2.5}
+                    roughness={0.1}
+                    metalness={0.95}
+                    flatShading
+                  />
+                </mesh>
+              );
+            })}
+            {/* Atmospheric energy field */}
+            <mesh>
+              <sphereGeometry args={[48, 24, 24]} />
+              <meshBasicMaterial
+                color="#00ffcc"
+                transparent
+                opacity={0.04}
+                blending={AdditiveBlending}
+                depthWrite={false}
+                side={DoubleSide}
+              />
+            </mesh>
+          </group>
 
-          {/* Distant Cyber Ships */}
+          {/* ═══════ Distant Cyber Ships — Sleek Sci-fi Spacecraft ═══════ */}
           {CYBER_SHIPS.map((ship, i) => {
             const rotY = ship.axis === 'z' ? (ship.speed > 0 ? 0 : Math.PI) : ship.axis === 'x' ? (ship.speed > 0 ? -Math.PI / 2 : Math.PI / 2) : (ship.speed > 0 ? 0 : Math.PI);
             return (
               <group key={`ship-${i}`} ref={(el) => { shipsRef.current[i] = el; }} position={ship.startPos} rotation={[0, rotY, 0]}>
-                <mesh rotation={[Math.PI / 2, 0, 0]}>
-                  <coneGeometry args={[2, 10, 4]} />
-                  <meshStandardMaterial color="#111" emissive={ship.color} emissiveIntensity={0.8} wireframe />
+                {/* Forward fuselage (tapered nose cone) */}
+                <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 3]}>
+                  <coneGeometry args={[1.2, 6, 6]} />
+                  <meshStandardMaterial
+                    color="#0a0a12"
+                    roughness={HULL_ROUGHNESS}
+                    metalness={HULL_METALNESS}
+                    emissive={ship.color}
+                    emissiveIntensity={0.15}
+                  />
                 </mesh>
-                <mesh position={[0, 0, -4]} rotation={[Math.PI / 2, 0, 0]}>
-                  <cylinderGeometry args={[1, 2, 4, 8]} />
-                  <meshStandardMaterial color="#111" emissive={ship.color} emissiveIntensity={2} />
+
+                {/* Cockpit canopy (glass dome) */}
+                <mesh position={[0, 0.8, 2.5]}>
+                  <sphereGeometry args={[0.9, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
+                  <meshStandardMaterial
+                    color="#001122"
+                    roughness={0.05}
+                    metalness={0.95}
+                    emissive={ship.color}
+                    emissiveIntensity={COCKPIT_EMISSIVE_INTENSITY}
+                    transparent
+                    opacity={0.8}
+                  />
+                </mesh>
+
+                {/* Main hull (center fuselage) */}
+                <mesh rotation={[Math.PI / 2, 0, 0]}>
+                  <cylinderGeometry args={[1.8, 1.5, 6, 6]} />
+                  <meshStandardMaterial
+                    color="#080810"
+                    roughness={HULL_ROUGHNESS}
+                    metalness={HULL_METALNESS}
+                    emissive={ship.color}
+                    emissiveIntensity={0.08}
+                  />
+                </mesh>
+
+                {/* Wing strakes (left) */}
+                <mesh position={[-2.8, -0.2, -1]} rotation={[0, 0.15, -0.1]}>
+                  <boxGeometry args={[3, 0.2, 4]} />
+                  <meshStandardMaterial
+                    color="#0c0c14"
+                    roughness={0.4}
+                    metalness={0.9}
+                    emissive={ship.color}
+                    emissiveIntensity={0.05}
+                  />
+                </mesh>
+
+                {/* Wing strakes (right) */}
+                <mesh position={[2.8, -0.2, -1]} rotation={[0, -0.15, 0.1]}>
+                  <boxGeometry args={[3, 0.2, 4]} />
+                  <meshStandardMaterial
+                    color="#0c0c14"
+                    roughness={0.4}
+                    metalness={0.9}
+                    emissive={ship.color}
+                    emissiveIntensity={0.05}
+                  />
+                </mesh>
+
+                {/* Engine nacelle - left */}
+                <mesh position={[-2.5, -0.3, -3.5]} rotation={[Math.PI / 2, 0, 0]}>
+                  <cylinderGeometry args={[0.6, 0.9, 3, 8]} />
+                  <meshStandardMaterial
+                    color="#060608"
+                    roughness={0.3}
+                    metalness={0.95}
+                  />
+                </mesh>
+
+                {/* Engine nacelle - right */}
+                <mesh position={[2.5, -0.3, -3.5]} rotation={[Math.PI / 2, 0, 0]}>
+                  <cylinderGeometry args={[0.6, 0.9, 3, 8]} />
+                  <meshStandardMaterial
+                    color="#060608"
+                    roughness={0.3}
+                    metalness={0.95}
+                  />
+                </mesh>
+
+                {/* Engine exhaust glow - left */}
+                <mesh position={[-2.5, -0.3, -5.2]}>
+                  <sphereGeometry args={[0.7, 8, 8]} />
+                  <meshStandardMaterial
+                    color="#000000"
+                    emissive={ship.color}
+                    emissiveIntensity={ENGINE_GLOW_INTENSITY}
+                    roughness={0.0}
+                    metalness={0.0}
+                  />
+                </mesh>
+
+                {/* Engine exhaust glow - right */}
+                <mesh position={[2.5, -0.3, -5.2]}>
+                  <sphereGeometry args={[0.7, 8, 8]} />
+                  <meshStandardMaterial
+                    color="#000000"
+                    emissive={ship.color}
+                    emissiveIntensity={ENGINE_GLOW_INTENSITY}
+                    roughness={0.0}
+                    metalness={0.0}
+                  />
+                </mesh>
+
+                {/* Thruster trail (additive glow cone) */}
+                <mesh position={[0, -0.3, -6]} rotation={[-Math.PI / 2, 0, 0]}>
+                  <coneGeometry args={[1.5, 5, 8, 1, true]} />
+                  <meshBasicMaterial
+                    color={ship.color}
+                    transparent
+                    opacity={0.12}
+                    blending={AdditiveBlending}
+                    depthWrite={false}
+                    side={DoubleSide}
+                  />
                 </mesh>
               </group>
             );
