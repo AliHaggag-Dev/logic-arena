@@ -26,11 +26,11 @@ interface BackgroundProceduralPlanetsProps {
 
 const BackgroundProceduralPlanets = ({ mapTheme }: BackgroundProceduralPlanetsProps) => {
   const planets = useMemo(() => {
-    // 3 static backdrop planets
+    // 3 colossal backdrop planets placed at deep cosmic distance (~6,700 - 7,500 units)
     return [
       {
-        pos: [-1400, 320, -400] as [number, number, number],
-        scale: 75,
+        pos: [-6300, 1440, -1800] as [number, number, number],
+        scale: 335,
         type: "gas" as const,
         color1: new Color("#a855f7"),
         color2: new Color("#3b82f6"),
@@ -38,16 +38,16 @@ const BackgroundProceduralPlanets = ({ mapTheme }: BackgroundProceduralPlanetsPr
         hasRockRings: true,
       },
       {
-        pos: [3500, -500, 1200] as [number, number, number],
-        scale: 100,
+        pos: [7000, -1000, 2400] as [number, number, number],
+        scale: 200,
         type: "lava" as const,
         color1: new Color("#ef4444"),
         color2: new Color("#f97316"),
         rotationSpeed: -0.06,
       },
       {
-        pos: [-1050, -520, 1150] as [number, number, number],
-        scale: 70,
+        pos: [-4410, -2180, 4830] as [number, number, number],
+        scale: 295,
         type: "ice" as const,
         color1: new Color("#bae6fd"),
         color2: new Color("#0284c7"),
@@ -148,7 +148,7 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
   const galaxyRef = useRef<Group>(null);
   const { camera } = useThree();
 
-  // Keep the background centered on the camera at all times (Infinite Parallax effect)
+  // Keep ONLY the infinite starfield centered on the camera (true skybox behavior)
   useFrame((_, delta) => {
     if (backgroundRef.current) {
       backgroundRef.current.position.copy(camera.position);
@@ -309,7 +309,7 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
 
   return (
     <>
-      {/* ----------------- INFINITE PARALLAX SKYBOX LAYER ----------------- */}
+      {/* ----------------- INFINITE PARALLAX SKYBOX LAYER (FIXED & UNREACHABLE TITANS) ----------------- */}
       <group ref={backgroundRef}>
         {/* 🌟 Infinite Parallax Starfield */}
         <Stars
@@ -322,57 +322,62 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
           speed={1.2}
         />
 
-        {/* 🌌 Procedural Spiral Galaxy */}
-        <group
-          ref={galaxyRef}
-          position={galaxyTransform.position}
-          rotation={galaxyTransform.rotation}
-        >
-          {/* 🕳️ Scary Massive Black Hole in the center of the galaxy */}
-          <GalaxyBlackHole mapTheme={mapTheme} />
+        {/* 🌌 Procedural Spiral Galaxy & Supermassive Black Hole (Deep Cosmic Skybox) */}
+        <group scale={2.5}>
+          <group
+            ref={galaxyRef}
+            position={galaxyTransform.position}
+            rotation={galaxyTransform.rotation}
+          >
+            <GalaxyBlackHole mapTheme={mapTheme} />
 
-          <points>
-            <bufferGeometry>
-              <bufferAttribute
-                attach="attributes-position"
-                args={[galaxyData.positions, 3]}
+            <points>
+              <bufferGeometry>
+                <bufferAttribute
+                  attach="attributes-position"
+                  args={[galaxyData.positions, 3]}
+                />
+                <bufferAttribute
+                  attach="attributes-color"
+                  args={[galaxyData.colors, 3]}
+                />
+              </bufferGeometry>
+              <pointsMaterial
+                size={graphicsQuality === "high" ? 5.5 : graphicsQuality === "low" ? 3.0 : 4.5}
+                sizeAttenuation={true}
+                vertexColors={true}
+                transparent={true}
+                opacity={graphicsQuality === "low" ? 0.5 : 0.7}
+                depthWrite={false}
+                blending={AdditiveBlending}
               />
-              <bufferAttribute
-                attach="attributes-color"
-                args={[galaxyData.colors, 3]}
-              />
-            </bufferGeometry>
-            <pointsMaterial
-              size={graphicsQuality === "high" ? 5.5 : graphicsQuality === "low" ? 3.0 : 4.5}
-              sizeAttenuation={true}
-              vertexColors={true}
-              transparent={true}
-              opacity={graphicsQuality === "low" ? 0.5 : 0.7}
-              depthWrite={false}
-              blending={AdditiveBlending}
-            />
-          </points>
+            </points>
+          </group>
         </group>
 
-        {/* 🚨 Neutron Star (Pulsar) Lighthouse */}
+        {/* 🚨 Neutron Star (Pulsar) Lighthouse (Deep Cosmic Skybox) */}
         {graphicsQuality !== "low" && (
-          <SpacePulsar
-            position={pulsarConfig.position}
-            color={pulsarConfig.color}
-            beamColor={pulsarConfig.beamColor}
-          />
+          <group scale={3.5}>
+            <SpacePulsar
+              position={pulsarConfig.position}
+              color={pulsarConfig.color}
+              beamColor={pulsarConfig.beamColor}
+            />
+          </group>
         )}
 
-        {/* 🌌 Separate Volumetric Filament Space Nebula (gaseous filament detail) */}
+        {/* 🌌 Volumetric Filament Space Nebula (Deep Cosmic Skybox) */}
         {graphicsQuality !== "low" && (
-          <SpaceNebula
-            position={[1300, 500, 1300]}
-            mapTheme={mapTheme}
-            graphicsQuality={graphicsQuality}
-          />
+          <group scale={3.6}>
+            <SpaceNebula
+              position={[1300, 500, 1300]}
+              mapTheme={mapTheme}
+              graphicsQuality={graphicsQuality}
+            />
+          </group>
         )}
 
-        {/* 🪐 Distant Static Background Procedural Planets */}
+        {/* 🪐 Distant Colossal Backdrop Planets (Unreachable Purple Giant, Saturn-like Ringed Planet, Lava) */}
         {graphicsQuality !== "low" && (
           <BackgroundProceduralPlanets mapTheme={mapTheme} />
         )}
