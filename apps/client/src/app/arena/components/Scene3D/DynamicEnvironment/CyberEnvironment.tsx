@@ -68,8 +68,8 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
     if (planet2Ref.current) planet2Ref.current.rotation.x += delta * 0.02;
     if (planet3Ref.current) planet3Ref.current.rotation.z -= delta * 0.03;
     if (cubesRef.current) {
-      cubesRef.current.rotation.x += delta * 0.02;
-      cubesRef.current.rotation.y += delta * 0.05;
+      cubesRef.current.rotation.x += delta * 0.005;
+      cubesRef.current.rotation.z += delta * 0.003;
     }
     
     CYBER_SHIPS.forEach((config, i) => {
@@ -141,18 +141,62 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
     return geom;
   }, []);
 
+  const DEFAULT_CAM_POS = useMemo(() => new Vector3(0, 22, 14), []);
   const BLACK_HOLE_POS = useMemo(() => new Vector3(200, 80, -250), []);
-  const BLACK_HOLE_CLEARANCE_RADIUS = 180;
+  const SIGHTLINE_DIR = useMemo(
+    () => new Vector3().subVectors(BLACK_HOLE_POS, DEFAULT_CAM_POS).normalize(),
+    [BLACK_HOLE_POS, DEFAULT_CAM_POS]
+  );
+  const SIGHTLINE_LEN = useMemo(
+    () => DEFAULT_CAM_POS.distanceTo(BLACK_HOLE_POS),
+    [BLACK_HOLE_POS, DEFAULT_CAM_POS]
+  );
+
+  const isNearBlackHoleOrSightline = useCallback(
+    (pos: [number, number, number]): boolean => {
+      // 1. Direct 3D distance to the black hole center (covers entire lensing bound radius + halo)
+      const distToHole = Math.hypot(
+        pos[0] - BLACK_HOLE_POS.x,
+        pos[1] - BLACK_HOLE_POS.y,
+        pos[2] - BLACK_HOLE_POS.z
+      );
+      if (distToHole < 220) return true;
+
+      // 2. Line of sight corridor from default arena camera to the black hole
+      const toPointX = pos[0] - DEFAULT_CAM_POS.x;
+      const toPointY = pos[1] - DEFAULT_CAM_POS.y;
+      const toPointZ = pos[2] - DEFAULT_CAM_POS.z;
+      const toPointDist = Math.hypot(toPointX, toPointY, toPointZ);
+
+      if (toPointDist > 0) {
+        // Angular cone check: exclude any object within ~35 degrees of the black hole sightline
+        const cosAngle =
+          (toPointX * SIGHTLINE_DIR.x + toPointY * SIGHTLINE_DIR.y + toPointZ * SIGHTLINE_DIR.z) /
+          toPointDist;
+        if (cosAngle > 0.82) return true;
+
+        // Cylinder corridor around the ray from camera to black hole (clears foreground corridor)
+        const proj =
+          toPointX * SIGHTLINE_DIR.x + toPointY * SIGHTLINE_DIR.y + toPointZ * SIGHTLINE_DIR.z;
+        if (proj > 10 && proj < SIGHTLINE_LEN + 150) {
+          const perpDistSq = toPointDist * toPointDist - proj * proj;
+          if (perpDistSq < 120 * 120) return true;
+        }
+      }
+
+      return false;
+    },
+    [BLACK_HOLE_POS, DEFAULT_CAM_POS, SIGHTLINE_DIR, SIGHTLINE_LEN]
+  );
 
   const cubeData = useMemo(() => {
     const cubes = [];
     let attempts = 0;
-    const maxAttempts = cubeCount * 10;
+    const maxAttempts = cubeCount * 15;
     while (cubes.length < cubeCount && attempts < maxAttempts) {
       attempts++;
       const pos = getRandomPos(100, 300, -20, 150);
-      const distToHole = Math.hypot(pos[0] - BLACK_HOLE_POS.x, pos[1] - BLACK_HOLE_POS.y, pos[2] - BLACK_HOLE_POS.z);
-      if (distToHole >= BLACK_HOLE_CLEARANCE_RADIUS) {
+      if (!isNearBlackHoleOrSightline(pos)) {
         cubes.push({
           size: Math.random() * 8 + 2,
           pos,
@@ -162,7 +206,7 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
       }
     }
     return cubes;
-  }, [cubeCount, BLACK_HOLE_POS]);
+  }, [cubeCount, isNearBlackHoleOrSightline]);
 
   useLayoutEffect(() => {
     if (!cubeMeshRef.current) return;
@@ -198,11 +242,10 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
   const cloudData = useMemo(() => {
     const clouds = [];
     let attempts = 0;
-    while (clouds.length < 12 && attempts < 120) {
+    while (clouds.length < 12 && attempts < 150) {
       attempts++;
       const pos = getRandomPos(120, 250, 20, 80);
-      const distToHole = Math.hypot(pos[0] - BLACK_HOLE_POS.x, pos[1] - BLACK_HOLE_POS.y, pos[2] - BLACK_HOLE_POS.z);
-      if (distToHole >= BLACK_HOLE_CLEARANCE_RADIUS) {
+      if (!isNearBlackHoleOrSightline(pos)) {
         clouds.push({
           pos,
           color: clouds.length % 2 === 0 ? "#05051a" : "#00ffff",
@@ -211,7 +254,7 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps) => {
       }
     }
     return clouds;
-  }, [BLACK_HOLE_POS]);
+  }, [isNearBlackHoleOrSightline]);
 
   return (
     <>
