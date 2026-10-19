@@ -9,6 +9,7 @@ import { GalaxyBlackHole } from "./GalaxyBlackHole";
 import { SpacePulsar } from "./SpacePulsar";
 import { SpaceNebula } from "./SpaceNebula";
 import { AbandonedSatellite, CosmicMonolith, ExplodingAsteroid } from "./EasterEggs";
+import { HyperEarth } from "./HyperEarth";
 
 interface SpaceBackgroundProps {
   mapTheme: MapTheme;
@@ -93,17 +94,7 @@ const ActiveProceduralPlanets = ({ mapTheme }: ActiveProceduralPlanetsProps) => 
         rotationSpeed: 0.03,
         audioName: "desert" as const,
       },
-      {
-        pos: [950, -120, 800] as [number, number, number],
-        scale: 40,
-        type: "terrestrial" as const,
-        color1: new Color("#10b981"),
-        color2: new Color("#2563eb"),
-        rotationSpeed: 0.05,
-        hasClouds: true,
-        moonsCount: 1,
-        audioName: "terrestrial" as const,
-      },
+      // Earth + Moon are now rendered by the dedicated HyperEarth component
       // --- Foreground (closer to arena, with sound!) ---
       {
         pos: [-500, 160, -500] as [number, number, number],
@@ -140,7 +131,6 @@ const ActiveProceduralPlanets = ({ mapTheme }: ActiveProceduralPlanetsProps) => 
           color2={p.color2}
           rotationSpeed={p.rotationSpeed}
           hasRings={p.hasRings}
-          hasClouds={p.hasClouds}
           moonsCount={p.moonsCount}
           audioName={p.audioName}
         />
@@ -393,6 +383,9 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
         <>
           {/* 🪐 Zoomable Active Procedural Planets */}
           <ActiveProceduralPlanets mapTheme={mapTheme} />
+
+          {/* 🌍 Hyper-Realistic Earth + Moon */}
+          <HyperEarth />
 
           {/* 📡 Abandoned Satellite (Vanguard-IX) */}
           <AbandonedSatellite mapTheme={mapTheme} />
