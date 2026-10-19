@@ -41,14 +41,10 @@ interface CyberEnvironmentProps {
 }
 
 export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps): React.JSX.Element => {
-  const planet2Ref = useRef<Mesh>(null);
-  const planet3Ref = useRef<Mesh>(null);
   const shipsRef = useRef<(Group | null)[]>([]);
   const tempPosRef = useRef(new Vector3());
   
   useFrame((_, delta) => {
-    if (planet2Ref.current) planet2Ref.current.rotation.x += delta * 0.02;
-    if (planet3Ref.current) planet3Ref.current.rotation.z -= delta * 0.03;
     
     CYBER_SHIPS.forEach((config, i) => {
       const ship = shipsRef.current[i];
@@ -168,148 +164,6 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps): Reac
           <AmbientSynthesizer type="blackhole" position={BLACK_HOLE_COORDINATES} maxDistance={480} maxVol={1.2} />
           {/* Massive Interstellar Black Hole */}
           <BlackHole position={BLACK_HOLE_COORDINATES} scale={2.5} />
-
-          {/* Planet 2: Holographic Data-Sphere — rotating nested shells with energy aura */}
-          <group position={[-150, 40, 180]}>
-            <AmbientSynthesizer type="moon" position={[-150, 40, 180]} maxDistance={200} />
-            {/* Outer translucent crystalline shell */}
-            <mesh ref={planet2Ref}>
-              <sphereGeometry args={[30, 32, 32]} />
-              <meshStandardMaterial
-                color="#1a0030"
-                roughness={0.1}
-                metalness={0.95}
-                transparent
-                opacity={0.35}
-                emissive="#8800aa"
-                emissiveIntensity={0.4}
-                side={FrontSide}
-              />
-            </mesh>
-            {/* Inner rotating energy core */}
-            <mesh scale={0.72}>
-              <icosahedronGeometry args={[30, 2]} />
-              <meshStandardMaterial
-                color="#200040"
-                roughness={0.05}
-                metalness={1.0}
-                emissive="#cc00ff"
-                emissiveIntensity={1.2}
-              />
-            </mesh>
-            {/* Orbiting data-ring */}
-            <mesh rotation={[Math.PI / 3, 0.4, 0]}>
-              <torusGeometry args={[38, 0.6, 8, 64]} />
-              <meshStandardMaterial
-                color="#220044"
-                emissive="#dd44ff"
-                emissiveIntensity={1.5}
-                roughness={0.2}
-                metalness={0.9}
-              />
-            </mesh>
-            {/* Second tilted ring */}
-            <mesh rotation={[0.8, Math.PI / 2.5, 0.3]}>
-              <torusGeometry args={[42, 0.4, 8, 64]} />
-              <meshStandardMaterial
-                color="#330055"
-                emissive="#aa22dd"
-                emissiveIntensity={1.0}
-                roughness={0.3}
-                metalness={0.85}
-                transparent
-                opacity={0.7}
-              />
-            </mesh>
-            {/* Soft volumetric glow aura */}
-            <mesh>
-              <sphereGeometry args={[36, 24, 24]} />
-              <meshBasicMaterial
-                color="#cc00ff"
-                transparent
-                opacity={0.06}
-                blending={AdditiveBlending}
-                depthWrite={false}
-                side={DoubleSide}
-              />
-            </mesh>
-          </group>
-
-          {/* Planet 3: Crystalline Energy Satellite — faceted alien construct */}
-          <group position={[-100, 180, -100]}>
-            <AmbientSynthesizer type="moon" position={[-100, 180, -100]} maxDistance={200} />
-            {/* Primary crystalline body */}
-            <mesh ref={planet3Ref}>
-              <octahedronGeometry args={[40, 2]} />
-              <meshStandardMaterial
-                color="#0a1a2a"
-                roughness={0.08}
-                metalness={0.98}
-                emissive="#004455"
-                emissiveIntensity={0.5}
-                flatShading
-              />
-            </mesh>
-            {/* Inner glowing core */}
-            <mesh scale={0.55}>
-              <icosahedronGeometry args={[40, 1]} />
-              <meshStandardMaterial
-                color="#001a20"
-                emissive="#00eedd"
-                emissiveIntensity={2.0}
-                roughness={0.0}
-                metalness={0.5}
-              />
-            </mesh>
-            {/* Equatorial energy ring */}
-            <mesh rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[52, 0.8, 8, 48]} />
-              <meshStandardMaterial
-                color="#002030"
-                emissive="#00ddcc"
-                emissiveIntensity={1.8}
-                roughness={0.15}
-                metalness={0.9}
-              />
-            </mesh>
-            {/* Orbiting sentinel fragments */}
-            {[0, 1, 2, 3].map((i) => {
-              const angle = (i / 4) * Math.PI * 2;
-              const orbitR = 56;
-              return (
-                <mesh
-                  key={`sentinel-${i}`}
-                  position={[
-                    Math.cos(angle) * orbitR,
-                    Math.sin(angle) * 8,
-                    Math.sin(angle) * orbitR
-                  ]}
-                >
-                  <octahedronGeometry args={[4, 0]} />
-                  <meshStandardMaterial
-                    color="#0a2020"
-                    emissive="#00ffcc"
-                    emissiveIntensity={2.5}
-                    roughness={0.1}
-                    metalness={0.95}
-                    flatShading
-                  />
-                </mesh>
-              );
-            })}
-            {/* Atmospheric energy field */}
-            <mesh>
-              <sphereGeometry args={[48, 24, 24]} />
-              <meshBasicMaterial
-                color="#00ffcc"
-                transparent
-                opacity={0.04}
-                blending={AdditiveBlending}
-                depthWrite={false}
-                side={DoubleSide}
-              />
-            </mesh>
-          </group>
 
           {/* ═══════ Distant Cyber Ships — Sleek Sci-fi Spacecraft ═══════ */}
           {CYBER_SHIPS.map((ship, i) => {
