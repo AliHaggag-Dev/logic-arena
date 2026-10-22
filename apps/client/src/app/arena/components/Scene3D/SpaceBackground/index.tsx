@@ -39,7 +39,7 @@ const BackgroundProceduralPlanets = ({ mapTheme }: BackgroundProceduralPlanetsPr
         hasRockRings: true,
       },
       {
-        pos: [-4410, -2180, 4830] as [number, number, number],
+        pos: [-900, 1400, 6600] as [number, number, number],
         scale: 295,
         type: "ice" as const,
         color1: new Color("#bae6fd"),
@@ -266,7 +266,7 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
     }
 
     return {
-      position: [-1400, -200, 1400] as [number, number, number],
+      position: [-400, 900, -1800] as [number, number, number],
       color: new Color(colorStr),
       beamColor: new Color(beamColorStr),
     };
