@@ -10,6 +10,7 @@ import { SpacePulsar } from "./SpacePulsar";
 import { SpaceNebula } from "./SpaceNebula";
 import { AbandonedSatellite, CosmicMonolith, ExplodingAsteroid } from "./EasterEggs";
 import { HyperEarth } from "./HyperEarth";
+import { LavaWorldSystem } from "./lavaworld";
 
 interface SpaceBackgroundProps {
   mapTheme: MapTheme;
@@ -38,14 +39,6 @@ const BackgroundProceduralPlanets = ({ mapTheme }: BackgroundProceduralPlanetsPr
         hasRockRings: true,
       },
       {
-        pos: [7000, -1000, 2400] as [number, number, number],
-        scale: 200,
-        type: "lava" as const,
-        color1: new Color("#ef4444"),
-        color2: new Color("#f97316"),
-        rotationSpeed: -0.06,
-      },
-      {
         pos: [-4410, -2180, 4830] as [number, number, number],
         scale: 295,
         type: "ice" as const,
@@ -59,9 +52,9 @@ const BackgroundProceduralPlanets = ({ mapTheme }: BackgroundProceduralPlanetsPr
 
   return (
     <>
-      {planets.map((p, i) => (
+      {planets.map((p) => (
         <ProceduralPlanetItem
-          key={`bg-planet-${i}`}
+          key={`bg-planet-${p.type}`}
           pos={p.pos}
           scale={p.scale}
           type={p.type}
@@ -81,31 +74,11 @@ interface ActiveProceduralPlanetsProps {
 }
 
 const ActiveProceduralPlanets = ({ mapTheme }: ActiveProceduralPlanetsProps) => {
-  const planets = useMemo(() => {
-    // 2 Mid-ground (distant zoomable) + 2 Foreground (near zoomable with audio)
+  const genericPlanets = useMemo(() => {
+    // Mid-ground + Foreground planets (excluding lava — rendered by LavaWorldSystem)
     return [
-      // --- Mid-ground ---
-      {
-        pos: [-850, 260, 550] as [number, number, number],
-        scale: 45,
-        type: "desert" as const,
-        color1: new Color("#eab308"),
-        color2: new Color("#78350f"),
-        rotationSpeed: 0.03,
-        audioName: "desert" as const,
-      },
       // Earth + Moon are now rendered by the dedicated HyperEarth component
-      // --- Foreground (closer to arena, with sound!) ---
-      {
-        pos: [-500, 160, -500] as [number, number, number],
-        scale: 24,
-        type: "lava" as const,
-        color1: new Color("#f97316"),
-        color2: new Color("#ff2200"),
-        rotationSpeed: 0.02,
-        moonsCount: 2,
-        audioName: "lava" as const,
-      },
+      // --- Foreground ---
       {
         pos: [-400, -60, -400] as [number, number, number],
         scale: 22,
@@ -121,9 +94,10 @@ const ActiveProceduralPlanets = ({ mapTheme }: ActiveProceduralPlanetsProps) => 
 
   return (
     <>
-      {planets.map((p, i) => (
+      {/* Generic procedural planets */}
+      {genericPlanets.map((p) => (
         <ProceduralPlanetItem
-          key={`active-planet-${i}`}
+          key={`active-planet-${p.type}`}
           pos={p.pos}
           scale={p.scale}
           type={p.type}
@@ -131,10 +105,16 @@ const ActiveProceduralPlanets = ({ mapTheme }: ActiveProceduralPlanetsProps) => 
           color2={p.color2}
           rotationSpeed={p.rotationSpeed}
           hasRings={p.hasRings}
-          moonsCount={p.moonsCount}
           audioName={p.audioName}
         />
       ))}
+
+      {/* 🌋 Hyper-Realistic Lava World System (Keplerian Orbits + Procedural GLSL) */}
+      <LavaWorldSystem
+        pos={[-500, 160, -500]}
+        scale={24}
+        audioName="lava"
+      />
     </>
   );
 };

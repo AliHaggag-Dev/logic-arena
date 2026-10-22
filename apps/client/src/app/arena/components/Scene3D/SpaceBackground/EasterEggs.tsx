@@ -30,14 +30,6 @@ const PING_MAX_SCALE = 110;
 const PING_OPACITY_DIVISOR = 110;
 const PING_MAX_OPACITY = 0.22;
 
-const MONOLITH_POSITION: [number, number, number] = [430, -90, -380];
-const MONOLITH_ROTATION_SPEED = 0.06;
-const MONOLITH_DRIFT_SPEED = 0.3;
-const MONOLITH_DRIFT_AMPLITUDE = 5;
-const MONOLITH_GLOW_SPEED = 0.7;
-const MONOLITH_GLOW_BASE = 0.2;
-const MONOLITH_GLOW_RANGE = 0.5;
-const MONOLITH_SCALE_OUTLINE = 1.035;
 
 const EXPLODING_DRIFT_DURATION_BASE = 30.0;
 const EXPLODING_DRIFT_OFFSET_FACTOR = 8;
@@ -105,81 +97,6 @@ const SOLAR_PANEL_FRAG = `
   }
 `;
 
-// Monolith hieroglyph shader: alien glowing symbols carved into the surface
-const MONOLITH_GLYPH_VERT = `
-  varying vec2 vUv;
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-  void main() {
-    vUv = uv;
-    vNormal = normalize(normalMatrix * normal);
-    vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-    vViewDir = normalize(-mvPos.xyz);
-    gl_Position = projectionMatrix * mvPos;
-  }
-`;
-
-const MONOLITH_GLYPH_FRAG = `
-  uniform vec3 glowColor;
-  uniform float time;
-  varying vec2 vUv;
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-  }
-
-  float glyphPattern(vec2 uv) {
-    // Create a grid of alien symbols
-    vec2 grid = floor(uv * vec2(5.0, 12.0));
-    vec2 local = fract(uv * vec2(5.0, 12.0));
-    float seed = hash(grid);
-
-    // Symbol shape: combination of lines and dots
-    float symbol = 0.0;
-    // Vertical bar
-    symbol += step(0.42, local.x) * step(local.x, 0.58) * step(0.15, local.y) * step(local.y, 0.85) * step(seed, 0.7);
-    // Horizontal bar
-    symbol += step(0.15, local.x) * step(local.x, 0.85) * step(0.42, local.y) * step(local.y, 0.58) * step(0.3, seed);
-    // Central dot
-    float dotDist = length(local - 0.5);
-    symbol += smoothstep(0.18, 0.12, dotDist) * step(0.5, seed);
-    // Corner arcs
-    symbol += smoothstep(0.32, 0.26, length(local - vec2(0.15, 0.15))) * step(seed, 0.4);
-    symbol += smoothstep(0.32, 0.26, length(local - vec2(0.85, 0.85))) * step(0.6, seed);
-
-    return clamp(symbol, 0.0, 1.0);
-  }
-
-  void main() {
-    // Deep obsidian base
-    vec3 baseColor = vec3(0.008, 0.008, 0.015);
-
-    // Alien glyph pattern
-    float glyph = glyphPattern(vUv);
-
-    // Traveling activation wave (symbols light up in sequence)
-    float wave = sin(vUv.y * 12.0 - time * 1.2) * 0.5 + 0.5;
-    float activation = wave * glyph;
-
-    // Pulsing intensity
-    float pulse = 0.6 + sin(time * 1.8) * 0.4;
-
-    // Fresnel rim for alien energy field
-    float fresnel = 1.0 - max(dot(vNormal, vViewDir), 0.0);
-    float rim = pow(fresnel, 3.0) * 0.6;
-
-    // Combine: dark base + glowing symbols + rim energy
-    vec3 glyphEmission = glowColor * activation * pulse * 1.5;
-    vec3 rimEmission = glowColor * rim * 0.8;
-
-    vec3 finalColor = baseColor + glyphEmission + rimEmission;
-    float alpha = 1.0;
-
-    gl_FragColor = vec4(finalColor, alpha);
-  }
-`;
 
 // ---------------------------------------------------------------------------
 // EASTER EGG: ABANDONED SATELLITE (VANGUARD-IX)
@@ -521,110 +438,9 @@ export const AbandonedSatellite = ({ mapTheme }: AbandonedSatelliteProps) => {
 };
 
 // ---------------------------------------------------------------------------
-// EASTER EGG: COSMIC MONOLITH (UNKNOWN ORIGIN)
+// EASTER EGG: COSMIC MONOLITH (UNKNOWN ORIGIN - 4D QUANTUM TESSERACT OVERHAUL)
 // ---------------------------------------------------------------------------
-
-interface CosmicMonolithProps {
-  mapTheme: MapTheme;
-}
-
-export const CosmicMonolith = ({ mapTheme }: CosmicMonolithProps) => {
-  const groupRef = useRef<Group>(null);
-  const glyphMaterialRef = useRef<ShaderMaterial>(null);
-  const forceFieldRef = useRef<Mesh>(null);
-
-  const glowColor = useMemo(() => {
-    return mapTheme === "CYBER" ? new Color("#ff00ff") : mapTheme === "LAVA" ? new Color("#ff2200") : new Color("#aaddff");
-  }, [mapTheme]);
-
-  // Monolith glyph shader uniforms
-  const glyphUniforms = useMemo(() => ({
-    glowColor: { value: glowColor },
-    time: { value: 0 },
-  }), [glowColor]);
-
-  useFrame((state, delta) => {
-    const time = state.clock.getElapsedTime();
-
-    // 1. Slow cosmic drift and Y-axis rotation
-    if (groupRef.current) {
-      groupRef.current.rotation.y += MONOLITH_ROTATION_SPEED * delta;
-      groupRef.current.position.y = MONOLITH_POSITION[1] + Math.sin(time * MONOLITH_DRIFT_SPEED) * MONOLITH_DRIFT_AMPLITUDE;
-    }
-
-    // 2. Update shader time
-    glyphUniforms.time.value = time;
-
-    // 3. Force field pulsation
-    if (forceFieldRef.current) {
-      const material = forceFieldRef.current.material as MeshBasicMaterial;
-      material.opacity = MONOLITH_GLOW_BASE + Math.abs(Math.sin(time * MONOLITH_GLOW_SPEED)) * MONOLITH_GLOW_RANGE;
-      const pulse = 1.0 + Math.sin(time * 1.2) * 0.03;
-      forceFieldRef.current.scale.setScalar(pulse);
-    }
-  });
-
-  const glowColorHex = useMemo(() => {
-    return mapTheme === "CYBER" ? "#ff00ff" : mapTheme === "LAVA" ? "#ff2200" : "#aaddff";
-  }, [mapTheme]);
-
-  return (
-    <group position={MONOLITH_POSITION} ref={groupRef}>
-      {/* Obsidian monolith core with alien hieroglyphs */}
-      <mesh>
-        <boxGeometry args={[9, 23, 2.5]} />
-        <shaderMaterial
-          ref={glyphMaterialRef}
-          uniforms={glyphUniforms}
-          vertexShader={MONOLITH_GLYPH_VERT}
-          fragmentShader={MONOLITH_GLYPH_FRAG}
-        />
-      </mesh>
-
-      {/* Ultra-thin reflective obsidian surface shell */}
-      <mesh scale={1.005}>
-        <boxGeometry args={[9, 23, 2.5]} />
-        <meshStandardMaterial
-          color="#020204"
-          roughness={0.05}
-          metalness={1.0}
-          transparent
-          opacity={0.4}
-        />
-      </mesh>
-
-      {/* Holographic force-field membrane */}
-      <mesh scale={MONOLITH_SCALE_OUTLINE} ref={forceFieldRef}>
-        <boxGeometry args={[9, 23, 2.5]} />
-        <meshBasicMaterial
-          color={glowColorHex}
-          wireframe
-          transparent
-          opacity={0.5}
-          blending={AdditiveBlending}
-          depthWrite={false}
-        />
-      </mesh>
-
-      {/* Corner energy emitters */}
-      {[
-        [-4.8, 11.8, 1.5], [4.8, 11.8, 1.5], [-4.8, -11.8, 1.5], [4.8, -11.8, 1.5],
-        [-4.8, 11.8, -1.5], [4.8, 11.8, -1.5], [-4.8, -11.8, -1.5], [4.8, -11.8, -1.5]
-      ].map((pos, i) => (
-        <mesh key={`emitter-${i}`} position={pos as [number, number, number]}>
-          <sphereGeometry args={[0.4, 6, 6]} />
-          <meshStandardMaterial
-            color="#000000"
-            emissive={glowColorHex}
-            emissiveIntensity={2.5}
-            roughness={0.1}
-            metalness={0.0}
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-};
+export { CosmicMonolith } from "./monolith";
 
 // ---------------------------------------------------------------------------
 // DYNAMIC EVENT: EXPLODING ASTEROID (DETONATING EVENTS)

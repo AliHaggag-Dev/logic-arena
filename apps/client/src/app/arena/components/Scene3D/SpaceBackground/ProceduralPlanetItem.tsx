@@ -334,6 +334,7 @@ export const ProceduralPlanetItem = ({
       {/* Outer atmosphere halo (Concentric 2D Billboarded GlowingDisk, starting exactly at the planet's edge) */}
       <Billboard>
         <GlowingDisk
+          key={`glow-${type}`}
           minRadius={0.98}
           maxRadius={1.38}
           opacityMultiplier={type === "plasma" ? 1.3 : type === "terrestrial" ? 0.95 : 0.8}

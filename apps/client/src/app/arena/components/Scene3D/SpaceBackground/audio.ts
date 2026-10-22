@@ -117,3 +117,104 @@ export const playSatellitePing = (distance: number) => {
     feedback.disconnect();
   }, 2000);
 };
+
+// ---------------------------------------------------------------------------
+// COSMIC MONOLITH: RESIDUAL QUANTUM GRAVITATIONAL DRONE
+// ---------------------------------------------------------------------------
+let monolithOsc1: OscillatorNode | null = null;
+let monolithOsc2: OscillatorNode | null = null;
+let monolithFilter: BiquadFilterNode | null = null;
+let monolithGain: GainNode | null = null;
+let isMonolithPlaying = false;
+
+export const updateMonolithAudio = (distance: number, observerAlignment: number) => {
+  const ctx = getGlobalAudioContext();
+  if (!ctx || ctx.state !== "running") return;
+
+  const maxAudibleDist = 650;
+  if (distance > maxAudibleDist) {
+    if (isMonolithPlaying && monolithGain) {
+      monolithGain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.1);
+    }
+    return;
+  }
+
+  // Calculate volume attenuation: inverse quadratic with observer alignment boost
+  const normDist = 1.0 - Math.min(distance / maxAudibleDist, 1.0);
+  const targetGain = Math.pow(normDist, 2.0) * (0.04 + observerAlignment * 0.05);
+
+  if (!isMonolithPlaying || !monolithGain || !monolithOsc1) {
+    try {
+      const now = ctx.currentTime;
+      monolithOsc1 = ctx.createOscillator();
+      monolithOsc2 = ctx.createOscillator();
+      monolithFilter = ctx.createBiquadFilter();
+      monolithGain = ctx.createGain();
+
+      // Deep 48Hz cosmic gravitational tone
+      monolithOsc1.type = "sine";
+      monolithOsc1.frequency.setValueAtTime(48, now);
+
+      // Inharmonic alien tritone 72Hz
+      monolithOsc2.type = "triangle";
+      monolithOsc2.frequency.setValueAtTime(72, now);
+
+      // Resonant bandpass filter mimicking spatial cavity resonance
+      monolithFilter.type = "bandpass";
+      monolithFilter.frequency.setValueAtTime(140, now);
+      monolithFilter.Q.setValueAtTime(4.0, now);
+
+      monolithGain.gain.setValueAtTime(0.0001, now);
+      monolithGain.gain.setTargetAtTime(targetGain, now, 0.2);
+
+      monolithOsc1.connect(monolithFilter);
+      monolithOsc2.connect(monolithFilter);
+      monolithFilter.connect(monolithGain);
+      monolithGain.connect(ctx.destination);
+
+      monolithOsc1.start(now);
+      monolithOsc2.start(now);
+      isMonolithPlaying = true;
+    } catch {
+      // AudioContext state or autoplay policy restriction
+    }
+  } else {
+    // Continuously modulate frequency and gain smoothly
+    const now = ctx.currentTime;
+    monolithGain.gain.setTargetAtTime(targetGain, now, 0.05);
+    if (monolithFilter) {
+      // Modulate resonant frequency based on observer alignment (quantum excitation)
+      const targetFreq = 140 + observerAlignment * 120;
+      monolithFilter.frequency.setTargetAtTime(targetFreq, now, 0.08);
+    }
+  }
+};
+
+export const stopMonolithAudio = () => {
+  const ctx = getGlobalAudioContext();
+  if (!ctx || !isMonolithPlaying) return;
+
+  if (monolithGain) {
+    monolithGain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.05);
+  }
+
+  setTimeout(() => {
+    try {
+      monolithOsc1?.stop();
+      monolithOsc2?.stop();
+      monolithOsc1?.disconnect();
+      monolithOsc2?.disconnect();
+      monolithFilter?.disconnect();
+      monolithGain?.disconnect();
+    } catch {
+      // Already stopped
+    } finally {
+      monolithOsc1 = null;
+      monolithOsc2 = null;
+      monolithFilter = null;
+      monolithGain = null;
+      isMonolithPlaying = false;
+    }
+  }, 100);
+};
+

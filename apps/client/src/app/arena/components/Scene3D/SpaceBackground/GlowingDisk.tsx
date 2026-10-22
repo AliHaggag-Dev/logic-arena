@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { AdditiveBlending, DoubleSide, Color } from "three";
 
 const DISK_VERT = `
@@ -52,6 +52,14 @@ export const GlowingDisk = ({
     }),
     [minRadius, maxRadius, opacityMultiplier, colorIn, colorOut]
   );
+
+  useEffect(() => {
+    uniforms.colorIn.value = colorIn;
+    uniforms.colorOut.value = colorOut;
+    uniforms.minR.value = minRadius;
+    uniforms.maxR.value = maxRadius;
+    uniforms.mult.value = opacityMultiplier;
+  }, [uniforms, colorIn, colorOut, minRadius, maxRadius, opacityMultiplier]);
 
   return (
     <mesh rotation={rot}>
