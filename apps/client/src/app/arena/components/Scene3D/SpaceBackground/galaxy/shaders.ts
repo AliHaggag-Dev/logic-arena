@@ -126,14 +126,21 @@ export const GALAXY_HAZE_FRAG = `
     float arms = max(spiralArm1, spiralArm2);
     arms = smoothstep(0.1, 0.95, arms);
 
+    // Continuous interstellar dust absorption rift along the inner concave crest
+    float dustArm1 = cos(angle * 2.0 - log(r + 0.04) * 3.8 - 0.38);
+    float dustArm2 = cos(angle * 2.0 - log(r + 0.04) * 3.8 + 3.14159 - 0.38);
+    float dustWave = max(dustArm1, dustArm2);
+    float dustLane = smoothstep(0.65, 0.96, dustWave) * smoothstep(0.14, 0.82, r);
+    float dustAttenuation = 1.0 - dustLane * 0.85;
+
     // Radial exponential falloff
     float radialFade = pow(1.0 - r, 1.6);
 
     // Core bulge intensity
     float coreGlow = exp(-r * r * 16.0) * 1.5;
 
-    // Combine diffuse arm haze with core emission
-    float armHaze = arms * radialFade * 0.45;
+    // Combine diffuse arm haze with core emission and dark dust rift attenuation
+    float armHaze = arms * radialFade * 0.52 * dustAttenuation;
     float totalDensity = (coreGlow + armHaze) * uOpacity;
 
     // Radial chromatic transition: core -> inner arms -> outer diffuse envelope

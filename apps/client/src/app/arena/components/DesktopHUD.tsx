@@ -8,6 +8,7 @@ import { TacticalRadar } from './TacticalRadar';
 import { RefreshCw, Eye, EyeOff, Lock, Unlock, ChevronLeft, Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { RobotState, ProjectileState, ModeData } from '../types';
+import { useFPS } from '../hooks/useFPS';
 
 
 interface DesktopHUDProps {
@@ -64,6 +65,8 @@ export function DesktopHUD({
   const [cameraViewMode, setCameraViewMode] = useState<'free' | 'chase' | 'fp'>('free');
   const [isZenMode, setIsZenMode] = useState(false);
   const router = useRouter();
+  const fps = useFPS();
+  const fpsColor = fps >= 50 ? 'var(--arena-fps-good)' : fps >= 30 ? 'var(--arena-fps-warn)' : 'var(--arena-fps-bad)';
 
   // Listen for external syncs of camera mode (e.g. from camera reset)
   useEffect(() => {
@@ -428,6 +431,25 @@ export function DesktopHUD({
       </div>
 
       <div className="absolute bottom-8 right-8 z-20 flex items-center gap-6">
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">FPS</span>
+          <div className="flex items-center gap-1.5">
+            <span
+              className="w-1.5 h-1.5 rounded-full transition-colors duration-300"
+              style={{
+                backgroundColor: fpsColor,
+                boxShadow: `0 0 6px ${fpsColor}`,
+              }}
+            />
+            <span
+              className="text-[11px] font-black font-mono tracking-widest tabular-nums transition-colors duration-300"
+              style={{ color: fpsColor }}
+            >
+              {fps}
+            </span>
+          </div>
+        </div>
+        <div className="h-8 w-px bg-cyan-900/50" />
         <div className="flex flex-col items-end">
           <span className="text-[10px] text-cyan-800 font-bold uppercase tracking-widest">Connection</span>
           <span className={`text-[11px] font-black tracking-widest ${isConnected ? 'text-cyan-400' : 'text-yellow-500 animate-pulse'}`}>

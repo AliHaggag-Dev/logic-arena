@@ -70,13 +70,13 @@ export const GalaxyBlackHole = ({ mapTheme, scale = 2.4 }: GalaxyBlackHoleProps)
   return (
     <group scale={scale}>
       {/* 🌑 Event Horizon (Pure Light-Absorbing Sphere) */}
-      <mesh renderOrder={2}>
+      <mesh>
         <sphereGeometry args={[14, 24, 24]} />
         <meshBasicMaterial color="#000000" depthWrite={true} />
       </mesh>
 
       {/* ⚡ Relativistic Photon Ring (Extreme Doppler-Boosted Light Radius) */}
-      <group ref={photonRingRef} renderOrder={3}>
+      <group ref={photonRingRef}>
         <Billboard>
           <mesh>
             <ringGeometry args={[14.1, 15.2, 64]} />
@@ -92,7 +92,7 @@ export const GalaxyBlackHole = ({ mapTheme, scale = 2.4 }: GalaxyBlackHoleProps)
       </group>
 
       {/* 💫 Gravitational Lensing Halo (Spherical Curvature of Background Light) */}
-      <group ref={haloRef} renderOrder={1}>
+      <group ref={haloRef}>
         <Billboard>
           <GlowingDisk
             minRadius={14}

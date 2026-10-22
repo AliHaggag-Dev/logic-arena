@@ -4,7 +4,6 @@ import {
   Group,
   ShaderMaterial,
   AdditiveBlending,
-  NormalBlending,
   DoubleSide,
   BufferGeometry,
   BufferAttribute,
@@ -22,12 +21,10 @@ import {
 import {
   GALAXY_STAR_VERT,
   GALAXY_STAR_FRAG,
-  GALAXY_DUST_VERT,
-  GALAXY_DUST_FRAG,
   GALAXY_HAZE_VERT,
   GALAXY_HAZE_FRAG,
 } from "./shaders";
-import { generateGalaxyData, generateDustData } from "./galaxyData";
+import { generateGalaxyData } from "./galaxyData";
 import { GalaxyBlackHole } from "./GalaxyBlackHole";
 import { SpiralGalaxyProps } from "./types";
 
@@ -52,13 +49,7 @@ export const SpiralGalaxy = ({
     [counts.stars, palette]
   );
 
-  // 4. Interstellar dark absorption dust lane buffers
-  const dustData = useMemo(
-    () => generateDustData(counts.dust, palette),
-    [counts.dust, palette]
-  );
-
-  // 5. Star Point Shader Material with individual scintillation
+  // 4. Star Point Shader Material with individual scintillation
   const starMaterial = useMemo(() => {
     return new ShaderMaterial({
       vertexShader: GALAXY_STAR_VERT,
@@ -76,24 +67,7 @@ export const SpiralGalaxy = ({
     });
   }, [graphicsQuality]);
 
-  // 6. Dust Lane Point Shader Material (absorptive silhouetted clouds)
-  const dustMaterial = useMemo(() => {
-    return new ShaderMaterial({
-      vertexShader: GALAXY_DUST_VERT,
-      fragmentShader: GALAXY_DUST_FRAG,
-      uniforms: {
-        uSizeMultiplier: {
-          value: graphicsQuality === "high" ? 1.1 : 0.9,
-        },
-      },
-      transparent: true,
-      depthWrite: false,
-      blending: NormalBlending,
-      vertexColors: true,
-    });
-  }, [graphicsQuality]);
-
-  // 7. Continuous Gaseous Disk Nebular Shader Material
+  // 5. Continuous Gaseous Disk Nebular Shader Material (with integrated dust absorption lanes)
   const hazeMaterial = useMemo(() => {
     return new ShaderMaterial({
       vertexShader: GALAXY_HAZE_VERT,
@@ -134,25 +108,14 @@ export const SpiralGalaxy = ({
     return geo;
   }, [starData]);
 
-  const dustGeometry = useMemo(() => {
-    const geo = new BufferGeometry();
-    geo.setAttribute("position", new BufferAttribute(dustData.positions, 3));
-    geo.setAttribute("color", new BufferAttribute(dustData.colors, 3));
-    geo.setAttribute("aSize", new BufferAttribute(dustData.sizes, 1));
-    geo.setAttribute("aAlpha", new BufferAttribute(dustData.alphas, 1));
-    return geo;
-  }, [dustData]);
-
   // Clean up GPU buffers when dependencies change
   useEffect(() => {
     return () => {
       starGeometry.dispose();
-      dustGeometry.dispose();
       starMaterial.dispose();
-      dustMaterial.dispose();
       hazeMaterial.dispose();
     };
-  }, [starGeometry, dustGeometry, starMaterial, dustMaterial, hazeMaterial]);
+  }, [starGeometry, starMaterial, hazeMaterial]);
 
   // 60 FPS Animation: Majestic disk rotation in its own plane + particle scintillation
   useFrame((state, delta) => {
@@ -173,7 +136,7 @@ export const SpiralGalaxy = ({
       <group position={GALAXY_POSITION} rotation={GALAXY_ROTATION}>
         {/* Inner Spinning Disk: Pure in-plane rotation around local Y */}
         <group ref={diskRef}>
-          {/* 🌌 Continuous Gaseous Spiral Density Disk (Diffuse Nebular Haze) */}
+          {/* 🌌 Continuous Gaseous Spiral Density Disk (Diffuse Nebular Haze with Dust Absorption Rifts) */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} material={hazeMaterial}>
             <planeGeometry args={[GALAXY_MAX_RADIUS * 2.1, GALAXY_MAX_RADIUS * 2.1, 1, 1]} />
           </mesh>
@@ -183,9 +146,6 @@ export const SpiralGalaxy = ({
 
           {/* 🌟 Multi-Tier Stellar Populations (Bulge, Arms, Starburst Knots) */}
           <points geometry={starGeometry} material={starMaterial} />
-
-          {/* 💨 Interstellar Absorption Dust Lanes (Dark Silhouetted Ribbons) */}
-          <points geometry={dustGeometry} material={dustMaterial} renderOrder={1} />
         </group>
       </group>
     </group>
