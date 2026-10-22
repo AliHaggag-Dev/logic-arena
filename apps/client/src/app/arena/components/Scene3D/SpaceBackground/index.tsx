@@ -27,11 +27,11 @@ interface BackgroundProceduralPlanetsProps {
 
 const BackgroundProceduralPlanets = ({ mapTheme }: BackgroundProceduralPlanetsProps) => {
   const planets = useMemo(() => {
-    // 3 colossal backdrop planets placed at deep cosmic distance (~6,700 - 7,500 units)
+    // 2 colossal backdrop planets placed at deep cosmic distance (~7,700 - 7,850 units)
     return [
       {
-        pos: [-6300, 1440, -1800] as [number, number, number],
-        scale: 335,
+        pos: [-7245, 1656, -2070] as [number, number, number],
+        scale: 185,
         type: "gas" as const,
         color1: new Color("#a855f7"),
         color2: new Color("#3b82f6"),
@@ -39,8 +39,8 @@ const BackgroundProceduralPlanets = ({ mapTheme }: BackgroundProceduralPlanetsPr
         hasRockRings: true,
       },
       {
-        pos: [-900, 1400, 6600] as [number, number, number],
-        scale: 295,
+        pos: [-1035, 1610, 7590] as [number, number, number],
+        scale: 160,
         type: "ice" as const,
         color1: new Color("#bae6fd"),
         color2: new Color("#0284c7"),
