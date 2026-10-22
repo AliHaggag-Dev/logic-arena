@@ -92,29 +92,42 @@ export const usePlanetAudio = (
         nodes.push(moonOsc, moonFilter, moonSweepLfo, moonSweepGain, moonVolLfo, moonVolGain);
       }
       else if (audioName === "plasma") {
-        // 1. Base solar hum
-        const osc = ctx.createOscillator();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(140, ctx.currentTime);
-        
+        // 1. Deep, warm cosmic plasma drone (dual detuned sines for hypnotic binaural pulse)
+        const osc1 = ctx.createOscillator();
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(65, ctx.currentTime); // Low fundamental
+
+        const osc2 = ctx.createOscillator();
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(97.5, ctx.currentTime); // Perfect fifth harmonic (warmth)
+
         const lfo = ctx.createOscillator();
-        lfo.frequency.setValueAtTime(0.4, ctx.currentTime);
+        lfo.frequency.setValueAtTime(0.2, ctx.currentTime);
         const lfoGain = ctx.createGain();
-        lfoGain.gain.value = 18;
-        
+        lfoGain.gain.value = 3.5; // gentle, subtle pitch waver
+
         lfo.connect(lfoGain);
-        lfoGain.connect(osc.frequency);
-        
-        const humGain = ctx.createGain();
-        humGain.gain.value = 0.015;
+        lfoGain.connect(osc1.frequency);
+        lfoGain.connect(osc2.frequency);
 
-        osc.connect(humGain);
-        humGain.connect(gainNode);
-        osc.start();
+        const droneFilter = ctx.createBiquadFilter();
+        droneFilter.type = "lowpass";
+        droneFilter.frequency.setValueAtTime(220, ctx.currentTime);
+
+        const droneGain = ctx.createGain();
+        droneGain.gain.value = 0.022; // smooth, gentle ambient level
+
+        osc1.connect(droneFilter);
+        osc2.connect(droneFilter);
+        droneFilter.connect(droneGain);
+        droneGain.connect(gainNode);
+
+        osc1.start();
+        osc2.start();
         lfo.start();
-        nodes.push(osc, lfo, lfoGain, humGain);
+        nodes.push(osc1, osc2, lfo, lfoGain, droneFilter, droneGain);
 
-        // 2. Solar static discharge crackles (rapid pulses)
+        // 2. Silky smooth auroral shimmer (bandpass filtered noise, NO harsh static spikes)
         const bufferSize = ctx.sampleRate * 2;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const channelData = buffer.getChannelData(0);
@@ -125,37 +138,30 @@ export const usePlanetAudio = (
         noise.buffer = buffer;
         noise.loop = true;
 
-        const hpFilter = ctx.createBiquadFilter();
-        hpFilter.type = "highpass";
-        hpFilter.frequency.setValueAtTime(1800, ctx.currentTime);
+        const shimmerFilter = ctx.createBiquadFilter();
+        shimmerFilter.type = "bandpass";
+        shimmerFilter.frequency.setValueAtTime(520, ctx.currentTime); // Warm mid shimmer
+        shimmerFilter.Q.setValueAtTime(3.5, ctx.currentTime);
 
-        const crackleLfo = ctx.createOscillator();
-        crackleLfo.frequency.setValueAtTime(6.5, ctx.currentTime); // 6.5Hz crackle pulse
-        const crackleGain = ctx.createGain();
-        crackleGain.gain.value = 0;
-
-        const lfoDepth = ctx.createGain();
-        lfoDepth.gain.value = 0.005;
-
-        crackleLfo.connect(lfoDepth.gain);
-        noise.connect(hpFilter);
-        hpFilter.connect(crackleGain);
-        crackleGain.connect(gainNode);
-
-        // Slow solar flare swells
+        // Gentle breathing swell (modulates filter frequency, NOT raw volume)
         const swellLfo = ctx.createOscillator();
-        swellLfo.frequency.setValueAtTime(0.12, ctx.currentTime);
-        const swellGain = ctx.createGain();
-        swellGain.gain.value = 0.004;
+        swellLfo.frequency.setValueAtTime(0.08, ctx.currentTime); // Slow 12s breathing cycle
+        const swellLfoGain = ctx.createGain();
+        swellLfoGain.gain.value = 140; // Frequency sweep between 380Hz and 660Hz
 
-        swellLfo.connect(swellGain.gain);
-        hpFilter.connect(swellGain);
-        swellGain.connect(gainNode);
+        swellLfo.connect(swellLfoGain);
+        swellLfoGain.connect(shimmerFilter.frequency);
+
+        const shimmerGain = ctx.createGain();
+        shimmerGain.gain.value = 0.006; // Very soft, relaxing whisper
+
+        noise.connect(shimmerFilter);
+        shimmerFilter.connect(shimmerGain);
+        shimmerGain.connect(gainNode);
 
         noise.start();
-        crackleLfo.start();
         swellLfo.start();
-        nodes.push(noise, hpFilter, crackleLfo, crackleGain, lfoDepth, swellLfo, swellGain);
+        nodes.push(noise, shimmerFilter, swellLfo, swellLfoGain, shimmerGain);
       }
       else if (audioName === "desert") {
         // 1. Dune rumble (low noise)
@@ -443,10 +449,11 @@ export const usePlanetAudio = (
           let targetVol = 0;
           if (dot > 0.82 && distVol > 0) {
             const facingFactor = (dot - 0.82) / 0.18;
-            targetVol = Math.pow(facingFactor, 2.0) * distVol * 0.14; // max volume 0.14
+            const maxVolume = audioName === "plasma" ? 0.045 : 0.08;
+            targetVol = Math.pow(facingFactor, 2.0) * distVol * maxVolume;
           }
 
-          audioNodesRef.current.gainNode.gain.setTargetAtTime(targetVol, ctx.currentTime, 0.15);
+          audioNodesRef.current.gainNode.gain.setTargetAtTime(targetVol, ctx.currentTime, 0.25);
         }
       }
     }
