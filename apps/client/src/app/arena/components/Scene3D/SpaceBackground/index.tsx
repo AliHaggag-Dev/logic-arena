@@ -1,11 +1,11 @@
 import React, { useRef, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Color, Group, AdditiveBlending } from "three";
+import { Color, Group } from "three";
 import { Stars } from "@react-three/drei";
 import { MapTheme } from "../../../types";
 import { IS_MOBILE } from "./constants";
 import { ProceduralPlanetItem } from "./ProceduralPlanetItem";
-import { GalaxyBlackHole } from "./GalaxyBlackHole";
+import { SpiralGalaxy } from "./galaxy";
 import { SpacePulsar } from "./SpacePulsar";
 import { SpaceNebula } from "./SpaceNebula";
 import { AbandonedSatellite, CosmicMonolith, ExplodingAsteroid } from "./EasterEggs";
@@ -125,134 +125,14 @@ const ActiveProceduralPlanets = ({ mapTheme }: ActiveProceduralPlanetsProps) => 
 
 export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceBackgroundProps) => {
   const backgroundRef = useRef<Group>(null);
-  const galaxyRef = useRef<Group>(null);
   const { camera } = useThree();
 
   // Keep ONLY the infinite starfield centered on the camera (true skybox behavior)
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (backgroundRef.current) {
       backgroundRef.current.position.copy(camera.position);
     }
-    if (galaxyRef.current) {
-      // Slowly rotate the galaxy for a living universe feel
-      galaxyRef.current.rotation.y += 0.005 * delta;
-    }
   });
-
-  // Procedural Spiral Galaxy Generation
-  const galaxyData = useMemo(() => {
-    // Quality-based star density - increased for a lush, premium celestial cloud
-    const count = IS_MOBILE
-      ? (graphicsQuality === "high" ? 1800 : graphicsQuality === "low" ? 1200 : 1000)
-      : (graphicsQuality === "high" ? 6000 : graphicsQuality === "low" ? 1200 : 3000);
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-
-    // Dynamic coloring based on active map theme
-    let colorInStr = "#ff00ff"; // magenta
-    let colorOutStr = "#00ffff"; // cyan
-
-    if (mapTheme === "LAVA") {
-      colorInStr = "#ff2200"; // hot red
-      colorOutStr = "#ffaa00"; // bright orange
-    } else if (mapTheme === "ICE") {
-      colorInStr = "#ffffff"; // pure white
-      colorOutStr = "#00aaff"; // deep ice blue
-    }
-
-    const colorInside = new Color(colorInStr);
-    const colorOutside = new Color(colorOutStr);
-
-    for (let i = 0; i < count; i++) {
-      const randType = Math.random();
-
-      if (randType < 0.30) {
-        // 1. Central Bulge (Ellipsoid Core) - 30% of stars
-        // Highly concentrated at the center, spherical/ellipsoid shape
-        const r = Math.pow(Math.random(), 1.5) * 160;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(Math.random() * 2 - 1);
-        
-        // Ellipsoid flattening (Y-axis is thin, X and Z are wider)
-        const x = r * Math.sin(phi) * Math.cos(theta);
-        const y = r * Math.cos(phi) * 0.45; // flattened core
-        const z = r * Math.sin(phi) * Math.sin(theta);
-
-        positions[i * 3] = x;
-        positions[i * 3 + 1] = y;
-        positions[i * 3 + 2] = z;
-
-        // Core is brighter, shifting towards white/yellow/cyan depending on theme
-        const centerGlow = colorInside.clone().lerp(new Color("#ffffff"), 0.5 - (r / 160) * 0.4);
-        
-        // Subtle star temperature variation
-        colors[i * 3] = Math.max(0, Math.min(1, centerGlow.r + (Math.random() - 0.5) * 0.05));
-        colors[i * 3 + 1] = Math.max(0, Math.min(1, centerGlow.g + (Math.random() - 0.5) * 0.05));
-        colors[i * 3 + 2] = Math.max(0, Math.min(1, centerGlow.b + (Math.random() - 0.5) * 0.05));
-
-      } else if (randType < 0.85) {
-        // 2. Spiral Arms - 55% of stars
-        // Distribute radius from 80 to 920 units
-        const r = 80 + Math.pow(Math.random(), 1.2) * 840;
-        
-        // 2 main spiral arms
-        const armIndex = i % 2;
-        const armAngle = (armIndex * 2 * Math.PI) / 2;
-        
-        // Spiral curve wrapping factor
-        const spiralFactor = 0.0055;
-        const spiralAngle = r * spiralFactor;
-
-        // Arm thickness (angular spread) - wider near the core, tapering at outer edges
-        // Using an average of 3 random numbers to approximate a Gaussian bell curve (central focus)
-        const armSpread = ((Math.random() + Math.random() + Math.random()) / 3 - 0.5) * 0.7;
-        const angle = spiralAngle + armAngle + armSpread;
-
-        // Add small radial offset for fluffiness and organic boundary blending
-        const radialOffset = (Math.random() - 0.5) * 45;
-        const finalR = Math.max(0, r + radialOffset);
-
-        // Flatter disk at outer edges (Y thickness tapers exponentially)
-        const yThickness = 28 * Math.exp(-finalR / 450);
-        const y = (Math.random() - 0.5) * yThickness;
-
-        positions[i * 3] = Math.cos(angle) * finalR;
-        positions[i * 3 + 1] = y;
-        positions[i * 3 + 2] = Math.sin(angle) * finalR;
-
-        // Arm colors interpolate from inside to outside
-        const mixedColor = colorInside.clone().lerp(colorOutside, finalR / 920);
-        
-        // Star color temperature variance
-        colors[i * 3] = Math.max(0, Math.min(1, mixedColor.r + (Math.random() - 0.5) * 0.08));
-        colors[i * 3 + 1] = Math.max(0, Math.min(1, mixedColor.g + (Math.random() - 0.5) * 0.08));
-        colors[i * 3 + 2] = Math.max(0, Math.min(1, mixedColor.b + (Math.random() - 0.5) * 0.08));
-
-      } else {
-        // 3. Ambient Galactic Disk (Background Stars between arms) - 15% of stars
-        // Uniformly distributed across the disk to make it look full and organic
-        const r = Math.pow(Math.random(), 1.5) * 920;
-        const angle = Math.random() * Math.PI * 2;
-        
-        // Vertical thickness also tapers exponentially
-        const yThickness = 32 * Math.exp(-r / 350);
-        const y = (Math.random() - 0.5) * yThickness;
-
-        positions[i * 3] = Math.cos(angle) * r;
-        positions[i * 3 + 1] = y;
-        positions[i * 3 + 2] = Math.sin(angle) * r;
-
-        // Ambient disk stars are slightly fainter and merge with outside color
-        const mixedColor = colorInside.clone().lerp(colorOutside, r / 920).multiplyScalar(0.7);
-        
-        colors[i * 3] = Math.max(0, Math.min(1, mixedColor.r + (Math.random() - 0.5) * 0.05));
-        colors[i * 3 + 1] = Math.max(0, Math.min(1, mixedColor.g + (Math.random() - 0.5) * 0.05));
-        colors[i * 3 + 2] = Math.max(0, Math.min(1, mixedColor.b + (Math.random() - 0.5) * 0.05));
-      }
-    }
-
-    return { positions, colors };
-  }, [mapTheme, graphicsQuality]);
 
   // Dynamic Theme-based Pulsar configs
   const pulsarConfig = useMemo(() => {
@@ -279,14 +159,6 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
     return graphicsQuality === "high" ? 5000 : graphicsQuality === "low" ? 400 : 1500;
   }, [graphicsQuality]);
 
-  // Position of galaxy: far away in opposite quadrant and tilted
-  const galaxyTransform = useMemo(() => {
-    return {
-      position: [-2400, -450, 1600] as [number, number, number],
-      rotation: [0.5, 0.6, -0.3] as [number, number, number],
-    };
-  }, []);
-
   return (
     <>
       {/* ----------------- INFINITE PARALLAX SKYBOX LAYER (FIXED & UNREACHABLE TITANS) ----------------- */}
@@ -303,37 +175,7 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
         />
 
         {/* 🌌 Procedural Spiral Galaxy & Supermassive Black Hole (Deep Cosmic Skybox) */}
-        <group scale={2.5}>
-          <group
-            ref={galaxyRef}
-            position={galaxyTransform.position}
-            rotation={galaxyTransform.rotation}
-          >
-            <GalaxyBlackHole mapTheme={mapTheme} />
-
-            <points>
-              <bufferGeometry>
-                <bufferAttribute
-                  attach="attributes-position"
-                  args={[galaxyData.positions, 3]}
-                />
-                <bufferAttribute
-                  attach="attributes-color"
-                  args={[galaxyData.colors, 3]}
-                />
-              </bufferGeometry>
-              <pointsMaterial
-                size={graphicsQuality === "high" ? 5.5 : graphicsQuality === "low" ? 3.0 : 4.5}
-                sizeAttenuation={true}
-                vertexColors={true}
-                transparent={true}
-                opacity={graphicsQuality === "low" ? 0.5 : 0.7}
-                depthWrite={false}
-                blending={AdditiveBlending}
-              />
-            </points>
-          </group>
-        </group>
+        <SpiralGalaxy mapTheme={mapTheme} graphicsQuality={graphicsQuality} />
 
         {/* 🚨 Neutron Star (Pulsar) Lighthouse (Deep Cosmic Skybox) */}
         {graphicsQuality !== "low" && (
