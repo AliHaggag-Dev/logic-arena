@@ -14,7 +14,7 @@ export const DynamicEnvironment = React.memo(({ mapTheme, graphicsQuality }: Dyn
 
   if (mapTheme === 'LAVA') return <LavaEnvironment isHighQuality={isHighQuality} />;
   if (mapTheme === 'ICE') return <IceEnvironment isHighQuality={isHighQuality} />;
-  return <CyberEnvironment isHighQuality={isHighQuality} />;
+  return <CyberEnvironment isHighQuality={isHighQuality} graphicsQuality={graphicsQuality} />;
 });
 
 DynamicEnvironment.displayName = 'DynamicEnvironment';

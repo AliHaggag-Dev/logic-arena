@@ -38,9 +38,10 @@ const ENGINE_GLOW_INTENSITY = 4.0;
 
 interface CyberEnvironmentProps {
   isHighQuality: boolean;
+  graphicsQuality?: string;
 }
 
-export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps): React.JSX.Element => {
+export const CyberEnvironment = ({ isHighQuality, graphicsQuality }: CyberEnvironmentProps): React.JSX.Element => {
   const shipsRef = useRef<(Group | null)[]>([]);
   const tempPosRef = useRef(new Vector3());
   
@@ -163,7 +164,7 @@ export const CyberEnvironment = ({ isHighQuality }: CyberEnvironmentProps): Reac
         <group>
           <AmbientSynthesizer type="blackhole" position={BLACK_HOLE_COORDINATES} maxDistance={480} maxVol={1.2} />
           {/* Massive Interstellar Black Hole */}
-          <BlackHole position={BLACK_HOLE_COORDINATES} scale={2.5} />
+          <BlackHole position={BLACK_HOLE_COORDINATES} scale={2.5} graphicsQuality={graphicsQuality} />
 
           {/* ═══════ Distant Cyber Ships — Sleek Sci-fi Spacecraft ═══════ */}
           {CYBER_SHIPS.map((ship, i) => {
