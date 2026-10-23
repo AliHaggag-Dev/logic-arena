@@ -11,6 +11,7 @@ import { SpaceNebula } from "./SpaceNebula";
 import { AbandonedSatellite, CosmicMonolith, ExplodingAsteroid } from "./EasterEggs";
 import { HyperEarth } from "./HyperEarth";
 import { LavaWorldSystem } from "./lavaworld";
+import { MacroCosmos } from "./macroCosmos";
 
 interface SpaceBackgroundProps {
   mapTheme: MapTheme;
@@ -203,6 +204,9 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
         {graphicsQuality !== "low" && (
           <BackgroundProceduralPlanets mapTheme={mapTheme} />
         )}
+
+        {/* 🔭 Macro-Cosmic Zoom Reveal Tier (Dyson Ring, Cosmic Eye, Mothership, Warp Gate, Comet, Quantum Web) */}
+        <MacroCosmos mapTheme={mapTheme} graphicsQuality={graphicsQuality} />
       </group>
 
       {/* ----------------- REACHABLE WORLD-SPACE EASTER EGGS ----------------- */}
