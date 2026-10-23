@@ -2,4 +2,8 @@ export * from "./types";
 export * from "./constants";
 export * from "./shaders";
 export * from "./InterstellarComet";
+export * from "./GlobularCluster";
+export * from "./EinsteinRing";
+export * from "./JWSTStars";
+export * from "./MacroStarfield";
 export * from "./MacroCosmos";

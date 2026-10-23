@@ -11,7 +11,7 @@ import { SpaceNebula } from "./SpaceNebula";
 import { AbandonedSatellite, CosmicMonolith, ExplodingAsteroid } from "./EasterEggs";
 import { HyperEarth } from "./HyperEarth";
 import { LavaWorldSystem } from "./lavaworld";
-import { MacroCosmos } from "./macroCosmos";
+import { MacroCosmos, JWSTStars } from "./macroCosmos";
 
 interface SpaceBackgroundProps {
   mapTheme: MapTheme;
@@ -164,7 +164,7 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
     <>
       {/* ----------------- INFINITE PARALLAX SKYBOX LAYER (FIXED & UNREACHABLE TITANS) ----------------- */}
       <group ref={backgroundRef}>
-        {/* 🌟 Infinite Parallax Starfield */}
+        {/* 🌟 Infinite Parallax Starfield (Production Pinpoint White Stars) */}
         <Stars
           radius={350}
           depth={80}
@@ -205,7 +205,10 @@ export const SpaceBackground = ({ mapTheme, graphicsQuality = "medium" }: SpaceB
           <BackgroundProceduralPlanets mapTheme={mapTheme} />
         )}
 
-        {/* 🔭 Macro-Cosmic Zoom Reveal Tier (Dyson Ring, Cosmic Eye, Mothership, Warp Gate, Comet, Quantum Web) */}
+        {/* 🔭 Authentic JWST 8-Spike Reference Guide Stars (Permanent Infinite Skybox) */}
+        <JWSTStars graphicsQuality={graphicsQuality} />
+
+        {/* 🔭 Macro-Cosmic Zoom Reveal Tier (Interstellar Comet, Globular Cluster, Einstein Ring) */}
         <MacroCosmos mapTheme={mapTheme} graphicsQuality={graphicsQuality} />
       </group>
 

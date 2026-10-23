@@ -9,6 +9,9 @@ import {
 } from "./constants";
 import { MacroCosmosProps, MacroUniforms } from "./types";
 import { InterstellarComet } from "./InterstellarComet";
+import { GlobularCluster } from "./GlobularCluster";
+import { EinsteinRing } from "./EinsteinRing";
+import { MacroStarfield } from "./MacroStarfield";
 
 export const MacroCosmos: React.FC<MacroCosmosProps> = ({
   mapTheme,
@@ -56,8 +59,17 @@ export const MacroCosmos: React.FC<MacroCosmosProps> = ({
 
   return (
     <group ref={groupRef} visible={false}>
-      {/* ☄️ Great Interstellar Comet with Sweeping Ion Tail */}
+      {/* ☄️ 1. Great Interstellar Comet with Sweeping Ion Tail */}
       <InterstellarComet palette={palette} uniforms={uniforms} />
+
+      {/* 🌟 2. Ancient Globular Star Cluster M13 (Plummer Potential, Population II) */}
+      <GlobularCluster uniforms={uniforms} />
+
+      {/* 🌀 3. Gravitational Lensing Einstein Ring (Cosmic Horseshoe LRG 3-757) */}
+      <EinsteinRing uniforms={uniforms} />
+
+      {/* ✨ 4. Deep-Space Apparent Magnitude Star Diversity Layer */}
+      <MacroStarfield uniforms={uniforms} graphicsQuality={graphicsQuality} />
     </group>
   );
 };
