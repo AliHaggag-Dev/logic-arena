@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Geist_Mono, Alexandria } from "next/font/google";
+import { Space_Grotesk, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "../providers/ThemeProvider";
@@ -25,13 +25,6 @@ const spaceGrotesk = Space_Grotesk({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  display: "swap",
-});
-
-const alexandria = Alexandria({
-  variable: "--font-alexandria",
-  subsets: ["arabic", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -164,10 +157,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${geistMono.variable} ${alexandria.variable} antialiased`}
+      className={`${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
       suppressHydrationWarning
     >
       <head>
+        {/* Google Fonts — Alexandria for Arabic typography (loaded client-side to prevent CI/CD build network timeouts) */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+
         {/* PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
 
