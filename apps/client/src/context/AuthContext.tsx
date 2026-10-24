@@ -44,6 +44,7 @@ interface AuthContextValue {
   profile: ProfileResponse | null;
   loading: boolean;
   refresh: () => void;
+  updateProfile: (patch: Partial<ProfileResponse>) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -60,6 +61,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
+  }, []);
+
+  const updateProfile = useCallback((patch: Partial<ProfileResponse>) => {
+    setProfile((prev) => (prev ? { ...prev, ...patch } : null));
   }, []);
 
   useEffect(() => {
@@ -141,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     loading,
     refresh,
+    updateProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

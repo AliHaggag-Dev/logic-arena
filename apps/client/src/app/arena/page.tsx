@@ -77,6 +77,12 @@ const ArenaPageContent = () => {
   // Load arena preferences from cached profile (skip for spectators)
   useEffect(() => {
     if (isSpectator) return;
+
+    const savedQuality = typeof window !== 'undefined' ? localStorage.getItem('graphicsQuality') : null;
+    if (savedQuality && ['low', 'medium', 'high'].includes(savedQuality)) {
+      setGraphicsQuality(savedQuality);
+    }
+
     if (authLoading || !profile) return;
 
     const file = ROBOT_FILES[profile.selectedRobotId ?? ''] ?? '/robots/robot.glb';

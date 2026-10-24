@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import axios from "axios";
 import { SectionHeader, Toggle, useFeedback } from "./shared";
 import { useAuth } from "../../../../context/AuthContext";
 import { apiClient } from "../../../../lib/api-client";
@@ -17,7 +18,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   matchResults:     true,
 };
 
-const DEBOUNCE_MS = 800;
+const NETWORK_DEBOUNCE_MS = 600;
 
 const ITEMS: { id: keyof NotificationSettings; label: string; sub: string }[] = [
   { id: "challengeReqs",    label: "Challenge Requests", sub: "Incoming battle challenges from other players" },
@@ -29,63 +30,132 @@ export function NotificationsSection({ isGuest = false }: { isGuest?: boolean })
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const { state: feedback, flash } = useFeedback();
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSaved = useRef<NotificationSettings>(DEFAULT_SETTINGS);
+  const currentSettingsRef = useRef<NotificationSettings>(DEFAULT_SETTINGS);
+  const pendingPatchRef = useRef<Partial<NotificationSettings> | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const { profile, loading: authLoading } = useAuth();
+  const { profile, loading: authLoading, updateProfile } = useAuth();
 
   // ── Load from backend once via AuthContext ─────────────────────────────────
   useEffect(() => {
-    if (isGuest) { setLoading(false); return; }
+    if (isGuest) {
+      setSettings({
+        challengeReqs: localStorage.getItem("notif_challenges") !== "false",
+        tournamentAlerts: localStorage.getItem("notif_tournaments") !== "false",
+        matchResults: localStorage.getItem("notif_results") !== "false",
+      });
+      setLoading(false);
+      return;
+    }
     if (authLoading) return;
     if (profile?.notificationSettings) {
       const ns = profile.notificationSettings as NotificationSettings;
       setSettings(ns);
       lastSaved.current = ns;
     } else {
-      // Graceful degradation to localStorage
       setSettings({
-        challengeReqs:    localStorage.getItem("notif_challenges")  !== "false",
+        challengeReqs: localStorage.getItem("notif_challenges") !== "false",
         tournamentAlerts: localStorage.getItem("notif_tournaments") !== "false",
-        matchResults:     localStorage.getItem("notif_results")     !== "false",
+        matchResults: localStorage.getItem("notif_results") !== "false",
       });
     }
     setLoading(false);
   }, [profile, authLoading, isGuest]);
 
-  // ── Debounced persist ──────────────────────────────────────────────────────
-  const persist = useCallback(async (patch: Partial<NotificationSettings>) => {
+  useEffect(() => {
+    currentSettingsRef.current = settings;
+  }, [settings]);
+
+  // ── Network request execution (deduplicated, throttled & abort-safe) ─────────
+  const flushBackend = useCallback(async (patch: Partial<NotificationSettings>) => {
     if (isGuest) return;
-      try {
-        await apiClient.put("/users/notifications", patch);
-        lastSaved.current = { ...lastSaved.current, ...patch };
-        flash("success", "SAVED");
-      } catch {
-        setSettings(lastSaved.current);
-        flash("error", "SAVE FAILED");
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      await apiClient.put("/users/notifications", patch, { signal: controller.signal });
+      lastSaved.current = { ...lastSaved.current, ...patch };
+      flash("success", "SAVED");
+    } catch (err: unknown) {
+      if (axios.isCancel(err) || (err as { name?: string })?.name === "CanceledError") {
+        return;
       }
+      setSettings(lastSaved.current);
+      flash("error", "SAVE FAILED");
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
+    }
   }, [isGuest, flash]);
 
-  // ── Optimistic update ──────────────────────────────────────────────────────
+  // ── Optimistic update with trailing network debounce ────────────────────────
   const update = useCallback((key: keyof NotificationSettings, value: boolean) => {
-    if (isGuest) return;
+    const currentVal = pendingPatchRef.current?.[key] ?? currentSettingsRef.current[key];
+    if (currentVal === value) return;
+
     setSettings((prev) => ({ ...prev, [key]: value }));
+
+    if (key === "challengeReqs") {
+      localStorage.setItem("notif_challenges", String(value));
+    } else if (key === "tournamentAlerts") {
+      localStorage.setItem("notif_tournaments", String(value));
+    } else if (key === "matchResults") {
+      localStorage.setItem("notif_results", String(value));
+    }
+
+    if (profile) {
+      updateProfile({
+        notificationSettings: {
+          challengeReqs: key === "challengeReqs" ? value : (profile.notificationSettings?.challengeReqs ?? DEFAULT_SETTINGS.challengeReqs),
+          tournamentAlerts: key === "tournamentAlerts" ? value : (profile.notificationSettings?.tournamentAlerts ?? DEFAULT_SETTINGS.tournamentAlerts),
+          matchResults: key === "matchResults" ? value : (profile.notificationSettings?.matchResults ?? DEFAULT_SETTINGS.matchResults),
+        },
+      });
+    }
+
+    if (isGuest) {
+      flash("success", "SAVED LOCALLY");
+      return;
+    }
+
+    pendingPatchRef.current = { ...pendingPatchRef.current, [key]: value };
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-    debounceRef.current = setTimeout(() => {
-      persist({ [key]: value });
-    }, DEBOUNCE_MS);
-  }, [isGuest, persist]);
 
-  // ── Cleanup debounce timer on unmount ──────────────────────────────────────
+    debounceRef.current = setTimeout(() => {
+      if (pendingPatchRef.current) {
+        const patchToSend = pendingPatchRef.current;
+        pendingPatchRef.current = null;
+        flushBackend(patchToSend);
+      }
+    }, NETWORK_DEBOUNCE_MS);
+  }, [profile, updateProfile, isGuest, flash, flushBackend]);
+
+  // ── Flush on unmount so leaving before 600ms never loses the change ────────
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      if (!isGuest && pendingPatchRef.current && Object.keys(pendingPatchRef.current).length > 0) {
+        const finalPatch = pendingPatchRef.current;
+        pendingPatchRef.current = null;
+        apiClient.put("/users/notifications", finalPatch).catch(() => {});
+      }
     };
-  }, []);
+  }, [isGuest]);
 
   if (loading) return (
     <div className="flex flex-col gap-6 opacity-50 animate-pulse">
