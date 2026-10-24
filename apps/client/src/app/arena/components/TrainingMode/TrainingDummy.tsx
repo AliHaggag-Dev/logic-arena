@@ -21,18 +21,20 @@ interface ArenaDummyColors {
   dummyHealthLow: string;
 }
 
-const getArenaCssVar = (name: string): string => (
-  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-);
+const getArenaCssVar = (name: string, fallback: string = ""): string => {
+  if (typeof document === 'undefined') return fallback;
+  const val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return val || fallback;
+};
 
 const readArenaDummyColors = (): ArenaDummyColors => ({
-  black: getArenaCssVar("--arena-black"),
-  white: getArenaCssVar("--arena-white"),
-  surfaceMuted: getArenaCssVar("--arena-surface-muted"),
-  dummyCoreDead: getArenaCssVar("--arena-dummy-core-dead"),
-  dummyHealthHigh: getArenaCssVar("--arena-dummy-health-high"),
-  dummyHealthMid: getArenaCssVar("--arena-dummy-health-mid"),
-  dummyHealthLow: getArenaCssVar("--arena-dummy-health-low"),
+  black: getArenaCssVar("--arena-black", "#000000"),
+  white: getArenaCssVar("--arena-white", "#ffffff"),
+  surfaceMuted: getArenaCssVar("--arena-surface-muted", "#333333"),
+  dummyCoreDead: getArenaCssVar("--arena-dummy-core-dead", "#222222"),
+  dummyHealthHigh: getArenaCssVar("--arena-dummy-health-high", "#00bbff"),
+  dummyHealthMid: getArenaCssVar("--arena-dummy-health-mid", "#0088ff"),
+  dummyHealthLow: getArenaCssVar("--arena-dummy-health-low", "#0055cc"),
 });
 
 /** Canvas-texture health bar — no energy bar for dummies */
@@ -60,7 +62,7 @@ const DummyHealthBar = ({ health }: { health: number }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = `rgba(${getArenaCssVar("--arena-black-rgb")},0.75)`;
+    ctx.fillStyle = `rgba(${getArenaCssVar("--arena-black-rgb", "0, 0, 0")},0.75)`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = colors.surfaceMuted;
     ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
@@ -85,7 +87,20 @@ export const TrainingDummy = ({ position, color, health, hitTimestamp }: Trainin
   const [isRespawning, setIsRespawning] = useState(false);
   const prevHealthRef = useRef(health);
 
-  const targetColor = useMemo(() => new Color(color), [color]);
+  const safeColor = useMemo(() => {
+    if (!color || color.toUpperCase() === 'DEFAULT' || color.toLowerCase().startsWith('paint-')) {
+      return '#ef4444';
+    }
+    return color;
+  }, [color]);
+
+  const targetColor = useMemo(() => {
+    try {
+      return new Color(safeColor);
+    } catch {
+      return new Color('#ef4444');
+    }
+  }, [safeColor]);
   const colors = useMemo(readArenaDummyColors, []);
 
   // Handle hits and respawns
@@ -103,7 +118,7 @@ export const TrainingDummy = ({ position, color, health, hitTimestamp }: Trainin
 
       if (coreMaterialRef.current) {
         coreMaterialRef.current.emissiveIntensity = 2.5;
-        coreMaterialRef.current.color.set(colors.white);
+        coreMaterialRef.current.color.set(colors.white || '#ffffff');
       }
     } else if (health > prevHealthRef.current || (health === 100 && prevHealthRef.current <= 0)) {
       // Respawn animation
@@ -141,8 +156,8 @@ export const TrainingDummy = ({ position, color, health, hitTimestamp }: Trainin
         <octahedronGeometry args={[0.28, 0]} />
         <meshStandardMaterial
           ref={coreMaterialRef}
-          color={isDead ? colors.dummyCoreDead : color}
-          emissive={isDead ? colors.black : color}
+          color={isDead ? (colors.dummyCoreDead || '#222222') : safeColor}
+          emissive={isDead ? (colors.black || '#000000') : safeColor}
           emissiveIntensity={0.4}
           wireframe={isRespawning}
           transparent
@@ -153,13 +168,13 @@ export const TrainingDummy = ({ position, color, health, hitTimestamp }: Trainin
       {/* Outer decorative ring */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.45, 0.018, 16, 32]} />
-        <meshBasicMaterial color={isDead ? colors.surfaceMuted : color} transparent opacity={isDead ? 0.1 : 0.4} />
+        <meshBasicMaterial color={isDead ? (colors.surfaceMuted || '#333333') : safeColor} transparent opacity={isDead ? 0.1 : 0.4} />
       </mesh>
 
       {/* Second ring (perpendicular) */}
       <mesh rotation={[0, 0, 0]}>
         <torusGeometry args={[0.45, 0.018, 16, 32]} />
-        <meshBasicMaterial color={colors.white} transparent opacity={isDead ? 0.05 : 0.15} />
+        <meshBasicMaterial color={colors.white || '#ffffff'} transparent opacity={isDead ? 0.05 : 0.15} />
       </mesh>
 
       {/* ── Health bar billboard (health only — no energy bar for dummies) */}

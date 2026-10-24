@@ -83,14 +83,16 @@ export const HitBurstEffect = ({ burst }: HitBurstEffectProps) => {
     }
   });
 
-  return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial ref={materialRef} color={burst.color} size={0.06} transparent opacity={1} depthWrite={false} />
-    </points>
-  );
+    const safeBurstColor = (!burst.color || burst.color.toUpperCase() === 'DEFAULT' || burst.color.toLowerCase().startsWith('paint-')) ? '#22d3ee' : burst.color;
+
+    return (
+      <points ref={pointsRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        </bufferGeometry>
+        <pointsMaterial ref={materialRef} color={safeBurstColor} size={0.06} transparent opacity={1} depthWrite={false} />
+      </points>
+    );
 };
 
 export const HitParticles = ({ burstsRef }: HitParticlesRefProps) => {

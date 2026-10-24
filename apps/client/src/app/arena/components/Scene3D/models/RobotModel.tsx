@@ -43,12 +43,15 @@ export class RobotErrorBoundary extends React.Component<RobotErrorBoundaryProps,
 
 /* ── Fallback (no GLTF) ─────────────────────────────────────────────────── */
 
-export const FallbackRobot = ({ position, color }: FallbackRobotProps) => (
-  <mesh position={position}>
-    <sphereGeometry args={[0.35, 24, 24]} />
-    <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} />
-  </mesh>
-);
+export const FallbackRobot = ({ position, color }: FallbackRobotProps) => {
+  const safeColor = (!color || color.toUpperCase() === 'DEFAULT' || color.toLowerCase().startsWith('paint-')) ? '#22d3ee' : color;
+  return (
+    <mesh position={position}>
+      <sphereGeometry args={[0.35, 24, 24]} />
+      <meshStandardMaterial color={safeColor} emissive={safeColor} emissiveIntensity={0.8} />
+    </mesh>
+  );
+};
 
 /* ── Health bar sprite ──────────────────────────────────────────────────── */
 

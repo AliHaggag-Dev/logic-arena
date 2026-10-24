@@ -173,6 +173,7 @@ const ArenaPageContent = () => {
           uiState={uiState}
           scriptReady={!loading && (isSpectator || !!script)}
           isSpectator={isSpectator}
+          localRobotFile={localRobotFile}
           onComplete={handleLoadingComplete}
         />
       )}

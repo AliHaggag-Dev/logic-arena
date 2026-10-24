@@ -1,7 +1,7 @@
 "use client";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, Preload } from "@react-three/drei";
-import React, { useMemo, useRef, useEffect, useState, MutableRefObject } from "react";
+import React, { useMemo, useRef, useEffect, useState, MutableRefObject, Suspense } from "react";
 import { GameState } from "../../types";
 import { interpolationBuffer } from "../../core/interpolation-buffer";
 
@@ -177,7 +177,7 @@ export const SceneCanvas = ({
   }), [graphicsQuality]);
 
   return (
-    <Canvas dpr={dpr} gl={glProps}>
+    <Canvas dpr={dpr} gl={glProps} style={{ background: '#000000' }}>
       <PerspectiveCamera makeDefault position={[0, 22, 14]} far={10000} />
       <OrbitControls ref={controlsRef} target={[0, 0, 0]} />
       <CameraController
@@ -186,8 +186,10 @@ export const SceneCanvas = ({
         controlsRef={controlsRef}
       />
       <FrameSignaler />
-      {children}
-      <Preload all />
+      <Suspense fallback={null}>
+        {children}
+        <Preload all />
+      </Suspense>
     </Canvas>
   );
 };

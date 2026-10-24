@@ -230,32 +230,34 @@ export const ArenaModels = ({
                 <RobotErrorBoundary
                   fallback={<FallbackRobot position={robotPosition} color={robot.color} />}
                 >
-                  <group>
-                    <RobotModel
-                      position={robotPosition}
-                      color={robot.color}
-                      health={robot.health}
-                      velocity={robot.velocity ?? { x: 0, y: 0 }}
-                      rotation={typeof robot.rotation === 'number' ? robot.rotation : undefined}
-                      hitTimestamp={hitFlashMapRef.current.get(robot.id)}
-                      spotted={isSpotted(robot)}
-                      energy={robot.energy ?? 1000}
-                      maxEnergy={robot.maxEnergy ?? 1000}
-                      inStasis={robot.inStasis ?? false}
-                      isShielded={robot.isShielded ?? false}
-                      isCloaked={robot.isCloaked ?? false}
-                      shieldHitTimestamp={robot.shieldHitTimestamp}
-                      inFog={inFog}
-                      fov={robot.fov}
-                      fovDirection={robot.fovDirection}
-                      hideHealthBar={displayMode === 'TRAINING_SOLO'}
-                      modelFile={
-                        robot.model ? (ROBOT_FILES[robot.model] ?? robot.model) : '/robots/robot.glb'
-                      }
-                      speechBubble={speechBubble?.current?.robotId === robot.id ? speechBubble.current.message : null}
-                      robotId={robot.id}
-                    />
-                  </group>
+                  <React.Suspense fallback={<FallbackRobot position={robotPosition} color={robot.color} />}>
+                    <group>
+                      <RobotModel
+                        position={robotPosition}
+                        color={robot.color}
+                        health={robot.health}
+                        velocity={robot.velocity ?? { x: 0, y: 0 }}
+                        rotation={typeof robot.rotation === 'number' ? robot.rotation : undefined}
+                        hitTimestamp={hitFlashMapRef.current.get(robot.id)}
+                        spotted={isSpotted(robot)}
+                        energy={robot.energy ?? 1000}
+                        maxEnergy={robot.maxEnergy ?? 1000}
+                        inStasis={robot.inStasis ?? false}
+                        isShielded={robot.isShielded ?? false}
+                        isCloaked={robot.isCloaked ?? false}
+                        shieldHitTimestamp={robot.shieldHitTimestamp}
+                        inFog={inFog}
+                        fov={robot.fov}
+                        fovDirection={robot.fovDirection}
+                        hideHealthBar={displayMode === 'TRAINING_SOLO'}
+                        modelFile={
+                          robot.model ? (ROBOT_FILES[robot.model] ?? robot.model) : '/robots/robot.glb'
+                        }
+                        speechBubble={speechBubble?.current?.robotId === robot.id ? speechBubble.current.message : null}
+                        robotId={robot.id}
+                      />
+                    </group>
+                  </React.Suspense>
                 </RobotErrorBoundary>
               </>
             )}

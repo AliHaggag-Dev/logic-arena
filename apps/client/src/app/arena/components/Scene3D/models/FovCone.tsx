@@ -70,7 +70,13 @@ export const FovCone = ({ position, color, fov, fovDirection, robotId }: FovCone
         side: DoubleSide,
         blending: AdditiveBlending,
         uniforms: {
-          uColor: { value: new Color(color) },
+          uColor: {
+            value: new Color(
+              !color || color.toUpperCase() === 'DEFAULT' || color.toLowerCase().startsWith('paint-')
+                ? '#22d3ee'
+                : color
+            ),
+          },
           uTime: { value: 0 },
         },
         vertexShader: `

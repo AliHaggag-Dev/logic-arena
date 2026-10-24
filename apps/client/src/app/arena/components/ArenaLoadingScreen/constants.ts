@@ -31,29 +31,24 @@ export const TIPS: string[] = [
   "Define reusable subroutines using FUNCTION name ... END, and invoke them anywhere in your script using CALL name."
 ];
 
-export const GLB_FILES: string[] = [
+export const DEFAULT_MATCH_GLB_FILES: string[] = [
   '/robots/robot.glb',
   '/robots/robot2.glb',
-  '/robots/armored-robot.glb',
-  '/robots/sandman.glb',
-  '/robots/mecha.glb',
-  '/robots/npc-robot.glb',
-  '/robots/red_mecha.glb',
 ];
 
-// Progress calculations weights
+// Progress calculations weights (sum = 100)
 export const GLB_PROGRESS_WEIGHT = 35;
-export const TEXTURES_PROGRESS_WEIGHT = 15;
+export const TEXTURES_PROGRESS_WEIGHT = 25;
 export const WEBSOCKET_CONNECTED_WEIGHT = 15;
-export const INIT_STATE_RECEIVED_WEIGHT = 20;
+export const INIT_STATE_RECEIVED_WEIGHT = 15;
 export const SCRIPT_READY_WEIGHT = 10;
-export const AUDIO_READY_WEIGHT = 5;
 
 // Timing intervals
 export const AUDIO_CHECK_INTERVAL_MS = 300;
-export const TEXTURE_CHECK_INTERVAL_MS = 100;
-export const TIPS_ROTATION_INTERVAL_MS = 8000;
-export const TIPS_FADE_TRANSITION_MS = 400;
-export const FADE_OUT_DELAY_MS = 500;
-export const UNMOUNT_TIMER_MS = 800;
-export const GLB_FALLBACK_TIMEOUT_MS = 2500;
+export const TEXTURE_CHECK_INTERVAL_MS = 60;
+export const TIPS_ROTATION_INTERVAL_MS = 6000;
+export const TIPS_FADE_TRANSITION_MS = 300;
+export const FADE_OUT_DELAY_MS = 150;
+export const UNMOUNT_TIMER_MS = 450;
+export const GLB_FALLBACK_TIMEOUT_MS = 1000;
+export const MASTER_WATCHDOG_TIMEOUT_MS = 3200;

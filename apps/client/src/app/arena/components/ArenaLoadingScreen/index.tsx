@@ -1,19 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { DefaultLoadingManager } from 'three';
 import { useGLTF } from '@react-three/drei';
 import { getGlobalAudioContext } from '../../../../context/SoundContext';
 import styles from './ArenaLoadingScreen.module.css';
 import {
   TIPS,
-  GLB_FILES,
+  DEFAULT_MATCH_GLB_FILES,
   GLB_PROGRESS_WEIGHT,
   TEXTURES_PROGRESS_WEIGHT,
   WEBSOCKET_CONNECTED_WEIGHT,
   INIT_STATE_RECEIVED_WEIGHT,
   SCRIPT_READY_WEIGHT,
-  AUDIO_READY_WEIGHT,
   AUDIO_CHECK_INTERVAL_MS,
   TEXTURE_CHECK_INTERVAL_MS,
   TIPS_ROTATION_INTERVAL_MS,
@@ -21,6 +20,7 @@ import {
   FADE_OUT_DELAY_MS,
   UNMOUNT_TIMER_MS,
   GLB_FALLBACK_TIMEOUT_MS,
+  MASTER_WATCHDOG_TIMEOUT_MS,
 } from './constants';
 
 interface ArenaLoadingScreenProps {
@@ -28,6 +28,7 @@ interface ArenaLoadingScreenProps {
   uiState: { robots: { id: string }[] } | null;
   scriptReady: boolean;
   isSpectator: boolean;
+  localRobotFile?: string;
   onComplete: () => void;
 }
 
@@ -36,6 +37,7 @@ export const ArenaLoadingScreen = ({
   uiState,
   scriptReady,
   isSpectator,
+  localRobotFile,
   onComplete,
 }: ArenaLoadingScreenProps): React.JSX.Element => {
   const [glbProgress, setGlbProgress] = useState<number>(0);
@@ -44,19 +46,42 @@ export const ArenaLoadingScreen = ({
   const [tipIndex, setTipIndex] = useState<number>(0);
   const [fadeTip, setFadeTip] = useState<boolean>(true);
   const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
+  const [isSafetyReleased, setIsSafetyReleased] = useState<boolean>(false);
 
   const isWebsocketConnected = !!socket?.connected;
-  const isInitStateReceived = !!(uiState && uiState.robots && uiState.robots.length > 0);
+  const hasRobots = !!(uiState && uiState.robots && uiState.robots.length > 0);
 
-  // 1. Preload GLB models to trigger DefaultLoadingManager
+  // Sync timeout fallback: if socket is connected for 800ms, don't hold the screen hostage
+  const [dataSyncTimeout, setDataSyncTimeout] = useState(false);
+  useEffect(() => {
+    if (isWebsocketConnected) {
+      const timer = setTimeout(() => setDataSyncTimeout(true), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isWebsocketConnected]);
+
+  const isInitStateReceived = isSpectator
+    ? isWebsocketConnected
+    : (hasRobots || dataSyncTimeout);
+
+  // 1. Targeted preloading: run once on mount for the required models
   useEffect((): (() => void) => {
+    const list = Array.from(new Set([...DEFAULT_MATCH_GLB_FILES, localRobotFile || '/robots/robot.glb']));
+    list.forEach((file: string): void => {
+      try {
+        useGLTF.preload(file);
+      } catch {
+        // Safe ignore
+      }
+    });
+
     const manager = DefaultLoadingManager;
     const prevOnProgress = manager.onProgress;
     const prevOnLoad = manager.onLoad;
 
     manager.onProgress = (url: string, loaded: number, total: number): void => {
       if (total > 0) {
-        setGlbProgress(loaded / total);
+        setGlbProgress(Math.min(1, loaded / total));
       }
       if (prevOnProgress) prevOnProgress(url, loaded, total);
     };
@@ -66,24 +91,19 @@ export const ArenaLoadingScreen = ({
       if (prevOnLoad) prevOnLoad();
     };
 
-    // Begin preload request sequence
-    GLB_FILES.forEach((file: string): void => {
-      useGLTF.preload(file);
-    });
-
-    // Cache fallback: If resources load instantly or do not hit request managers
+    // Smooth fallback: guarantee models are marked ready within 800ms
     const fallback = setTimeout((): void => {
       setGlbProgress(1);
-    }, GLB_FALLBACK_TIMEOUT_MS);
+    }, 800);
 
     return (): void => {
       manager.onProgress = prevOnProgress;
       manager.onLoad = prevOnLoad;
       clearTimeout(fallback);
     };
-  }, []);
+  }, [localRobotFile]);
 
-  // 2. Simulate procedural textures compile pipeline
+  // 2. WebGL first-frame and shader compile pipeline tracking
   useEffect((): (() => void) => {
     let current = 0;
     const interval = setInterval((): void => {
@@ -96,37 +116,45 @@ export const ArenaLoadingScreen = ({
         }
       }
       if (current < 0.95) {
-        current += 0.08 + Math.random() * 0.12;
+        current += 0.2;
         if (current >= 0.95) {
           current = 0.95;
-          clearInterval(interval);
         }
         setTexturesProgress(current);
       }
-    }, TEXTURE_CHECK_INTERVAL_MS);
-    return (): void => clearInterval(interval);
-  }, []);
+    }, 80);
 
-  // Listen for actual WebGL scene first-frame signal
-  useEffect((): (() => void) => {
+    // Hard fallback: after 1000ms mark textures ready so the screen never hangs
+    const hardFallback = setTimeout((): void => {
+      setTexturesProgress(1.0);
+      clearInterval(interval);
+    }, 1000);
+
     const handleFirstFrame = (): void => {
       setTexturesProgress(1.0);
+      clearInterval(interval);
+      clearTimeout(hardFallback);
     };
+
     if (typeof window !== 'undefined') {
       const win = window as unknown as Record<string, unknown>;
       if (win.__SCENE_FIRST_FRAME__) {
         setTexturesProgress(1.0);
+      } else {
+        window.addEventListener('scene-first-frame', handleFirstFrame, { once: true });
       }
-      window.addEventListener('scene-first-frame', handleFirstFrame);
     }
+
     return (): void => {
+      clearInterval(interval);
+      clearTimeout(hardFallback);
       if (typeof window !== 'undefined') {
         window.removeEventListener('scene-first-frame', handleFirstFrame);
       }
     };
   }, []);
 
-  // 3. Audio Context connection check
+  // 3. Audio Context check (NON-BLOCKING: informational only)
   useEffect((): (() => void) => {
     const checkAudio = (): void => {
       const ctx = getGlobalAudioContext();
@@ -143,20 +171,18 @@ export const ArenaLoadingScreen = ({
     return (): void => clearInterval(interval);
   }, []);
 
-  // Audio activation trigger
-  const handleActivateAudio = async (): Promise<void> => {
-    const ctx = getGlobalAudioContext();
-    if (ctx && ctx.state === 'suspended') {
-      try {
-        await ctx.resume();
-        setAudioReady(true);
-      } catch (e: unknown) {
-        console.warn('Failed to resume AudioContext:', e);
-      }
-    }
-  };
+  // 4. Master Safety Watchdog: hard cap 2000ms max loading screen time
+  useEffect((): (() => void) => {
+    const watchdog = setTimeout((): void => {
+      setGlbProgress(1);
+      setTexturesProgress(1);
+      setIsSafetyReleased(true);
+    }, 2000);
 
-  // 4. Tips Rotation Loop
+    return (): void => clearTimeout(watchdog);
+  }, []);
+
+  // 5. Tips Rotation Loop
   useEffect((): (() => void) => {
     const interval = setInterval((): void => {
       setFadeTip(false);
@@ -177,19 +203,20 @@ export const ArenaLoadingScreen = ({
     (texturesProgress * TEXTURES_PROGRESS_WEIGHT) +
     (isWebsocketConnected ? WEBSOCKET_CONNECTED_WEIGHT : 0) +
     (isInitStateReceived ? INIT_STATE_RECEIVED_WEIGHT : 0) +
-    (scriptReady ? SCRIPT_READY_WEIGHT : 0) +
-    (audioReady ? AUDIO_READY_WEIGHT : 0)
+    (scriptReady ? SCRIPT_READY_WEIGHT : 0)
   ));
 
-  const allReadyExceptAudio = glbProgress === 1 && texturesProgress === 1 && isWebsocketConnected && isInitStateReceived && scriptReady;
-  const isFullyLoaded = allReadyExceptAudio && audioReady;
+  // Audio is intentionally non-blocking: browsers require user interaction to resume Web Audio.
+  // The match should proceed immediately once core 3D scene & network assets are ready!
+  const allCoreReady = glbProgress === 1 && texturesProgress === 1 && isWebsocketConnected && isInitStateReceived && scriptReady;
+  const isFullyLoaded = allCoreReady || isSafetyReleased;
 
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
-  // Handle completion fade-out
+  // Handle completion fade-out with snappy modern transitions
   useEffect((): (() => void) | undefined => {
     let delay: NodeJS.Timeout | undefined;
     let unmountTimer: NodeJS.Timeout | undefined;
@@ -246,15 +273,15 @@ export const ArenaLoadingScreen = ({
         <div className={styles.progressHeader}>
           <div>
             <div className={styles.overallLabel}>Loading Progress</div>
-            <div className={styles.overallPct}>{totalProgress}%</div>
+            <div className={styles.overallPct}>{isFullyLoaded ? 100 : totalProgress}%</div>
           </div>
           <div className={styles.overallLabel} style={{ opacity: 0.5 }}>
-            {totalProgress === 100 ? 'LINK STABLE' : 'LOADING ROBOT MODELS...'}
+            {isFullyLoaded || totalProgress === 100 ? 'LINK STABLE' : 'CALIBRATING BATTLEFIELD...'}
           </div>
         </div>
 
-        <div className={styles.progressBarBg} aria-label="Loading Progress Bar" role="progressbar" aria-valuenow={totalProgress} aria-valuemin={0} aria-valuemax={100}>
-          <div className={styles.progressBarFill} style={{ transform: `scaleX(${totalProgress / 100})` }} />
+        <div className={styles.progressBarBg} aria-label="Loading Progress Bar" role="progressbar" aria-valuenow={isFullyLoaded ? 100 : totalProgress} aria-valuemin={0} aria-valuemax={100}>
+          <div className={styles.progressBarFill} style={{ transform: `scaleX(${(isFullyLoaded ? 100 : totalProgress) / 100})` }} />
         </div>
 
         <div className={styles.stagesList}>
@@ -289,24 +316,12 @@ export const ArenaLoadingScreen = ({
             </span>
           </div>
           <div className={styles.stageRow}>
-            <span className={styles.stageName}>6. Initializing Audio</span>
-            <span className={`${styles.stageStatus} ${audioReady ? styles.statusOk : styles.statusPending}`}>
-              {audioReady ? '[ OK ]' : '[ MUTED ]'}
+            <span className={styles.stageName}>6. Audio Subsystem</span>
+            <span className={`${styles.stageStatus} ${styles.statusOk}`}>
+              {audioReady ? '[ ACTIVE ]' : '[ STANDBY ]'}
             </span>
           </div>
         </div>
-
-        {allReadyExceptAudio && !audioReady && (
-          <div className={styles.audioPromptContainer}>
-            <button 
-              type="button" 
-              onClick={handleActivateAudio}
-              className={styles.cyberBtn}
-            >
-              ESTABLISH NEURAL LINK
-            </button>
-          </div>
-        )}
       </div>
 
       <div className={styles.tipsContainer}>
