@@ -26,6 +26,26 @@ interface GenerateScriptDto {
   description: string;
 }
 
+function formatAiError(error: unknown): string {
+  const msg = error instanceof Error ? error.message : 'Unknown error';
+  if (msg.includes('API_KEY_INVALID') || msg.includes('API key not valid')) {
+    return 'Invalid or expired GEMINI_API_KEY. Please verify your API key in apps/server/.env.local (obtain a free key from https://aistudio.google.com).';
+  }
+  if (msg.includes('GEMINI_API_KEY is not configured')) {
+    return 'GEMINI_API_KEY is not configured in the server environment (.env.local).';
+  }
+  if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+    return 'Gemini API quota exceeded or rate limit reached. Please wait a moment and try again.';
+  }
+  if (msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand')) {
+    return 'ARIA is currently overloaded. Please wait a moment and try again.';
+  }
+  if (msg.includes('404') && msg.includes('models/')) {
+    return 'Configured Gemini AI model was not found. Please verify the model name.';
+  }
+  return 'An unexpected error occurred. Please try again.';
+}
+
 @SkipThrottle({ auth: true })
 @Throttle({ global: { limit: 20, ttl: 60_000 } })
 @Controller('ai')
@@ -87,13 +107,8 @@ export class AiController {
 
       res.write('data: [DONE]\n\n');
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Unknown error';
-      // Show friendly message for Google 503 overload errors
-      const isOverload = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
-      const friendly = isOverload
-        ? 'ARIA is currently overloaded. Please wait a moment and try again.'
-        : 'An unexpected error occurred. Please try again.';
       this.logger.error('AI stream error:', error);
+      const friendly = formatAiError(error);
       const escaped = JSON.stringify({ error: friendly });
       res.write(`data: ${escaped}\n\n`);
     } finally {
@@ -133,12 +148,8 @@ export class AiController {
 
       res.write('data: [DONE]\n\n');
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Unknown error';
-      const isOverload = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
-      const friendly = isOverload
-        ? 'ARIA is currently overloaded. Please wait a moment and try again.'
-        : 'An unexpected error occurred. Please try again.';
       this.logger.error('AI stream error:', error);
+      const friendly = formatAiError(error);
       const escaped = JSON.stringify({ error: friendly });
       res.write(`data: ${escaped}\n\n`);
     } finally {

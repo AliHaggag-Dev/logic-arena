@@ -228,7 +228,13 @@ export class RagService {
       const embedModel = this.genAI.getGenerativeModel({
         model: EMBEDDING_MODEL,
       });
-      const result = await embedModel.embedContent(text);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Embedding timeout')), 1500),
+      );
+      const result = (await Promise.race([
+        embedModel.embedContent(text),
+        timeoutPromise,
+      ])) as { embedding: { values: number[] } };
       return result.embedding.values;
     } catch {
       return new Array(768).fill(0);

@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   GoogleGenerativeAI,
-  GenerativeModel,
   HarmCategory,
   HarmBlockThreshold,
 } from '@google/generative-ai';
 import { RagService } from './rag.service';
+
+type ContentPart =
+  | { text: string }
+  | { inlineData: { mimeType: string; data: string } };
 
 const SYSTEM_PROMPT = `You are ARIA (AliScript Reasoning & Intelligence Assistant) — the official AI tutor for Logic Arena, a cyberpunk robot battle programming platform.
 
@@ -43,10 +46,33 @@ RULES FOR ACCURACY:
 
 If asked about anything outside AliScript or Logic Arena, politely redirect.`;
 
+const GENERATE_SYSTEM_PROMPT = `You are an AliScript code generator for Logic Arena — a cyberpunk robot battle programming platform.
+
+Your ONLY job: produce raw, working AliScript code from the user's strategy description.
+
+STRICT RULES:
+- Output ONLY raw AliScript code. No markdown. No explanation text outside the code. No code fences.
+- Add a short comment (-- ) before each meaningful line. Max 10 words per comment.
+- Comments are part of the code and teach the user AliScript patterns.
+- Use advanced features where they genuinely improve the strategy: RAYCAST, ATAN2, GET_ALL_VISIBLE_ENEMIES(), arrays, state machines, BROADCAST/RECEIVE.
+- The user may describe in any language (Arabic, English, etc.) — always output AliScript code only.
+
+AliScript Reference:
+ACTIONS: MOVE, MOVE_FAST, BACKUP, FIRE, BURST_FIRE, SCAN, PATHFIND, STOP, WAIT N, SHIELD, CLOAK, DASH, MINE, TELEPORT X Y, TAUNT "msg"
+CONTROL: IF cond THEN ... ELSE ... END | WHILE cond DO ... END | FOR x FROM a TO b ... END | FUNCTION name ... END | CALL name | RETURN value | BREAK | CONTINUE
+VARIABLES: SET name = expr | SET arr[i] = val | SET obj.key = val
+IDENTIFIERS: rotation, fovDirection, lockVision, distance, health, MY_ENERGY, ENERGY_PCT, IN_STASIS, CAN_SEE_ENEMY, spotted, NEAREST_VISIBLE_X, NEAREST_VISIBLE_Y, VISIBLE_ENEMY_COUNT, POSITION_X, POSITION_Y, CAN_SEE_OBSTACLE, NEAREST_OBSTACLE_DISTANCE
+MATH: ATAN2(y,x), SIN(x), COS(x), ABS(x), SQRT(x), POW(b,e), MIN(a,b), MAX(a,b), FLOOR(x), CEIL(x), ROUND(x), RANDOM()
+ARRAYS: LENGTH(arr), PUSH(arr, val), POP(arr) | Literal: [1, 2, 3] | Index: arr[i]
+OBJECTS: { key: value } | Access: obj.key or obj["key"]
+SENSORS: RAYCAST(angle_radians) → distance | GET_ALL_VISIBLE_ENEMIES() → [[dist,x,y,hp],...]
+SWARM: BROADCAST(data) → recipient_count | RECEIVE() → [msg,...] clears inbox`;
+
 @Injectable()
 export class AiService {
+  private readonly logger = new Logger(AiService.name);
   private genAI: GoogleGenerativeAI;
-  private model: GenerativeModel;
+  private candidateModels: string[];
 
   constructor(private rag: RagService) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -54,10 +80,17 @@ export class AiService {
       throw new Error('GEMINI_API_KEY is not configured');
     }
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: SYSTEM_PROMPT,
-    });
+    const preferred = process.env.GEMINI_MODEL?.trim();
+    const defaults = [
+      preferred,
+      'gemini-flash-lite-latest',
+      'gemini-3.5-flash-lite',
+      'gemini-3.5-flash',
+      'gemini-3.8-flash',
+    ].filter((m): m is string => Boolean(m && m.length > 0));
+
+    this.candidateModels = Array.from(new Set(defaults));
+    this.logger.log(`Initialized with models: ${this.candidateModels.join(', ')}`);
   }
 
   async *streamChat(
@@ -81,15 +114,7 @@ export class AiService {
       augmentedMessage = `${message}\n\n<context>${context}</context>`;
     }
 
-    const chat = this.model.startChat({
-      history: geminiHistory,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 8192,
-      },
-    });
-
-    const parts: any[] = [];
+    const parts: ContentPart[] = [];
     if (augmentedMessage) {
       parts.push({ text: augmentedMessage });
     }
@@ -110,10 +135,24 @@ export class AiService {
       parts.push({ text: 'Explain this image' });
     }
 
-    // Retry once on stream parse failure, falling back to no context.
-    // Skip retry for 503 (capacity) errors — Google's servers are overloaded.
-    for (let attempt = 0; attempt < 2; attempt++) {
+    let lastError: unknown = null;
+
+    for (let i = 0; i < this.candidateModels.length; i++) {
+      const modelName = this.candidateModels[i];
       try {
+        const model = this.genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: SYSTEM_PROMPT,
+        });
+
+        const chat = model.startChat({
+          history: geminiHistory,
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8192,
+          },
+        });
+
         const result = await chat.sendMessageStream(parts);
 
         for await (const chunk of result.stream) {
@@ -122,78 +161,78 @@ export class AiService {
             yield text;
           }
         }
-        return; // success — exit generator
+        return; // Success! Stream fully delivered
       } catch (err) {
+        lastError = err;
         const msg = (err as Error).message || '';
-        const isOverload = msg.includes('503') || msg.includes('Service Unavailable') || msg.includes('high demand');
-        if (attempt === 0 && !isOverload) {
-          console.warn('[AiService] Stream failed, retrying without context:', msg);
-          parts[0] = { text: message };
-          await new Promise((r) => setTimeout(r, 500));
-        } else {
-          throw err;
-        }
+        this.logger.warn(
+          `[AiService] streamChat with ${modelName} failed (${msg}). ${
+            i < this.candidateModels.length - 1 ? 'Trying fallback model...' : 'No more models.'
+          }`,
+        );
       }
+    }
+
+    if (lastError) {
+      throw lastError;
     }
   }
 
   async *streamGenerateScript(description: string): AsyncGenerator<string> {
-    const GENERATE_SYSTEM_PROMPT = `You are an AliScript code generator for Logic Arena — a cyberpunk robot battle programming platform.
+    let lastError: unknown = null;
 
-Your ONLY job: produce raw, working AliScript code from the user's strategy description.
+    for (let i = 0; i < this.candidateModels.length; i++) {
+      const modelName = this.candidateModels[i];
+      try {
+        const model = this.genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: GENERATE_SYSTEM_PROMPT,
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 2048,
+          },
+          safetySettings: [
+            {
+              category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+              threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+              threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+              threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+              threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            },
+          ],
+        });
 
-STRICT RULES:
-- Output ONLY raw AliScript code. No markdown. No explanation text outside the code. No code fences.
-- Add a short comment (-- ) before each meaningful line. Max 10 words per comment.
-- Comments are part of the code and teach the user AliScript patterns.
-- Use advanced features where they genuinely improve the strategy: RAYCAST, ATAN2, GET_ALL_VISIBLE_ENEMIES(), arrays, state machines, BROADCAST/RECEIVE.
-- The user may describe in any language (Arabic, English, etc.) — always output AliScript code only.
+        const result = await model.generateContentStream(description);
 
-AliScript Reference:
-ACTIONS: MOVE, MOVE_FAST, BACKUP, FIRE, BURST_FIRE, SCAN, PATHFIND, STOP, WAIT N, SHIELD, CLOAK, DASH, MINE, TELEPORT X Y, TAUNT "msg"
-CONTROL: IF cond THEN ... ELSE ... END | WHILE cond DO ... END | FOR x FROM a TO b ... END | FUNCTION name ... END | CALL name | RETURN value | BREAK | CONTINUE
-VARIABLES: SET name = expr | SET arr[i] = val | SET obj.key = val
-IDENTIFIERS: rotation, fovDirection, lockVision, distance, health, MY_ENERGY, ENERGY_PCT, IN_STASIS, CAN_SEE_ENEMY, spotted, NEAREST_VISIBLE_X, NEAREST_VISIBLE_Y, VISIBLE_ENEMY_COUNT, POSITION_X, POSITION_Y, CAN_SEE_OBSTACLE, NEAREST_OBSTACLE_DISTANCE
-MATH: ATAN2(y,x), SIN(x), COS(x), ABS(x), SQRT(x), POW(b,e), MIN(a,b), MAX(a,b), FLOOR(x), CEIL(x), ROUND(x), RANDOM()
-ARRAYS: LENGTH(arr), PUSH(arr, val), POP(arr) | Literal: [1, 2, 3] | Index: arr[i]
-OBJECTS: { key: value } | Access: obj.key or obj["key"]
-SENSORS: RAYCAST(angle_radians) → distance | GET_ALL_VISIBLE_ENEMIES() → [[dist,x,y,hp],...]
-SWARM: BROADCAST(data) → recipient_count | RECEIVE() → [msg,...] clears inbox`;
-
-    const model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: GENERATE_SYSTEM_PROMPT,
-      generationConfig: {
-        temperature: 0.4,
-        maxOutputTokens: 2048,
-      },
-      safetySettings: [
-        {
-          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-          threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        },
-      ],
-    });
-
-    const result = await model.generateContentStream(description);
-
-    for await (const chunk of result.stream) {
-      const text = chunk.text();
-      if (text) {
-        yield text;
+        for await (const chunk of result.stream) {
+          const text = chunk.text();
+          if (text) {
+            yield text;
+          }
+        }
+        return; // Success
+      } catch (err) {
+        lastError = err;
+        const msg = (err as Error).message || '';
+        this.logger.warn(
+          `[AiService] streamGenerateScript with ${modelName} failed (${msg}). ${
+            i < this.candidateModels.length - 1 ? 'Trying fallback model...' : 'No more models.'
+          }`,
+        );
       }
+    }
+
+    if (lastError) {
+      throw lastError;
     }
   }
 
@@ -218,22 +257,29 @@ Return ONLY a JSON array of objects with the following keys:
 - "category": Must be one of: "tactics", "energy", "code"
 `;
 
-    const model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        temperature: 0.7,
-        responseMimeType: 'application/json',
-      },
-    });
+    for (let i = 0; i < this.candidateModels.length; i++) {
+      const modelName = this.candidateModels[i];
+      try {
+        const model = this.genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            temperature: 0.7,
+            responseMimeType: 'application/json',
+          },
+        });
 
-    try {
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const parsed = JSON.parse(text);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.error('Failed to generate AI insights:', error);
-      return [];
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        this.logger.warn(
+          `[AiService] generateMatchInsights with ${modelName} failed: ${error}`,
+        );
+      }
     }
+
+    return [];
   }
 }
+
