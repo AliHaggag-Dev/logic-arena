@@ -169,6 +169,8 @@
   --border:          rgba(245, 158, 11, 0.22);
   --border-subtle:   rgba(245, 158, 11, 0.10);
   --card:            #130e07;
+  --bg-card:         #17100a;
+  --bg-card-rgb:     23, 16, 10;
   --card-hover:      #1c1409;
   --surface-1:       #0e0a04;
   --surface-2:       #17100a;

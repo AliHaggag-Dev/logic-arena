@@ -151,10 +151,10 @@ export function NotificationItem({
           onClick(notification);
         }
       }}
-      className={`group relative w-full text-left cursor-pointer transition-all duration-150 border-b border-accent/10 last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px] ${
+      className={`group relative w-full text-left cursor-pointer transition-all duration-150 border-b border-border/30 last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px] ${
         !notification.read
-          ? 'bg-accent/[0.06] border-l-2 border-l-accent'
-          : 'bg-transparent border-l-2 border-l-transparent hover:bg-white/[0.02]'
+          ? 'bg-accent/[0.08] border-l-2 border-l-accent'
+          : 'bg-transparent border-l-2 border-l-transparent hover:bg-accent/[0.04]'
       }`}
       style={{
         padding: '12px 14px',
@@ -163,7 +163,7 @@ export function NotificationItem({
       <div className="flex gap-3 items-start">
         {/* Left icon badge */}
         <div
-          className="shrink-0 flex items-center justify-center border border-white/5"
+          className="shrink-0 flex items-center justify-center border border-accent/20"
           style={{
             width: 38,
             height: 38,
@@ -195,14 +195,14 @@ export function NotificationItem({
                 {label}
               </span>
               {tag && (
-                <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-white/10 text-text-secondary uppercase">
+                <span className="text-[8px] font-mono font-semibold px-1 py-0.5 rounded bg-accent/10 border border-accent/20 text-accent uppercase">
                   {tag}
                 </span>
               )}
             </div>
 
             {timeAgo && (
-              <span className="text-[10px] text-text-secondary/60 shrink-0 font-mono">
+              <span className="text-[10px] text-text-secondary/70 shrink-0 font-mono">
                 {timeAgo}
               </span>
             )}

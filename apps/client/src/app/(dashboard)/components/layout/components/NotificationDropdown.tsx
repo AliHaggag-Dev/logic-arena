@@ -172,11 +172,10 @@ export function NotificationDropdown({
       className="max-sm:fixed max-sm:inset-x-4 max-sm:top-[64px] max-sm:w-auto max-sm:max-w-full sm:absolute sm:right-0 sm:top-full sm:mt-2 sm:w-[420px] max-sm:max-h-[80vh] sm:max-h-[560px] z-[120] font-mono flex flex-col overflow-hidden"
       style={{
         borderRadius: 16,
-        backgroundColor: '#0a0f1d',
-        backgroundImage: 'linear-gradient(180deg, #0e1526 0%, #080d19 100%)',
-        border: '1px solid rgba(var(--accent-rgb), 0.35)',
+        backgroundColor: 'var(--bg-secondary)',
+        border: '1px solid var(--border)',
         boxShadow:
-          '0 24px 64px rgba(0,0,0,0.95), 0 0 30px rgba(var(--accent-rgb),0.12), inset 0 1px 0 rgba(255,255,255,0.08)',
+          '0 24px 64px rgba(0,0,0,0.35), 0 0 30px rgba(var(--accent-rgb),0.12), inset 0 1px 0 rgba(var(--accent-rgb),0.08)',
         animation: 'dropdownIn 0.2s cubic-bezier(0.16,1,0.3,1)',
       }}
     >
@@ -184,8 +183,8 @@ export function NotificationDropdown({
       <div
         className="flex items-center justify-between px-4 py-3 shrink-0"
         style={{
-          borderBottom: '1px solid rgba(var(--accent-rgb),0.15)',
-          background: 'rgba(255,255,255,0.02)',
+          borderBottom: '1px solid var(--border)',
+          background: 'rgba(var(--accent-rgb),0.06)',
         }}
       >
         <div className="flex items-center gap-2.5">
@@ -195,7 +194,7 @@ export function NotificationDropdown({
               height: 32,
               borderRadius: 8,
               background: 'rgba(var(--accent-rgb),0.12)',
-              border: '1px solid rgba(var(--accent-rgb),0.2)',
+              border: '1px solid rgba(var(--accent-rgb),0.25)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -247,7 +246,7 @@ export function NotificationDropdown({
             style={{
               width: 34,
               height: 34,
-              color: confirmingClear ? 'var(--sem-danger)' : 'rgba(var(--accent-rgb),0.6)',
+              color: confirmingClear ? 'var(--sem-danger)' : 'rgba(var(--accent-rgb),0.7)',
               background: confirmingClear ? 'rgba(var(--sem-danger-rgb),0.15)' : 'transparent',
             }}
           >
@@ -259,21 +258,21 @@ export function NotificationDropdown({
       {/* List content */}
       <div
         ref={listRef}
-        className="overflow-y-auto flex-1 max-h-[440px] scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent divide-y divide-accent/10"
+        className="overflow-y-auto flex-1 max-h-[440px] scrollbar-thin scrollbar-thumb-accent/20 scrollbar-track-transparent divide-y divide-border/20"
       >
         {isLoading && notifications.length === 0 && unreadCount > SHOW_SKELETON_THRESHOLD ? (
           <div className="py-2" aria-busy="true">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="px-4 py-3 flex gap-3 items-start border-b border-accent/10 last:border-b-0 animate-pulse"
+                className="px-4 py-3 flex gap-3 items-start border-b border-border/20 last:border-b-0 animate-pulse"
                 aria-hidden="true"
               >
-                <div className="shrink-0 w-9 h-9 rounded-lg border border-accent/15 bg-white/5" />
+                <div className="shrink-0 w-9 h-9 rounded-lg border border-accent/20 bg-accent/10" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-2.5 w-1/3 rounded bg-white/10" />
-                  <div className="h-3 w-3/4 rounded bg-white/5" />
-                  <div className="h-2 w-1/2 rounded bg-white/5" />
+                  <div className="h-2.5 w-1/3 rounded bg-accent/20" />
+                  <div className="h-3 w-3/4 rounded bg-accent/10" />
+                  <div className="h-2 w-1/2 rounded bg-accent/10" />
                 </div>
               </div>
             ))}
@@ -281,15 +280,15 @@ export function NotificationDropdown({
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-14 px-4 text-center">
             <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 border border-white/5"
-              style={{ background: 'rgba(var(--accent-rgb),0.05)' }}
+              className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 border border-accent/20"
+              style={{ background: 'rgba(var(--accent-rgb),0.08)' }}
             >
-              <Inbox size={22} className="text-accent/40" />
+              <Inbox size={22} className="text-accent/60" />
             </div>
-            <p className="text-[11px] font-bold tracking-[0.2em] text-text-primary/70 uppercase">
+            <p className="text-[11px] font-bold tracking-[0.2em] text-text-primary uppercase">
               ALL SECTORS QUIET
             </p>
-            <p className="text-[10px] text-text-secondary/50 mt-1 max-w-[240px]">
+            <p className="text-[10px] text-text-secondary mt-1 max-w-[240px]">
               No active battle challenges or allied transmissions.
             </p>
           </div>
@@ -311,7 +310,7 @@ export function NotificationDropdown({
                 onClick={onLoadMore}
                 disabled={isLoadingMore}
                 aria-label="Load older transmissions"
-                className="w-full py-3 text-[10px] font-bold tracking-[0.18em] text-text-secondary hover:text-accent hover:bg-accent/5 disabled:opacity-50 transition-colors duration-150 cursor-pointer flex items-center justify-center gap-2 border-t border-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                className="w-full py-3 text-[10px] font-bold tracking-[0.18em] text-text-secondary hover:text-accent hover:bg-accent/5 disabled:opacity-50 transition-colors duration-150 cursor-pointer flex items-center justify-center gap-2 border-t border-border/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               >
                 {isLoadingMore ? (
                   <>
@@ -329,10 +328,14 @@ export function NotificationDropdown({
 
       {/* Footer */}
       <div
-        className="px-4 py-2.5 border-t border-accent/15 bg-black/70 text-[9px] tracking-[0.16em] text-text-secondary/60 uppercase flex items-center justify-between shrink-0"
+        className="px-4 py-2.5 text-[9px] tracking-[0.16em] text-text-secondary uppercase flex items-center justify-between shrink-0"
+        style={{
+          borderTop: '1px solid var(--border)',
+          background: 'rgba(var(--accent-rgb),0.04)',
+        }}
       >
         <span>PRESS ESC TO CLOSE</span>
-        <span className="font-mono text-accent/60">
+        <span className="font-mono text-accent font-semibold">
           {notifications.length} {notifications.length === 1 ? 'ENTRY' : 'ENTRIES'}
         </span>
       </div>

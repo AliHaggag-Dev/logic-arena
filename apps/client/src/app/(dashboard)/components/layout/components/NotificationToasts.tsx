@@ -83,9 +83,9 @@ function ToastCard({
       }`}
       style={{
         borderRadius: 14,
-        background: 'rgba(10, 15, 29, 0.98)',
-        border: '1px solid rgba(var(--accent-rgb), 0.25)',
-        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(var(--accent-rgb), 0.1)',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border)',
+        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(var(--accent-rgb), 0.1)',
         animation: 'toastIn 0.25s cubic-bezier(0.16,1,0.3,1)',
       }}
     >
