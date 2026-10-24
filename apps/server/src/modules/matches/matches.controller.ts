@@ -100,7 +100,7 @@ export class MatchesController {
       });
     }
 
-    let userColor = '#22d3ee';
+    let userColor = 'DEFAULT';
     let userTracerColor = '#22d3ee';
     let userModel = 'unit-01';
 

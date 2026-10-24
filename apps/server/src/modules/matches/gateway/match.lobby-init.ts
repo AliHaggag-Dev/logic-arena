@@ -20,7 +20,7 @@ export async function loadPlayerScriptAndLoadout(
   selectedRobotId: string;
 } | null> {
   let scriptContent = '';
-  let selectedColor = '#22d3ee';
+  let selectedColor = 'DEFAULT';
   let selectedTracerColor = '#22d3ee';
   let selectedRobotId = 'unit-01';
 

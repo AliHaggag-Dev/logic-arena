@@ -48,7 +48,7 @@ const ArenaPageContent = () => {
 
   const { script, loading, error, resolvedScriptId } = useScriptResolver(urlScriptId, isSpectator);
   const [localRobotFile, setLocalRobotFile] = useState('/robots/robot.glb');
-  const [localRobotColor, setLocalRobotColor] = useState('#22d3ee');
+  const [localRobotColor, setLocalRobotColor] = useState('DEFAULT');
   const [graphicsQuality, setGraphicsQuality] = useState('medium');
   const [classicTokensLeft, setClassicTokensLeft] = useState(CLASSIC_TOKEN_BUDGET);
   const { arenaSoundsEnabled } = useSoundContext();
