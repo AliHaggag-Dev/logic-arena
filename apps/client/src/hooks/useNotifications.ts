@@ -297,6 +297,15 @@ function useSocketBridge(): void {
     onNotificationsInvalidate: () => {
       void refresh();
     },
+    onFriendRequestReceived: () => {
+      void refresh();
+    },
+    onFriendRequestAccepted: () => {
+      void refresh();
+    },
+    onChallengeReceived: () => {
+      void refresh();
+    },
   });
 }
 
@@ -364,7 +373,6 @@ export function useNotifications(): UseNotificationsReturn {
       if (s.refCount <= 0) {
         s.timers.forEach((timer) => clearTimeout(timer));
         s.timers.clear();
-        store = null;
       }
     };
   }, []);

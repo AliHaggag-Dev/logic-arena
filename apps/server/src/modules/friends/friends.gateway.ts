@@ -63,11 +63,11 @@ export class FriendsGateway {
   ): Promise<void> {
     if (!this.server) return;
 
-    await this.notifications.create(originalRequesterId, {
+    const notif = await this.notifications.create(originalRequesterId, {
       type: 'FRIEND_ACCEPTED',
       title: 'Friend request accepted',
       body: `${accepterInfo.username} accepted your friend request`,
-      data: { actorId: accepterInfo.id },
+      data: { actorId: accepterInfo.id, actorUsername: accepterInfo.username },
     });
     const unreadCount =
       await this.notifications.countUnread(originalRequesterId);
@@ -76,6 +76,7 @@ export class FriendsGateway {
       friendshipCreatedAt,
       unreadCount,
     });
+    this.server.to(originalRequesterId).emit('notification:new', notif);
   }
 
   emitFriendRequestDeclined(
@@ -111,7 +112,7 @@ export class FriendsGateway {
       title: string;
       body: string;
       read: boolean;
-      createdAt: Date;
+      createdAt: string | Date;
       data: unknown;
     },
   ): Promise<void> {
@@ -122,7 +123,10 @@ export class FriendsGateway {
       title: notification.title,
       body: notification.body,
       read: notification.read,
-      createdAt: notification.createdAt.toISOString(),
+      createdAt:
+        typeof notification.createdAt === 'string'
+          ? notification.createdAt
+          : notification.createdAt.toISOString(),
       data: notification.data,
     });
   }

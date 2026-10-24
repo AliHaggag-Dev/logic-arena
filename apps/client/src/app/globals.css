@@ -13,6 +13,8 @@
   --accent-rgb: 34, 211, 238;
   --border: rgba(34, 211, 238, 0.2);
   --card: #000000;
+  --bg-card: #0a0f1c;
+  --bg-card-rgb: 10, 15, 28;
   --card-shadow: 0 0 20px rgba(var(--accent-rgb), 0.1), inset 0 0 20px rgba(var(--accent-rgb), 0.03);
   /* Semantic colors — neon / electric on pure dark */
   --sem-success:     #22c55e;
@@ -109,6 +111,8 @@
   --border:          rgba(98, 0, 234, 0.28);
   --border-subtle:   rgba(98, 0, 234, 0.15);
   --card:            #ffffff;
+  --bg-card:         #ffffff;
+  --bg-card-rgb:     255, 255, 255;
   --card-hover:      #f7f5fb;
   --surface-1:       #fdfdff;
   --surface-2:       #f4f5f8;

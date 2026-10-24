@@ -138,7 +138,7 @@ export class FriendsService {
       expiresAt: request.expiresAt.toISOString(),
     };
 
-    await this.notifications.create(receiver.id, {
+    const notif = await this.notifications.create(receiver.id, {
       type: 'FRIEND_REQUEST',
       title: 'New friend request',
       body: `${sender.username} sent you a friend request`,
@@ -148,6 +148,7 @@ export class FriendsService {
         actorUsername: sender.username,
       },
     });
+    this.gateway.emitNotificationNew(receiver.id, notif);
     await this.gateway.emitFriendRequestReceived(receiver.id, entry);
 
     return entry;

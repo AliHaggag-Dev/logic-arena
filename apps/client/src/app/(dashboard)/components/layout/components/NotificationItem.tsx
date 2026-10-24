@@ -10,10 +10,7 @@ import {
   Check,
   Trash2,
 } from 'lucide-react';
-import type {
-  NotificationEntry,
-  NotificationPayload,
-} from '@/lib/api/notifications.types';
+import type { NotificationEntry } from '@/lib/api/notifications.types';
 
 interface NotificationItemProps {
   notification: NotificationEntry;
@@ -31,27 +28,100 @@ interface IconConfig {
 }
 
 const ICON_MAP: Record<string, IconConfig> = {
-  FRIEND_REQUEST: { Icon: UserPlus, bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)', label: 'FRIEND_REQUEST' },
-  FRIEND_ACCEPTED: { Icon: UserCheck, bg: 'rgba(var(--sem-success-rgb),0.12)', color: 'var(--sem-success)', label: 'FRIEND_ACCEPTED' },
-  CHALLENGE_RECEIVED: { Icon: Swords, bg: 'rgba(var(--sem-warning-rgb),0.12)', color: 'var(--sem-warning)', label: 'CHALLENGE' },
-  MATCH_RESULT: { Icon: Trophy, bg: 'rgba(var(--accent-rgb),0.12)', color: 'var(--accent)', label: 'MATCH' },
-  SYSTEM: { Icon: Info, bg: 'rgba(var(--accent-rgb),0.06)', color: 'var(--text-secondary)', label: 'SYSTEM' },
+  FRIEND_REQUEST: {
+    Icon: UserPlus,
+    bg: 'rgba(var(--accent-rgb),0.15)',
+    color: 'var(--accent)',
+    label: 'FRIEND REQUEST',
+  },
+  FRIEND_ACCEPTED: {
+    Icon: UserCheck,
+    bg: 'rgba(var(--sem-success-rgb),0.15)',
+    color: 'var(--sem-success)',
+    label: 'ALLY CONNECTED',
+  },
+  CHALLENGE_RECEIVED: {
+    Icon: Swords,
+    bg: 'rgba(var(--sem-warning-rgb),0.15)',
+    color: 'var(--sem-warning)',
+    label: 'BATTLE CHALLENGE',
+  },
+  MATCH_RESULT: {
+    Icon: Trophy,
+    bg: 'rgba(var(--accent-rgb),0.15)',
+    color: 'var(--accent)',
+    label: 'MATCH DEBRIEF',
+  },
+  SYSTEM: {
+    Icon: Info,
+    bg: 'rgba(var(--accent-rgb),0.08)',
+    color: 'var(--text-secondary)',
+    label: 'SYSTEM TRANSMISSION',
+  },
 };
 
-function getPayloadSummary(payload: NotificationPayload | null): string {
-  if (!payload) return '';
-  switch (payload.kind) {
-    case 'FRIEND_REQUEST':
-      return `from @${payload.senderUsername}`;
-    case 'FRIEND_ACCEPTED':
-      return `@${payload.friendUsername} is now your ally`;
-    case 'CHALLENGE_RECEIVED':
-      return `@${payload.challengerName} wants to fight`;
-    case 'MATCH_RESULT':
-      return `${payload.outcome === 'win' ? '+' : ''}${payload.ratingDelta} rating`;
-    case 'SYSTEM':
-      return payload.reference;
+const MS_PER_MINUTE = 60_000;
+const MS_PER_HOUR = 3_600_000;
+const MS_PER_DAY = 86_400_000;
+const MS_PER_WEEK = 604_800_000;
+
+function formatTimeAgo(isoString?: string | null): string {
+  if (!isoString) return '';
+  try {
+    const diff = Date.now() - new Date(isoString).getTime();
+    if (diff < MS_PER_MINUTE) return 'Just now';
+    if (diff < MS_PER_HOUR) {
+      const minutes = Math.floor(diff / MS_PER_MINUTE);
+      return `${minutes}m ago`;
+    }
+    if (diff < MS_PER_DAY) {
+      const hours = Math.floor(diff / MS_PER_HOUR);
+      return `${hours}h ago`;
+    }
+    if (diff < MS_PER_WEEK) {
+      const days = Math.floor(diff / MS_PER_DAY);
+      return `${days}d ago`;
+    }
+    return new Date(isoString).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return '';
   }
+}
+
+function resolveNotificationDetails(notification: NotificationEntry): {
+  headline: string;
+  subtext: string;
+  tag?: string;
+} {
+  const data = (notification.data ?? {}) as Record<string, unknown>;
+  const actor =
+    (typeof data.actorUsername === 'string' && data.actorUsername) ||
+    (typeof data.senderUsername === 'string' && data.senderUsername) ||
+    (typeof data.challengerName === 'string' && data.challengerName) ||
+    '';
+
+  const mode = typeof data.mode === 'string' ? data.mode : '';
+
+  let subtext = notification.body || '';
+
+  if (!subtext && actor) {
+    if (notification.type === 'CHALLENGE_RECEIVED') {
+      subtext = `@${actor} challenged you to a battle`;
+    } else if (notification.type === 'FRIEND_REQUEST') {
+      subtext = `@${actor} sent you a friend request`;
+    } else if (notification.type === 'FRIEND_ACCEPTED') {
+      subtext = `@${actor} accepted your ally invitation`;
+    }
+  }
+
+  return {
+    headline: notification.title || 'Notification',
+    subtext,
+    tag: mode ? mode.toUpperCase() : undefined,
+  };
 }
 
 export function NotificationItem({
@@ -64,7 +134,8 @@ export function NotificationItem({
   const [hovered, setHovered] = useState(false);
   const config = ICON_MAP[notification.type] ?? ICON_MAP.SYSTEM;
   const { Icon, bg, color, label } = config;
-  const summary = getPayloadSummary(notification.data);
+  const { headline, subtext, tag } = resolveNotificationDetails(notification);
+  const timeAgo = formatTimeAgo(notification.createdAt);
 
   return (
     <div
@@ -80,114 +151,122 @@ export function NotificationItem({
           onClick(notification);
         }
       }}
-      className="group relative w-full text-left cursor-pointer transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px]"
+      className={`group relative w-full text-left cursor-pointer transition-all duration-150 border-b border-accent/10 last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px] ${
+        !notification.read
+          ? 'bg-accent/[0.06] border-l-2 border-l-accent'
+          : 'bg-transparent border-l-2 border-l-transparent hover:bg-white/[0.02]'
+      }`}
       style={{
-        padding: '14px 16px',
-        background: !notification.read ? 'rgba(var(--accent-rgb),0.04)' : 'transparent',
+        padding: '12px 14px',
       }}
     >
       <div className="flex gap-3 items-start">
+        {/* Left icon badge */}
         <div
-          className="shrink-0 flex items-center justify-center"
+          className="shrink-0 flex items-center justify-center border border-white/5"
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 14,
+            width: 38,
+            height: 38,
+            borderRadius: 10,
             background: bg,
             color: color,
             transition: 'transform 0.15s ease',
             transform: hovered ? 'scale(1.05)' : 'scale(1)',
           }}
         >
-          <Icon size={17} />
+          <Icon size={16} />
         </div>
-        <div className="flex-1 min-w-0" style={{ paddingTop: 2 }}>
-          <div className="flex items-center gap-2 mb-0.5">
-            {!notification.read && (
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-0.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              {!notification.read && (
+                <span
+                  className="w-1.5 h-1.5 rounded-full shrink-0 shadow-[0_0_8px_var(--accent)]"
+                  style={{ background: 'var(--accent)' }}
+                  aria-label="Unread notification"
+                />
+              )}
               <span
-                className="w-1.5 h-1.5 rounded-full shrink-0 shadow-[0_0_8px_var(--accent)]"
-                style={{ background: 'var(--accent)' }}
-                aria-label="Unread"
-              />
+                className="text-[9px] font-bold tracking-wider uppercase truncate"
+                style={{ color }}
+              >
+                {label}
+              </span>
+              {tag && (
+                <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-white/10 text-text-secondary uppercase">
+                  {tag}
+                </span>
+              )}
+            </div>
+
+            {timeAgo && (
+              <span className="text-[10px] text-text-secondary/60 shrink-0 font-mono">
+                {timeAgo}
+              </span>
             )}
-            <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: color }}>
-              {label}
-            </span>
           </div>
+
           <p
-            className="text-sm leading-snug line-clamp-2"
+            className="text-[13px] leading-tight font-semibold line-clamp-1 mb-0.5"
             style={{
-              color: notification.read ? 'var(--text-secondary)' : 'var(--text-primary)',
-              fontWeight: notification.read ? 400 : 500,
+              color: notification.read
+                ? 'var(--text-secondary)'
+                : 'var(--text-primary)',
             }}
           >
-            {notification.title}
+            {headline}
           </p>
-          {summary && (
-            <p className="text-[11px] mt-0.5" style={{ color: 'rgba(var(--accent-rgb),0.55)' }}>
-              {summary}
+
+          {subtext && (
+            <p className="text-[11px] leading-snug line-clamp-2 text-text-secondary/80">
+              {subtext}
             </p>
           )}
         </div>
-      </div>
-      <div
-        className="flex items-center gap-2 absolute"
-        style={{
-          right: 12,
-          bottom: 12,
-          opacity: hovered || !notification.read ? 1 : 0,
-          transition: 'opacity 0.15s ease',
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        {!notification.read && (
+
+        {/* Action buttons */}
+        <div
+          className="shrink-0 flex items-center gap-1 self-center ml-1"
+          style={{
+            opacity: hovered || !notification.read ? 1 : 0.4,
+            transition: 'opacity 0.15s ease',
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {!notification.read && (
+            <button
+              type="button"
+              data-action="mark-read"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDismiss(notification.id);
+              }}
+              aria-label="Mark notification as read"
+              title="Mark as read"
+              className="flex items-center justify-center transition-all duration-150 cursor-pointer rounded-md text-text-secondary hover:text-[color:var(--sem-success)] hover:bg-[color:var(--sem-success)]/10 p-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--sem-success)]"
+            >
+              <Check size={14} />
+            </button>
+          )}
+
           <button
             type="button"
-            data-action="mark-read"
+            data-action="delete"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
-              onDismiss(notification.id);
+              onDelete(notification.id);
             }}
-            aria-label="Mark as read"
-            title="Mark as read"
-            className="flex items-center justify-center transition-all duration-150 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--sem-success)] focus-visible:outline-offset-2"
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 15,
-              color: 'rgba(var(--accent-rgb),0.5)',
-              background: 'transparent',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(var(--sem-success-rgb),0.1)'; e.currentTarget.style.color = 'var(--sem-success)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(var(--accent-rgb),0.5)'; }}
+            aria-label="Delete notification"
+            title="Delete notification"
+            className="flex items-center justify-center transition-all duration-150 cursor-pointer rounded-md text-text-secondary/60 hover:text-[color:var(--sem-danger)] hover:bg-[color:var(--sem-danger)]/10 p-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--sem-danger)]"
           >
-            <Check size={14} />
+            <Trash2 size={13} />
           </button>
-        )}
-        <button
-          type="button"
-          data-action="delete"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(notification.id);
-          }}
-          aria-label="Delete notification"
-          title="Delete"
-          className="flex items-center justify-center transition-all duration-150 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--sem-danger)] focus-visible:outline-offset-2"
-          style={{
-            width: 30,
-            height: 30,
-            borderRadius: 15,
-            color: 'rgba(var(--accent-rgb),0.5)',
-            background: 'transparent',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(var(--sem-danger-rgb),0.1)'; e.currentTarget.style.color = 'var(--sem-danger)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(var(--accent-rgb),0.5)'; }}
-        >
-          <Trash2 size={13} />
-        </button>
+        </div>
       </div>
     </div>
   );
